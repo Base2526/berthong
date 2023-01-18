@@ -1,0 +1,73 @@
+version: "3"
+services:
+  ################################
+  #   Setup React-admin container
+  ################################
+  frontend:
+    build: 
+      context: ./frontendN
+      dockerfile: Dockerfile.prod
+      args:
+        REACT_APP_HOST_GRAPHAL: ${REACT_APP_HOST_GRAPHAL} 
+        REACT_APP_NODE_ENV: ${REACT_APP_NODE_ENV} 
+        REACT_APP_GOOGLE_CLIENT_ID: ${REACT_APP_GOOGLE_CLIENT_ID} 
+        REACT_APP_FACEBOOK_APPID: ${REACT_APP_FACEBOOK_APPID} 
+        
+        REACT_APP_GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+        REACT_APP_GOOGLE_ANALYTICS4: ${REACT_APP_GOOGLE_ANALYTICS4}
+    ports:
+      - "8011:80"
+      - "443:443"
+    volumes:
+      - ./frontendN/src:/app/src
+      - ./uploads:/var/storage
+    networks:
+      - nodejs
+  ################################
+
+  ################################
+  #   Setup Api Graphql container
+  ################################
+  graphql:
+    build: 
+      context: ./graphqlN
+      dockerfile: Dockerfile.prod   
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./uploads:/app/uploads  
+    environment:
+      - MONGO_URI=mongodb://${MONGO_INITDB_USERNAME}:${MONGO_INITDB_PASSWORD}@mongo:${MONGO_PORT}/${MONGO_INITDB_DATABASE}?authMechanism=DEFAULT
+      - RA_HOST=${RA_HOST}
+      - GRAPHQL_PORT=${GRAPHQL_PORT}
+      - JWT_SECRET=${JWT_SECRET}
+
+      - GITHUB_URL_OAUTH_ACCESS_TOKEN=${GITHUB_URL_OAUTH_ACCESS_TOKEN}
+      - GITHUB_URL_OAUTH_USER=${GITHUB_URL_OAUTH_USER}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET} 
+    networks:
+      - nodejs
+  ################################
+
+  ################################
+  #   Setup Api Mongo and mongo-express container
+  ################################
+  mongo:
+    image: mongo:${MONGO_VERSION}
+    command: mongod --port ${MONGO_PORT}
+    expose:
+      - ${MONGO_PORT}
+    ports:
+      - "${MONGO_PORT}:${MONGO_PORT}"
+    volumes:
+      - ./mongo-single/data:/data/db
+      - ./mongo-single/restore:/mongo-single/restore
+      - ./mongo-single/mongod.conf:/etc/mongod.conf
+    restart: always
+    networks:
+      - nodejs
+networks:
+  nodejs:
+    external: true 
+    name: banlist-network

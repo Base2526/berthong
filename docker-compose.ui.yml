@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  frontend:
+    build: 
+      context: ./frontendN
+      dockerfile: Dockerfile.ui
+    env_file:
+      - ./env/.env.ui
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontendN/src:/app/src
