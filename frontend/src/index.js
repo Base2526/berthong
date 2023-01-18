@@ -41,10 +41,6 @@ if (REACT_APP_NODE_ENV === 'production') {
   console.debug = () => {}
 }
 
-const setAuthorizationLink = setContext((request, previousContext) => ({
-  headers: {authorization: "1234"}
-}));
-
 ReactGA4.initialize(REACT_APP_GOOGLE_ANALYTICS4)
 ReactDOM.render(
   <Provider store={store}>

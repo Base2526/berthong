@@ -36,3 +36,29 @@
     transform: rotate(360deg);
   }
 }
+
+.home-item{
+  padding: 10px;
+  background-color: antiquewhite;
+  border-style: dotted;
+  margin: 10px;
+}
+
+.container {  
+  /* display: grid;  
+  grid-gap: 5px;  
+  grid-template-columns: repeat(auto-fit, 100px);
+  grid-template-rows: repeat(2, 100px);   */
+
+  display: grid;
+  grid-gap: 5px;  
+  grid-template-columns: 200px 50px 100px;
+  grid-template-rows: 50px 50px;
+}
+
+.itm{
+  border-style: dashed;
+}
+.itm-red{
+  background-color: red;
+}
