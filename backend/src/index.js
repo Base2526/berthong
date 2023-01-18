@@ -265,7 +265,7 @@ async function startApolloServer(typeDefs, resolvers) {
         console.log(`🚀 Query endpoint ready at http://localhost:${PORT}${server.graphqlPath}`);
         console.log(`🚀 Subscription endpoint ready at ws://localhost:${PORT}${server.graphqlPath}`);
 
-        // console.log("process.env :", process.env)
+        console.log("process.env :", process.env)
     });
 }
 
