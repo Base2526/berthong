@@ -47,12 +47,16 @@ const DetailPage = (props) => {
                       draggable: true,
                       pauseOnHover: true,
                       type: "success"
-                    });
+                    });  
+  }
+
+  const selected = () =>{
+    return _.filter(datas, (im)=>im.selected).map((curr)=> `${curr.title}`).toString();
   }
 
   return (<div style={{flex:1}}>
             <ToastContainer />
-            <div>ID : {id}</div>
+            <div>ID : {id} => {selected()}</div>
             <div class="container">  
             {
               _.map(datas, (val, key)=>{
