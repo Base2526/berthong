@@ -82,8 +82,8 @@ services:
       - 27017       # port intenal
     ports:
       - 27018:27017 # port extenal
-    # volumes:
-    #   - ./data:/data/db
+    volumes:
+      - ./restore:/home/restore
     networks:
       - berthong
 

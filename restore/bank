@@ -1,0 +1,26 @@
+{"_id":{"$oid":"62a3018677f36a01c16b8978"},"name":"ธนาคารไทยพาณิชย์","description":"","createdAt":{"$date":"2022-06-10T08:32:06.919Z"},"updatedAt":{"$date":"2022-08-27T12:25:48.802Z"},"__v":0}
+{"_id":{"$oid":"62a30415384dbe01f07da2ee"},"name":"ธนาคารกรุงไทย","description":"","createdAt":{"$date":"2022-06-10T08:43:01.169Z"},"updatedAt":{"$date":"2022-08-27T12:25:57.123Z"},"__v":0}
+{"_id":{"$oid":"630a0bc0e0359b0140ea2ca2"},"name":"ธนาคารกรุงศรีอยุธยา","description":"","createdAt":{"$date":"2022-08-27T12:19:12.911Z"},"updatedAt":{"$date":"2022-08-27T12:19:12.911Z"},"__v":0}
+{"_id":{"$oid":"630a0bd4e0359b0140ea2cb5"},"name":"ธนาคารกรุงเทพ","description":"","createdAt":{"$date":"2022-08-27T12:19:32.650Z"},"updatedAt":{"$date":"2022-08-27T12:19:32.650Z"},"__v":0}
+{"_id":{"$oid":"630a0bffe0359b0140ea2cb8"},"name":"ธนาคารซีไอเอ็มบี","description":"","createdAt":{"$date":"2022-08-27T12:20:15.167Z"},"updatedAt":{"$date":"2022-08-27T12:20:15.167Z"},"__v":0}
+{"_id":{"$oid":"630a0c16e0359b0140ea2ccb"},"name":"ธนาคารออมสิน","description":"","createdAt":{"$date":"2022-08-27T12:20:38.659Z"},"updatedAt":{"$date":"2022-08-27T12:20:38.659Z"},"__v":0}
+{"_id":{"$oid":"630a0c26e0359b0140ea2cde"},"name":"ธนาคารอิสลาม","description":"","createdAt":{"$date":"2022-08-27T12:20:54.162Z"},"updatedAt":{"$date":"2022-08-27T12:20:54.162Z"},"__v":0}
+{"_id":{"$oid":"630a0c32e0359b0140ea2ce1"},"name":"ธนาคารกสิกรไทย","description":"","createdAt":{"$date":"2022-08-27T12:21:06.774Z"},"updatedAt":{"$date":"2022-08-27T12:21:06.774Z"},"__v":0}
+{"_id":{"$oid":"630a0c3ee0359b0140ea2ce4"},"name":"ธนาคารเกียรตินาคิน","description":"","createdAt":{"$date":"2022-08-27T12:21:18.994Z"},"updatedAt":{"$date":"2022-08-27T12:21:18.994Z"},"__v":0}
+{"_id":{"$oid":"630a0c4ae0359b0140ea2ce7"},"name":"Standard Chartered","description":"","createdAt":{"$date":"2022-08-27T12:21:30.547Z"},"updatedAt":{"$date":"2022-08-27T12:21:30.547Z"},"__v":0}
+{"_id":{"$oid":"630a0c58e0359b0140ea2cea"},"name":"ธนาคารธนชาติ","description":"","createdAt":{"$date":"2022-08-27T12:21:44.570Z"},"updatedAt":{"$date":"2022-08-27T12:21:44.570Z"},"__v":0}
+{"_id":{"$oid":"630a0c63e0359b0140ea2ced"},"name":"ทิสโก้แบงค์","description":"","createdAt":{"$date":"2022-08-27T12:21:55.448Z"},"updatedAt":{"$date":"2022-08-27T12:21:55.448Z"},"__v":0}
+{"_id":{"$oid":"630a0c6fe0359b0140ea2cf0"},"name":"ธนาคารทหารไทย","description":"","createdAt":{"$date":"2022-08-27T12:22:07.379Z"},"updatedAt":{"$date":"2022-08-27T12:22:07.379Z"},"__v":0}
+{"_id":{"$oid":"630a0c7be0359b0140ea2cf3"},"name":"ธนาคารยูโอบี","description":"","createdAt":{"$date":"2022-08-27T12:22:19.013Z"},"updatedAt":{"$date":"2022-08-27T12:22:19.013Z"},"__v":0}
+{"_id":{"$oid":"630a0c87e0359b0140ea2cf6"},"name":"ธนาคารเพื่อการเกษตรและสหกรณ์การเกษตร","description":"","createdAt":{"$date":"2022-08-27T12:22:31.557Z"},"updatedAt":{"$date":"2022-08-27T12:22:31.557Z"},"__v":0}
+{"_id":{"$oid":"630a0c9be0359b0140ea2d09"},"name":"True Wallet","description":"","createdAt":{"$date":"2022-08-27T12:22:51.345Z"},"updatedAt":{"$date":"2022-08-27T12:22:51.345Z"},"__v":0}
+{"_id":{"$oid":"630a0ca7e0359b0140ea2d0c"},"name":"พร้อมเพย์ (PromptPay)","description":"","createdAt":{"$date":"2022-08-27T12:23:03.654Z"},"updatedAt":{"$date":"2022-08-27T12:23:03.654Z"},"__v":0}
+{"_id":{"$oid":"630a0cb0e0359b0140ea2d0f"},"name":"ธนาคารอาคารสงเคราะห์","description":"","createdAt":{"$date":"2022-08-27T12:23:12.663Z"},"updatedAt":{"$date":"2022-08-27T12:23:12.663Z"},"__v":0}
+{"_id":{"$oid":"630a0cc4e0359b0140ea2d12"},"name":"AirPay (แอร์เพย์)","description":"","createdAt":{"$date":"2022-08-27T12:23:32.107Z"},"updatedAt":{"$date":"2022-08-27T12:23:32.107Z"},"__v":0}
+{"_id":{"$oid":"630a0ccbe0359b0140ea2d15"},"name":"mPay","description":"","createdAt":{"$date":"2022-08-27T12:23:39.009Z"},"updatedAt":{"$date":"2022-08-27T12:23:39.009Z"},"__v":0}
+{"_id":{"$oid":"630a0cd4e0359b0140ea2d18"},"name":"123 เซอร์วิส","description":"","createdAt":{"$date":"2022-08-27T12:23:48.555Z"},"updatedAt":{"$date":"2022-08-27T12:23:48.555Z"},"__v":0}
+{"_id":{"$oid":"630a0cefe0359b0140ea2d1b"},"name":"ธนาคารไทยเครดิตเพื่อรายย่อย","description":"","createdAt":{"$date":"2022-08-27T12:24:15.184Z"},"updatedAt":{"$date":"2022-08-27T12:25:28.184Z"},"__v":0}
+{"_id":{"$oid":"630a0cf6e0359b0140ea2d1e"},"name":"ธนาคารแลนด์แอนด์เฮ้าส์","description":"","createdAt":{"$date":"2022-08-27T12:24:22.338Z"},"updatedAt":{"$date":"2022-08-27T12:24:22.338Z"},"__v":0}
+{"_id":{"$oid":"630a0cfce0359b0140ea2d21"},"name":"เก็บเงินปลายทาง","description":"","createdAt":{"$date":"2022-08-27T12:24:28.849Z"},"updatedAt":{"$date":"2022-08-27T12:24:28.849Z"},"__v":0}
+{"_id":{"$oid":"630a0d05e0359b0140ea2d24"},"name":"TTB (ทีเอ็มบีธนชาต)","description":"","createdAt":{"$date":"2022-08-27T12:24:37.414Z"},"updatedAt":{"$date":"2022-08-27T12:25:04.141Z"},"__v":0}
+{"_id":{"$oid":"630a329fd4fb1002d26ef681"},"name":"ธนาคารซิตี้แบงก์","description":"","createdAt":{"$date":"2022-08-27T15:05:03.052Z"},"updatedAt":{"$date":"2022-08-27T15:05:03.052Z"},"__v":0}

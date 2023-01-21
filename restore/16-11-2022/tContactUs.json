@@ -1,0 +1,52 @@
+[{
+  "_id": {
+    "$oid": "62a434855359720693aa83fc"
+  },
+  "name": "Category A",
+  "description": "<p>DESCRIPTION :&nbsp;Category A</p>\n",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1654928517780"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1654937659119"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "62a464d103c1690257de9dc4"
+  },
+  "name": "Category C",
+  "description": "<p>DESCRIPTION :&nbsp;Category C</p>\n",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1654940881162"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1654957229672"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "62a4577dfd4518003efbcb36"
+  },
+  "name": "Category B",
+  "description": "<p>DESCRIPTION : Category B</p>\n",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1654937469384"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1654937675959"
+    }
+  },
+  "__v": 0
+}]

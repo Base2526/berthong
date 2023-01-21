@@ -1,7 +1,8 @@
 import _ from "lodash"
 
 import i18n from './translations/i18n';
-
+import { AMDINISTRATOR, AUTHENTICATED, ANONYMOUS } from "./constants"
+ 
 /**
  * Convert a `File` object returned by the upload input into a base 64 string.
  * That's not the most optimized way to store images in production, but it's
@@ -75,4 +76,16 @@ export const getCurrentDate =(separator='')=>{
     let year = newDate.getFullYear();
     
     return `${year}${separator}${month<10?`0${month}`:`${month}`}${separator}${date}`
+}
+
+export const checkRole = (user) =>{
+    if(user?.roles){
+        if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a2")){
+            return AMDINISTRATOR;
+        }
+        // else if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a6")){
+        return AUTHENTICATED;
+        // }
+    }
+    return ANONYMOUS;
 }

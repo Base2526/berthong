@@ -441,6 +441,11 @@ export default gql`
 
     homes( page: Long, perPage: Long, keywordSearch: String, category: String ): JSON
 
+
+    getSuppliers: JSON
+    getSupplierById(_id: ID): JSON
+
+
     user(_id: ID): JSON
     users(page: Int, perPage: Int): JSON
     getManyUsers(_ids: [ID!]!): UsersPayLoad
@@ -663,9 +668,43 @@ export default gql`
     status: Boolean
   }
 
+  input BookInput{
+    id: ID!
+    status: Boolean
+  }
+
+  input BuyInput{
+    ids: [ID!]
+  }
+
+  enum SupplierModeType {
+    NEW
+    EDIT
+  }
+
+  input SupplierInput{
+    mode: SupplierModeType
+    _id: ID
+    title: String
+    price: Int
+    priceUnit: Int
+    description: String
+    dateLottery: DATETIME
+    files: [JSON]
+    buys: [JSON]
+    publish: Boolean
+  }
+
   type Mutation {
     login(input: LoginInput): JSON
     loginWithSocial(input: LoginWithSocialInput): JSON
+
+
+    book(input: BookInput): JSON
+    buys(input: BuyInput): JSON
+
+    supplier(input: SupplierInput): JSON
+    
 
     search(type: String!, q: String!): JSON
 

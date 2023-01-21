@@ -17,7 +17,8 @@ import {Bank,
         Session,
         Notification,
         Phone,
-        BasicContent} from '../model'
+        BasicContent,
+        Supplier} from '../model'
 
 let logger = require("../utils/logger");
 
@@ -27,8 +28,8 @@ const modelExists =()=>{
       // console.log('Found Bank');
     } else {
       // console.log('Not found Bank, creating');
-      let newSettings = new Bank({});
-      await newSettings.save();
+      let newBank = new Bank({});
+      await newBank.save();
 
       await Bank.deleteMany({})
     }
@@ -39,8 +40,8 @@ const modelExists =()=>{
       // console.log('Found Post');
     } else {
       // console.log('Not found Post, creating');
-      let newSettings = new Post({});
-      await newSettings.save();
+      let newPost = new Post({});
+      await newPost.save();
 
       await Post.deleteMany({})
     }
@@ -51,8 +52,8 @@ const modelExists =()=>{
       // console.log('Found Role');
     } else {
       // console.log('Not found Role, creating');
-      let newSettings = new Role({});
-      newSettings.save();
+      let newRole = new Role({});
+      newRole.save();
 
       await Role.deleteMany({})
     }
@@ -63,8 +64,8 @@ const modelExists =()=>{
       // console.log('Found Socket');
     } else {
       // console.log('Not found Socket, creating');
-      let newSettings = new Socket({});
-      await newSettings.save();
+      let newSocket = new Socket({});
+      await newSocket.save();
 
       await Socket.deleteMany({})
     }
@@ -75,8 +76,8 @@ const modelExists =()=>{
       // console.log('Found User');
     } else {
       // console.log('Not found User, creating');
-      let newSettings = new User({});
-      await newSettings.save();
+      let newUser = new User({});
+      await newUser.save();
 
       await User.deleteMany({})
     }
@@ -250,6 +251,17 @@ const modelExists =()=>{
     }
   });
 
+  Supplier.find({}, async(err, result)=> {
+    if (result.length > 0) {
+      // console.log('Found BasicContent');
+    } else {
+      // console.log('Not found BasicContent, creating');
+      let newSupplier = new Supplier({});
+      await newSupplier.save();
+
+      await Supplier.deleteMany({})
+    }
+  });
 }
 
 // TODO: initial and connect to MongoDB

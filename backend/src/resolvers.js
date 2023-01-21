@@ -24,7 +24,8 @@ import {Bank,
         Follow,
         Session,
         Notification,
-        Phone} from './model'
+        Phone,
+        Supplier} from './model'
 import {emailValidate} from './utils'
 import pubsub from './pubsub'
 
@@ -41,7 +42,7 @@ const {
 
 let logger = require("./utils/logger");
 
-import {getSessionId} from "./utils"
+import {getSessionId} from "./utils/index"
 
 export default {
   Query: {
@@ -71,6 +72,65 @@ export default {
         return;
       }
     },
+
+    async getSuppliers(parent, args, context, info){
+      let start = Date.now()
+
+      try{
+        // let { status, code, currentUser } = context 
+        // console.log("ping :", currentUser?._id)
+
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        return {  
+                status:true,
+                data: await Supplier.find({ownerId: current_user?._id}),
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+              }
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("getSuppliers err :", err.toString())
+        return {  
+                status:false,
+                message: err.toString(),
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+              }
+      }
+    },
+
+    async getSupplierById(parent, args, context, info){
+      let start = Date.now()
+      try{
+
+        console.log("getSupplierById :", args)
+
+        let { _id } = args
+
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        return {  status:true,
+                  data: await Supplier.findById(_id),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("getSupplierById err :", args, err.toString())
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
     // profile 
     async profile(parent, args, context, info) {
       let start = Date.now()
@@ -1185,23 +1245,7 @@ export default {
           new: true
         })
 
-        // let roles = await Promise.all(_.map(user.roles, async(_id)=>{
-        //   let role = await Role.findById(_id)
-        //   return role.name
-        // }))
-
-        // console.log("Login #1: ", user.roles )
-
-        // user = { ...user._doc,  roles }
-        // console.log("Login #2: ", user )
-
-        // let token = jwt.sign(user._id.toString(), process.env.JWT_SECRET)
-        // input = {...input, token}
-        // let session = await Session.findOne({deviceAgent: input.deviceAgent})
-        // if(_.isEmpty(session)){
-        //   session = await Session.create(input);
-        // }
-
+      
         let sessionId = await getSessionId(user._id.toString(), input)
         
         return {
@@ -1210,7 +1254,6 @@ export default {
           sessionId,
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
-
       } catch(err) {
         logger.error(err.toString());
         return {
@@ -1574,6 +1617,258 @@ export default {
             message: "other case",
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
+        }
+      }
+    },
+
+    async book(parent, args, context, info) {
+      let start = Date.now()
+      try{
+        let {input} = args
+        
+
+        // let user = emailValidate().test(input.username) ?  await User.findOne({email: input.username}) : await User.findOne({username: input.username})
+
+        // if(user === null){
+        //   return {
+        //     status: false,
+        //     messages: "xxx", 
+        //     data:{
+        //       _id: "",
+        //       username: "",
+        //       password: "",
+        //       email: "",
+        //       displayName: "",
+        //       roles:[]
+        //     },
+        //     executionTime: `Time to execute = ${
+        //       (Date.now() - start) / 1000
+        //     } seconds`
+        //   }
+        // }
+
+        // // update lastAccess
+        // await User.findOneAndUpdate({
+        //   _id: user._doc._id
+        // }, {
+        //   lastAccess : Date.now()
+        // }, {
+        //   new: true
+        // })
+
+      
+        // let sessionId = await getSessionId(user._id.toString(), input)
+
+        let { req } = context
+        
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        console.log("book : ", input, current_user)
+        
+        return {
+          status: true,
+          // data: user,
+          // sessionId,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      } catch(err) {
+        logger.error(err.toString());
+        return {
+          status: false,
+          messages: err.toString(), 
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }
+    },
+
+    async buys(parent, args, context, info) {
+      let start = Date.now()
+      try{
+        let {input} = args
+
+        console.log("buy : ", input)
+
+        // let user = emailValidate().test(input.username) ?  await User.findOne({email: input.username}) : await User.findOne({username: input.username})
+
+        // if(user === null){
+        //   return {
+        //     status: false,
+        //     messages: "xxx", 
+        //     data:{
+        //       _id: "",
+        //       username: "",
+        //       password: "",
+        //       email: "",
+        //       displayName: "",
+        //       roles:[]
+        //     },
+        //     executionTime: `Time to execute = ${
+        //       (Date.now() - start) / 1000
+        //     } seconds`
+        //   }
+        // }
+
+        // // update lastAccess
+        // await User.findOneAndUpdate({
+        //   _id: user._doc._id
+        // }, {
+        //   lastAccess : Date.now()
+        // }, {
+        //   new: true
+        // })
+
+        // let sessionId = await getSessionId(user._id.toString(), input)
+        
+        return {
+          status: true,
+          // data: user,
+          // sessionId,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      } catch(err) {
+        logger.error(err.toString());
+        return {
+          status: false,
+          messages: err.toString(), 
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }
+    },
+
+    async supplier(parent, args, context, info) {
+      let start = Date.now()
+      try{
+        let { input } = args
+        let { req } = context
+
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        switch(input.mode.toLowerCase()){
+          case "new":{
+            console.log("createSupplier : ", input )
+
+            let newFiles = [];
+            if(!_.isEmpty(input.files)){
+              for (let i = 0; i < input.files.length; i++) {
+                const { createReadStream, filename, encoding, mimetype } = (await input.files[i]).file //await input.files[i];
+    
+                const stream = createReadStream();
+                const assetUniqName = fileRenamer(filename);
+                let pathName = `/app/uploads/${assetUniqName}`;
+      
+                const output = fs.createWriteStream(pathName)
+                stream.pipe(output);
+      
+                await new Promise(function (resolve, reject) {
+                  output.on('close', () => {
+                    resolve();
+                  });
+            
+                  output.on('error', (err) => {
+                    logger.error(err.toString());
+      
+                    reject(err);
+                  });
+                });
+      
+                const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+                newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+              }
+            }
+            let supplier = await Supplier.create({ ...input, files:newFiles, ownerId: current_user?._id });
+            
+            return {
+              status: true,
+              data: supplier,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            }
+          }
+
+          case "edit":{
+            let { input } = args
+
+            console.log("updateSupplier :", input)
+    
+            let newFiles = [];
+            if(!_.isEmpty(input.files)){
+    
+              for (let i = 0; i < input.files.length; i++) {
+                try{
+                  let fileObject = (await input.files[i]).file
+    
+                  if(!_.isEmpty(fileObject)){
+                    const { createReadStream, filename, encoding, mimetype } = fileObject //await input.files[i];
+                    const stream = createReadStream();
+                    const assetUniqName = fileRenamer(filename);
+                    let pathName = `/app/uploads/${assetUniqName}`;
+                    
+          
+                    const output = fs.createWriteStream(pathName)
+                    stream.pipe(output);
+          
+                    await new Promise(function (resolve, reject) {
+                      output.on('close', () => {
+                        resolve();
+                      });
+                
+                      output.on('error', (err) => {
+                        logger.error(err.toString());
+          
+                        reject(err);
+                      });
+                    });
+          
+                    const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+                    newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+                  }else{
+                    if(input.files[i].delete){
+                      let pathUnlink = '/app/uploads/' + input.files[i].url.split('/').pop()
+                      fs.unlink(pathUnlink, (err)=>{
+                          if (err) {
+                            logger.error(err);
+                          }else{
+                            // if no error, file has been deleted successfully
+                            console.log('File has been deleted successfully ', pathUnlink);
+                          }
+                      });
+                    }else{
+                      newFiles = [...newFiles, input.files[i]]
+                    }
+                  }
+                  // console.log("updatePost #6:", newFiles)
+                } catch(err) {
+                  logger.error(err.toString());
+                }
+              }
+            }
+    
+            let newInput = {...input, files:newFiles}
+    
+            let supplier = await Supplier.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
+
+            return {
+              status: true,
+              data: supplier,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            }
+          }
+        }
+
+        return {
+          status: false,
+          message: "Other case",
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+
+      } catch(err) {
+        logger.error( err.toString());
+
+        return {
+          status: false,
+          messages: err.toString(), 
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
       }
     },

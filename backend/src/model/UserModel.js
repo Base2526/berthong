@@ -7,7 +7,15 @@ const userSchema = new Schema({
   password: { type: String },
   email: { type: String },
   displayName: { type: String },
-  roles: [{ type: String }],
+
+  /*
+  '' : anonymous,
+  '62a2ccfbcf7946010d3c74a6' : authenticated, 
+  '62a2ccfbcf7946010d3c74a2' : administrator
+  */
+  roles: [{ type: String,
+            enum : ['62a2ccfbcf7946010d3c74a6', '62a2ccfbcf7946010d3c74a2'],
+            default: '62a2ccfbcf7946010d3c74a6' }],
   isActive: { type: String },
   image :[{
     url: { type: String },

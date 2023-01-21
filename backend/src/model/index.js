@@ -27,6 +27,8 @@ import NotificationModel from "./NotificationModel"
 
 import PhoneModel from "./PhoneModel"
 
+import SupplierModel from "./SupplierModel"
+
 module.exports =  {
     Bank:BankModel,
     Post:PostModel,
@@ -55,5 +57,7 @@ module.exports =  {
 
     Notification: NotificationModel,
 
-    Phone: PhoneModel
+    Phone: PhoneModel,
+
+    Supplier: SupplierModel
 };

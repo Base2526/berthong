@@ -18,8 +18,12 @@ import { gqlPing } from "./gqlQuery"
 
 import Store from "./Store";
 
+import LoginPage from "./LoginPage"
 import HomePage from "./HomePage";
 import DetailPage from "./DetailPage";
+import SuppliersPage from "./SuppliersPage";
+import SupplierPage from "./SupplierPage";
+import ProfilePage from "./ProfilePage"
 
 const App =(props) =>{
   const intervalPing = useRef(null);
@@ -55,9 +59,23 @@ const App =(props) =>{
               </div>
             </Route>
 
-            {/* <Route path="/user/login">
+            <Route path="/user/login">
               <LoginPage />
             </Route>
+
+            <Route path="/suppliers">
+              <SuppliersPage />
+            </Route>
+
+            <Route path="/supplier">
+              <SupplierPage />
+            </Route>
+
+            <Route path="/me">
+              <ProfilePage />
+            </Route>
+
+            {/*
             <Route path="/detail/:id">
               <div className="page-detail">
                 <Detail/>
