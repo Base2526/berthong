@@ -15,7 +15,7 @@ import Button from "@mui/material/Button";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 
 import { getHeaders } from "./util"
-import { gqlSupplier, gqlSupplierById } from "./gqlQuery"
+import { gqlSuppliers, gqlSupplier, gqlSupplierById } from "./gqlQuery"
 
 import Editor from "./editor/Editor";
 import AttackFileField from "./AttackFileField";
@@ -52,17 +52,36 @@ const SupplierPage = (props) => {
     context: { headers: getHeaders() },
     update: (cache, {data: {supplier}}) => {
 
-      console.log("supplier :", supplier)
-        // const data1 = cache.readQuery({
-        // query: gqlPosts,
-        // variables: {
-        //     userId: _.isEmpty(user) ? "" : user._id,
-        //     page: 0, 
-        //     perPage: 30
-        // }
-        // });
+      let { data, mode, status } = supplier
 
-        // console.log("onCreatePost data1:", data1)
+      if(status){
+        switch(mode){
+          case "new":{
+            const data1 = cache.readQuery({ query: gqlSuppliers });
+            let newData = [...data1.getSuppliers.data, supplier.data];//_.map(data1.getSuppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
+
+            cache.writeQuery({
+              query: gqlSuppliers,
+              data: { getSuppliers: {...data1.getSuppliers, data: newData} }
+            });
+            break;
+          }
+
+          case "edit":{
+            const data1 = cache.readQuery({ query: gqlSuppliers });
+            let newData = _.map(data1.getSuppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
+
+            cache.writeQuery({
+              query: gqlSuppliers,
+              data: { getSuppliers: {...data1.getSuppliers, data: newData} }
+            });
+            
+            break;
+          }
+        }
+      }
+
+      
 
         // if(data1 != null){ 
         // let newPosts = {...data1.posts}
@@ -93,13 +112,16 @@ const SupplierPage = (props) => {
 
     let newInput =  {
         mode: mode.toUpperCase(),
-        _id: mode == "new" ? "" : editValues.data.getSupplierById.data._id,
         title: input.title,
         price: parseInt(input.price),
         priceUnit: parseInt(input.priceUnit),
         description: input.description,
         dateLottery: input.dateLottery,
         files: input.attackFiles
+    }
+
+    if(mode == "edit"){
+      newInput = {...newInput, _id: editValues.data.getSupplierById.data._id}
     }
 
     // console.log("submitForm :", newInput)

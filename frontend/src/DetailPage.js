@@ -134,27 +134,27 @@ const DetailPage = (props) => {
     if(selected ==0){
       toast(<p style={{ fontSize: 16 }}>จองเบอร์ { itemId > 9 ? "" + itemId: "0" + itemId }</p>, {
         position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
+        autoClose: 1000,
+        hideProgressBar: true,
         newestOnTop: false,
         closeOnClick: true,
         rtl: false,
         pauseOnFocusLoss: true,
         draggable: true,
-        pauseOnHover: true,
+        pauseOnHover: false,
         type: "success"
       }); 
     }else{
       toast(<p style={{ fontSize: 16 }}>ยกเลิกการจองเบอร์ { itemId > 9 ? "" + itemId: "0" + itemId }</p>, {
         position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
+        autoClose: 1000,
+        hideProgressBar: true,
         newestOnTop: false,
         closeOnClick: true,
         rtl: false,
         pauseOnFocusLoss: true,
         draggable: true,
-        pauseOnHover: true,
+        pauseOnHover: false,
         type: "error"
       }); 
     }

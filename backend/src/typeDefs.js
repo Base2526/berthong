@@ -436,81 +436,8 @@ export default gql`
 
   type Query {
     ping: JSON
-
-    profile: JSON
-
-    homes( page: Long, perPage: Long, keywordSearch: String, category: String ): JSON
-
-
     getSuppliers: JSON
     getSupplierById(_id: ID): JSON
-
-
-    user(_id: ID): JSON
-    users(page: Int, perPage: Int): JSON
-    getManyUsers(_ids: [ID!]!): UsersPayLoad
-
-    role(_id: ID!): RolePayLoad
-    roles: RolesPayLoad
-    getManyRoles(_ids: [ID!]!): RolesPayLoad
-
-    bank(_id: ID!): JSON
-    banks(page: Int, perPage: Int): JSON
-    getManyBanks(_ids: [ID!]!): BanksPayLoad
-
-    Mail(_id: ID!): MailPayLoad
-    Mails(page: Int, perPage: Int ): MailsPayLoad
-    getManyMails(_ids: [ID!]!): MailsPayLoad
-
-    socket(_id: ID!): SocketPayLoad
-    sockets(page: Int, perPage: Int): SocketsPayLoad
-    getManySockets(_ids: [ID!]!): SocketsPayLoad
-
-    post( _id: ID! ): JSON
-    posts( page: Int, perPage: Int ): JSON
-    _allPostsMeta(page: Int, perPage: Int, sortField: String, sortOrder: String, filter: PostFilter): ListMetadata
-    getManyPosts(_ids: [ID!]!): PostsPayLoad
-
-    postsByUser(userId: ID!): JSON
-  
-    
-    comment(postId: ID!): JSON
-    getManyReferenceComment(postId: String, page: Int, perPage: Int, sortField: String, sortOrder: String, filter: PostFilter): CommentsPayLoad
-  
-
-    bookmarks(page: Int, perPage: Int): JSON
-    bookmarksByPostId( postId: ID! ): BookmarksPayLoad
-    isBookmark(postId: ID!): BookmarkPayLoad
-    bookmarksByUserId( userId: ID! ): BookmarksPayLoad
-
-    ReportList(page: Int, perPage: Int): ReportListPayLoad
-
-    TReport(_id: ID!): TReportPayLoad
-    TReportList(page: Int, perPage: Int): TReportListPayLoad
-    getManyTReportList(_ids: [ID!]!): TReportListPayLoad
-
-
-    shares(page: Int, perPage: Int): JSON
-    shareByPostId(postId: ID!): SharesPayLoad
-
-
-    Dblog(page: Int, perPage: Int): DblogPayLoad
-
-    conversations: JSON
-    notifications: JSON
-    
-    basicContent(_id: ID!): JSON
-    basicContents(page: Int, perPage: Int): JSON
-
-    isFollow(userId: ID!, friendId: ID!): FollowPayLoad
-    follower(userId: ID!): UsersPayLoad
-    followingByUserId(userId: ID!): FollowsPayLoad
-
-
-    fetchMessage(conversationId: ID): JSON
-
-    phones( page: Int, perPage: Int ): JSON
-    phone(_id: ID!): JSON
   }  
   
   input RoomInput {
@@ -699,94 +626,15 @@ export default gql`
   type Mutation {
     login(input: LoginInput): JSON
     loginWithSocial(input: LoginWithSocialInput): JSON
-
-
+    loginWithGithub(code: String!):JSON
     book(input: BookInput): JSON
     buys(input: BuyInput): JSON
-
-    supplier(input: SupplierInput): JSON
-    
-
-    search(type: String!, q: String!): JSON
-
-    createUser(input: UserInput): User
-    updateUser( input: JSON ): JSON
-    deleteUser(_id: ID!): JSON
-
-    createPost(input: JSON): JSON
-    updatePost(_id: ID!, input: JSON): JSON
-    deletePost(_id: ID!): JSON
-    deletePosts(_ids: [ID!]!): deleteType
-
-    createRole(input: RoleInput): Role
-    updateRole(_id: ID!, input: RoleInput): Role
-    deleteRole(_id: ID!): Role
-    deleteRoles(_ids: [ID!]!): deleteType
-
-    createBank(input: BankInput): Bank
-    updateBank(_id: ID!, input: BankInput): JSON
-    deleteBank(_id: ID!): JSON
-    deleteBanks(_ids: [ID!]!): JSON
-
-    createMail(input: MailInput): Mail
-    updateMail(_id: ID!, input: MailInput): Mail
-    deleteMail(_id: ID!): Mail
-    deleteMails(_ids: [ID!]!): deleteType
-
-    createAndUpdateComment(input: JSON): JSON
-    updateComment(_id: ID!, input: CommentInput): Comment
-    deleteComment(_id: ID!): Comment
-    deleteComments(_ids: [ID!]!): deleteType
-
-    createAndUpdateBookmark(input: BookmarkInput): JSON
-
-    createReport(input: ReportInput): Report
-
-    createTReport(input: TReportInput): TReport
-    updateTReport(_id: ID!, input: TReportInput): TReport
-    deleteTReport(_id: ID!): TReport
-    deleteTReportList(_ids: [ID!]!): deleteType
-
-    createShare(input: ShareInput): Share
-
-    createConversation(input: ConversationInput!): JSON
-    updateConversation(_id: ID!, input: UpdateConversationInput): JSON
-    
-    addMessage( conversationId: ID!, input: MessageInput ): JSON
-    updateMessageRead( conversationId: ID! ): JSON
-
-    createBasicContent(input: BasicContentInput): BasicContent
-    updateBasicContent(_id: ID!, input: BasicContentInput): JSON
-    deleteBasicContent(_id: ID!): JSON
-
-    createAndUpdateFollow(input: FollowInput): Follow
-    currentNumber: Int
-
-    createPhone(input: PhoneInput): JSON
-    updatePhone(_id: ID!, input: PhoneInput): JSON
-    deletePhone(_id: ID!): JSON
-
-    fileUpload(text: String!, file: [Upload]!): [FileX]!
-
-    loginWithGithub(code: String!):JSON
+    supplier(input: SupplierInput): JSON    
   }
 
   type Subscription {
-
     subscriptionSupplierById(supplierById: ID!): JSON!
     subscriptionSuppliers(supplierIds: String): JSON!
-
-    numberIncremented(postIDs: String): Int
-    postCreated: Int
-
-    subPost(postIDs: String): JSON!
-    subComment(commentID: String): JSON!
-    subBookmark( postId: ID!): JSON!
-    subShare(postId: ID!): JSON!
-
-    subConversation(userId: ID): JSON
-    subNotification(userId: ID): JSON
-    subMessage(userId: ID!, conversationId: ID!): JSON
   }
 
   type PostSubscriptionPayload {
