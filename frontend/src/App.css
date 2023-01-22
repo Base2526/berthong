@@ -62,3 +62,10 @@
 .itm-green{
   background-color: green;
 }
+.itm-gold{
+  background-color: gold;
+}
+.div-buy{
+  border-style: dotted;
+  background-color: antiquewhite;
+}

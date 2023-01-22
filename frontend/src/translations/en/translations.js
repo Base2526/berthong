@@ -1,7 +1,7 @@
 export const TRANSLATIONS_EN = {
     welcome:"Welcome to the tutorial",
 
-    welcome_to_banlist: "Welcome to Banlist",
+    welcome_to_berthong: "Welcome to Berthong",
     label_keyword_search: "Keyword search",
 
     home: "Home",

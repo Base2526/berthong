@@ -669,8 +669,9 @@ export default gql`
   }
 
   input BookInput{
-    id: ID!
-    status: Boolean
+    supplierId: ID!
+    itemId: Long
+    selected: Int
   }
 
   input BuyInput{
@@ -771,6 +772,10 @@ export default gql`
   }
 
   type Subscription {
+
+    subscriptionSupplierById(supplierById: ID!): JSON!
+    subscriptionSuppliers(supplierIds: String): JSON!
+
     numberIncremented(postIDs: String): Int
     postCreated: Int
 

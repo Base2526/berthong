@@ -11,7 +11,8 @@ var File = new Schema({
 
 var BuyInput = new Schema({
     userId: { type: String, required:[true, "User-ID is a required field"]},
-    status:{
+    itemId: Number,
+    selected:{
         type: Number,
         enum : [0, 1], // 0: 'book', 1: 'buy'
         default: 0

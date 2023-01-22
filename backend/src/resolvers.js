@@ -88,7 +88,8 @@ export default {
 
         return {  
                 status:true,
-                data: await Supplier.find({ownerId: current_user?._id}),
+                // data: await Supplier.find({ownerId: current_user?._id}),
+                data: await Supplier.find({}),
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
               }
       } catch(err) {
@@ -1624,50 +1625,94 @@ export default {
     async book(parent, args, context, info) {
       let start = Date.now()
       try{
-        let {input} = args
+        let { input } = args
+
+        console.log("book : ", input)
         
-
-        // let user = emailValidate().test(input.username) ?  await User.findOne({email: input.username}) : await User.findOne({username: input.username})
-
-        // if(user === null){
-        //   return {
-        //     status: false,
-        //     messages: "xxx", 
-        //     data:{
-        //       _id: "",
-        //       username: "",
-        //       password: "",
-        //       email: "",
-        //       displayName: "",
-        //       roles:[]
-        //     },
-        //     executionTime: `Time to execute = ${
-        //       (Date.now() - start) / 1000
-        //     } seconds`
-        //   }
-        // }
-
-        // // update lastAccess
-        // await User.findOneAndUpdate({
-        //   _id: user._doc._id
-        // }, {
-        //   lastAccess : Date.now()
-        // }, {
-        //   new: true
-        // })
-
-      
-        // let sessionId = await getSessionId(user._id.toString(), input)
-
         let { req } = context
         
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
 
-        console.log("book : ", input, current_user)
+        let { supplierId, itemId, selected } = input
+
+        let supplier = await Supplier.findById(supplierId);
+
+        if(supplier){
+          let { buys } = supplier
+
+          // 
+          // userId
+          // let ch = _.find(buys, (buy)=> buy.itemId == itemId )
+
+          // if(ch){
+          //   ch = {...ch, selected }
+          // }else{
+          //   ch = {...ch, selected }
+          // }
+
+          if(selected == 0){
+            let ch = _.find(buys, (buy)=> buy.itemId == itemId )
+            if(!ch){
+              let newBuys = [...buys, {userId: current_user?._id, itemId, selected}]
+
+              let newInput = {...supplier._doc, buys: newBuys}
+
+              let newSupplier = await Supplier.findOneAndUpdate({ _id: supplierId }, newInput, { new: true });
+
+              pubsub.publish("SUPPLIER_BY_ID", {
+                supplierById: {
+                  mutation: "BOOK",
+                  data: newSupplier,
+                },
+              });
+
+              pubsub.publish("SUPPLIERS", {
+                suppliers: {
+                  mutation: "BOOK",
+                  data: newSupplier,
+                },
+              });
+
+              // console.log("newSupplier #1 : ", newSupplier)
+              return {
+                status: true,
+                data: newSupplier,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+              }
+            }
+          }else{
+            let newBuys = _.filter(buys, (buy)=> buy.itemId != itemId )
+            let newInput = {...supplier._doc, buys: newBuys}
+            let newSupplier = await Supplier.findOneAndUpdate({ _id: supplierId }, newInput, { new: true });
+
+            // console.log("newSupplier #2 : ", newSupplier)
+            pubsub.publish("SUPPLIER_BY_ID", {
+              supplierById: {
+                mutation: "UNBOOK",
+                data: newSupplier,
+              },
+            });
+
+            pubsub.publish("SUPPLIERS", {
+              suppliers: {
+                mutation: "UNBOOK",
+                data: newSupplier,
+              },
+            });
+
+            return {
+              status: true,
+              data: newSupplier,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            }
+          }
+        }
+
+        // 
         
         return {
-          status: true,
+          status: false,
           // data: user,
           // sessionId,
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
@@ -3134,6 +3179,56 @@ export default {
     },
   },
   Subscription:{
+    subscriptionSupplierById: {
+      resolve: (payload) =>{
+        return payload.supplierById
+      },
+      subscribe: withFilter((parent, args, context, info) => {
+          return pubsub.asyncIterator(["SUPPLIER_BY_ID"])
+        }, (payload, variables) => {
+
+          console.log("Subscription : SUPPLIER_BY_ID :", payload, variables)
+
+          let {mutation, data} = payload.supplierById
+          switch(mutation){
+            case "BOOK":
+            case "UNBOOK":
+              {
+                return variables.supplierById == data._id
+              }
+          }
+          return false;
+        }
+      )
+    },
+    subscriptionSuppliers: {
+      resolve: (payload) =>{
+        return payload.suppliers
+      },
+      subscribe: withFilter((parent, args, context, info) => {
+          return pubsub.asyncIterator(["SUPPLIERS"])
+        }, (payload, variables) => {
+
+          
+
+          let {mutation, data} = payload.suppliers
+
+          console.log("Subscription : SUPPLIERS :", JSON.parse(variables.supplierIds), data._id.toString() )
+          // switch(mutation){
+          //   case "BOOK":
+          //   case "UNBOOK":
+          //     {
+          //       return variables.supplierById == data._id
+          //     }
+          // }
+          
+
+          let check =  _.includes( JSON.parse(variables.supplierIds), data._id.toString()) ;
+          return check;
+        }
+      )
+    },
+
     numberIncremented: {
       resolve: (payload) =>{
         console.log("payload :", payload)

@@ -343,7 +343,7 @@ const SupplierPage = (props) => {
 }
 
 const mapStateToProps = (state, ownProps) => {
-    return {user: state.auth.user}
+  return {user: state.auth.user}
 }
 
 const mapDispatchToProps = {}

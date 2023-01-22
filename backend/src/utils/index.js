@@ -38,9 +38,10 @@ export const checkAuthorization = async(req) => {
 
         if (bearer == "Bearer") {
             // let decode = jwt.verify(token, process.env.JWT_SECRET);
+            // console.log("sessionId > ", sessionId)
             let session = await Session.findById(sessionId)   
 
-            console.log("session > ", session)
+            
             if(!_.isEmpty(session)){
                 var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));
 

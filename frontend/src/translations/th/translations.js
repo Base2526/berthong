@@ -1,7 +1,7 @@
 export const TRANSLATIONS_TH = {
     welcome:"สวัสดีชาวโลก",
 
-    welcome_to_banlist: "เข้าสู่ระบบ Banlist",
+    welcome_to_berthong: "เข้าสู่ระบบ Berthong",
     label_keyword_search: "คำค้น",
 
     home: "หน้าหลัก",
