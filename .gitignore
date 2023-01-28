@@ -3,6 +3,7 @@ frontend/ssl
 
 backend/node_modules
 backend/uploads
+backend/src/logs
 
 mongo/data1
 mongo/data2
