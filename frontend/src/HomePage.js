@@ -7,9 +7,9 @@ import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 
 import _ from "lodash"
 
-import { gqlSuppliers, subscriptionSuppliers } from "./gqlQuery"
+import { gqlSuppliers, subscriptionSuppliers, mutationMe } from "./gqlQuery"
 import { getHeaders, checkRole } from "./util"
-import { AMDINISTRATOR, AUTHENTICATED, ANONYMOUS } from "./constants"
+import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 import { logout } from "./redux/actions/auth"
 
 let unsubscribeSuppliers = null;
@@ -24,6 +24,27 @@ const HomePage = (props) => {
       unsubscribeSuppliers && unsubscribeSuppliers()
     };
   }, [])
+
+  // const meValues =useQuery(gqlMe, {
+  //   context: { headers: getHeaders() },
+  //   variables: {},
+  //   notifyOnNetworkStatusChange: true,
+  // });
+  // console.log("meValues :", meValues )
+
+  const [onMe, resultMeValues] = useMutation(mutationMe,{
+    context: { headers: getHeaders() },
+    update: (cache, {data: {me}}) => {
+      console.log("onMe :", me)
+    },
+    onCompleted({ data }) {
+      console.log("onCompleted")
+    },
+    onError: (err) => {
+      console.log("onError :", err)
+    }
+  });
+  
 
   const suppliersValues =useQuery(gqlSuppliers, {
     context: { headers: getHeaders() },
@@ -72,24 +93,27 @@ const HomePage = (props) => {
     switch(checkRole(user)){
       case AMDINISTRATOR:{
         return  <div>
-                  <div>AMDINISTRATOR : {user.displayName} - {user.email}</div>
+                  <div>AMDINISTRATOR : {user.displayName} - {user.email} > Balance : {user.balance}</div>
                   <div>
                   <button onClick={()=>{
                     history.push("/me");
                   }}>Profile</button>
-                    <button onClick={logout}>Logout</button>
+                  <button onClick={()=>{ onMe() }}>refetch</button>
+                  {/* <button onClick={()=>{ history.push("/banks"); }}>จัดการ รายชือธนาคาร</button> */}
                   </div>
                 </div>
       }
 
       case AUTHENTICATED:{
         return  <div>
-                  <div>AUTHENTICATED : {user.displayName} - {user.email}</div>
+                  <div>AUTHENTICATED : {user.displayName} - {user.email} > Balance : {user.balance}</div>
                   <div>
                   <button onClick={()=>{
                     history.push("/me");
                   }}>Profile</button>
-                    <button onClick={logout}>Logout</button>
+                    <button onClick={()=>{
+                      onMe()
+                    }}>refetch</button>
                   </div>
                 </div>
       }
@@ -101,6 +125,9 @@ const HomePage = (props) => {
                     <button onClick={()=>{
                       history.push("/user/login");
                     }}>Login</button>
+                     <button onClick={()=>{
+                      onMe()
+                    }}>refetch</button>
                   </div>
                  
                 </div>

@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema
 
 const bankSchema = new Schema({
-  name: { type: String },
+  name: { type: String, required:[true, "Name is a required field"] },
   description: { type: String },
   isPublish: { type: Number}
 },

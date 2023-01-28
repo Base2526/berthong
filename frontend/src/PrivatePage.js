@@ -40,6 +40,24 @@ import { Redirect, Link, Switch, Route, useRouteMatch } from "react-router-dom";
 // import LoginPage from "./pages/auth/Login"
 
 // import { isAuth } from "./AuthProvider";
+
+import ProfilePage from "./ProfilePage"
+import DepositsPage from "./DepositsPage"
+import WithdrawsPage from "./WithdrawsPage"
+
+import DepositPage from "./DepositPage"
+import WithdrawPage from "./WithdrawPage"
+
+import BanksPage from "./BanksPage"
+import BankPage from "./BankPage"
+
+import ProfileBanksPage from "./ProfileBanksPage"
+import ProfileBankPage from "./ProfileBankPage"
+
+import UsersPage from "./UsersPage"
+import UserPage from "./UserPage"
+
+
 import { connect } from "react-redux";
 import _ from "lodash"
 
@@ -50,12 +68,49 @@ const PrivatePage =(props) => {
 
   return !_.isEmpty(props.user)
         ?   <Switch>
-                {/* <Route path="/me">
-                    <Profile />
+                <Route path="/me">
+                    <ProfilePage />
                 </Route>
+                <Route path="/deposits">
+                    <DepositsPage />
+                </Route>
+                <Route path="/deposit">
+                    <DepositPage />
+                </Route>
+
+                <Route path="/withdraws">
+                    <WithdrawsPage />
+                </Route>
+                <Route path="/withdraw">
+                    <WithdrawPage />
+                </Route>
+
+                <Route path="/banks">
+                    <BanksPage />
+                </Route>
+
+                <Route path="/bank">
+                    <BankPage />
+                </Route>
+
+                <Route path="/me+banks">
+                    <ProfileBanksPage />
+                </Route>
+
+                <Route path="/me+bank">
+                    <ProfileBankPage />
+                </Route>
+
                 <Route path="/users">
-                    <UserList />
+                    <UsersPage />
                 </Route>
+
+                <Route path="/user">
+                    <UserPage />
+                </Route>
+
+
+                {/*
                 <Route path="/user/:id/edit">
                     <UserEdit />
                 </Route>

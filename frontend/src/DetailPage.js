@@ -181,6 +181,7 @@ const DetailPage = (props) => {
   }
 
   return (<div style={{flex:1}}>
+            <div>{user.displayName} - {user.email} > Balance : {user.balance}</div>
             <ToastContainer />
             <div>ID : {id} => {selected()}</div>
             <div class="container">  

@@ -20,7 +20,7 @@ import LoginGithub from 'react-login-github';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { useTranslation } from "react-i18next";
 
-import { gqlLogin } from "./gqlQuery"
+import { gqlLogin, gqlLoginWithSocial } from "./gqlQuery"
 
 const DialogLogin = (props) => {
   let { t } = useTranslation();
@@ -69,8 +69,6 @@ const DialogLogin = (props) => {
     // }
   }
 
-  /*
-
   const [onLoginWithSocial, resultLoginWithSocial] = useMutation(gqlLoginWithSocial, 
     {
       update: (cache, {data: {loginWithSocial}}) => {
@@ -103,7 +101,6 @@ const DialogLogin = (props) => {
       }
     }
   );
-  */
 
   useEffect(()=>{
     const initClient = () =>{

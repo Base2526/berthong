@@ -5,12 +5,11 @@ import cryptojs from "crypto-js";
 import deepdash from "deepdash";
 deepdash(_);
 import * as fs from "fs";
-
-import { User, Supplier } from './model'
+import { User, Supplier, Bank, Role, Deposit, Withdraw } from './model'
 import { emailValidate } from './utils'
 import pubsub from './pubsub'
 
-import {fileRenamer, checkAuthorization} from "./utils"
+import {fileRenamer, checkAuthorization, checkAuthorizationWithSessionId} from "./utils"
 import { __TypeKind } from 'graphql';
 import mongoose from 'mongoose';
 
@@ -26,6 +25,7 @@ const {
 let logger = require("./utils/logger");
 
 import {getSessionId} from "./utils/index"
+import { async } from 'regenerator-runtime';
 
 export default {
   Query: {
@@ -51,6 +51,94 @@ export default {
       }
     },
 
+    async me(parent, args, context, info){
+      let start = Date.now()
+      try{
+        let { req } = context
+
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        return { 
+                status:true,
+                data: await User.findById(current_user?._id),
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+                }
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("homes err :", args, err.toString())
+        return { status:false }
+      }
+    },
+
+    async users(parent, args, context, info){
+      let start = Date.now()
+      try{
+        let { req } = context
+
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        return { 
+                status:true,
+                data: await User.find({}),
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+                }
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("users err :", args, err.toString())
+        return { 
+                status:false,
+                message: err.toString(),
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+              }
+      }
+    },
+
+    async userById(parent, args, context, info){
+      let start = Date.now()
+      try{
+
+        console.log("userById :", args)
+
+        let { _id } = args
+
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        return {  status:true,
+                  data: await User.findById(_id),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("userById err :", args, err.toString())
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    async roles(parent, args, context, info) {
+      try{
+        let start = Date.now()
+        let data = await Role.find();
+        return {
+          status:true,
+          data,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      } catch(err) {
+        logger.error(err.toString());
+        return;
+      }
+    },
+
     async getSuppliers(parent, args, context, info){
       let start = Date.now()
 
@@ -64,10 +152,15 @@ export default {
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
 
+        if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
+          return {  status:true,
+                    data: await Supplier.find({}),
+                    executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+        }
+
         return {  
                 status:true,
-                // data: await Supplier.find({ownerId: current_user?._id}),
-                data: await Supplier.find({}),
+                data: await Supplier.find({ownerId: current_user?._id}),
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
               }
       } catch(err) {
@@ -103,6 +196,214 @@ export default {
       } catch(err) {
         logger.error(err.toString());
         console.log("getSupplierById err :", args, err.toString())
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    async deposits(parent, args, context, info){
+      let start = Date.now()
+      try{
+        console.log("deposit :", args)
+        let { req } = context
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
+          return {  status:true,
+                    data: await Deposit.find({status: "wait"}),
+                    executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+        }
+
+        return {  status:true,
+                  data: await Deposit.find({userIdRequest: current_user?._id}),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("deposit err :", args, err.toString())
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    async depositById(parent, args, context, info){
+      let start = Date.now()
+      try{
+
+        console.log("depositById :", args)
+
+        let { _id } = args
+
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        return {  status:true,
+                  data: await Deposit.findById(_id),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("depositById err :", args, err.toString())
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    async withdraws(parent, args, context, info){
+      let start = Date.now()
+      try{
+        console.log("withdraws :", args)
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        console.log("withdraws current_user :", current_user)
+
+        // if(current_user?.roles){
+
+        // }
+
+        if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
+          return {  status:true,
+                    data: await Withdraw.find({status: "wait"}),
+                    executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+        }
+        //////////////////////////
+
+        return {  status:true,
+                  data: await Withdraw.find({userIdRequest: current_user?._id}),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("withdraw err :", args, err.toString())
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    async withdrawById(parent, args, context, info){
+      let start = Date.now()
+      try{
+
+        console.log("withdrawById :", args)
+
+        let { _id } = args
+
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        return {  status:true,
+                  data: await Withdraw.findById(_id),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("withdrawById err :", args, err.toString())
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    async banks(parent, args, context, info){
+      let start = Date.now()
+      try{
+        console.log("banks :", args)
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        return {  status:true,
+                  data: await Bank.find({}),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("bank err :", args, err.toString())
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    async bankById(parent, args, context, info){
+      let start = Date.now()
+      try{
+
+        console.log("bankById :", args)
+
+        let { _id } = args
+
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        return {  status:true,
+                  data: await Bank.findById(_id),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("bankById err :", args, err.toString())
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    async balanceById(parent, args, context, info){
+      let start = Date.now()
+      try{
+
+        console.log("balanceById :", args)
+
+        let { _id } = args
+
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        return {  status:true,
+                  data: 0,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("balanceById err :", args, err.toString())
 
         return {  status:false,
                   message: err.toString(),
@@ -523,8 +824,8 @@ export default {
       }
     },
 
-     // https://github.com/PrincewillIroka/login-with-github/blob/master/server/index.js
-     async loginWithGithub(parent, args, context, info){
+    // https://github.com/PrincewillIroka/login-with-github/blob/master/server/index.js
+    async loginWithGithub(parent, args, context, info){
       try{
         let start = Date.now()
 
@@ -565,6 +866,100 @@ export default {
       } catch(err) {
         logger.error(err.toString());
         return;
+      }
+    },
+
+    async me(parent, args, context, info) {
+      let start = Date.now()
+      try{
+        let { input } = args
+        let { req } = context
+
+        console.log("me :", input)
+
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        // image
+        ////////////
+
+        let newFiles = [];
+        if(!_.isEmpty(input.image)){
+
+          for (let i = 0; i < input.image.length; i++) {
+            try{
+              let fileObject = (await input.image[i]).file
+
+              if(!_.isEmpty(fileObject)){
+                const { createReadStream, filename, encoding, mimetype } = fileObject //await input.files[i];
+                const stream = createReadStream();
+                const assetUniqName = fileRenamer(filename);
+                let pathName = `/app/uploads/${assetUniqName}`;
+                
+                const output = fs.createWriteStream(pathName)
+                stream.pipe(output);
+      
+                await new Promise(function (resolve, reject) {
+                  output.on('close', () => {
+                    resolve();
+                  });
+            
+                  output.on('error', (err) => {
+                    logger.error(err.toString());
+      
+                    reject(err);
+                  });
+                });
+      
+                const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+                newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+              }else{
+                if(input.image[i].delete){
+                  let pathUnlink = '/app/uploads/' + input.files[i].url.split('/').pop()
+                  fs.unlink(pathUnlink, (err)=>{
+                      if (err) {
+                        logger.error(err);
+                      }else{
+                        // if no error, file has been deleted successfully
+                        console.log('File has been deleted successfully ', pathUnlink);
+                      }
+                  });
+                }else{
+                  newFiles = [...newFiles, input.image[i]]
+                }
+              }
+              // console.log("updatePost #6:", newFiles)
+            } catch(err) {
+              logger.error(err.toString());
+            }
+          }
+        }
+
+        let newInput = {...input, image:newFiles, lastAccess : Date.now()}
+        console.log("me image :", newInput)
+        ////////////
+
+        let user = await User.findOneAndUpdate({ _id: current_user?._id }, newInput , { new: true })
+        pubsub.publish("ME", {
+          me: {
+            mutation: "UPDATE",
+            data: user
+          },
+        });
+
+        return {
+          status: true,
+          data: user,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      } catch(err) {
+        logger.error( err.toString());
+
+        return {
+          status: false,
+          messages: err.toString(), 
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
       }
     },
 
@@ -849,8 +1244,387 @@ export default {
       }
     },
 
+    async deposit(parent, args, context, info) {
+      let start = Date.now()
+      try{
+        let { input } = args
+        let { req } = context
+
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        switch(input.mode.toLowerCase()){
+          case "new":{
+            console.log("new deposit : ", input, current_user, current_user?._id )
+
+            
+            let newFiles = [];
+            if(!_.isEmpty(input.files)){
+              for (let i = 0; i < input.files.length; i++) {
+                const { createReadStream, filename, encoding, mimetype } = (await input.files[i]).file //await input.files[i];
+    
+                const stream = createReadStream();
+                const assetUniqName = fileRenamer(filename);
+                let pathName = `/app/uploads/${assetUniqName}`;
+      
+                const output = fs.createWriteStream(pathName)
+                stream.pipe(output);
+      
+                await new Promise(function (resolve, reject) {
+                  output.on('close', () => {
+                    resolve();
+                  });
+            
+                  output.on('error', (err) => {
+                    logger.error(err.toString());
+      
+                    reject(err);
+                  });
+                });
+      
+                const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+                newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+              }
+            }
+            let deposit = await Deposit.create({ ...input, files:newFiles, userIdRequest: current_user?._id });
+            
+            /*
+            balance: { type: Number, default: 0 },
+            dateTranfer : { type : Date, default: Date.now },
+            userIdRequest: { type: Schema.Types.ObjectId, required:[true, "User-Id Request is a required field"] },
+            userIdApprove: { type: Schema.Types.ObjectId },
+            files: [File],
+            status:{
+                type: String,
+                enum : ['wait','approved', 'reject'],
+                default: 'wait'
+            }, 
+            */
+
+            return {
+              status: true,
+              mode: input.mode.toLowerCase(),
+              data: deposit,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            }
+          }
+
+          case "edit":{
+            let { input } = args
+
+            console.log("edit deposit :", input)
+            
+            let newFiles = [];
+            if(!_.isEmpty(input.files)){
+    
+              for (let i = 0; i < input.files.length; i++) {
+                try{
+                  let fileObject = (await input.files[i]).file
+    
+                  if(!_.isEmpty(fileObject)){
+                    const { createReadStream, filename, encoding, mimetype } = fileObject //await input.files[i];
+                    const stream = createReadStream();
+                    const assetUniqName = fileRenamer(filename);
+                    let pathName = `/app/uploads/${assetUniqName}`;
+                    
+          
+                    const output = fs.createWriteStream(pathName)
+                    stream.pipe(output);
+          
+                    await new Promise(function (resolve, reject) {
+                      output.on('close', () => {
+                        resolve();
+                      });
+                
+                      output.on('error', (err) => {
+                        logger.error(err.toString());
+          
+                        reject(err);
+                      });
+                    });
+          
+                    const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+                    newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+                  }else{
+                    if(input.files[i].delete){
+                      let pathUnlink = '/app/uploads/' + input.files[i].url.split('/').pop()
+                      fs.unlink(pathUnlink, (err)=>{
+                          if (err) {
+                            logger.error(err);
+                          }else{
+                            // if no error, file has been deleted successfully
+                            console.log('File has been deleted successfully ', pathUnlink);
+                          }
+                      });
+                    }else{
+                      newFiles = [...newFiles, input.files[i]]
+                    }
+                  }
+                  // console.log("updatePost #6:", newFiles)
+                } catch(err) {
+                  logger.error(err.toString());
+                }
+              }
+            }
+    
+            let newInput = {...input, files:newFiles}
+            if(_.includes(['approved', 'reject'], newInput.status)){
+              if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
+
+                newInput = {...input, userIdApprove: current_user?._id}
+                
+                let deposit = await Deposit.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
+
+                return {
+                  status: true,
+                  mode: input.mode.toLowerCase(),
+                  data: deposit,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+                }
+              }else{
+                return {
+                  status: false,
+                  mode: input.mode.toLowerCase(),
+                  message: "Cannot approve & reject",
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+                }
+              }
+            }
+
+
+            let deposit = await Deposit.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
+            
+
+            return {
+              status: true,
+              mode: input.mode.toLowerCase(),
+              data: deposit,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            }
+          }
+
+          case "delete":{
+            let deposit = await Deposit.findByIdAndRemove({_id: input._id})
+            console.log("delete deposit : ", input, deposit )
+            if(_.isEmpty(deposit)){
+              return {
+                status: false,
+                data: `error : cannot delete : ${ input._id }`,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+              }
+            }
+            return {
+              status: true,
+              mode: input.mode.toLowerCase(),
+              data: deposit,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            }
+          }
+        }
+
+        return {
+          status: false,
+          message: "Other case",
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+
+      } catch(err) {
+        logger.error( err.toString());
+
+        return {
+          status: false,
+          messages: err.toString(), 
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }
+    },
+
+    async withdraw(parent, args, context, info) {
+      let start = Date.now()
+      try{
+        let { input } = args
+        let { req } = context
+
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        switch(input.mode.toLowerCase()){
+          case "new":{
+            console.log("new withdraw : ", input )
+
+            let withdraw = await Withdraw.create({ ...input, userIdRequest: current_user?._id });
+            return {
+              status: true,
+              mode: input.mode.toLowerCase(),
+              data: withdraw,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            }
+          }
+
+          case "edit":{
+            console.log("edit withdraw :", input)
+
+            if(_.includes(['approved', 'reject'], input.status)){
+              if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
+
+                let newInput = {...input, userIdApprove: current_user?._id}
+                
+                let withdraw = await Withdraw.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
+
+                return {
+                  status: true,
+                  mode: input.mode.toLowerCase(),
+                  data: withdraw,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+                }
+              }else{
+                return {
+                  status: false,
+                  mode: input.mode.toLowerCase(),
+                  message: "Cannot approve & reject",
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+                }
+              }
+            }
+
+            let withdraw = await Withdraw.findOneAndUpdate({ _id: input._id }, input, { new: true });
+
+            return {
+              status: true,
+              mode: input.mode.toLowerCase(),
+              data: withdraw,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            }
+          }
+
+          case "delete":{
+            let withdraw = await Withdraw.findByIdAndRemove({_id: input._id})
+            console.log("delete deposit : ", input, withdraw )
+            if(_.isEmpty(withdraw)){
+              return {
+                status: false,
+                data: `error : cannot delete : ${ input._id }`,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+              }
+            }
+            return {
+              status: true,
+              mode: input.mode.toLowerCase(),
+              data: withdraw,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            }
+          }
+        }
+
+        return {
+          status: false,
+          message: "Other case",
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+
+      } catch(err) {
+        logger.error( err.toString());
+
+        return {
+          status: false,
+          messages: err.toString(), 
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }
+    },
+
+    async bank(parent, args, context, info) {
+      let start = Date.now()
+      try{
+        let { input } = args
+        let { req } = context
+
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        switch(input.mode.toLowerCase()){
+          case "new":{
+            console.log("new bank : ", input, current_user, current_user?._id )
+
+            let bank = await Bank.create({ input });
+            
+            return {
+              status: true,
+              mode: input.mode.toLowerCase(),
+              data: bank,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            }
+          }
+
+          case "edit":{
+            let { input } = args
+
+            console.log("edit bank :", input)
+    
+            let bank = await Bank.findOneAndUpdate({ _id: input._id }, input, { new: true });
+            return {
+              status: true,
+              mode: input.mode.toLowerCase(),
+              data: bank,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            }
+          }
+        }
+
+        return {
+          status: false,
+          message: "Other case",
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+
+      } catch(err) {
+        logger.error( err.toString());
+
+        return {
+          status: false,
+          messages: err.toString(), 
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }
+    },
   },
   Subscription:{
+    subscriptionMe: {
+      resolve: (payload) =>{
+        return payload.me
+      },
+      subscribe: withFilter((parent, args, context, info) => {
+          return pubsub.asyncIterator(["ME"])
+        }, async(payload, variables) => {
+          try{
+            console.log("Subscription : ME #1 =", payload, variables)
+
+            let { sessionId } = variables
+            if(_.isEmpty(sessionId)){
+              return false;
+            }
+
+            let {mutation, data} = payload.me
+
+            
+
+            // userId
+
+            let authorization = await checkAuthorizationWithSessionId(sessionId);
+            let { status, code, current_user } =  authorization
+
+            
+
+            console.log("Subscription : ME #2 =", status, code, current_user?._id, data.userId )
+
+            return data.userId.toString() == current_user?._id.toString() ? true : false;
+          } catch(err) {
+            console.log("Subscription : ME #ERROR =", err.toString())           
+            return false;
+          }
+        }
+      )
+    },
     subscriptionSupplierById: {
       resolve: (payload) =>{
         return payload.supplierById

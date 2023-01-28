@@ -30,16 +30,27 @@ import { gqlSuppliers } from "./gqlQuery"
 import ReadMoreMaster from "./ReadMoreMaster"
 import Table from "./TableContainer"
 
-const SuppliersPage = (props) => {
-  let history = useHistory();
-  const { t } = useTranslation();
-  let { user } = props
-  const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
-  const [pageIndex, setPageIndex]     = useState(0);  
-  const [pageSize, setPageSize]       = useState(pageOptions[0])
-  const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
-  const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
+import BankInputField from "./BankInputField";
 
+let initValues = {
+  banks: [{ bankAccountName:"", bankId: "" }] 
+}
+
+const ProfileBanksPage = (props) => {
+  let history = useHistory();
+  let { t } = useTranslation();
+  let [pageOptions, setPageOptions] = useState([30, 50, 100]);  
+  let [pageIndex, setPageIndex]     = useState(0);  
+  let [pageSize, setPageSize]       = useState(pageOptions[0])
+  let [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
+  let [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
+
+
+  let [input, setInput]       = useState(initValues);
+  let [error, setError]       = useState(initValues);
+
+  let { user } = props
+  console.log("user : ", user)
   /*
   const [onDeletePhone, resultDeletePhone] = useMutation(gqlDeletePhone, {
     context: { headers: getHeaders() },
@@ -94,47 +105,6 @@ const SuppliersPage = (props) => {
   ///////////////////////
   const columns = useMemo(
     () => [
-        {
-          Header: 'รูป',
-          accessor: 'files',
-          Cell: props =>{
-            if(props.value.length < 1){
-              return <div />
-            }
-
-            console.log("files :", props.value)
-            
-            return (
-              <div style={{ position: "relative" }}>
-                <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
-                  <Avatar
-                    sx={{
-                      height: 100,
-                      width: 100
-                    }}
-                    variant="rounded"
-                    alt="Example Alt"
-                    src={props.value[0].url}
-                    onClick={(e) => {
-                      console.log("files props: ", props.value)
-                      setLightbox({ isOpen: true, photoIndex: 0, images:props.value })
-                    }}
-                  />
-                </CardActionArea>
-                <div
-                    style={{
-                        position: "absolute",
-                        bottom: "5px",
-                        right: "5px",
-                        padding: "5px",
-                        backgroundColor: "#e1dede",
-                        color: "#919191"
-                    }}
-                    >{(_.filter(props.value, (v)=>v.url)).length}</div>
-              </div>
-            );
-          }
-        },
           {
             Header: 'ชื่อ',
             accessor: 'title',
@@ -165,18 +135,18 @@ const SuppliersPage = (props) => {
           {
             Header: 'Action',
             Cell: props => {
-              let {_id, description} = props.row.original
-              return  <div className="Btn--posts">
-                          <button onClick={(evt)=>{
-                            history.push({ 
-                              pathname: "/supplier", 
-                              state: {from: "/", mode: "edit", id: _id } 
-                            });
-                          }}><EditIcon/>{t("edit")}</button>
-                          <button onClick={(e)=>{
-                            setOpenDialogDelete({ isOpen: true, id: _id, description });
-                          }}><DeleteForeverIcon/>{t("delete")}</button>
-                      </div>
+                let {_id, description} = props.row.original
+                return  <div className="Btn--posts">
+                            <button onClick={(evt)=>{
+                              history.push({ 
+                                pathname: "/me+bank", 
+                                state: {from: "/", mode: "edit", id: _id } 
+                              });
+                            }}><EditIcon/>{t("edit")}</button>
+                            <button onClick={(e)=>{
+                              setOpenDialogDelete({ isOpen: true, id: _id, description });
+                            }}><DeleteForeverIcon/>{t("delete")}</button>
+                        </div>
             }
           },
     ],
@@ -213,35 +183,25 @@ const SuppliersPage = (props) => {
 
   return (<div className="pl-2 pr-2">
             <Box style={{ flex: 4 }} className="table-responsive">
-              {/* {
-                phonesValue.loading
-                ? <div><CircularProgress /></div> 
-                : <Table
-                    columns={columns}
-                    data={phonesValue.data.phones.data}
-                    fetchData={fetchData}
-                    rowsPerPage={pageOptions}
-                    updateMyData={updateMyData}
-                    skipReset={skipResetRef.current}
-                    isDebug={false}
-                  />
-              } */}
-
-
-                {
-                  suppliersValue.loading
-                  ? <div><CircularProgress /></div> 
-                  : <Table
-                    columns={columns}
-                    data={suppliersValue.data.getSuppliers.data}
-                    fetchData={fetchData}
-                    rowsPerPage={pageOptions}
-                    updateMyData={updateMyData}
-                    skipReset={skipResetRef.current}
-                    isDebug={false}
-                  />
+              {
+                // <Table
+                //   columns={columns}
+                //   data={user.banks}
+                //   fetchData={fetchData}
+                //   rowsPerPage={pageOptions}
+                //   updateMyData={updateMyData}
+                //   skipReset={skipResetRef.current}
+                //   isDebug={false}
+                // />
+                <BankInputField
+                  label={t("search_by_id_bank")}
+                  values={input.banks}
+                  onChange={(values) => {
+                    console.log("BankInputField : ", values)
+                    setInput({...input, banks: values})
+                  }}
+                />
               }
-
               {openDialogDelete.isOpen && (
                 <Dialog
                   open={openDialogDelete.isOpen}
@@ -300,7 +260,7 @@ const SuppliersPage = (props) => {
                 sx={{ position: 'absolute', bottom: 16, right: 16 }}
                 icon={<SpeedDialIcon />}
                 onClick={(e)=>{
-                  history.push({ pathname: "/supplier", state: {from: "/", mode: "new"} });
+                  history.push({ pathname: "/me+bank", state: {from: "/", mode: "new"} });
                 }}>
               </SpeedDial>
             </Box>
@@ -311,4 +271,4 @@ const mapStateToProps = (state, ownProps) => {
   return {user: state.auth.user}
 };
 
-export default connect( mapStateToProps, null )(SuppliersPage);
+export default connect( mapStateToProps, null )(ProfileBanksPage);

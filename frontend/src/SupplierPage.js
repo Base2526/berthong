@@ -31,12 +31,12 @@ let initValues = {
 
 const SupplierPage = (props) => {
   let history = useHistory();
-  const location = useLocation();
-  const { t } = useTranslation();
+  let location = useLocation();
+  let { t } = useTranslation();
 
-  const [snackbar, setSnackbar] = useState({open:false, message:""});
-  const [input, setInput]       = useState(initValues);
-  const [error, setError]       = useState(initValues);
+  let [snackbar, setSnackbar] = useState({open:false, message:""});
+  let [input, setInput]       = useState(initValues);
+  let [error, setError]       = useState(initValues);
 
   console.log("location :", location.state )
 
@@ -57,49 +57,32 @@ const SupplierPage = (props) => {
       if(status){
         switch(mode){
           case "new":{
-            const data1 = cache.readQuery({ query: gqlSuppliers });
-            let newData = [...data1.getSuppliers.data, supplier.data];//_.map(data1.getSuppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
+            const gqlSuppliersValue = cache.readQuery({ query: gqlSuppliers });
+            let newData = [...gqlSuppliersValue.getSuppliers.data, supplier.data];
 
             cache.writeQuery({
               query: gqlSuppliers,
-              data: { getSuppliers: {...data1.getSuppliers, data: newData} }
+              data: { getSuppliers: {...gqlSuppliersValue.getSuppliers, data: newData} }
             });
             break;
           }
 
           case "edit":{
-            const data1 = cache.readQuery({ query: gqlSuppliers });
-            let newData = _.map(data1.getSuppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
+            const gqlSuppliersValue = cache.readQuery({ query: gqlSuppliers });
+            let newData = _.map(gqlSuppliersValue.getSuppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
 
             cache.writeQuery({
               query: gqlSuppliers,
-              data: { getSuppliers: {...data1.getSuppliers, data: newData} }
+              data: { getSuppliers: {...gqlSuppliersValue.getSuppliers, data: newData} }
             });
             
             break;
           }
         }
       }
-
-      
-
-        // if(data1 != null){ 
-        // let newPosts = {...data1.posts}
-        // let newData = [...newPosts.data, createPost]
-
-        // cache.writeQuery({
-        //     query: gqlPosts,
-        //     data: { posts: {...newPosts, data: newData} },
-        //     variables: {
-        //     userId: _.isEmpty(user) ? "" : user._id,
-        //     page: 0, 
-        //     perPage: 30
-        //     }
-        // });
-        // }
     },
     onCompleted({ data }) {
-      history.push("/suppliers")
+      history.goBack()
     },
     onError({error}){
       console.log("onError :")
@@ -177,76 +160,76 @@ const SupplierPage = (props) => {
     case "new":{
         return <LocalizationProvider dateAdapter={AdapterDateFns} >
                 <Box
-                    component="form"
-                    sx={{
-                        "& .MuiTextField-root": { m: 1, width: "50ch" }
-                    }}
-                    onSubmit={submitForm}>
-                    <div >
-                        <TextField
-                            id="title"
-                            name="title"
-                            label={"ชื่อ"}
-                            variant="filled"
-                            required
-                            value={input.title}
-                            onChange={onInputChange}
-                            onBlur={validateInput}
-                            helperText={error.title}
-                            error={_.isEmpty(error.title) ? false : true}/>
-                        <TextField
-                            id="price"
-                            name="price"
-                            label={"ราคาสินค้า"}
-                            variant="filled"
-                            type="number"
-                            required
-                            value={ _.isEmpty(input.price) ? "" : input.price}
-                            onChange={onInputChange}
-                            onBlur={validateInput}
-                            helperText={ _.isEmpty(error.price) ? "" : error.price }
-                            error={_.isEmpty(error.price) ? false : true}/>
-                        <TextField
-                            id="price-unit"
-                            name="priceUnit"
-                            label={"ขายเบอละ"}
-                            variant="filled"
-                            type="number"
-                            required
-                            value={_.isEmpty(input.priceUnit) ? "" : input.priceUnit }
-                            onChange={onInputChange}
-                            onBlur={validateInput}
-                            helperText={_.isEmpty(error.priceUnit) ? "" : error.priceUnit}
-                            error={_.isEmpty(error.priceUnit) ? false : true}/>
-                        <DesktopDatePicker
-                            label={"ออกงวดวันที่"}
-                            inputFormat="dd/MM/yyyy"
-                            value={ input.dateLottery }
-                            onChange={(newDate) => {
-                                setInput({...input, dateLottery: newDate})
-                            }}
-                            renderInput={(params) => <TextField {...params} required={input.dateLottery === null ? true: false} />}/>
-                        <Editor 
-                            label={t("detail")} 
-                            initData={ input.description }
-                            onEditorChange={(newDescription)=>{
-                                setInput({...input, description: newDescription})
-                            }}/>
-                        <AttackFileField
-                            label={t("attack_file")}
-                            values={input.attackFiles}
-                            onChange={(values) => {
-                                console.log("AttackFileField :", values)
-                                setInput({...input, attackFiles: values})
-                            }}
-                            onSnackbar={(data) => {
-                                setSnackbar(data);
-                            }}/>
+                  component="form"
+                  sx={{
+                      "& .MuiTextField-root": { m: 1, width: "50ch" }
+                  }}
+                  onSubmit={submitForm}>
+                  <div >
+                    <TextField
+                      id="title"
+                      name="title"
+                      label={"ชื่อ"}
+                      variant="filled"
+                      required
+                      value={input.title}
+                      onChange={onInputChange}
+                      onBlur={validateInput}
+                      helperText={error.title}
+                      error={_.isEmpty(error.title) ? false : true}/>
+                    <TextField
+                      id="price"
+                      name="price"
+                      label={"ราคาสินค้า"}
+                      variant="filled"
+                      type="number"
+                      required
+                      value={ _.isEmpty(input.price) ? "" : input.price}
+                      onChange={onInputChange}
+                      onBlur={validateInput}
+                      helperText={ _.isEmpty(error.price) ? "" : error.price }
+                      error={_.isEmpty(error.price) ? false : true}/>
+                    <TextField
+                      id="price-unit"
+                      name="priceUnit"
+                      label={"ขายเบอละ"}
+                      variant="filled"
+                      type="number"
+                      required
+                      value={_.isEmpty(input.priceUnit) ? "" : input.priceUnit }
+                      onChange={onInputChange}
+                      onBlur={validateInput}
+                      helperText={_.isEmpty(error.priceUnit) ? "" : error.priceUnit}
+                      error={_.isEmpty(error.priceUnit) ? false : true}/>
+                    <DesktopDatePicker
+                      label={"ออกงวดวันที่"}
+                      inputFormat="dd/MM/yyyy"
+                      value={ input.dateLottery }
+                      onChange={(newDate) => {
+                          setInput({...input, dateLottery: newDate})
+                      }}
+                      renderInput={(params) => <TextField {...params} required={input.dateLottery === null ? true: false} />}/>
+                    <Editor 
+                      label={t("detail")} 
+                      initData={ input.description }
+                      onEditorChange={(newDescription)=>{
+                          setInput({...input, description: newDescription})
+                      }}/>
+                    <AttackFileField
+                      label={t("attack_file")}
+                      values={input.attackFiles}
+                      onChange={(values) => {
+                          console.log("AttackFileField :", values)
+                          setInput({...input, attackFiles: values})
+                      }}
+                      onSnackbar={(data) => {
+                          setSnackbar(data);
+                      }}/>
 
-                    </div>
-                    <Button type="submit" variant="contained" color="primary">
-                        {t("create")}
-                    </Button>
+                  </div>
+                  <Button type="submit" variant="contained" color="primary">
+                      {t("create")}
+                  </Button>
                 </Box>
                </LocalizationProvider>
     }
@@ -285,79 +268,76 @@ const SupplierPage = (props) => {
       return  editValues != null && editValues.loading
                 ? <div><CircularProgress /></div> 
                 : <LocalizationProvider dateAdapter={AdapterDateFns} >
-                  <Box
+                    <Box
                       component="form"
                       sx={{
                           "& .MuiTextField-root": { m: 1, width: "50ch" }
                       }}
                       onSubmit={submitForm}>
                       <div >
-                          <TextField
-                              id="title"
-                              name="title"
-                              label={"ชื่อ"}
-                              variant="filled"
-                              required
-                              value={input.title}
-                              onChange={onInputChange}
-                              onBlur={validateInput}
-                              helperText={error.title}
-                              error={_.isEmpty(error.title) ? false : true}/>
-                          <TextField
-                              id="price"
-                              name="price"
-                              label={"ราคาสินค้า"}
-                              variant="filled"
-                              type="number"
-                              required
-                              value={ input.price }
-                              onChange={onInputChange}
-                              onBlur={validateInput}
-                              helperText={ error.price }
-                              error={_.isEmpty(error.price) ? false : true}/>
-                          <TextField
-                              id="price-unit"
-                              name="priceUnit"
-                              label={"ขายเบอละ"}
-                              variant="filled"
-                              type="number"
-                              required
-                              value={ input.priceUnit }
-                              onChange={onInputChange}
-                              onBlur={validateInput}
-                              helperText={ error.priceUnit }
-                              error={_.isEmpty(error.priceUnit) ? false : true}/>
-                          <DesktopDatePicker
-                              label={"ออกงวดวันที่"}
-                              inputFormat="dd/MM/yyyy"
-                              value={ input.dateLottery }
-                              onChange={(newDate) => {
-                                  setInput({...input, dateLottery: newDate})
-                              }}
-                              renderInput={(params) => <TextField {...params} required={input.dateLottery === null ? true: false} />}/>
-                          <Editor 
-                              label={t("detail")} 
-                              initData={ input.description }
-                              onEditorChange={(newDescription)=>{
-                                  setInput({...input, description: newDescription})
-                              }}/>
-                          <AttackFileField
-                              label={t("attack_file")}
-                              values={input.attackFiles}
-                              onChange={(values) => {
-                                  console.log("AttackFileField :", values)
-                                  setInput({...input, attackFiles: values})
-                              }}
-                              onSnackbar={(data) => {
-                                  setSnackbar(data);
-                              }}/>
-
+                        <TextField
+                          id="title"
+                          name="title"
+                          label={"ชื่อ"}
+                          variant="filled"
+                          required
+                          value={input.title}
+                          onChange={onInputChange}
+                          onBlur={validateInput}
+                          helperText={error.title}
+                          error={_.isEmpty(error.title) ? false : true}/>
+                        <TextField
+                          id="price"
+                          name="price"
+                          label={"ราคาสินค้า"}
+                          variant="filled"
+                          type="number"
+                          required
+                          value={ input.price }
+                          onChange={onInputChange}
+                          onBlur={validateInput}
+                          helperText={ error.price }
+                          error={_.isEmpty(error.price) ? false : true}/>
+                        <TextField
+                          id="price-unit"
+                          name="priceUnit"
+                          label={"ขายเบอละ"}
+                          variant="filled"
+                          type="number"
+                          required
+                          value={ input.priceUnit }
+                          onChange={onInputChange}
+                          onBlur={validateInput}
+                          helperText={ error.priceUnit }
+                          error={_.isEmpty(error.priceUnit) ? false : true}/>
+                        <DesktopDatePicker
+                          label={"ออกงวดวันที่"}
+                          inputFormat="dd/MM/yyyy"
+                          value={ input.dateLottery }
+                          onChange={(newDate) => {
+                              setInput({...input, dateLottery: newDate})
+                          }}
+                          renderInput={(params) => <TextField {...params} required={input.dateLottery === null ? true: false} />}/>
+                        <Editor 
+                          label={t("detail")} 
+                          initData={ input.description }
+                          onEditorChange={(newDescription)=>{
+                              setInput({...input, description: newDescription})
+                          }}/>
+                        <AttackFileField
+                          label={t("attack_file")}
+                          values={input.attackFiles}
+                          onChange={(values) => {
+                              console.log("AttackFileField :", values)
+                              setInput({...input, attackFiles: values})
+                          }}
+                          onSnackbar={(data) => {
+                              setSnackbar(data);
+                          }}/>
                       </div>
-                      <Button type="submit" variant="contained" color="primary">
-                          {t("update")}
-                      </Button>
-                  </Box>
-                </LocalizationProvider>
+                      <Button type="submit" variant="contained" color="primary">{t("update")}</Button>
+                    </Box>
+                  </LocalizationProvider>
     }
   }
 

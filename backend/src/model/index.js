@@ -29,6 +29,9 @@ import PhoneModel from "./PhoneModel"
 
 import SupplierModel from "./SupplierModel"
 
+import DepositModel from './DepositModel'
+import WithdrawModel from './WithdrawModel'
+
 module.exports =  {
     Bank:BankModel,
     Post:PostModel,
@@ -59,5 +62,8 @@ module.exports =  {
 
     Phone: PhoneModel,
 
-    Supplier: SupplierModel
+    Supplier: SupplierModel,
+
+    Deposit: DepositModel,
+    Withdraw: WithdrawModel
 };

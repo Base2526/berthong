@@ -31,6 +31,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { store, persistor } from "./Redux"
 import { client } from "./Apollo"
 import App from "./App";
+import Store from "./Store";
 
 let { REACT_APP_NODE_ENV, REACT_APP_GOOGLE_ANALYTICS4 } = process.env
  
@@ -48,7 +49,9 @@ ReactDOM.render(
       <StrictMode>
         <ApolloProvider client={client}>
           <Router>
-            <App />
+            <Store>
+              <App />
+            </Store>
           </Router>
         </ApolloProvider>
       </StrictMode>
