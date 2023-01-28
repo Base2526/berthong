@@ -6,19 +6,50 @@ import thunk from "redux-thunk";
 import { createLogger } from "redux-logger";    // Logger with default options
 
 // persist
-import { persistStore, persistReducer } from "redux-persist";
+import { persistStore, persistReducer, createTransform } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import { PersistGate } from "redux-persist/integration/react";
 import { BrowserRouter, Switch } from "react-router-dom";
 
 import ReactGA4 from "react-ga4";
+import CryptoJS from 'crypto-js';
 
 import reducers from "./redux/reducers";
 
-const persistConfig = {
-  key: "root",
-  storage,
-};
+let { REACT_APP_NODE_ENV } = process.env
+
+let encrypt_pass = "b9be11166d72e9e3ae7fd407165e4bd2";
+const encrypt = createTransform(
+  (inboundState, key) => {
+    if (!inboundState) return inboundState;
+    const cryptedText = CryptoJS.AES.encrypt(JSON.stringify(inboundState), encrypt_pass);
+
+    return cryptedText.toString(); 
+  },
+  (outboundState, key) => {
+    if (!outboundState) return outboundState;
+    const bytes = CryptoJS.AES.decrypt(outboundState, encrypt_pass);
+    const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+
+    return JSON.parse(decrypted);
+  },
+);
+
+let persistConfig = { key: "root", storage };
+
+// https://stackoverflow.com/questions/45137911/react-native-persist-and-encrypt-user-token-redux-persist-transform-encrypt-er
+if(REACT_APP_NODE_ENV === 'production'){
+  persistConfig = {
+    key: "root",
+    storage,
+    // {
+    //   storage: AsyncStorage,
+    //   whitelist: ['auth'], // <-- keys from state that should be persisted
+    //   transforms: [encrypt],
+    // },
+    transforms: [encrypt],
+  };
+}
 
 const reducer = persistReducer(persistConfig, reducers);
 // persist

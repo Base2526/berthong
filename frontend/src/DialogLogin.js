@@ -20,7 +20,7 @@ import LoginGithub from 'react-login-github';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { useTranslation } from "react-i18next";
 
-import { gqlLogin } from "./gqlQuery"
+import { mutationLogin, mutationLoginWithSocial } from "./gqlQuery"
 
 const DialogLogin = (props) => {
   let { t } = useTranslation();
@@ -34,48 +34,30 @@ const DialogLogin = (props) => {
 
   let [input, setInput]   = useState({ username: "",  password: ""});
   
-  const [onLogin, resultLogin] = useMutation(gqlLogin, {
+  const [onLogin, resultLogin] = useMutation(mutationLogin, {
     // refetchQueries: [ {query: gqlPosts}, {query : gqlHomes} ],
     onCompleted(datas) {
-
-      // console.log("onCompleted :", data)
-
       let {status, data, sessionId} = datas.login
       if(status){
           localStorage.setItem('token', sessionId)
           login(data)
       }
-
-      // localStorage.setItem('token', data.login.token)
-      // login(data.login.data)
       onComplete()
     },
     onError(err){
       console.log("onError :", err)
     }
   });
-  // 
 
   if(resultLogin.called && !resultLogin.loading){
     console.log("resultLogin :", resultLogin)
-
-    // if(resultLogin.data.login.status){
-
-    //   // localStorage.setItem('token', resultLogin.data.login.token)
-      
-    //   // onComplete(resultLogin.data.login.data)
-    // }else{
-    //   // messages
-    // }
   }
 
-  /*
-
-  const [onLoginWithSocial, resultLoginWithSocial] = useMutation(gqlLoginWithSocial, 
+  const [onLoginWithSocial, resultLoginWithSocial] = useMutation(mutationLoginWithSocial, 
     {
       update: (cache, {data: {loginWithSocial}}) => {
 
-        console.log("loginWithSocial :", loginWithSocial)
+        // console.log("loginWithSocial :", loginWithSocial)
         // const data1 = cache.readQuery({ query: gqlBanks });
 
         let {status, data, sessionId} = loginWithSocial
@@ -103,7 +85,6 @@ const DialogLogin = (props) => {
       }
     }
   );
-  */
 
   useEffect(()=>{
     const initClient = () =>{
@@ -274,14 +255,8 @@ const DialogLogin = (props) => {
   }
 
   return (
-    <Dialog 
-    onClose={(e)=>{
-      onClose(false)
-    }} 
-    open={open}>
-      
+    <Dialog onClose={(e)=>{ onClose(false) }} open={open}>
       <DialogTitle className="text-center">{t("welcome_to_berthong")}</DialogTitle>
-
       <DialogContent>
         <DialogContentText id="alert-dialog-description" className="text-center">Get a free account, no credit card required</DialogContentText>
       </DialogContent>

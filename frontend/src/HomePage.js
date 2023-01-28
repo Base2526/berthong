@@ -3,21 +3,27 @@ import { useHistory } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import CircularProgress from '@mui/material/CircularProgress';
-import { useQuery, useMutation, useApolloClient } from "@apollo/client";
-
+import { useQuery, useMutation } from "@apollo/client";
 import _ from "lodash"
+import CardActionArea from "@material-ui/core/CardActionArea";
+import Avatar from "@mui/material/Avatar";
+import Lightbox from "react-image-lightbox";
+import "react-image-lightbox/style.css";
 
-import { gqlSuppliers, subscriptionSuppliers } from "./gqlQuery"
+import { querySuppliers, subscriptionSuppliers, mutationMe } from "./gqlQuery"
 import { getHeaders, checkRole } from "./util"
-import { AMDINISTRATOR, AUTHENTICATED, ANONYMOUS } from "./constants"
-import { logout } from "./redux/actions/auth"
+import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
+import { login, logout } from "./redux/actions/auth"
+import DialogLogin from "./DialogLogin"
 
 let unsubscribeSuppliers = null;
 const HomePage = (props) => {
   let history = useHistory();
   let { t } = useTranslation();
+  let [dialogLoginOpen, setDialogLoginOpen] = useState(false);
+  let [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
 
-  let { user, logout } = props
+  let { user } = props
 
   useEffect(()=>{
     return () => {
@@ -25,23 +31,30 @@ const HomePage = (props) => {
     };
   }, [])
 
-  const suppliersValues =useQuery(gqlSuppliers, {
+  const [onMe, resultMeValues] = useMutation(mutationMe,{
     context: { headers: getHeaders() },
-    // variables: { page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()},
-    variables: {},
-    notifyOnNetworkStatusChange: true,
+    update: (cache, {data: {me}}) => {
+      console.log("onMe :", me)
+    },
+    onCompleted({ data }) {
+      console.log("onCompleted")
+    },
+    onError: (err) => {
+      console.log("onError :", err)
+    }
   });
-  console.log("suppliersValues :", suppliersValues )
+  
+  const suppliersValues =useQuery(querySuppliers, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true});
 
   if(suppliersValues.loading){
     return <div><CircularProgress /></div>
   }else{
-    if(_.isEmpty(suppliersValues.data.getSuppliers)){
+    if(_.isEmpty(suppliersValues.data.suppliers)){
       return;
     }
 
     let {subscribeToMore, networkStatus} = suppliersValues
-    let keys = _.map(suppliersValues.data.getSuppliers.data, _.property("_id"));
+    let keys = _.map(suppliersValues.data.suppliers.data, _.property("_id"));
     
     unsubscribeSuppliers && unsubscribeSuppliers()
     unsubscribeSuppliers =  subscribeToMore({
@@ -54,10 +67,10 @@ const HomePage = (props) => {
         switch(mutation){
           case "BOOK":
           case "UNBOOK":{
-            let newData = _.map((prev.getSuppliers.data), (item)=> item._id == data._id ? data : item )
+            let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
 
-            let newPrev = {...prev.getSuppliers, data: newData}
-            return {getSuppliers: newPrev}; 
+            let newPrev = {...prev.suppliers, data: newData}
+            return {suppliers: newPrev}; 
           }
           default:
             return prev;
@@ -66,31 +79,19 @@ const HomePage = (props) => {
 		});
   }
 
-  console.log("checkRole :", checkRole(user), user)
+  // console.log("checkRole :", checkRole(user), user)
 
   const managementView = () =>{
     switch(checkRole(user)){
       case AMDINISTRATOR:{
         return  <div>
-                  <div>AMDINISTRATOR : {user.displayName} - {user.email}</div>
-                  <div>
-                  <button onClick={()=>{
-                    history.push("/me");
-                  }}>Profile</button>
-                    <button onClick={logout}>Logout</button>
-                  </div>
+                  <div onClick={()=>{ history.push("/me") }}>AMDINISTRATOR : {user.displayName} - {user.email}</div>
                 </div>
       }
 
       case AUTHENTICATED:{
         return  <div>
-                  <div>AUTHENTICATED : {user.displayName} - {user.email}</div>
-                  <div>
-                  <button onClick={()=>{
-                    history.push("/me");
-                  }}>Profile</button>
-                    <button onClick={logout}>Logout</button>
-                  </div>
+                  <div onClick={()=>{ history.push("/me") }}>AUTHENTICATED : {user.displayName} - {user.email}</div>
                 </div>
       }
       
@@ -98,11 +99,8 @@ const HomePage = (props) => {
         return  <div>
                   <div>ANONYMOUS</div>
                   <div>
-                    <button onClick={()=>{
-                      history.push("/user/login");
-                    }}>Login</button>
+                    <button onClick={()=>setDialogLoginOpen(true)}>Login</button>
                   </div>
-                 
                 </div>
       }
     }
@@ -110,37 +108,98 @@ const HomePage = (props) => {
 
   const bookView = (val) =>{
     let fn = _.filter(val.buys, (buy)=> buy.selected == 0 );
-    console.log("val :", val, fn)
+    // console.log("val :", val, fn)
 
     return fn.length;
   }
 
   const sellView = (val) =>{
     let fn = _.filter(val.buys, (buy)=> buy.selected == 1 );
-    console.log("val :", val, fn)
+    // console.log("val :", val, fn)
 
     return fn.length;
+  }
+
+  const imageView = (val) =>{
+    return (
+      <div style={{ position: "relative" }}>
+        <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
+          <Avatar
+            sx={{ height: 100, width: 100 }}
+            variant="rounded"
+            alt="Example Alt"
+            src={val.files[0].url}
+            onClick={(e) => {
+              setLightbox({ isOpen: true, photoIndex: 0, images:val.files })
+            }}
+          />
+        </CardActionArea>
+        <div style={{ position: "absolute", bottom: "5px", right: "5px", padding: "5px", backgroundColor: "#e1dede", color: "#919191"}}>
+          {(_.filter(val.files, (v)=>v.url)).length}
+        </div>
+      </div>
+    );
   }
 
   return (<div style={{flex:1}}>
             {managementView()}
             {
-              _.map(suppliersValues.data.getSuppliers.data, (val, k)=>{
-                return  <div className="home-item"
-                          onClick={(evt)=>{
+              _.map(suppliersValues.data.suppliers.data, (val, k)=>{
+                return  <div key={k} className="home-item" >
+                          {imageView(val)}
+                          <div>{val.title}</div>
+                          <div>จอง :{bookView(val)}</div>
+                          <div>ขายไปแล้ว :{sellView(val)}</div>
+                          <button onClick={(evt)=>{
                             history.push({
                               pathname: "/detail",
                               // search: "?id=5",
                               // hash: "#react",
                               state: { id: val._id }
                             });
-                          }}>
-                          <div>{val.title}</div>
-                          <div>จอง :{bookView(val)}</div>
-                          <div>ขายไปแล้ว :{sellView(val)}</div>
+                          }}>ดูรายละเอียด</button>
                         </div>
               })
             }
+
+            {dialogLoginOpen && (
+              <DialogLogin
+                {...props}
+                open={dialogLoginOpen}
+                onComplete={async(data)=>{
+                  setDialogLoginOpen(false);
+                }}
+                onClose={() => {
+                  setDialogLoginOpen(false);
+                }}
+              />
+            )}
+
+            {lightbox.isOpen && (
+              <Lightbox
+                mainSrc={lightbox.images[lightbox.photoIndex].url}
+                nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
+                prevSrc={
+                  lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
+                }
+                onCloseRequest={() => {
+                  setLightbox({ ...lightbox, isOpen: false });
+                }}
+                onMovePrevRequest={() => {
+                  setLightbox({
+                    ...lightbox,
+                    photoIndex:
+                      (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
+                  });
+                }}
+                onMoveNextRequest={() => {
+                  setLightbox({
+                    ...lightbox,
+                    photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
+                  });
+                }}
+              />
+            )}
           </div>);
 }
 
@@ -148,5 +207,5 @@ const mapStateToProps = (state, ownProps) => {
   return { user:state.auth.user }
 };
 
-const mapDispatchToProps = { logout }
+const mapDispatchToProps = { login, logout }
 export default connect( mapStateToProps, mapDispatchToProps )(HomePage);

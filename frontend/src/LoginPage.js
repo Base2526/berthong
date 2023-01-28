@@ -19,7 +19,7 @@ import base64 from 'base-64';
 
 import { login } from "./redux/actions/auth"
 
-import { gqlLogin } from "./gqlQuery"
+import { mutationLogin } from "./gqlQuery"
 
 const LoginPage = (props) => {
     let history = useHistory();
@@ -28,14 +28,14 @@ const LoginPage = (props) => {
 
     let { user, login } = props
 
-    console.log("user :", user)
+    // console.log("user :", user)
 
     if(!_.isEmpty(user)){
         history.push("/me");
     }
 
     let [input, setInput]   = useState({ username: "",  password: ""});
-    const [onLogin, resultLogin] = useMutation(gqlLogin, {
+    const [onLogin, resultLogin] = useMutation(mutationLogin, {
         // refetchQueries: [ {query: gqlPosts}, {query : gqlHomes} ],     
         onCompleted: async(datas)=>{
             console.log("onCompleted :", datas)

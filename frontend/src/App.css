@@ -69,3 +69,9 @@
   border-style: dotted;
   background-color: antiquewhite;
 }
+
+.div-management{
+  border-style: dotted;
+  background-color: antiquewhite;
+  padding: 10px;
+}

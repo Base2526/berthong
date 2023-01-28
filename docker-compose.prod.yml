@@ -5,7 +5,7 @@ services:
   ################################
   frontend:
     build: 
-      context: ./frontendN
+      context: ./frontend
       dockerfile: Dockerfile.prod
       args:
         REACT_APP_HOST_GRAPHAL: ${REACT_APP_HOST_GRAPHAL} 
@@ -19,7 +19,7 @@ services:
       - "8011:80"
       - "443:443"
     volumes:
-      - ./frontendN/src:/app/src
+      - ./frontend/src:/app/src
       - ./uploads:/var/storage
     networks:
       - nodejs
@@ -30,10 +30,10 @@ services:
   ################################
   graphql:
     build: 
-      context: ./graphqlN
+      context: ./graphql
       dockerfile: Dockerfile.prod   
     ports:
-      - "4000:4000"
+      - "4001:4001"
     volumes:
       - ./uploads:/app/uploads  
     environment:

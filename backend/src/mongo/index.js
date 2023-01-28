@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+
 import {Bank, 
         Post, 
         Role, 
@@ -18,7 +19,11 @@ import {Bank,
         Notification,
         Phone,
         BasicContent,
-        Supplier} from '../model'
+        Supplier,
+      
+        Deposit,
+        Withdraw
+      } from '../model'
 
 let logger = require("../utils/logger");
 
@@ -28,7 +33,7 @@ const modelExists =()=>{
       // console.log('Found Bank');
     } else {
       // console.log('Not found Bank, creating');
-      let newBank = new Bank({});
+      let newBank = new Bank({name: "test"});
       await newBank.save();
 
       await Bank.deleteMany({})
@@ -260,6 +265,34 @@ const modelExists =()=>{
       await newSupplier.save();
 
       await Supplier.deleteMany({})
+    }
+  });
+
+  Deposit.find({}, async(err, result)=> {
+    try{
+      if (result.length > 0) {
+        // console.log('Found BasicContent');
+      } else {
+        // console.log('Not found BasicContent, creating');
+        let newDeposit = new Deposit({ accountNumber: "test", userIdRequest: new mongoose.Types.ObjectId(), userIdApprove: new mongoose.Types.ObjectId() });
+        await newDeposit.save();
+  
+        await Deposit.deleteMany({})
+      }
+    } catch(err) {
+      console.log("Deposit : ", err)
+    }
+  });
+
+  Withdraw.find({}, async(err, result)=> {
+    if (result.length > 0) {
+      // console.log('Found BasicContent');
+    } else {
+      // console.log('Not found BasicContent, creating');
+      let newWithdraw = new Withdraw({ bankId: "test", userIdRequest: new mongoose.Types.ObjectId() });
+      await newWithdraw.save();
+
+      await Withdraw.deleteMany({})
     }
   });
 }

@@ -436,8 +436,25 @@ export default gql`
 
   type Query {
     ping: JSON
-    getSuppliers: JSON
-    getSupplierById(_id: ID): JSON
+
+    me: JSON
+    users: JSON
+    userById(_id: ID): JSON
+    roles: JSON
+
+    suppliers: JSON
+    supplierById(_id: ID): JSON
+
+    deposits: JSON
+    depositById(_id: ID): JSON
+
+    withdraws: JSON
+    withdrawById(_id: ID): JSON
+
+    banks: JSON
+    bankById(_id: ID): JSON
+
+    balanceById(_id: ID!): JSON
   }  
   
   input RoomInput {
@@ -497,7 +514,14 @@ export default gql`
     isPublish: Int
   }
 
+  enum BankModeType {
+    NEW
+    EDIT
+  }
+
   input BankInput {
+    _id: ID
+    mode: BankModeType!
     name: String!
     description: String
   }
@@ -623,16 +647,71 @@ export default gql`
     publish: Boolean
   }
 
+  enum WithdrawModeType {
+    NEW
+    EDIT
+    DELETE
+  }
+
+  input WithdrawInput{
+    mode: WithdrawModeType
+    _id: ID
+    dateTranfer: DATETIME
+    bank: JSON!
+    balance: Int!
+    status: String
+  }
+
+  enum DepositModeType {
+    NEW
+    EDIT
+    DELETE
+  }
+
+  input DepositInput{
+    mode: DepositModeType
+    _id: ID
+    balance: Int
+    dateTranfer: DATETIME
+    files: [JSON]
+    status: String
+  }
+
+ 
+
+  input MeInput{
+    username: String
+    password: String
+    email: String
+    displayName: String
+    banks:[JSON]
+    balance: Long
+    roles: [String]
+    isActive: String
+    image: [JSON]
+    lastAccess: Date
+    isOnline: Boolean
+    socialType: String, 
+    socialId: String
+    socialObject: String
+  }
+
   type Mutation {
     login(input: LoginInput): JSON
     loginWithSocial(input: LoginWithSocialInput): JSON
     loginWithGithub(code: String!):JSON
+    me(input: MeInput): JSON
     book(input: BookInput): JSON
     buys(input: BuyInput): JSON
     supplier(input: SupplierInput): JSON    
+    deposit(input: DepositInput): JSON 
+    withdraw(input: WithdrawInput): JSON 
+
+    bank(input: BankInput): JSON 
   }
 
   type Subscription {
+    subscriptionMe(sessionId: ID!): JSON!
     subscriptionSupplierById(supplierById: ID!): JSON!
     subscriptionSuppliers(supplierIds: String): JSON!
   }

@@ -15,7 +15,7 @@ import Button from "@mui/material/Button";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 
 import { getHeaders } from "./util"
-import { gqlSuppliers, gqlSupplier, gqlSupplierById } from "./gqlQuery"
+import { querySuppliers, gqlSupplier, querySupplierById } from "./gqlQuery"
 
 import Editor from "./editor/Editor";
 import AttackFileField from "./AttackFileField";
@@ -31,12 +31,12 @@ let initValues = {
 
 const SupplierPage = (props) => {
   let history = useHistory();
-  const location = useLocation();
-  const { t } = useTranslation();
+  let location = useLocation();
+  let { t } = useTranslation();
 
-  const [snackbar, setSnackbar] = useState({open:false, message:""});
-  const [input, setInput]       = useState(initValues);
-  const [error, setError]       = useState(initValues);
+  let [snackbar, setSnackbar] = useState({open:false, message:""});
+  let [input, setInput]       = useState(initValues);
+  let [error, setError]       = useState(initValues);
 
   console.log("location :", location.state )
 
@@ -57,49 +57,32 @@ const SupplierPage = (props) => {
       if(status){
         switch(mode){
           case "new":{
-            const data1 = cache.readQuery({ query: gqlSuppliers });
-            let newData = [...data1.getSuppliers.data, supplier.data];//_.map(data1.getSuppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
+            const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+            let newData = [...querySuppliersValue.suppliers.data, supplier.data];
 
             cache.writeQuery({
-              query: gqlSuppliers,
-              data: { getSuppliers: {...data1.getSuppliers, data: newData} }
+              query: querySuppliers,
+              data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
             });
             break;
           }
 
           case "edit":{
-            const data1 = cache.readQuery({ query: gqlSuppliers });
-            let newData = _.map(data1.getSuppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
+            const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+            let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
 
             cache.writeQuery({
-              query: gqlSuppliers,
-              data: { getSuppliers: {...data1.getSuppliers, data: newData} }
+              query: querySuppliers,
+              data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
             });
             
             break;
           }
         }
       }
-
-      
-
-        // if(data1 != null){ 
-        // let newPosts = {...data1.posts}
-        // let newData = [...newPosts.data, createPost]
-
-        // cache.writeQuery({
-        //     query: gqlPosts,
-        //     data: { posts: {...newPosts, data: newData} },
-        //     variables: {
-        //     userId: _.isEmpty(user) ? "" : user._id,
-        //     page: 0, 
-        //     perPage: 30
-        //     }
-        // });
-        // }
     },
     onCompleted({ data }) {
-      history.push("/suppliers")
+      history.goBack()
     },
     onError({error}){
       console.log("onError :")
@@ -121,7 +104,7 @@ const SupplierPage = (props) => {
     }
 
     if(mode == "edit"){
-      newInput = {...newInput, _id: editValues.data.getSupplierById.data._id}
+      newInput = {...newInput, _id: editValues.data.supplierById.data._id}
     }
 
     // console.log("submitForm :", newInput)
@@ -177,82 +160,82 @@ const SupplierPage = (props) => {
     case "new":{
         return <LocalizationProvider dateAdapter={AdapterDateFns} >
                 <Box
-                    component="form"
-                    sx={{
-                        "& .MuiTextField-root": { m: 1, width: "50ch" }
-                    }}
-                    onSubmit={submitForm}>
-                    <div >
-                        <TextField
-                            id="title"
-                            name="title"
-                            label={"ชื่อ"}
-                            variant="filled"
-                            required
-                            value={input.title}
-                            onChange={onInputChange}
-                            onBlur={validateInput}
-                            helperText={error.title}
-                            error={_.isEmpty(error.title) ? false : true}/>
-                        <TextField
-                            id="price"
-                            name="price"
-                            label={"ราคาสินค้า"}
-                            variant="filled"
-                            type="number"
-                            required
-                            value={ _.isEmpty(input.price) ? "" : input.price}
-                            onChange={onInputChange}
-                            onBlur={validateInput}
-                            helperText={ _.isEmpty(error.price) ? "" : error.price }
-                            error={_.isEmpty(error.price) ? false : true}/>
-                        <TextField
-                            id="price-unit"
-                            name="priceUnit"
-                            label={"ขายเบอละ"}
-                            variant="filled"
-                            type="number"
-                            required
-                            value={_.isEmpty(input.priceUnit) ? "" : input.priceUnit }
-                            onChange={onInputChange}
-                            onBlur={validateInput}
-                            helperText={_.isEmpty(error.priceUnit) ? "" : error.priceUnit}
-                            error={_.isEmpty(error.priceUnit) ? false : true}/>
-                        <DesktopDatePicker
-                            label={"ออกงวดวันที่"}
-                            inputFormat="dd/MM/yyyy"
-                            value={ input.dateLottery }
-                            onChange={(newDate) => {
-                                setInput({...input, dateLottery: newDate})
-                            }}
-                            renderInput={(params) => <TextField {...params} required={input.dateLottery === null ? true: false} />}/>
-                        <Editor 
-                            label={t("detail")} 
-                            initData={ input.description }
-                            onEditorChange={(newDescription)=>{
-                                setInput({...input, description: newDescription})
-                            }}/>
-                        <AttackFileField
-                            label={t("attack_file")}
-                            values={input.attackFiles}
-                            onChange={(values) => {
-                                console.log("AttackFileField :", values)
-                                setInput({...input, attackFiles: values})
-                            }}
-                            onSnackbar={(data) => {
-                                setSnackbar(data);
-                            }}/>
+                  component="form"
+                  sx={{
+                      "& .MuiTextField-root": { m: 1, width: "50ch" }
+                  }}
+                  onSubmit={submitForm}>
+                  <div >
+                    <TextField
+                      id="title"
+                      name="title"
+                      label={"ชื่อ"}
+                      variant="filled"
+                      required
+                      value={input.title}
+                      onChange={onInputChange}
+                      onBlur={validateInput}
+                      helperText={error.title}
+                      error={_.isEmpty(error.title) ? false : true}/>
+                    <TextField
+                      id="price"
+                      name="price"
+                      label={"ราคาสินค้า"}
+                      variant="filled"
+                      type="number"
+                      required
+                      value={ _.isEmpty(input.price) ? "" : input.price}
+                      onChange={onInputChange}
+                      onBlur={validateInput}
+                      helperText={ _.isEmpty(error.price) ? "" : error.price }
+                      error={_.isEmpty(error.price) ? false : true}/>
+                    <TextField
+                      id="price-unit"
+                      name="priceUnit"
+                      label={"ขายเบอละ"}
+                      variant="filled"
+                      type="number"
+                      required
+                      value={_.isEmpty(input.priceUnit) ? "" : input.priceUnit }
+                      onChange={onInputChange}
+                      onBlur={validateInput}
+                      helperText={_.isEmpty(error.priceUnit) ? "" : error.priceUnit}
+                      error={_.isEmpty(error.priceUnit) ? false : true}/>
+                    <DesktopDatePicker
+                      label={"ออกงวดวันที่"}
+                      inputFormat="dd/MM/yyyy"
+                      value={ input.dateLottery }
+                      onChange={(newDate) => {
+                          setInput({...input, dateLottery: newDate})
+                      }}
+                      renderInput={(params) => <TextField {...params} required={input.dateLottery === null ? true: false} />}/>
+                    <Editor 
+                      label={t("detail")} 
+                      initData={ input.description }
+                      onEditorChange={(newDescription)=>{
+                          setInput({...input, description: newDescription})
+                      }}/>
+                    <AttackFileField
+                      label={t("attack_file")}
+                      values={input.attackFiles}
+                      onChange={(values) => {
+                          console.log("AttackFileField :", values)
+                          setInput({...input, attackFiles: values})
+                      }}
+                      onSnackbar={(data) => {
+                          setSnackbar(data);
+                      }}/>
 
-                    </div>
-                    <Button type="submit" variant="contained" color="primary">
-                        {t("create")}
-                    </Button>
+                  </div>
+                  <Button type="submit" variant="contained" color="primary">
+                      {t("create")}
+                  </Button>
                 </Box>
                </LocalizationProvider>
     }
 
     case "edit":{
-      editValues = useQuery(gqlSupplierById, {
+      editValues = useQuery(querySupplierById, {
                         context: { headers: getHeaders() },
                         variables: {id},
                         notifyOnNetworkStatusChange: true,
@@ -265,7 +248,7 @@ const SupplierPage = (props) => {
           let {loading}  = editValues
           
           if(!loading){
-            let {status, data} = editValues.data.getSupplierById
+            let {status, data} = editValues.data.supplierById
 
             console.log("edit editValues : ", data)
             if(status){
@@ -285,79 +268,76 @@ const SupplierPage = (props) => {
       return  editValues != null && editValues.loading
                 ? <div><CircularProgress /></div> 
                 : <LocalizationProvider dateAdapter={AdapterDateFns} >
-                  <Box
+                    <Box
                       component="form"
                       sx={{
                           "& .MuiTextField-root": { m: 1, width: "50ch" }
                       }}
                       onSubmit={submitForm}>
                       <div >
-                          <TextField
-                              id="title"
-                              name="title"
-                              label={"ชื่อ"}
-                              variant="filled"
-                              required
-                              value={input.title}
-                              onChange={onInputChange}
-                              onBlur={validateInput}
-                              helperText={error.title}
-                              error={_.isEmpty(error.title) ? false : true}/>
-                          <TextField
-                              id="price"
-                              name="price"
-                              label={"ราคาสินค้า"}
-                              variant="filled"
-                              type="number"
-                              required
-                              value={ input.price }
-                              onChange={onInputChange}
-                              onBlur={validateInput}
-                              helperText={ error.price }
-                              error={_.isEmpty(error.price) ? false : true}/>
-                          <TextField
-                              id="price-unit"
-                              name="priceUnit"
-                              label={"ขายเบอละ"}
-                              variant="filled"
-                              type="number"
-                              required
-                              value={ input.priceUnit }
-                              onChange={onInputChange}
-                              onBlur={validateInput}
-                              helperText={ error.priceUnit }
-                              error={_.isEmpty(error.priceUnit) ? false : true}/>
-                          <DesktopDatePicker
-                              label={"ออกงวดวันที่"}
-                              inputFormat="dd/MM/yyyy"
-                              value={ input.dateLottery }
-                              onChange={(newDate) => {
-                                  setInput({...input, dateLottery: newDate})
-                              }}
-                              renderInput={(params) => <TextField {...params} required={input.dateLottery === null ? true: false} />}/>
-                          <Editor 
-                              label={t("detail")} 
-                              initData={ input.description }
-                              onEditorChange={(newDescription)=>{
-                                  setInput({...input, description: newDescription})
-                              }}/>
-                          <AttackFileField
-                              label={t("attack_file")}
-                              values={input.attackFiles}
-                              onChange={(values) => {
-                                  console.log("AttackFileField :", values)
-                                  setInput({...input, attackFiles: values})
-                              }}
-                              onSnackbar={(data) => {
-                                  setSnackbar(data);
-                              }}/>
-
+                        <TextField
+                          id="title"
+                          name="title"
+                          label={"ชื่อ"}
+                          variant="filled"
+                          required
+                          value={input.title}
+                          onChange={onInputChange}
+                          onBlur={validateInput}
+                          helperText={error.title}
+                          error={_.isEmpty(error.title) ? false : true}/>
+                        <TextField
+                          id="price"
+                          name="price"
+                          label={"ราคาสินค้า"}
+                          variant="filled"
+                          type="number"
+                          required
+                          value={ input.price }
+                          onChange={onInputChange}
+                          onBlur={validateInput}
+                          helperText={ error.price }
+                          error={_.isEmpty(error.price) ? false : true}/>
+                        <TextField
+                          id="price-unit"
+                          name="priceUnit"
+                          label={"ขายเบอละ"}
+                          variant="filled"
+                          type="number"
+                          required
+                          value={ input.priceUnit }
+                          onChange={onInputChange}
+                          onBlur={validateInput}
+                          helperText={ error.priceUnit }
+                          error={_.isEmpty(error.priceUnit) ? false : true}/>
+                        <DesktopDatePicker
+                          label={"ออกงวดวันที่"}
+                          inputFormat="dd/MM/yyyy"
+                          value={ input.dateLottery }
+                          onChange={(newDate) => {
+                              setInput({...input, dateLottery: newDate})
+                          }}
+                          renderInput={(params) => <TextField {...params} required={input.dateLottery === null ? true: false} />}/>
+                        <Editor 
+                          label={t("detail")} 
+                          initData={ input.description }
+                          onEditorChange={(newDescription)=>{
+                              setInput({...input, description: newDescription})
+                          }}/>
+                        <AttackFileField
+                          label={t("attack_file")}
+                          values={input.attackFiles}
+                          onChange={(values) => {
+                              console.log("AttackFileField :", values)
+                              setInput({...input, attackFiles: values})
+                          }}
+                          onSnackbar={(data) => {
+                              setSnackbar(data);
+                          }}/>
                       </div>
-                      <Button type="submit" variant="contained" color="primary">
-                          {t("update")}
-                      </Button>
-                  </Box>
-                </LocalizationProvider>
+                      <Button type="submit" variant="contained" color="primary">{t("update")}</Button>
+                    </Box>
+                  </LocalizationProvider>
     }
   }
 

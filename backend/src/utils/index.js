@@ -41,7 +41,6 @@ export const checkAuthorization = async(req) => {
             // console.log("sessionId > ", sessionId)
             let session = await Session.findById(sessionId)   
 
-            
             if(!_.isEmpty(session)){
                 var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));
 
@@ -80,5 +79,42 @@ export const checkAuthorization = async(req) => {
         status: false,
         code: 0,
         message: "without user"
+    }
+}
+
+export const checkAuthorizationWithSessionId = async(sessionId) => {
+    // let decode = jwt.verify(token, process.env.JWT_SECRET);
+    // console.log("sessionId > ", sessionId)
+    let session = await Session.findById(sessionId)   
+
+    if(!_.isEmpty(session)){
+        var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));
+
+        // console.log("session expired :", session.expired, expiredDays, req)
+
+        // code
+        // -1 : force logout
+        //  0 : anonymums
+        //  1 : OK
+        if(expiredDays >= 0){
+            let userId  = jwt.verify(session.token, process.env.JWT_SECRET);
+
+
+            console.log("checkAuthorization : ", session.token, userId )
+            // return {...req, currentUser: await User.findById(userId)} 
+
+            return {
+                status: true,
+                code: 1,
+                current_user: await User.findById(userId),
+            }
+        }
+
+        // force logout
+        return {
+            status: false,
+            code: -1,
+            message: "session expired days"
+        }
     }
 }

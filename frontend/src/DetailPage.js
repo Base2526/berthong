@@ -10,7 +10,7 @@ import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 
 import { login } from "./redux/actions/auth"
 import { getHeaders } from "./util"
-import { gqlSupplierById, gqlBook, gqlBuys, subscriptionSupplierById } from "./gqlQuery"
+import { querySupplierById, gqlBook, gqlBuys, subscriptionSupplierById } from "./gqlQuery"
 import DialogLogin from "./DialogLogin"
 
 let unsubscribeSupplierById = null;
@@ -23,11 +23,11 @@ const DetailPage = (props) => {
   let [datas, setDatas] = useState([])
   let [dialogLoginOpen, setDialogLoginOpen] = useState(false);
 
-  console.log("location :", location.state )
+  // console.log("location :", location.state )
 
   let { id } = location.state
   let { user } = props
-  console.log("user :", user)
+  // console.log("user :", user)
 
   useEffect(()=>{
     let newDatas = []
@@ -35,7 +35,7 @@ const DetailPage = (props) => {
       newDatas = [...newDatas, {id: i, title:  i > 9 ? "" + i: "0" + i, selected: -1}]
     }
 
-    console.log("newDatas : ", newDatas)
+    // console.log("newDatas : ", newDatas)
     setDatas(newDatas)
 
 
@@ -48,14 +48,14 @@ const DetailPage = (props) => {
     context: { headers: getHeaders() },
     update: (cache, {data: {book}}) => {
       
-      console.log("onBook :", book)
+      // console.log("onBook :", book)
 
       let { status, data } = book
       if(status){
         cache.writeQuery({
-          query: gqlSupplierById,
+          query: supplierById,
           data: {
-            getSupplierById: {
+            supplierById: {
               data
             } 
           },
@@ -71,22 +71,20 @@ const DetailPage = (props) => {
     }
   });
 
-  let getSupplierByIdValues = useQuery(gqlSupplierById, {
+  let querySupplierByIdValue = useQuery(querySupplierById, {
     context: { headers: getHeaders() },
     variables: { id },
     notifyOnNetworkStatusChange: true,
   });
 
-  console.log("getSupplierByIdValues :", getSupplierByIdValues)
-
-  if(getSupplierByIdValues.loading){
+  if(querySupplierByIdValue.loading){
     return <div><CircularProgress /></div>
   }else{
-    if(_.isEmpty(getSupplierByIdValues.data.getSupplierById)){
+    if(_.isEmpty(querySupplierByIdValue.data.supplierById)){
       return;
     }
 
-    let {subscribeToMore, networkStatus} = getSupplierByIdValues
+    let {subscribeToMore, networkStatus} = querySupplierByIdValue
 
     unsubscribeSupplierById && unsubscribeSupplierById()
     unsubscribeSupplierById =  subscribeToMore({
@@ -99,9 +97,9 @@ const DetailPage = (props) => {
         switch(mutation){
           case "BOOK":
           case "UNBOOK":{
-            let newPrev = {...prev.getSupplierById, data}
+            let newPrev = {...prev.supplierById, data}
 
-            return {getSupplierById: newPrev}; 
+            return {supplierById: newPrev}; 
           }
 
           default:
@@ -111,7 +109,7 @@ const DetailPage = (props) => {
 		});
   }
 
-  let {status, data} = getSupplierByIdValues.data.getSupplierById
+  let {status, data} = querySupplierByIdValue.data.supplierById
 
   const onSelected = (evt, itemId) =>{
     // let find = _.find(datas, (itm)=>itm.id==itemId);
@@ -167,7 +165,7 @@ const DetailPage = (props) => {
 
     let fn = _.filter(data.buys, (buy)=>buy.userId == user._id && buy.selected == 0 ).map((curr)=> `${curr.itemId}`).toString()
 
-    console.log("filter :", fn)
+    // console.log("filter :", fn)
 
     if(_.isEmpty(fn)){
       return <div></div>
@@ -181,9 +179,10 @@ const DetailPage = (props) => {
   }
 
   return (<div style={{flex:1}}>
+            <div>{user.displayName} - {user.email} > Balance : </div>
             <ToastContainer />
             <div>ID : {id} => {selected()}</div>
-            <div class="container">  
+            <div className="container">  
             {
               _.map(datas, (val, key)=>{
              
