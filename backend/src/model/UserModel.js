@@ -11,7 +11,7 @@ const userSchema = new Schema({
             bankId: { type: String, required:[true, "Bank-Id Request is a required field"] },
             bankNumber: { type: String, required:[true, "Bank-Number Request is a required field"] } 
           }],
-  balance: { type: Number, default: 0 },
+  // balance: { type: Number, default: 0 },
   roles: [{ type: String,
             enum : ['62a2ccfbcf7946010d3c74a6', '62a2ccfbcf7946010d3c74a2'],
             default: '62a2ccfbcf7946010d3c74a6' }],

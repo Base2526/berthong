@@ -139,7 +139,7 @@ export default {
       }
     },
 
-    async getSuppliers(parent, args, context, info){
+    async suppliers(parent, args, context, info){
       let start = Date.now()
 
       try{
@@ -152,15 +152,15 @@ export default {
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
 
-        if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
-          return {  status:true,
-                    data: await Supplier.find({}),
-                    executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-        }
+        // if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
+        //   return {  status:true,
+        //             data: await Supplier.find({}),
+        //             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+        // }
 
         return {  
                 status:true,
-                data: await Supplier.find({ownerId: current_user?._id}),
+                data: await Supplier.find({}),
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
               }
       } catch(err) {
@@ -174,11 +174,11 @@ export default {
       }
     },
 
-    async getSupplierById(parent, args, context, info){
+    async supplierById(parent, args, context, info){
       let start = Date.now()
       try{
 
-        console.log("getSupplierById :", args)
+        console.log("supplierById :", args)
 
         let { _id } = args
 
@@ -195,7 +195,7 @@ export default {
 
       } catch(err) {
         logger.error(err.toString());
-        console.log("getSupplierById err :", args, err.toString())
+        console.log("supplierById err :", args, err.toString())
 
         return {  status:false,
                   message: err.toString(),

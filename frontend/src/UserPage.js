@@ -83,36 +83,6 @@ const UserPage = (props) => {
 
       console.log("me :", me)
 
-      /*
-      let { data, mode, status } = supplier
-
-      if(status){
-        switch(mode){
-          case "new":{
-            const data1 = cache.readQuery({ query: gqlSuppliers });
-            let newData = [...data1.getSuppliers.data, supplier.data];//_.map(data1.getSuppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
-
-            cache.writeQuery({
-              query: gqlSuppliers,
-              data: { getSuppliers: {...data1.getSuppliers, data: newData} }
-            });
-            break;
-          }
-
-          case "edit":{
-            const data1 = cache.readQuery({ query: gqlSuppliers });
-            let newData = _.map(data1.getSuppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
-
-            cache.writeQuery({
-              query: gqlSuppliers,
-              data: { getSuppliers: {...data1.getSuppliers, data: newData} }
-            });
-            
-            break;
-          }
-        }
-      }
-      */
     },
     onCompleted({ data }) {
       history.push("/users")
@@ -186,23 +156,6 @@ const UserPage = (props) => {
   const submitForm = async(event) => {
     event.preventDefault();
 
-    // let newInput =  {
-    //     mode: mode.toUpperCase(),
-    //     title: input.title,
-    //     price: parseInt(input.price),
-    //     priceUnit: parseInt(input.priceUnit),
-    //     description: input.description,
-    //     dateLottery: input.dateLottery,
-    //     files: input.attackFiles
-    // }
-
-    // if(mode == "edit"){
-    //   newInput = {...newInput, _id: editValues.data.getSupplierById.data._id}
-    // }
-
-    // // console.log("submitForm :", newInput)
-    // onSupplier({ variables: { input: newInput } });
-
     let newInput = {
       username: input.username,
       email: input.email,
@@ -214,9 +167,6 @@ const UserPage = (props) => {
     if(image !== null){
       newInput = {...newInput, image}
     }
-
-    console.log("newInput :", newInput)
-
     onMutationMe({ variables: { input: newInput }});
   }
 

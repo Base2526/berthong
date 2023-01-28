@@ -2,8 +2,8 @@ import { gql } from "@apollo/client";
 
 // query
 export const gqlPing        = gql`query Ping{ ping }`;
-export const gqlSuppliers   = gql`query GetSuppliers { getSuppliers }`;
-export const gqlSupplierById= gql`query GetSupplierById($id: ID!) { getSupplierById(_id: $id) }`;
+export const querySuppliers = gql`query suppliers { suppliers }`;
+export const querySupplierById= gql`query supplierById($id: ID!) { supplierById(_id: $id) }`;
 
 export const queryDeposits   = gql`query deposits { deposits }`;
 export const queryDepositById= gql`query depositById($id: ID!) { depositById(_id: $id) }`;
@@ -22,8 +22,8 @@ export const queryBankById    = gql`query bankById($id: ID!) { bankById(_id: $id
 export const queryBalanceById = gql`query balanceById($id: ID!) { balanceById(_id: $id) }`;
 
 // mutation
-export const gqlLogin           = gql`mutation login($input: LoginInput) { login(input: $input) }`;
-export const gqlLoginWithSocial = gql`mutation loginWithSocial($input: LoginWithSocialInput) { loginWithSocial(input: $input) }`;
+export const mutationLogin      = gql`mutation login($input: LoginInput) { login(input: $input) }`;
+export const mutationLoginWithSocial = gql`mutation loginWithSocial($input: LoginWithSocialInput) { loginWithSocial(input: $input) }`;
 export const mutationMe         = gql`mutation me($input: MeInput){ me(input: $input) }`;
 export const gqlBook            = gql`mutation book($input: BookInput) { book(input: $input) }`;
 export const gqlBuys            = gql`mutation buys($input: BuyInput) { buys(input: $input) }`;

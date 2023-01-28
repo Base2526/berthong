@@ -51,7 +51,7 @@ import WithdrawPage from "./WithdrawPage"
 import BanksPage from "./BanksPage"
 import BankPage from "./BankPage"
 
-import ProfileBanksPage from "./ProfileBanksPage"
+// import ProfileBanksPage from "./ProfileBanksPage"
 import ProfileBankPage from "./ProfileBankPage"
 
 import UsersPage from "./UsersPage"
@@ -93,9 +93,9 @@ const PrivatePage =(props) => {
                     <BankPage />
                 </Route>
 
-                <Route path="/me+banks">
+                {/* <Route path="/me+banks">
                     <ProfileBanksPage />
-                </Route>
+                </Route> */}
 
                 <Route path="/me+bank">
                     <ProfileBankPage />

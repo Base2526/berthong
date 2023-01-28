@@ -442,8 +442,8 @@ export default gql`
     userById(_id: ID): JSON
     roles: JSON
 
-    getSuppliers: JSON
-    getSupplierById(_id: ID): JSON
+    suppliers: JSON
+    supplierById(_id: ID): JSON
 
     deposits: JSON
     depositById(_id: ID): JSON

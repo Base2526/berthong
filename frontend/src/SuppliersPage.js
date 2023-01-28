@@ -26,7 +26,7 @@ import CardActionArea from "@material-ui/core/CardActionArea";
 import Avatar from "@mui/material/Avatar";
 
 import { getHeaders } from "./util"
-import { gqlSuppliers } from "./gqlQuery"
+import { querySuppliers } from "./gqlQuery"
 import ReadMoreMaster from "./ReadMoreMaster"
 import Table from "./TableContainer"
 
@@ -68,7 +68,7 @@ const SuppliersPage = (props) => {
   
   */
 
-  const suppliersValue = useQuery(gqlSuppliers, {
+  const suppliersValue = useQuery(querySuppliers, {
     context: { headers: getHeaders() },
     // variables: { page: pageIndex, perPage: pageSize },
     notifyOnNetworkStatusChange: true,
@@ -213,33 +213,18 @@ const SuppliersPage = (props) => {
 
   return (<div className="pl-2 pr-2">
             <Box style={{ flex: 4 }} className="table-responsive">
-              {/* {
-                phonesValue.loading
+              {
+                suppliersValue.loading
                 ? <div><CircularProgress /></div> 
                 : <Table
-                    columns={columns}
-                    data={phonesValue.data.phones.data}
-                    fetchData={fetchData}
-                    rowsPerPage={pageOptions}
-                    updateMyData={updateMyData}
-                    skipReset={skipResetRef.current}
-                    isDebug={false}
-                  />
-              } */}
-
-
-                {
-                  suppliersValue.loading
-                  ? <div><CircularProgress /></div> 
-                  : <Table
-                    columns={columns}
-                    data={suppliersValue.data.getSuppliers.data}
-                    fetchData={fetchData}
-                    rowsPerPage={pageOptions}
-                    updateMyData={updateMyData}
-                    skipReset={skipResetRef.current}
-                    isDebug={false}
-                  />
+                  columns={columns}
+                  data={suppliersValue.data.suppliers.data}
+                  fetchData={fetchData}
+                  rowsPerPage={pageOptions}
+                  updateMyData={updateMyData}
+                  skipReset={skipResetRef.current}
+                  isDebug={false}
+                />
               }
 
               {openDialogDelete.isOpen && (
@@ -271,10 +256,10 @@ const SuppliersPage = (props) => {
 
               {lightbox.isOpen && (
                 <Lightbox
-                  mainSrc={lightbox.images[lightbox.photoIndex].base64}
-                  nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].base64}
+                  mainSrc={lightbox.images[lightbox.photoIndex].url}
+                  nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
                   prevSrc={
-                    lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].base64
+                    lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
                   }
                   onCloseRequest={() => {
                     setLightbox({ ...lightbox, isOpen: false });
@@ -299,9 +284,7 @@ const SuppliersPage = (props) => {
                 ariaLabel="SpeedDial basic example"
                 sx={{ position: 'absolute', bottom: 16, right: 16 }}
                 icon={<SpeedDialIcon />}
-                onClick={(e)=>{
-                  history.push({ pathname: "/supplier", state: {from: "/", mode: "new"} });
-                }}>
+                onClick={(e)=>{ history.push({ pathname: "/supplier", state: {from: "/", mode: "new"} }) }}>
               </SpeedDial>
             </Box>
           </div>);

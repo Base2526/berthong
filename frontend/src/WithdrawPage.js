@@ -50,7 +50,7 @@ const WithdrawPage = (props) => {
 
   let editValues = null;
 
-  console.log("user :", user)
+  // console.log("user :", user)
 
   const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
     context: { headers: getHeaders() },
@@ -119,7 +119,7 @@ const WithdrawPage = (props) => {
       console.log("onError :")
     }
   });
-  console.log("resultMutationWithdraw :", resultMutationWithdraw)
+  // console.log("resultMutationWithdraw :", resultMutationWithdraw)
 
   /*
   ฝาก

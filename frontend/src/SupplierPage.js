@@ -15,7 +15,7 @@ import Button from "@mui/material/Button";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 
 import { getHeaders } from "./util"
-import { gqlSuppliers, gqlSupplier, gqlSupplierById } from "./gqlQuery"
+import { querySuppliers, gqlSupplier, querySupplierById } from "./gqlQuery"
 
 import Editor from "./editor/Editor";
 import AttackFileField from "./AttackFileField";
@@ -57,23 +57,23 @@ const SupplierPage = (props) => {
       if(status){
         switch(mode){
           case "new":{
-            const gqlSuppliersValue = cache.readQuery({ query: gqlSuppliers });
-            let newData = [...gqlSuppliersValue.getSuppliers.data, supplier.data];
+            const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+            let newData = [...querySuppliersValue.suppliers.data, supplier.data];
 
             cache.writeQuery({
-              query: gqlSuppliers,
-              data: { getSuppliers: {...gqlSuppliersValue.getSuppliers, data: newData} }
+              query: querySuppliers,
+              data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
             });
             break;
           }
 
           case "edit":{
-            const gqlSuppliersValue = cache.readQuery({ query: gqlSuppliers });
-            let newData = _.map(gqlSuppliersValue.getSuppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
+            const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+            let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
 
             cache.writeQuery({
-              query: gqlSuppliers,
-              data: { getSuppliers: {...gqlSuppliersValue.getSuppliers, data: newData} }
+              query: querySuppliers,
+              data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
             });
             
             break;
@@ -104,7 +104,7 @@ const SupplierPage = (props) => {
     }
 
     if(mode == "edit"){
-      newInput = {...newInput, _id: editValues.data.getSupplierById.data._id}
+      newInput = {...newInput, _id: editValues.data.supplierById.data._id}
     }
 
     // console.log("submitForm :", newInput)
@@ -235,7 +235,7 @@ const SupplierPage = (props) => {
     }
 
     case "edit":{
-      editValues = useQuery(gqlSupplierById, {
+      editValues = useQuery(querySupplierById, {
                         context: { headers: getHeaders() },
                         variables: {id},
                         notifyOnNetworkStatusChange: true,
@@ -248,7 +248,7 @@ const SupplierPage = (props) => {
           let {loading}  = editValues
           
           if(!loading){
-            let {status, data} = editValues.data.getSupplierById
+            let {status, data} = editValues.data.supplierById
 
             console.log("edit editValues : ", data)
             if(status){

@@ -59,9 +59,6 @@ const App =(props) =>{
     return ()=> clearInterval(intervalPing.current);
   }, []);
 
-  useEffect(()=>{
-    console.log("user :", user)
-  }, [user])
 
   return (
       <div className="App">

@@ -21,7 +21,7 @@ const ProfilePage = (props) => {
 
     let { user, login,  logout } = props
 
-    console.log("user :", user)
+    // console.log("user :", user)
 
     let meValues = useQuery(queryMe, {
         context: { headers: getHeaders() },

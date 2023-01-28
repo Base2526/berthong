@@ -40,12 +40,8 @@ const DepositPage = (props) => {
   let { user, logout } = props
   let { mode, id } = location.state
 
-  console.log("location.state : ", location.state)
-
-
+  // console.log("location.state : ", location.state)
   let editValues = null;
-
-  console.log("user :", user)
 
   const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
     context: { headers: getHeaders() },
