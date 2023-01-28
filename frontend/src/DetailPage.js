@@ -179,9 +179,9 @@ const DetailPage = (props) => {
   }
 
   return (<div style={{flex:1}}>
-            <div>{user.displayName} - {user.email} > Balance : </div>
+            <div>{user.displayName} - {user.email} : Balance : </div>
             <ToastContainer />
-            <div>ID : {id} => {selected()}</div>
+            <div>ID : {id} : {selected()}</div>
             <div className="container">  
             {
               _.map(datas, (val, key)=>{
