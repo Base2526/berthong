@@ -5,7 +5,7 @@ import cryptojs from "crypto-js";
 import deepdash from "deepdash";
 deepdash(_);
 import * as fs from "fs";
-import { User, Supplier, Bank, Role, Deposit, Withdraw } from './model'
+import { User, Supplier, Bank, Role, Deposit, Withdraw, Transition } from './model'
 import { emailValidate } from './utils'
 import pubsub from './pubsub'
 
@@ -314,8 +314,19 @@ export default {
         let { status, code, current_user } =  authorization
         //////////////////////////
 
+        let withdraw = await Withdraw.findById(_id)
+
+        let bank = withdraw.bank[0];
+        let bankValue = await Bank.findById(bank.bankId)
+
+        bank = {...bank._doc, bankName: bankValue.name}
+
+        withdraw = {...withdraw._doc, bank: [bank]}
+
+        // console.log("withdrawById bank :", bank, withdraw )
+
         return {  status:true,
-                  data: await Withdraw.findById(_id),
+                  data: withdraw,
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
       } catch(err) {
@@ -404,6 +415,31 @@ export default {
       } catch(err) {
         logger.error(err.toString());
         console.log("balanceById err :", args, err.toString())
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    async transitions(parent, args, context, info){
+      let start = Date.now()
+      try{
+        console.log("transitions :", args)
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        return {  status:true,
+                  data: await Transition.find({userIdRequest: current_user?._id}),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("bank err :", args, err.toString())
 
         return {  status:false,
                   message: err.toString(),
@@ -1468,13 +1504,15 @@ export default {
               if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
 
                 let newInput = {...input, userIdApprove: current_user?._id}
-                
                 let withdraw = await Withdraw.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
+
+                let transition = await Transition.create({ type: "withdraw", refId: withdraw._id, userIdRequest:withdraw.userIdRequest, userIdApprove: current_user?._id });
 
                 return {
                   status: true,
                   mode: input.mode.toLowerCase(),
                   data: withdraw,
+                  transition,
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
                 }
               }else{

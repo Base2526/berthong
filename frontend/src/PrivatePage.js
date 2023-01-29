@@ -56,6 +56,7 @@ import ProfileBankPage from "./ProfileBankPage"
 
 import UsersPage from "./UsersPage"
 import UserPage from "./UserPage"
+import TransitionsPage from "./TransitionsPage"
 
 
 import { connect } from "react-redux";
@@ -93,9 +94,9 @@ const PrivatePage =(props) => {
                     <BankPage />
                 </Route>
 
-                {/* <Route path="/me+banks">
-                    <ProfileBanksPage />
-                </Route> */}
+                <Route path="/transitions">
+                    <TransitionsPage />
+                </Route>
 
                 <Route path="/me+bank">
                     <ProfileBankPage />

@@ -455,6 +455,8 @@ export default gql`
     bankById(_id: ID): JSON
 
     balanceById(_id: ID!): JSON
+
+    transitions: JSON
   }  
   
   input RoomInput {

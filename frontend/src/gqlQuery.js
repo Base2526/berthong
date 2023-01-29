@@ -21,6 +21,8 @@ export const queryBankById    = gql`query bankById($id: ID!) { bankById(_id: $id
 
 export const queryBalanceById = gql`query balanceById($id: ID!) { balanceById(_id: $id) }`;
 
+export const queryTransitions = gql`query transitions { transitions }`;
+
 // mutation
 export const mutationLogin      = gql`mutation login($input: LoginInput) { login(input: $input) }`;
 export const mutationLoginWithSocial = gql`mutation loginWithSocial($input: LoginWithSocialInput) { loginWithSocial(input: $input) }`;
