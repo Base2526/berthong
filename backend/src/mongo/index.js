@@ -22,7 +22,8 @@ import {Bank,
         Supplier,
       
         Deposit,
-        Withdraw
+        Withdraw,
+        Transition
       } from '../model'
 
 let logger = require("../utils/logger");
@@ -291,8 +292,19 @@ const modelExists =()=>{
       // console.log('Not found BasicContent, creating');
       let newWithdraw = new Withdraw({ bankId: "test", userIdRequest: new mongoose.Types.ObjectId() });
       await newWithdraw.save();
-
       await Withdraw.deleteMany({})
+    }
+  });
+
+  Transition.find({}, async(err, result)=> {
+    if (result.length > 0) {
+      // console.log('Found BasicContent');
+    } else {
+      // console.log('Not found BasicContent, creating');
+      let newTransition = new Transition({  refId: new mongoose.Types.ObjectId(),
+                                            userIdRequest: new mongoose.Types.ObjectId() });
+      await newTransition.save();
+      await Transition.deleteMany({})
     }
   });
 }

@@ -96,6 +96,10 @@ const ProfilePage = (props) => {
                             <div>
                                 <button onClick={()=>{history.push("/suppliers"); }}>Supplier list</button>
                             </div>
+
+                            <div>
+                                <button onClick={()=>{history.push("/transitions"); }}>History-Transitions</button>
+                            </div>
                         </div>
             }
         }

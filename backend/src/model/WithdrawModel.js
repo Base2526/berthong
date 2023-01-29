@@ -1,10 +1,5 @@
 import mongoose from 'mongoose';
 const Schema = mongoose.Schema
-/*
- - ชือบัญชี
- - ยอดเงิน
-*/
-
 const withdrawSchema = new Schema({
   bank: [{ 
     bankId: { type: String, required:[true, "Bank-Id Request is a required field"] },

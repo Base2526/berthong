@@ -32,6 +32,8 @@ import SupplierModel from "./SupplierModel"
 import DepositModel from './DepositModel'
 import WithdrawModel from './WithdrawModel'
 
+import TransitionModel from "./TransitionModel"
+
 module.exports =  {
     Bank:BankModel,
     Post:PostModel,
@@ -65,5 +67,7 @@ module.exports =  {
     Supplier: SupplierModel,
 
     Deposit: DepositModel,
-    Withdraw: WithdrawModel
+    Withdraw: WithdrawModel,
+
+    Transition: TransitionModel
 };
