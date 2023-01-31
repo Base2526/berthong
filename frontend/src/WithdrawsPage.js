@@ -44,7 +44,7 @@ const WithdrawsPage = (props) => {
 
   const queryWithdrawsValue = useQuery(queryWithdraws, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true });
 
-  // console.log("queryWithdrawsValue :", queryWithdrawsValue)
+  console.log("queryWithdrawsValue :", queryWithdrawsValue)
 
   /*
   mode: WithdrawModeType
@@ -110,6 +110,14 @@ const WithdrawsPage = (props) => {
   const columns = useMemo(
     () => [
       {
+        Header: 'Balance',
+        accessor: 'balance',
+        Cell: props =>{
+            let {balance} = props.row.values
+            return ( <div style={{ position: "relative" }}>{balance}</div> );
+        }
+      },
+      {
         Header: 'Bank',
         accessor: 'bank',
         Cell: props =>{
@@ -121,14 +129,6 @@ const WithdrawsPage = (props) => {
           }
           let find = _.find(valueBanks.data.banks.data, (item)=>item._id.toString() == bank[0].bankId.toString() )            
           return <div style={{ position: "relative" }}>{bank[0].bankNumber} : {find.name}</div>
-        }
-      },
-      {
-        Header: 'Balance',
-        accessor: 'balance',
-        Cell: props =>{
-            let {balance} = props.row.values
-            return ( <div style={{ position: "relative" }}>{balance}</div> );
         }
       },
       {

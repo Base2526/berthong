@@ -285,8 +285,17 @@ export default {
         }
         //////////////////////////
 
-        return {  status:true,
-                  data: await Withdraw.find({userIdRequest: current_user?._id}),
+        // userIdApprove
+        let withdraws = await Withdraw.find({userIdRequest: current_user?._id})
+
+        withdraws = await Promise.all(_.map(withdraws, async(item)=>{
+                                              let user = await User.findById(item.userIdApprove)
+                                              return {...item._doc, userNameApprove: user.displayName}
+                                            }))
+
+
+        return {  status: true,
+                  data: withdraws,
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
       } catch(err) {
