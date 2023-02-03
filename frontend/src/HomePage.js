@@ -10,7 +10,7 @@ import Avatar from "@mui/material/Avatar";
 import Lightbox from "react-image-lightbox";
 import "react-image-lightbox/style.css";
 
-import { querySuppliers, subscriptionSuppliers, mutationMe } from "./gqlQuery"
+import { queryHomes, subscriptionSuppliers, mutationMe } from "./gqlQuery"
 import { getHeaders, checkRole } from "./util"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 import { login, logout } from "./redux/actions/auth"
@@ -44,39 +44,40 @@ const HomePage = (props) => {
     }
   });
   
-  const suppliersValues =useQuery(querySuppliers, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true});
+  const suppliersValues =useQuery(queryHomes, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true});
 
+  console.log("suppliersValues: ", suppliersValues)
   if(suppliersValues.loading){
     return <div><CircularProgress /></div>
   }else{
-    if(_.isEmpty(suppliersValues.data.suppliers)){
+    if(_.isEmpty(suppliersValues.data.homes)){
       return;
     }
 
-    let {subscribeToMore, networkStatus} = suppliersValues
-    let keys = _.map(suppliersValues.data.suppliers.data, _.property("_id"));
+    // let {subscribeToMore, networkStatus} = suppliersValues
+    // let keys = _.map(suppliersValues.data.suppliers.data, _.property("_id"));
     
-    unsubscribeSuppliers && unsubscribeSuppliers()
-    unsubscribeSuppliers =  subscribeToMore({
-			document: subscriptionSuppliers,
-      variables: { supplierIds: JSON.stringify(keys) },
-			updateQuery: (prev, {subscriptionData}) => {        
-        if (!subscriptionData.data) return prev;
+    // unsubscribeSuppliers && unsubscribeSuppliers()
+    // unsubscribeSuppliers =  subscribeToMore({
+		// 	document: subscriptionSuppliers,
+    //   variables: { supplierIds: JSON.stringify(keys) },
+		// 	updateQuery: (prev, {subscriptionData}) => {        
+    //     if (!subscriptionData.data) return prev;
 
-        let { mutation, data } = subscriptionData.data.subscriptionSuppliers;
-        switch(mutation){
-          case "BOOK":
-          case "UNBOOK":{
-            let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
+    //     let { mutation, data } = subscriptionData.data.subscriptionSuppliers;
+    //     switch(mutation){
+    //       case "BOOK":
+    //       case "UNBOOK":{
+    //         let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
 
-            let newPrev = {...prev.suppliers, data: newData}
-            return {suppliers: newPrev}; 
-          }
-          default:
-            return prev;
-        }
-			}
-		});
+    //         let newPrev = {...prev.suppliers, data: newData}
+    //         return {suppliers: newPrev}; 
+    //       }
+    //       default:
+    //         return prev;
+    //     }
+		// 	}
+		// });
   }
 
   // console.log("checkRole :", checkRole(user), user)
@@ -91,6 +92,7 @@ const HomePage = (props) => {
 
       case AUTHENTICATED:{
         return  <div>
+                
                   <div onClick={()=>{ history.push("/me") }}>AUTHENTICATED : {user.displayName} - {user.email}</div>
                 </div>
       }
@@ -144,8 +146,11 @@ const HomePage = (props) => {
   return (<div style={{flex:1}}>
             {managementView()}
             {
-              _.map(suppliersValues.data.suppliers.data, (val, k)=>{
+              _.map(suppliersValues.data.homes.data, (val, k)=>{
                 return  <div key={k} className="home-item" >
+                          <div onClick={()=>{
+                            history.push({pathname: "/profile", search: `?u=${val.ownerId}` })
+                          }}>Supplier : {val.ownerName}</div>
                           {imageView(val)}
                           <div>{val.title}</div>
                           <div>จอง :{bookView(val)}</div>

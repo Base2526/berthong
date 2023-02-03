@@ -25,10 +25,11 @@ import "react-image-lightbox/style.css";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import Avatar from "@mui/material/Avatar";
 
-import { getHeaders } from "./util"
+import { getHeaders, checkRole } from "./util"
 import { querySuppliers } from "./gqlQuery"
 import ReadMoreMaster from "./ReadMoreMaster"
 import Table from "./TableContainer"
+import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 
 const SuppliersPage = (props) => {
   let history = useHistory();
@@ -68,11 +69,7 @@ const SuppliersPage = (props) => {
   
   */
 
-  const suppliersValue = useQuery(querySuppliers, {
-    context: { headers: getHeaders() },
-    // variables: { page: pageIndex, perPage: pageSize },
-    notifyOnNetworkStatusChange: true,
-  });
+  const suppliersValue = useQuery(querySuppliers, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true });
 
   console.log("suppliersValue :", suppliersValue)
 
@@ -93,93 +90,257 @@ const SuppliersPage = (props) => {
 
   ///////////////////////
   const columns = useMemo(
-    () => [
-        {
-          Header: 'รูป',
-          accessor: 'files',
-          Cell: props =>{
-            if(props.value.length < 1){
-              return <div />
-            }
+    () =>{
 
-            console.log("files :", props.value)
-            
-            return (
-              <div style={{ position: "relative" }}>
-                <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
-                  <Avatar
-                    sx={{
-                      height: 100,
-                      width: 100
-                    }}
-                    variant="rounded"
-                    alt="Example Alt"
-                    src={props.value[0].url}
-                    onClick={(e) => {
-                      console.log("files props: ", props.value)
-                      setLightbox({ isOpen: true, photoIndex: 0, images:props.value })
-                    }}
-                  />
-                </CardActionArea>
-                <div
-                    style={{
-                        position: "absolute",
-                        bottom: "5px",
-                        right: "5px",
-                        padding: "5px",
-                        backgroundColor: "#e1dede",
-                        color: "#919191"
-                    }}
-                    >{(_.filter(props.value, (v)=>v.url)).length}</div>
-              </div>
-            );
-          }
-        },
-          {
-            Header: 'ชื่อ',
-            accessor: 'title',
-            Cell: props =>{
-                let {title} = props.row.values
-                return ( <div style={{ position: "relative" }}>{title}</div> );
-            }
-          },
-          {
-            Header: 'Detail',
-            accessor: 'description',
-            Cell: props => {
-              return <Box
-                      sx={{
-                        maxHeight: "inherit",
-                        width: "100%",
-                        whiteSpace: "initial",
-                        lineHeight: "16px"
-                      }}>
-                      <ReadMoreMaster
-                        byWords={true}
-                        length={10}
-                        ellipsis="...">{props.value}
-                      </ReadMoreMaster>
-                    </Box>
-            }
-          },
-          {
-            Header: 'Action',
-            Cell: props => {
-              let {_id, description} = props.row.original
-              return  <div className="Btn--posts">
-                          <button onClick={(evt)=>{
-                            history.push({ 
-                              pathname: "/supplier", 
-                              state: {from: "/", mode: "edit", id: _id } 
-                            });
-                          }}><EditIcon/>{t("edit")}</button>
-                          <button onClick={(e)=>{
-                            setOpenDialogDelete({ isOpen: true, id: _id, description });
-                          }}><DeleteForeverIcon/>{t("delete")}</button>
-                      </div>
-            }
-          },
-    ],
+      // console.log("props.row.original : ", suppliersValue?.data?.suppliers?.data)
+
+      switch(checkRole(user)){
+        case AMDINISTRATOR:{
+          return [
+            {
+              Header: 'รูป',
+              accessor: 'files',
+              Cell: props =>{
+                if(props.value.length < 1){
+                  return <div />
+                }
+    
+                console.log("files :", props.value)
+                
+                return (
+                  <div style={{ position: "relative" }}>
+                    <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
+                      <Avatar
+                        sx={{
+                          height: 100,
+                          width: 100
+                        }}
+                        variant="rounded"
+                        alt="Example Alt"
+                        src={props.value[0].url}
+                        onClick={(e) => {
+                          console.log("files props: ", props.value)
+                          setLightbox({ isOpen: true, photoIndex: 0, images:props.value })
+                        }}
+                      />
+                    </CardActionArea>
+                    <div
+                        style={{
+                            position: "absolute",
+                            bottom: "5px",
+                            right: "5px",
+                            padding: "5px",
+                            backgroundColor: "#e1dede",
+                            color: "#919191"
+                        }}
+                        >{(_.filter(props.value, (v)=>v.url)).length}</div>
+                  </div>
+                );
+              }
+            },
+            {
+              Header: 'ชื่อ',
+              accessor: 'title',
+              Cell: props =>{
+                  let {_id, title} = props.row.original
+                  return ( <div style={{ position: "relative" }} 
+                            onClick={()=>{
+                              history.push({
+                                pathname: "/detail",
+                                // search: "?id=5",
+                                // hash: "#react",
+                                state: { id: _id }
+                              });
+                            }}>{title}</div> );
+              }
+            },
+            {
+              Header: 'Detail',
+              accessor: 'description',
+              Cell: props => {
+                return <Box
+                        sx={{
+                          maxHeight: "inherit",
+                          width: "100%",
+                          whiteSpace: "initial",
+                          lineHeight: "16px"
+                        }}>
+                        <ReadMoreMaster
+                          byWords={true}
+                          length={10}
+                          ellipsis="...">{props.value}
+                        </ReadMoreMaster>
+                      </Box>
+              }
+            },
+            {
+              Header: 'จำนวนที่จอง',
+              // accessor: 'buys',
+              Cell: props => {
+                let {buys} = props.row.original
+
+                buys = _.filter(buys, (buy)=>buy.selected == 0)
+                console.log("จำนวนที่จอง : ", props.row.original)
+                return <div>{buys.length}</div>
+              }
+            },
+            {
+              Header: 'จำนวนที่ขายได้',
+              accessor: 'buys',
+              Cell: props => {
+                let {buys} = props.row.original
+
+                buys = _.filter(buys, (buy)=>buy.selected == 1)
+                return <div>{buys.length}</div>
+              }
+            },
+            {
+              Header: 'Owner name',
+              accessor: 'ownerName',
+              Cell: props => {
+                let {ownerId, ownerName} = props.row.original
+
+                console.log("props.row.original",  props.row.original)
+                return <div onClick={()=>{
+                  history.push({ 
+                    pathname: "/profile", 
+                    search: `?u=${ownerId}`,
+                    // state: {from: "/", mode: "edit", id: _id } 
+                  });
+                }}>{ownerName}</div>
+              }
+            },
+            {
+              Header: 'Action',
+              Cell: props => {
+                let {_id, description} = props.row.original
+                return  <div className="Btn--posts">
+                            <button onClick={(evt)=>{
+                              history.push({ 
+                                pathname: "/supplier", 
+                                state: {from: "/", mode: "edit", id: _id } 
+                              });
+                            }}><EditIcon/>{t("edit")}</button>
+                            <button onClick={(e)=>{
+                              setOpenDialogDelete({ isOpen: true, id: _id, description });
+                            }}><DeleteForeverIcon/>{t("delete")}</button>
+                        </div>
+              }
+            },
+          ] 
+        }
+  
+        case AUTHENTICATED:{
+          return [
+            {
+              Header: 'รูป',
+              accessor: 'files',
+              Cell: props =>{
+                if(props.value.length < 1){
+                  return <div />
+                }
+    
+                console.log("files :", props.value)
+                
+                return (
+                  <div style={{ position: "relative" }}>
+                    <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
+                      <Avatar
+                        sx={{
+                          height: 100,
+                          width: 100
+                        }}
+                        variant="rounded"
+                        alt="Example Alt"
+                        src={props.value[0].url}
+                        onClick={(e) => {
+                          console.log("files props: ", props.value)
+                          setLightbox({ isOpen: true, photoIndex: 0, images:props.value })
+                        }}
+                      />
+                    </CardActionArea>
+                    <div
+                        style={{
+                            position: "absolute",
+                            bottom: "5px",
+                            right: "5px",
+                            padding: "5px",
+                            backgroundColor: "#e1dede",
+                            color: "#919191"
+                        }}
+                        >{(_.filter(props.value, (v)=>v.url)).length}</div>
+                  </div>
+                );
+              }
+            },
+            {
+              Header: 'ชื่อ',
+              accessor: 'title',
+              Cell: props =>{
+                  let {_id, title} = props.row.original
+                  return ( <div style={{ position: "relative" }} 
+                            onClick={()=>{
+                              history.push({
+                                pathname: "/detail",
+                                // search: "?id=5",
+                                // hash: "#react",
+                                state: { id: _id }
+                              });
+                            }}>{title}</div> );
+              }
+            },
+            {
+              Header: 'Detail',
+              accessor: 'description',
+              Cell: props => {
+                return <Box
+                        sx={{
+                          maxHeight: "inherit",
+                          width: "100%",
+                          whiteSpace: "initial",
+                          lineHeight: "16px"
+                        }}>
+                        <ReadMoreMaster
+                          byWords={true}
+                          length={10}
+                          ellipsis="...">{props.value}
+                        </ReadMoreMaster>
+                      </Box>
+              }
+            },
+            {
+              Header: 'จำนวนที่ขายได้',
+              accessor: 'buys',
+              Cell: props => {
+                let {buys} = props.row.original
+    
+                console.log("buys :", buys)
+    
+    
+                return <div>{buys.length}</div>
+              }
+            },
+            {
+              Header: 'Action',
+              Cell: props => {
+                let {_id, description} = props.row.original
+                return  <div className="Btn--posts">
+                            <button onClick={(evt)=>{
+                              history.push({ 
+                                pathname: "/supplier", 
+                                state: {from: "/", mode: "edit", id: _id } 
+                              });
+                            }}><EditIcon/>{t("edit")}</button>
+                            <button onClick={(e)=>{
+                              setOpenDialogDelete({ isOpen: true, id: _id, description });
+                            }}><DeleteForeverIcon/>{t("delete")}</button>
+                        </div>
+              }
+            },
+          ] 
+        }
+      }
+    } ,
     []
   )
 

@@ -26,9 +26,7 @@ import { getHeaders, checkRole } from "./util"
 import { queryTransitions, mutationDeposit, queryWithdrawById, queryBankById } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
 
-import { AMDINISTRATOR } from "./constants"
-
-import ReadMoreMaster from "./ReadMoreMaster"
+import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 import Table from "./TableContainer"
 
 const TransitionsPage = (props) => {
@@ -81,8 +79,6 @@ const TransitionsPage = (props) => {
   });
   console.log("resultMutationDeposit :", resultMutationDeposit)
 
-  // 
-
   /*
   ฝาก
   - จำนวนเงิน
@@ -108,84 +104,96 @@ const TransitionsPage = (props) => {
   })
   ///////////////
   const columns = useMemo(
-      () => [
-          {
-            Header: 'Type',
-            accessor: 'type',
-            Cell: props =>{
-                let {type} = props.row.values
-                return ( <div style={{ position: "relative" }}>{type}</div> );
-            }
-          },
-          {
-            Header: 'Balance',
-            accessor: 'refId',
-            Cell: props => {
-                let {refId} = props.row.values
+      () =>{
 
-                let {type}  = props.row.original
-               
-                switch(type){
-                  case "withdraw":{
-                    let editValues = useQuery(queryWithdrawById, {
-                      context: { headers: getHeaders() },
-                      variables: {id: refId},
-                      notifyOnNetworkStatusChange: true,
-                    });
+        console.log("props.row.original : ", user)
 
-                    if(editValues.loading){
-                      return <LinearProgress />
-                    }
-
-                    let {status, data} = editValues.data.withdrawById
-                    console.log("Ref-Id :", status, data)
-                    if(status){
-                      return  <div>{data.balance} </div>
-                    }
-                  }
+        switch(checkRole(user)){
+          case AMDINISTRATOR:{
+            return [
+              {
+                Header: 'Type >><<',
+                accessor: 'type',
+                Cell: props =>{
+                    let {type} = props.row.values
+                    return ( <div style={{ position: "relative" }}>{type}</div> );
                 }
-
-                return <div>{refId}</div>
-            }
-          },
-          {
-            Header: 'Bank',
-            Cell: props => {
-                let {type, refId}  = props.row.original
-                console.log("props.row.original :", props.row.original)
-               
-                switch(type){
-                  case "withdraw":{
-                    let editValues = useQuery(queryWithdrawById, {
-                      context: { headers: getHeaders() },
-                      variables: {id: refId},
-                      notifyOnNetworkStatusChange: true,
-                    });
-
-                    if(editValues.loading){
-                      return <LinearProgress />
-                    }
-
-                    let {status, data} = editValues.data.withdrawById
-                    if(status){
-                      let bank = data.bank[0]
-                      return  <div>{bank.bankNumber} - {bank.bankName} </div>
-                    }
-                  }
+              },
+              {
+                Header: 'Balance',
+                accessor: 'balance',
+                Cell: props => {
+                  let {balance} = props.row.values
+                  return ( <div style={{ position: "relative" }}>{balance}</div> );
                 }
+              },
+              {
+                Header: 'Bank',
+                accessor: 'bank',
+                Cell: props => {
+                  let {bank} = props.row.values
+                  return <div>{bank[0].bankName} {bank[0].bankNumber}</div>
+                }
+              },
 
-                return <div>{refId}</div>
-            }
-          },
-          {
-            Header: 'Created at',
-            accessor: 'createdAt',
-            Cell: props => {
-                let {createdAt} = props.row.values
-                return <div>{createdAt}</div>
-            }
+              // 
+              {
+                Header: 'User Approve',
+                accessor: 'userNameApprove',
+                Cell: props => {
+                  let {userNameApprove} = props.row.values
+                  return <div>{userNameApprove} {userNameApprove}</div>
+                }
+              },
+              {
+                Header: 'Created at',
+                accessor: 'createdAt',
+                Cell: props => {
+                    let {createdAt} = props.row.values
+                    return <div>{createdAt}</div>
+                }
+              }
+            ]
           }
-      ],
+    
+          case AUTHENTICATED:{
+            return [
+              {
+                Header: 'Type >><<',
+                accessor: 'type',
+                Cell: props =>{
+                    let {type} = props.row.values
+                    return ( <div style={{ position: "relative" }}>{type}</div> );
+                }
+              },
+              {
+                Header: 'Balance',
+                accessor: 'balance',
+                Cell: props => {
+                  let {balance} = props.row.values
+                  return ( <div style={{ position: "relative" }}>{balance}</div> );
+                }
+              },
+              {
+                Header: 'Bank',
+                accessor: 'bank',
+                Cell: props => {
+                  let {bank} = props.row.values
+                  return <div>{bank[0].bankName} {bank[0].bankNumber}</div>
+                }
+              },
+              {
+                Header: 'Created at',
+                accessor: 'createdAt',
+                Cell: props => {
+                    let {createdAt} = props.row.values
+                    return <div>{createdAt}</div>
+                }
+              }
+            ]
+          }
+        }
+      } ,
       []
   )
   

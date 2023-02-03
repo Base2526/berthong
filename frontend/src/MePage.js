@@ -2,26 +2,27 @@ import React, { useState, useEffect } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { ToastContainer, toast } from 'react-toastify';
-import CircularProgress from '@mui/material/CircularProgress';
 import 'react-toastify/dist/ReactToastify.css';
 import _ from "lodash"
 import { useQuery, useMutation, useSubscription } from "@apollo/client";
 import LinearProgress from '@mui/material/LinearProgress';
+import queryString from 'query-string';
 
 import { getHeaders, checkRole } from "./util"
 import { queryMe, queryBalanceById } from "./gqlQuery"
 import { login, logout } from "./redux/actions/auth"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 
-const ProfilePage = (props) => {
+const MePage = (props) => {
     let history = useHistory();
     let location = useLocation();
     let { t } = useTranslation();
 
+    let params = queryString.parse(location.search)
+    
     let { user, login,  logout } = props
 
-    // console.log("user :", user)
+    console.log("params :", params)
 
     let meValues = useQuery(queryMe, {
         context: { headers: getHeaders() },
@@ -107,7 +108,10 @@ const ProfilePage = (props) => {
 
     return (  <div style={{flex:1}}>
                     <div> Profile Page {user.displayName} - {user.email} </div>
-                    
+                    <button onClick={()=>{
+                        // history.push({pathname: "/profile", search: `?u=${val.ownerId}` })
+                        history.push({ pathname: "/user",  search: `?u=${user._id}`, state: {from: "/", mode: "edit", id: user._id } });
+                    }}>แก้ไขข้อมูล</button>
                     {balanceView()}
                     {managementView()}
                     <button onClick={()=>{
@@ -123,4 +127,4 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = { login, logout }
 
-export default connect( mapStateToProps, mapDispatchToProps )(ProfilePage);
+export default connect( mapStateToProps, mapDispatchToProps )(MePage);

@@ -79,9 +79,17 @@ export default {
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
 
+        let users = await User.find({})
+
+        users = await Promise.all(_.map(users, async(user)=>{
+                  let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
+                    return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
+                  }))                  
+                  return {...user._doc, roles: _.filter(roles, (role)=>role!=undefined)}
+                }))
         return { 
                 status:true,
-                data: await User.find({}),
+                data: users,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
                 }
       } catch(err) {
@@ -139,7 +147,7 @@ export default {
       }
     },
 
-    async suppliers(parent, args, context, info){
+    async homes(parent, args, context, info){
       let start = Date.now()
 
       try{
@@ -157,10 +165,56 @@ export default {
         //             data: await Supplier.find({}),
         //             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
         // }
+        let suppliers = await Supplier.find({})
+        let homes = await Promise.all(_.map(suppliers, async(item)=>{
+          return {...item._doc, ownerName: (await User.findById(item.ownerId))?.displayName}
+        }))
+
+        return {  
+                status: true,
+                data: homes,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+              }
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("getSuppliers err :", err.toString())
+        return {  
+                status:false,
+                message: err.toString(),
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+              }
+      }
+    },
+
+    async suppliers(parent, args, context, info){
+      let start = Date.now()
+
+      try{
+        // let { status, code, currentUser } = context 
+        // console.log("ping :", currentUser?._id)
+
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
+
+          let suppliers = await Supplier.find({});
+
+          suppliers = await Promise.all(_.map(suppliers, async(item)=>{
+                        return {...item._doc, ownerName: (await User.findById(item.ownerId)).displayName}
+                      }))
+
+          return {  status:true,
+                    data: suppliers,
+                    executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+        }
 
         return {  
                 status:true,
-                data: await Supplier.find({}),
+                data: await Supplier.find({ownerId: current_user?._id}),
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
               }
       } catch(err) {
@@ -442,13 +496,73 @@ export default {
         let { status, code, current_user } =  authorization
         //////////////////////////
 
+        console.log("current_user :::", current_user)
+
+        // Withdraw
+        let withdraws = await Withdraw.find({userIdRequest: current_user?._id, $or: [{status:"approved"}, {status:"reject"}]  });
+
+
+        // let bank = withdraw.bank[0];
+        // let bankValue = await Bank.findById(bank.bankId)
+        // bank = {...bank._doc, bankName: bankValue.name}
+        // withdraw = {...withdraw._doc, bank: [bank]}
+
+        withdraws = await Promise.all(_.map(withdraws, async(withdraw)=>{
+
+          let bank = withdraw.bank[0];
+          let bankValue = await Bank.findById(bank.bankId)
+          bank = {...bank._doc, bankName: bankValue.name, ___id:bankValue._id.toString()}
+
+          let user = await User.findById(withdraw.userIdApprove)
+          return {...withdraw._doc, type: "withdraw", userNameApprove: user.displayName, bank: [bank]}
+        }))
+
+        console.log("withdraws >> ", withdraws)
+
+
         return {  status:true,
-                  data: await Transition.find({userIdRequest: current_user?._id}),
+                  // data: await Transition.find({userIdRequest: current_user?._id}),
+                  data: withdraws,
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
       } catch(err) {
         logger.error(err.toString());
         console.log("bank err :", args, err.toString())
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    async supplierProfile(parent, args, context, info){
+      let start = Date.now()
+      try{
+
+        console.log("supplierProfile :", args)
+
+        let { _id } = args
+
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        let user = await User.findById(_id);
+
+        let suppliers = await Supplier.find({ownerId: _id});
+       
+        user = {...user._doc, suppliers}
+
+        return {  status: true,
+                  data: user,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("supplierProfile err :", args, err.toString())
 
         return {  status:false,
                   message: err.toString(),
@@ -984,19 +1098,43 @@ export default {
         console.log("me image :", newInput)
         ////////////
 
-        let user = await User.findOneAndUpdate({ _id: current_user?._id }, newInput , { new: true })
-        pubsub.publish("ME", {
-          me: {
-            mutation: "UPDATE",
-            data: user
-          },
-        });
+        if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
 
-        return {
-          status: true,
-          data: user,
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          console.log("me image >>>>> #1 ")
+          let user = await User.findOneAndUpdate({ _id: input.uid }, newInput , { new: true })
+
+          console.log(">>>>>>>>>>>>> user :", user)
+          pubsub.publish("ME", {
+            me: {
+              mutation: "UPDATE",
+              data: user
+            },
+          });
+  
+          return {
+            status: true,
+            data: user,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }
+        }else{
+
+          console.log("me image >>>>> #2 ", current_user?.roles)
+
+          let user = await User.findOneAndUpdate({ _id: current_user?._id }, newInput , { new: true })
+          pubsub.publish("ME", {
+            me: {
+              mutation: "UPDATE",
+              data: user
+            },
+          });
+  
+          return {
+            status: true,
+            data: user,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }
         }
+       
       } catch(err) {
         logger.error( err.toString());
 
@@ -1515,13 +1653,13 @@ export default {
                 let newInput = {...input, userIdApprove: current_user?._id}
                 let withdraw = await Withdraw.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
 
-                let transition = await Transition.create({ type: "withdraw", refId: withdraw._id, userIdRequest:withdraw.userIdRequest, userIdApprove: current_user?._id });
+                // let transition = await Transition.create({ type: "withdraw", refId: withdraw._id, userIdRequest:withdraw.userIdRequest, userIdApprove: current_user?._id });
 
                 return {
                   status: true,
                   mode: input.mode.toLowerCase(),
                   data: withdraw,
-                  transition,
+                  // transition,
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
                 }
               }else{

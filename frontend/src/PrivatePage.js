@@ -41,7 +41,7 @@ import { Redirect, Link, Switch, Route, useRouteMatch } from "react-router-dom";
 
 // import { isAuth } from "./AuthProvider";
 
-import ProfilePage from "./ProfilePage"
+import MePage from "./MePage"
 import DepositsPage from "./DepositsPage"
 import WithdrawsPage from "./WithdrawsPage"
 
@@ -70,7 +70,7 @@ const PrivatePage =(props) => {
   return !_.isEmpty(props.user)
         ?   <Switch>
                 <Route path="/me">
-                    <ProfilePage />
+                    <MePage />
                 </Route>
                 <Route path="/deposits">
                     <DepositsPage />
@@ -78,34 +78,27 @@ const PrivatePage =(props) => {
                 <Route path="/deposit">
                     <DepositPage />
                 </Route>
-
                 <Route path="/withdraws">
                     <WithdrawsPage />
                 </Route>
                 <Route path="/withdraw">
                     <WithdrawPage />
                 </Route>
-
                 <Route path="/banks">
                     <BanksPage />
                 </Route>
-
                 <Route path="/bank">
                     <BankPage />
                 </Route>
-
                 <Route path="/transitions">
                     <TransitionsPage />
                 </Route>
-
                 <Route path="/me+bank">
                     <ProfileBankPage />
                 </Route>
-
                 <Route path="/users">
                     <UsersPage />
                 </Route>
-
                 <Route path="/user">
                     <UserPage />
                 </Route>

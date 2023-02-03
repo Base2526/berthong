@@ -159,12 +159,7 @@ const SupplierPage = (props) => {
   switch(mode){
     case "new":{
         return <LocalizationProvider dateAdapter={AdapterDateFns} >
-                <Box
-                  component="form"
-                  sx={{
-                      "& .MuiTextField-root": { m: 1, width: "50ch" }
-                  }}
-                  onSubmit={submitForm}>
+                <Box component="form" sx={{"& .MuiTextField-root": { m: 1, width: "50ch" } }} onSubmit={submitForm}>
                   <div >
                     <TextField
                       id="title"

@@ -2,6 +2,7 @@ import { gql } from "@apollo/client";
 
 // query
 export const gqlPing        = gql`query Ping{ ping }`;
+export const queryHomes     = gql`query homes { homes }`;
 export const querySuppliers = gql`query suppliers { suppliers }`;
 export const querySupplierById= gql`query supplierById($id: ID!) { supplierById(_id: $id) }`;
 
@@ -22,6 +23,8 @@ export const queryBankById    = gql`query bankById($id: ID!) { bankById(_id: $id
 export const queryBalanceById = gql`query balanceById($id: ID!) { balanceById(_id: $id) }`;
 
 export const queryTransitions = gql`query transitions { transitions }`;
+
+export const querySupplierProfile = gql`query supplierProfile($id: ID!) { supplierProfile(_id: $id) }`;
 
 // mutation
 export const mutationLogin      = gql`mutation login($input: LoginInput) { login(input: $input) }`;

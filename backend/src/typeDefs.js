@@ -442,6 +442,8 @@ export default gql`
     userById(_id: ID): JSON
     roles: JSON
 
+    homes: JSON
+
     suppliers: JSON
     supplierById(_id: ID): JSON
 
@@ -457,6 +459,8 @@ export default gql`
     balanceById(_id: ID!): JSON
 
     transitions: JSON
+
+    supplierProfile(_id: ID): JSON
   }  
   
   input RoomInput {
@@ -679,9 +683,8 @@ export default gql`
     status: String
   }
 
- 
-
   input MeInput{
+    uid: ID
     username: String
     password: String
     email: String
