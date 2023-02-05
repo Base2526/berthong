@@ -28,6 +28,9 @@ const depositSchema = new Schema({
         enum : ['wait','approved', 'reject'],
         default: 'wait'
     }, 
+    bank: [{ 
+        bankId: { type: String, required:[true, "Bank-Id Request is a required field"] },
+    }],
 },
 {
     timestamps: true

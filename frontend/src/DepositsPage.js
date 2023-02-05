@@ -19,14 +19,13 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import moment from "moment";
+import LinearProgress from '@mui/material/LinearProgress';
 
 import { getHeaders, checkRole } from "./util"
-import { queryDeposits, mutationDeposit } from "./gqlQuery"
+import { queryDeposits, mutationDeposit, queryBanks } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
-
 import { AMDINISTRATOR } from "./constants"
-
-import ReadMoreMaster from "./ReadMoreMaster"
 import Table from "./TableContainer"
 
 const DepositsPage = (props) => {
@@ -152,8 +151,30 @@ const DepositsPage = (props) => {
             Header: 'Balance',
             accessor: 'balance',
             Cell: props =>{
-                let {balance} = props.row.values
-                return ( <div style={{ position: "relative" }}>{balance}</div> );
+              let {balance} = props.row.values
+              return ( <div style={{ position: "relative" }}>{balance}</div> );
+            }
+          },
+          {
+            Header: 'Bank',
+            accessor: 'bank',
+            Cell: props =>{
+                let {bank} = props.row.values
+    
+                console.log("bank :", bank)
+
+                if(_.isEmpty(bank)){
+                  return <div>Not set</div>
+                }
+
+                let valueBanks = useQuery(queryBanks, { notifyOnNetworkStatusChange: true, });
+                if(valueBanks.loading){
+                  return <LinearProgress /> 
+                }
+                let find = _.find(valueBanks.data.banks.data, (item)=>item._id.toString() == bank[0].bankId.toString() )            
+                return <div style={{ position: "relative" }}>{bank[0].bankId} : {find.name}</div>
+
+                // return ( <div style={{ position: "relative" }}>bank</div> );
             }
           },
           {
@@ -181,8 +202,21 @@ const DepositsPage = (props) => {
             Header: 'Created at',
             accessor: 'createdAt',
             Cell: props => {
-                let {createdAt} = props.row.values
-                return <div>{createdAt}</div>
+              let {createdAt} = props.row.values
+              createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+  
+              return <div>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
+            }
+          },
+          {
+            Header: 'updated at',
+            accessor: 'updatedAt',
+            Cell: props => {
+                let {updatedAt} = props.row.values
+    
+                updatedAt = new Date(updatedAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+    
+                return <div>{ (moment(updatedAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
             }
           },
           {
@@ -239,12 +273,15 @@ const DepositsPage = (props) => {
             depositsValue.loading
             ? <CircularProgress /> 
             : <div>
-                <button onClick={()=>{  
-                  history.push({ 
-                    pathname: "/deposit", 
-                    state: {from: "/", mode: "new"} 
-                  });
-                }}>เพิ่ม แจ้งฝากเงิน</button>
+                
+                {
+                  checkRole(user) !== AMDINISTRATOR 
+                  ? <button onClick={()=>{  
+                      history.push({ pathname: "/deposit", state: {from: "/", mode: "new"}  });
+                    }}>เพิ่ม แจ้งฝากเงิน</button>
+                  : ""
+                  }
+                
                 <Table
                   columns={columns}
                   data={depositsValue.data.deposits.data}

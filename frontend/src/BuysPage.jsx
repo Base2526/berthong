@@ -18,14 +18,10 @@ import { useQuery, useMutation } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 
-import { queryBanks } from "./gqlQuery"
+import { queryBuys } from "./gqlQuery"
 import Table from "./TableContainer"
 
-export const UserListContainer = styled.div`
-  flex: 4;
-`;
-
-const BanksPage = (props) => {
+const BuysPage = (props) => {
   let history = useHistory();
   const { t } = useTranslation();
 
@@ -35,9 +31,9 @@ const BanksPage = (props) => {
 
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
-  const bankValues = useQuery(queryBanks,  { notifyOnNetworkStatusChange: true });
+  const buysValues = useQuery(queryBuys, { notifyOnNetworkStatusChange: true });
 
-  console.log("bankValues :", bankValues)
+  console.log("buysValues :", buysValues)
 
   // const [onDeleteBank, resultDeleteBank] = useMutation(gqlDeleteBank, 
   //   {
@@ -81,8 +77,12 @@ const BanksPage = (props) => {
   const columns = useMemo(
     () => [
         {
-          Header: 'Name',
-          accessor: 'name',
+          Header: 'Type',
+          accessor: 'type',
+        },
+        {
+          Header: 'Title',
+          accessor: 'title',
         },
         {
           Header: 'Description',
@@ -143,31 +143,18 @@ const BanksPage = (props) => {
   // the rowIndex, columnId and new value to update the
   // original data
   const updateMyData = (rowIndex, columnId, value) => {
-    console.log("updateMyData")
-    // We also turn on the flag to not reset the page
     skipResetRef.current = true
-    // setData(old =>
-    //   old.map((row, index) => {
-    //     if (index === rowIndex) {
-    //       return {
-    //         ...row,
-    //         [columnId]: value,
-    //       }
-    //     }
-    //     return row
-    //   })
-    // )
   }
   //////////////////////
 
   return (
-    <UserListContainer>
+    <div className="user-list-container">
       {
-         bankValues.loading
+         buysValues.loading
          ?  <div><CircularProgress /></div> 
          :  <Table
               columns={columns}
-              data={bankValues.data.banks.data}
+              data={buysValues.data.buys.data}
               fetchData={fetchData}
               rowsPerPage={pageOptions}
               updateMyData={updateMyData}
@@ -200,22 +187,8 @@ const BanksPage = (props) => {
           </DialogActions>
         </Dialog>
       )}
-
-      <SpeedDial
-        ariaLabel="SpeedDial basic example"
-        sx={{ position: 'absolute', bottom: 16, right: 16 }}
-        icon={<SpeedDialIcon />}
-        onClick={(e)=>{
-          // history.push("/bank/new");
-
-          history.push({ 
-            pathname: "/bank", 
-            state: {from: "/", mode: "new"} 
-          });
-        }}
-      />
-    </UserListContainer>
+    </div>
   );
 };
 
-export default BanksPage;
+export default BuysPage;

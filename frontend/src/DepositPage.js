@@ -19,13 +19,12 @@ import Autocomplete from "@mui/material/Autocomplete";
 
 
 import { getHeaders, checkRole } from "./util"
-import { queryDeposits, queryDepositById, mutationDeposit } from "./gqlQuery"
+import { queryDeposits, queryDepositById, mutationDeposit, queryBankAdmin } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
 import { AMDINISTRATOR } from "./constants"
 import AttackFileField from "./AttackFileField";
 
-
-let initValues = { balance: "", status: "wait", dateTranfer: null, attackFiles:[] }
+let initValues = { balance: "", bank: null, status: "wait", dateTranfer: null, attackFiles:[] }
 
 const DepositPage = (props) => {
   let history = useHistory();
@@ -39,6 +38,10 @@ const DepositPage = (props) => {
 
   let { user, logout } = props
   let { mode, id } = location.state
+
+  let bankAdminValue = useQuery(queryBankAdmin, { notifyOnNetworkStatusChange: true, });
+
+  console.log("bankAdminValue :", bankAdminValue)
 
   // console.log("location.state : ", location.state)
   let editValues = null;
@@ -133,6 +136,7 @@ const DepositPage = (props) => {
       mode: mode.toUpperCase(),
       balance: parseInt(input.balance),
       dateTranfer: input.dateTranfer,
+      bank: input.bank,
       status: input.status,
       files: input.attackFiles
     }
@@ -144,6 +148,10 @@ const DepositPage = (props) => {
     console.log("newInput :", newInput)
     onMutationDeposit({ variables: { input: newInput } });
   }
+
+  const onBankIdChange = (e, bank) => {
+    setInput({...input, bank})
+  };
 
   const onInputChange = (e) => {
     const { name, value } = e.target;
@@ -185,6 +193,27 @@ const DepositPage = (props) => {
       return  <LocalizationProvider dateAdapter={AdapterDateFns} >
                 <Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }} onSubmit={submitForm}>
                   <div >
+                  {
+                      bankAdminValue.loading
+                      ? <CircularProgress /> 
+                      : <Autocomplete
+                          disablePortal
+                          id="bank-id"
+                          options={bankAdminValue.data.bankAdmin.admin_banks}
+                          getOptionLabel={(option) => {
+                            console.log("getOptionLabel :", option)
+                            let find = _.find(bankAdminValue.data.bankAdmin.banks, (item)=>item._id.toString() == option.bankId.toString())   
+                            return option.bankNumber +" - "+find.name
+                          }}
+                          defaultValue={ input.bank }
+                          renderInput={(params) => 
+                          {
+                            return <TextField {...params} label={t("bank_account_name")} required={ _.isEmpty(input.bank) ? true : false } />
+                          }}
+                          onChange={(event, values) => onBankIdChange(event, values)}/>
+                    }
+
+
                     <TextField
                       id="balance"
                       name="balance"
@@ -259,6 +288,7 @@ const DepositPage = (props) => {
               setInput({
                 balance: data.balance,
                 dateTranfer: new Date(data.dateTranfer),
+                bank: data.bank,
                 attackFiles: data.files,
                 status: data.status
               })

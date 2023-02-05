@@ -9,19 +9,32 @@ import CardActionArea from "@material-ui/core/CardActionArea";
 import Avatar from "@mui/material/Avatar";
 import Lightbox from "react-image-lightbox";
 import "react-image-lightbox/style.css";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import { FacebookShareButton, TwitterShareButton } from "react-share";
+import { FacebookIcon, TwitterIcon } from "react-share";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
-import { querySuppliers, subscriptionSuppliers, mutationMe } from "./gqlQuery"
-import { getHeaders, checkRole } from "./util"
+import { queryHomes, subscriptionSuppliers, mutationMe } from "./gqlQuery"
+import { getHeaders, checkRole, bookView, sellView } from "./util"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 import { login, logout } from "./redux/actions/auth"
 import DialogLogin from "./DialogLogin"
+
+import ItemFollow from "./ItemFollow"
+import ItemShare from "./ItemShare";
 
 let unsubscribeSuppliers = null;
 const HomePage = (props) => {
   let history = useHistory();
   let { t } = useTranslation();
-  let [dialogLoginOpen, setDialogLoginOpen] = useState(false);
+  let [dialogLogin, setDialogLogin] = useState(false);
   let [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
+
+  let [openMenuSetting, setOpenMenuSetting] = useState(null);
+  let [openMenuShare, setOpenMenuShare] = useState(null);
 
   let { user } = props
 
@@ -44,39 +57,40 @@ const HomePage = (props) => {
     }
   });
   
-  const suppliersValues =useQuery(querySuppliers, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true});
+  const suppliersValues =useQuery(queryHomes, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true});
 
+  console.log("suppliersValues: ", suppliersValues)
   if(suppliersValues.loading){
     return <div><CircularProgress /></div>
   }else{
-    if(_.isEmpty(suppliersValues.data.suppliers)){
+    if(_.isEmpty(suppliersValues.data.homes)){
       return;
     }
 
-    let {subscribeToMore, networkStatus} = suppliersValues
-    let keys = _.map(suppliersValues.data.suppliers.data, _.property("_id"));
+    // let {subscribeToMore, networkStatus} = suppliersValues
+    // let keys = _.map(suppliersValues.data.suppliers.data, _.property("_id"));
     
-    unsubscribeSuppliers && unsubscribeSuppliers()
-    unsubscribeSuppliers =  subscribeToMore({
-			document: subscriptionSuppliers,
-      variables: { supplierIds: JSON.stringify(keys) },
-			updateQuery: (prev, {subscriptionData}) => {        
-        if (!subscriptionData.data) return prev;
+    // unsubscribeSuppliers && unsubscribeSuppliers()
+    // unsubscribeSuppliers =  subscribeToMore({
+		// 	document: subscriptionSuppliers,
+    //   variables: { supplierIds: JSON.stringify(keys) },
+		// 	updateQuery: (prev, {subscriptionData}) => {        
+    //     if (!subscriptionData.data) return prev;
 
-        let { mutation, data } = subscriptionData.data.subscriptionSuppliers;
-        switch(mutation){
-          case "BOOK":
-          case "UNBOOK":{
-            let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
+    //     let { mutation, data } = subscriptionData.data.subscriptionSuppliers;
+    //     switch(mutation){
+    //       case "BOOK":
+    //       case "UNBOOK":{
+    //         let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
 
-            let newPrev = {...prev.suppliers, data: newData}
-            return {suppliers: newPrev}; 
-          }
-          default:
-            return prev;
-        }
-			}
-		});
+    //         let newPrev = {...prev.suppliers, data: newData}
+    //         return {suppliers: newPrev}; 
+    //       }
+    //       default:
+    //         return prev;
+    //     }
+		// 	}
+		// });
   }
 
   // console.log("checkRole :", checkRole(user), user)
@@ -91,6 +105,7 @@ const HomePage = (props) => {
 
       case AUTHENTICATED:{
         return  <div>
+                
                   <div onClick={()=>{ history.push("/me") }}>AUTHENTICATED : {user.displayName} - {user.email}</div>
                 </div>
       }
@@ -99,25 +114,85 @@ const HomePage = (props) => {
         return  <div>
                   <div>ANONYMOUS</div>
                   <div>
-                    <button onClick={()=>setDialogLoginOpen(true)}>Login</button>
+                    <button onClick={()=>setDialogLogin(true)}>Login</button>
                   </div>
                 </div>
       }
     }
   }
 
-  const bookView = (val) =>{
-    let fn = _.filter(val.buys, (buy)=> buy.selected == 0 );
-    // console.log("val :", val, fn)
+  const menuShareView = (item, index) =>{
+    console.log("menuShareView :", item)
+    return  <Menu
+              anchorEl={openMenuShare && openMenuShare[index]}
+              keepMounted
+              open={openMenuShare && Boolean(openMenuShare[index])}
+              onClose={(e)=>setOpenMenuShare(null)}
+              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              transformOrigin={{ vertical: "top", horizontal: "center" }}
+              MenuListProps={{ "aria-labelledby": "lock-button", role: "listbox" }}>
+              <MenuItem onClose={(e)=>setOpenMenuShare(null)}>
+                  <FacebookShareButton
+                    url={ window.location.href + "detail/"}
+                    quote={item?.title}
+                    // hashtag={"#hashtag"}
+                    description={item?.description}
+                    className="Demo__some-network__share-button"
+                    onClick={(e)=>setOpenMenuShare(null)} >
+                    <FacebookIcon size={32} round /> Facebook
+                  </FacebookShareButton>
+              </MenuItem>{" "}
 
-    return fn.length;
+              <MenuItem onClose={(e)=>setOpenMenuShare(null)}>
+                <TwitterShareButton
+                  title={item?.title}
+                  url={ window.location.origin + "/detail/"  }
+                  // hashtags={["hashtag1", "hashtag2"]}
+                  onClick={(e)=>setOpenMenuShare(null)} >
+                  <TwitterIcon size={32} round />
+                  Twitter
+                </TwitterShareButton>
+              </MenuItem>
+
+              <MenuItem 
+              onClick={async(e)=>{
+                let text = window.location.href + "p/?id=" + item._id
+                if ('clipboard' in navigator) {
+                  await navigator.clipboard.writeText(text);
+                } else {
+                  document.execCommand('copy', true, text);
+                }
+
+                setOpenMenuShare(null)
+              }}>
+                
+              <ContentCopyIcon size={32} round /> Copy link
+              </MenuItem>
+            </Menu>
   }
 
-  const sellView = (val) =>{
-    let fn = _.filter(val.buys, (buy)=> buy.selected == 1 );
-    // console.log("val :", val, fn)
-
-    return fn.length;
+  const menuSettingView = (item, index) =>{
+    return  <Menu
+              anchorEl={openMenuSetting && openMenuSetting[index]}
+              keepMounted
+              open={openMenuSetting && Boolean(openMenuSetting[index])}
+              onClose={()=>{ setOpenMenuSetting(null) }}
+              getContentAnchorEl={null}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "center"
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "center"
+              }}
+              MenuListProps={{
+                "aria-labelledby": "lock-button",
+                role: "listbox"
+              }}
+            >
+              <MenuItem onClick={(e)=>{setOpenMenuSetting(null)}}>Report</MenuItem>
+            </Menu>
   }
 
   const imageView = (val) =>{
@@ -142,35 +217,60 @@ const HomePage = (props) => {
   }
 
   return (<div style={{flex:1}}>
+            
             {managementView()}
             {
-              _.map(suppliersValues.data.suppliers.data, (val, k)=>{
+              _.map(suppliersValues.data.homes.data, (val, k)=>{
                 return  <div key={k} className="home-item" >
+                          <div onClick={()=>{
+                            history.push({pathname: "/profile", search: `?u=${val.ownerId}` })
+                          }}>Supplier : {val.ownerName}</div>
+                          {menuShareView(val, k)}
+                          {menuSettingView(val, k)}
+
                           {imageView(val)}
+
                           <div>{val.title}</div>
                           <div>จอง :{bookView(val)}</div>
                           <div>ขายไปแล้ว :{sellView(val)}</div>
                           <button onClick={(evt)=>{
                             history.push({
-                              pathname: "/detail",
-                              // search: "?id=5",
+                              pathname: "/p",
+                              search: `?id=${val._id}`,
                               // hash: "#react",
                               state: { id: val._id }
                             });
                           }}>ดูรายละเอียด</button>
+
+                          <div>
+                            <ItemFollow 
+                              {...props} 
+                              item={val} 
+                              onDialogLogin={(e)=>{
+                                setDialogLogin(true)
+                              }}/>
+                            <ItemShare 
+                              {...props}  
+                              onOpenMenuShare={(e)=>{
+                                setOpenMenuShare({ [k]: e.currentTarget });
+                              }}/>
+                            <IconButton  onClick={(e) => { setOpenMenuSetting({ [k]: e.currentTarget }); }}>
+                              <MoreVertIcon />
+                            </IconButton>
+                          </div>
                         </div>
               })
             }
 
-            {dialogLoginOpen && (
+            {dialogLogin && (
               <DialogLogin
                 {...props}
-                open={dialogLoginOpen}
+                open={dialogLogin}
                 onComplete={async(data)=>{
-                  setDialogLoginOpen(false);
+                  setDialogLogin(false);
                 }}
                 onClose={() => {
-                  setDialogLoginOpen(false);
+                  setDialogLogin(false);
                 }}
               />
             )}

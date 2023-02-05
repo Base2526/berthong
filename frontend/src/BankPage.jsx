@@ -1,8 +1,8 @@
-import React , {useState, useEffect} from "react";
+import React , {useState} from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import { useHistory, useLocation, useParams } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -64,7 +64,7 @@ const BankPage = (props) => {
           ////////// update cache queryBankById ///////////
         },
         onCompleted({ data }) {
-          history.push("/banks");
+          history.goBack();
         }
       }
   );

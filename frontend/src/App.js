@@ -23,7 +23,7 @@ import HomePage from "./HomePage";
 import DetailPage from "./DetailPage";
 import SuppliersPage from "./SuppliersPage";
 import SupplierPage from "./SupplierPage";
-
+import SupplierProfilePage from "./SupplierProfilePage";
 
 import PrivateRoute from "./PrivateRoute"
 import PrivatePage from "./PrivatePage"
@@ -66,27 +66,22 @@ const App =(props) =>{
           <div className="row">
             <Switch>
               <Route path="/" exact>
-                <div className="page-home">
-                  <HomePage />
-                </div>
+                <HomePage />
               </Route>
-
-              <Route path="/detail">
-                <div className="page-dev pl-2 pr-2">
-                  <DetailPage />
-                </div>
+              <Route path="/p">
+                <DetailPage />
               </Route>
-
               <Route path="/user/login">
                 <LoginPage />
               </Route>
-
               <Route path="/suppliers">
                 <SuppliersPage />
               </Route>
-
               <Route path="/supplier">
                 <SupplierPage />
+              </Route>
+              <Route path="/profile">
+                <SupplierProfilePage />
               </Route>
 
               <PrivateRoute path="/">

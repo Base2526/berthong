@@ -442,6 +442,8 @@ export default gql`
     userById(_id: ID): JSON
     roles: JSON
 
+    homes: JSON
+
     suppliers: JSON
     supplierById(_id: ID): JSON
 
@@ -454,9 +456,18 @@ export default gql`
     banks: JSON
     bankById(_id: ID): JSON
 
+    bankAdmin: JSON
+
     balanceById(_id: ID!): JSON
 
     transitions: JSON
+
+    supplierProfile(_id: ID): JSON
+
+    dateLotterys: JSON
+    dateLotteryById(_id: ID!): JSON
+
+    buys: JSON
   }  
   
   input RoomInput {
@@ -675,13 +686,13 @@ export default gql`
     _id: ID
     balance: Int
     dateTranfer: DATETIME
+    bank: JSON!
     files: [JSON]
     status: String
   }
 
- 
-
   input MeInput{
+    uid: ID
     username: String
     password: String
     email: String
@@ -698,18 +709,37 @@ export default gql`
     socialObject: String
   }
 
+  enum DateLotteryModeType {
+    NEW
+    EDIT
+    DELETE
+  }
+
+  input DateLotteryInput{
+    mode: DateLotteryModeType!
+    _id: ID
+    title: String!
+    startDate: Date!
+    endDate: Date!
+    description: String
+  }
+
   type Mutation {
     login(input: LoginInput): JSON
     loginWithSocial(input: LoginWithSocialInput): JSON
     loginWithGithub(code: String!):JSON
     me(input: MeInput): JSON
     book(input: BookInput): JSON
-    buys(input: BuyInput): JSON
+    buy(_id: ID): JSON
     supplier(input: SupplierInput): JSON    
     deposit(input: DepositInput): JSON 
     withdraw(input: WithdrawInput): JSON 
 
     bank(input: BankInput): JSON 
+
+    follow(_id: ID): JSON 
+
+    dateLottery(input: DateLotteryInput): JSON 
   }
 
   type Subscription {

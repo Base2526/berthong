@@ -1,4 +1,6 @@
 import _ from "lodash"
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import i18n from './translations/i18n';
 import { AMDINISTRATOR, AUTHENTICATED, ANONYMOUS } from "./constants"
@@ -88,4 +90,31 @@ export const checkRole = (user) =>{
         // }
     }
     return ANONYMOUS;
+}
+
+export const bookView = (val) =>{
+    let fn = _.filter(val.buys, (buy)=> buy.selected == 0 );
+    return fn.length;
+}
+
+export const sellView = (val) =>{
+    let fn = _.filter(val.buys, (buy)=> buy.selected == 1 );
+    return fn.length;
+}
+
+export const showToast = (type, text) =>{
+    toast(
+        <p style={{ fontSize: 16 }}>{text}</p>, 
+        {
+          position: "top-right",
+          autoClose: 1000,
+          hideProgressBar: true,
+          newestOnTop: false,
+          closeOnClick: true,
+          rtl: false,
+          pauseOnFocusLoss: true,
+          draggable: true,
+          pauseOnHover: false,
+          type /* "success", error*/ 
+        }); 
 }

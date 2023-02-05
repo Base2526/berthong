@@ -14,10 +14,10 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { useQuery, useMutation } from "@apollo/client";
 import LinearProgress from '@mui/material/LinearProgress';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import EditIcon from '@mui/icons-material/Edit';
+import {ExitToApp as ExitToAppIcon, Edit as EditIcon, DeleteForever as DeleteForeverIcon } from '@mui/icons-material';
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
+import moment from "moment";
 
 import { queryUsers, queryBalanceById } from "./gqlQuery"
 import Table from "./TableContainer"
@@ -99,6 +99,7 @@ const UsersPage = (props) => {
                       width: 100
                     }}>A</Avatar>
           }
+
           return (
             <div style={{ position: "relative" }}>
               <Avatar
@@ -108,7 +109,7 @@ const UsersPage = (props) => {
                 }}
                 variant="rounded"
                 alt="Example Alt"
-                src={props.row.original.image[0].url}
+                src={ _.isEmpty(props.row.original.image[0].url) ? props.row.original.image[0].base64 : props.row.original.image[0].url }
               />
             </div>
           );
@@ -118,14 +119,26 @@ const UsersPage = (props) => {
         Header: 'Display name',
         accessor: 'displayName',
         Cell: props => {
-          return  <Link to={`/user/${props.row.original._id}/view`}>
-                    {props.row.original.displayName}
-                  </Link>
+          let {_id, displayName} = props.row.original
+          return  <div onClick={()=>{
+                      history.push({ 
+                        pathname: "/user", 
+                        state: {from: "/", mode: "edit", id: _id } 
+                      });
+                    }}>{displayName}</div>
         }
       },
       {
         Header: 'Email',
         accessor: 'email',
+      },
+      {
+        Header: 'Roles',
+        accessor: 'roles',
+        Cell: props => {
+          let {roles} = props.row.values
+          return <div>{roles.join(',')}</div>
+        }
       },
       {
         Header: 'Balance',
@@ -146,15 +159,19 @@ const UsersPage = (props) => {
       {
         Header: 'Last access',
         accessor: 'lastAccess',
+        Cell: props =>{
+          let {lastAccess} = props.row.values 
+          return <div>{ (moment(lastAccess, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</div>
+        }
       },
       {
         Header: 'Action',
         Cell: props => {
-          console.log("Cell :", props)
-
           let {_id, displayName} = props.row.original
           return  <div className="Btn--posts">
-                    {/* <Link to={`/user/${_id}/edit`}> */}
+                    <button onClick={(e)=>{
+                      console.log("Force logout")
+                    }}><ExitToAppIcon />Force logout</button>
                     <button onClick={()=>{
                       history.push({ 
                         pathname: "/user", 

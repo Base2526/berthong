@@ -3,15 +3,31 @@ import { useHistory, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ToastContainer, toast } from 'react-toastify';
-import CircularProgress from '@mui/material/CircularProgress';
 import 'react-toastify/dist/ReactToastify.css';
+
+import CircularProgress from '@mui/material/CircularProgress';
 import _ from "lodash"
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
+import CardActionArea from "@material-ui/core/CardActionArea";
+import Avatar from "@mui/material/Avatar";
+import Lightbox from "react-image-lightbox";
+import "react-image-lightbox/style.css";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import { FacebookShareButton, TwitterShareButton } from "react-share";
+import { FacebookIcon, TwitterIcon } from "react-share";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import queryString from 'query-string';
 
 import { login } from "./redux/actions/auth"
-import { getHeaders } from "./util"
-import { querySupplierById, gqlBook, gqlBuys, subscriptionSupplierById } from "./gqlQuery"
+import { getHeaders, bookView, sellView, showToast } from "./util"
+import { querySupplierById, gqlBook, gqlBuy, subscriptionSupplierById } from "./gqlQuery"
 import DialogLogin from "./DialogLogin"
+import DialogBuy from "./DialogBuy"
+import ItemFollow from "./ItemFollow"
+import ItemShare from "./ItemShare";
 
 let unsubscribeSupplierById = null;
 
@@ -19,26 +35,24 @@ const DetailPage = (props) => {
   let history = useHistory();
   let location = useLocation();
   let { t } = useTranslation();
-
+  let [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
   let [datas, setDatas] = useState([])
-  let [dialogLoginOpen, setDialogLoginOpen] = useState(false);
+  let [dialogLogin, setDialogLogin] = useState(false);
+  let [dialogBuy, setDialogBuy] = useState(false);
+  let [openMenuSetting, setOpenMenuSetting] = useState(null);
+  let [openMenuShare, setOpenMenuShare] = useState(null);
 
-  // console.log("location :", location.state )
+  let params = queryString.parse(location.search)
 
-  let { id } = location.state
+  let { id } = params; //location.state
   let { user } = props
-  // console.log("user :", user)
 
   useEffect(()=>{
     let newDatas = []
     for (let i = 0; i < 100; i++) {
       newDatas = [...newDatas, {id: i, title:  i > 9 ? "" + i: "0" + i, selected: -1}]
     }
-
-    // console.log("newDatas : ", newDatas)
     setDatas(newDatas)
-
-
     return () => {
       unsubscribeSupplierById && unsubscribeSupplierById()
     };
@@ -47,9 +61,6 @@ const DetailPage = (props) => {
   const [onBook, resultBookValues] = useMutation(gqlBook,{
     context: { headers: getHeaders() },
     update: (cache, {data: {book}}) => {
-      
-      // console.log("onBook :", book)
-
       let { status, data } = book
       if(status){
         cache.writeQuery({
@@ -62,6 +73,30 @@ const DetailPage = (props) => {
           variables: { id: data._id }
         }); 
       }    
+    },
+    onCompleted({ data }) {
+      console.log("onCompleted")
+    },
+    onError: (err) => {
+      console.log("onError :", err)
+    }
+  });
+
+  const [onBuy, resultBuyValues] = useMutation(gqlBuy,{
+    context: { headers: getHeaders() },
+    update: (cache, {data: {buy}}) => {
+      let { status, data } = buy
+         
+      ////////// update cache queryUserById ///////////
+      let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
+      if(querySupplierByIdValue){
+        cache.writeQuery({
+          query: querySupplierById,
+          data: { supplierById: {...querySupplierByIdValue.supplierById, data} },
+          variables: {id: data._id}
+        });
+      }
+      ////////// update cache queryUserById ///////////    
     },
     onCompleted({ data }) {
       console.log("onCompleted")
@@ -112,50 +147,18 @@ const DetailPage = (props) => {
   let {status, data} = querySupplierByIdValue.data.supplierById
 
   const onSelected = (evt, itemId) =>{
-    // let find = _.find(datas, (itm)=>itm.id==itemId);
-
     let fn = _.find(data.buys, (buy)=>buy.itemId == itemId)
-
-    // console.log("evt find :", evt, itemId, find)
 
     let selected = 0;
     if(fn){
       selected = fn.selected == -1 ? 0 : -1
     }
 
-    setDatas(_.map(datas, (itm, k)=>{
-                      if(itemId == k)
-                        return {...itm, selected }
-                      return itm
-                    }))
+    setDatas(_.map(datas, (itm, k)=>itemId == k ? {...itm, selected }: itm))
 
-    if(selected ==0){
-      toast(<p style={{ fontSize: 16 }}>จองเบอร์ { itemId > 9 ? "" + itemId: "0" + itemId }</p>, {
-        position: "top-right",
-        autoClose: 1000,
-        hideProgressBar: true,
-        newestOnTop: false,
-        closeOnClick: true,
-        rtl: false,
-        pauseOnFocusLoss: true,
-        draggable: true,
-        pauseOnHover: false,
-        type: "success"
-      }); 
-    }else{
-      toast(<p style={{ fontSize: 16 }}>ยกเลิกการจองเบอร์ { itemId > 9 ? "" + itemId: "0" + itemId }</p>, {
-        position: "top-right",
-        autoClose: 1000,
-        hideProgressBar: true,
-        newestOnTop: false,
-        closeOnClick: true,
-        rtl: false,
-        pauseOnFocusLoss: true,
-        draggable: true,
-        pauseOnHover: false,
-        type: "error"
-      }); 
-    }
+    selected ==0 
+    ? showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+    : showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
 
     onBook({ variables: { input: { supplierId: id, itemId, selected } } });
   }
@@ -173,15 +176,149 @@ const DetailPage = (props) => {
     return  <div className="div-buy">
               <div>รายการเลือก : {fn}</div>
               <button onClick={()=>{
-                console.log("BUY")
+                // onBuy({ variables: { id } })
+                setDialogBuy(true)
               }}>BUY ({_.filter(data.buys, (buy)=>buy.userId == user._id && buy.selected == 0 ).length})</button>
             </div>;
   }
 
+  const isDisabled = (fn) =>{
+    if(!_.isEmpty(fn)){
+      if(fn.userId == user._id){
+        return false
+      }
+
+      if(fn?.selected == 0 || fn?.selected == 1 ){
+        return true
+      }
+    }
+    return false
+  }
+
+  const imageView = () =>{
+
+    console.log("imageView :", data)
+    return (
+      <div style={{ position: "relative" }}>
+        <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
+          <Avatar
+            sx={{ height: 100, width: 100 }}
+            variant="rounded"
+            alt="Example Alt"
+            src={data?.files[0].url}
+            onClick={(e) => {
+              setLightbox({ isOpen: true, photoIndex: 0, images: data?.files })
+            }}
+          />
+        </CardActionArea>
+        <div style={{ position: "absolute", bottom: "5px", right: "5px", padding: "5px", backgroundColor: "#e1dede", color: "#919191"}}>
+          {(_.filter(data?.files, (v)=>v.url)).length}
+        </div>
+      </div>
+    );
+  }
+
+  const menuShareView = (item, index) =>{
+    console.log("menuShareView :", item)
+    return  <Menu
+              anchorEl={openMenuShare && openMenuShare[index]}
+              keepMounted
+              open={openMenuShare && Boolean(openMenuShare[index])}
+              onClose={(e)=>setOpenMenuShare(null)}
+              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              transformOrigin={{ vertical: "top", horizontal: "center" }}
+              MenuListProps={{ "aria-labelledby": "lock-button", role: "listbox" }}>
+              <MenuItem onClose={(e)=>setOpenMenuShare(null)}>
+                  <FacebookShareButton
+                    url={ window.location.href + "detail/"}
+                    quote={item?.title}
+                    // hashtag={"#hashtag"}
+                    description={item?.description}
+                    className="Demo__some-network__share-button"
+                    onClick={(e)=>setOpenMenuShare(null)} >
+                    <FacebookIcon size={32} round /> Facebook
+                  </FacebookShareButton>
+              </MenuItem>{" "}
+
+              <MenuItem onClose={(e)=>setOpenMenuShare(null)}>
+                <TwitterShareButton
+                  title={item?.title}
+                  url={ window.location.origin + "/detail/"  }
+                  // hashtags={["hashtag1", "hashtag2"]}
+                  onClick={(e)=>setOpenMenuShare(null)} >
+                  <TwitterIcon size={32} round />
+                  Twitter
+                </TwitterShareButton>
+              </MenuItem>
+
+              <MenuItem 
+              onClick={async(e)=>{
+                let text = window.location.href + "p/?id=" + item._id
+                if ('clipboard' in navigator) {
+                  await navigator.clipboard.writeText(text);
+                } else {
+                  document.execCommand('copy', true, text);
+                }
+
+                setOpenMenuShare(null)
+              }}>
+                
+              <ContentCopyIcon size={32} round /> Copy link
+              </MenuItem>
+            </Menu>
+  }
+
+  const menuSettingView = (item, index) =>{
+    return  <Menu
+              anchorEl={openMenuSetting && openMenuSetting[index]}
+              keepMounted
+              open={openMenuSetting && Boolean(openMenuSetting[index])}
+              onClose={()=>{ setOpenMenuSetting(null) }}
+              getContentAnchorEl={null}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "center"
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "center"
+              }}
+              MenuListProps={{
+                "aria-labelledby": "lock-button",
+                role: "listbox"
+              }}
+            >
+              <MenuItem onClick={(e)=>{setOpenMenuSetting(null)}}>Report</MenuItem>
+            </Menu>
+  }
+
   return (<div style={{flex:1}}>
+            <div>{data.title}</div>
+            <div>จอง :{bookView(data)}</div>
+            <div>ขายไปแล้ว :{sellView(data)}</div>
             <div>{user.displayName} - {user.email} : Balance : </div>
+            {menuShareView(data, 1)}
+            {menuSettingView(data, 1)}
+            {imageView()}
             <ToastContainer />
-            <div>ID : {id} : {selected()}</div>
+            <div>
+              <ItemFollow 
+                {...props} 
+                item={data} 
+                onDialogLogin={(e)=>{
+                  setDialogLogin(true)
+                }}/>
+              <ItemShare 
+                {...props}  
+                onOpenMenuShare={(e)=>{
+                  setOpenMenuShare({ [1]: e.currentTarget });
+                }}/>
+              <IconButton  onClick={(e) => { setOpenMenuSetting({ [1]: e.currentTarget }) }}>
+                <MoreVertIcon />
+              </IconButton>
+            </div>
+
+            <div>{selected()}</div>
             <div className="container">  
             {
               _.map(datas, (val, key)=>{
@@ -194,9 +331,12 @@ const DetailPage = (props) => {
                 }
                 
                 return  <div className={`itm  ${cn}`} key={key}> 
-                          <button onClick={(evt)=>{
+                          <button 
+                          disabled={isDisabled(fn)}
+                          // disabled={ !_.isEmpty(fn) && (fn?.selected == 0 || fn?.selected == 1 )? true : false }
+                          onClick={(evt)=>{
                             if(_.isEmpty(user)){
-                              setDialogLoginOpen(true)
+                              setDialogLogin(true)
                             }else{
                               onSelected(evt, key)
                             }
@@ -204,28 +344,53 @@ const DetailPage = (props) => {
                         </div>  
               })
             }
-            </div>
-
-          
-            {dialogLoginOpen && (
+            </div>  
+            {dialogLogin && (
               <DialogLogin
                 {...props}
-                open={dialogLoginOpen}
-                onComplete={async(data)=>{
-                  setDialogLoginOpen(false);
-                  // props.login(data)
-                  
-                  // await client.cache.reset();
-                  // await client.resetStore();
-                }}
-                onClose={() => {
-                  setDialogLoginOpen(false);
-
-                  // history.push("/")
-                }}
+                open={dialogLogin}
+                onComplete={async(data)=>{ setDialogLogin(false) }}
+                onClose={() => { setDialogLogin(false) }}
               />
             )}
 
+            {
+              dialogBuy && (
+                <DialogBuy 
+                  {...props}
+                  data={data} 
+                  onBuy={()=>{
+                    onBuy({ variables: { id } })
+                    setDialogBuy(false)
+                  }}
+                  onClose={()=>setDialogBuy(false)} />
+              )
+            }
+            {lightbox.isOpen && (
+              <Lightbox
+                mainSrc={lightbox.images[lightbox.photoIndex].url}
+                nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
+                prevSrc={
+                  lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
+                }
+                onCloseRequest={() => {
+                  setLightbox({ ...lightbox, isOpen: false });
+                }}
+                onMovePrevRequest={() => {
+                  setLightbox({
+                    ...lightbox,
+                    photoIndex:
+                      (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
+                  });
+                }}
+                onMoveNextRequest={() => {
+                  setLightbox({
+                    ...lightbox,
+                    photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
+                  });
+                }}
+              />
+            )}
           </div>);
 }
 

@@ -75,3 +75,7 @@
   background-color: antiquewhite;
   padding: 10px;
 }
+
+.user-list-container{
+  flex: 4;
+}

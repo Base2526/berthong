@@ -21,6 +21,12 @@ var BuyInput = new Schema({
     updatedAt : { type : Date, default: Date.now },
 })
 
+const FollowInput = new Schema({
+    userId: { type: Schema.Types.ObjectId, required:[true, "User-ID is a required field"]},
+    createdAt : { type : Date, default: Date.now },
+    updatedAt : { type : Date, default: Date.now },
+})
+
 const SupplierSchema = new Schema({
     title: { type: String, required:[true, "Title is a required field"] },
     price: { type: Number, required:[true, "Price is a required field"] },
@@ -30,7 +36,8 @@ const SupplierSchema = new Schema({
     files: [File],
     buys: [BuyInput],
     publish: { type: Boolean, default: false },
-    ownerId: { type: Schema.Types.ObjectId, required:[true, "OwnerId is a required field"] }
+    ownerId: { type: Schema.Types.ObjectId, required:[true, "OwnerId is a required field"] },
+    follows: [FollowInput]
 },
 {
     timestamps: true

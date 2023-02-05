@@ -23,7 +23,9 @@ import {Bank,
       
         Deposit,
         Withdraw,
-        Transition
+        Transition,
+
+        DateLottery
       } from '../model'
 
 let logger = require("../utils/logger");
@@ -302,12 +304,25 @@ const modelExists =()=>{
     } else {
       // console.log('Not found BasicContent, creating');
       let newTransition = new Transition({  refId: new mongoose.Types.ObjectId(),
-                                            userIdRequest: new mongoose.Types.ObjectId() });
+                                            userId: new mongoose.Types.ObjectId() });
       await newTransition.save();
       await Transition.deleteMany({})
     }
   });
+
+  DateLottery.find({}, async(err, result)=> {
+    if (result.length > 0) {
+    } else {
+      let newDateLottery = new DateLottery({  title: "title",
+                                              startDate: new Date(),
+                                              endDate: new Date(),
+                                              weight: 1 });
+      await newDateLottery.save();
+      await DateLottery.deleteMany({})
+    }
+  });
 }
+
 
 // TODO: initial and connect to MongoDB
 mongoose.Promise = global.Promise;

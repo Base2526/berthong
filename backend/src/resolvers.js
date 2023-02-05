@@ -5,7 +5,7 @@ import cryptojs from "crypto-js";
 import deepdash from "deepdash";
 deepdash(_);
 import * as fs from "fs";
-import { User, Supplier, Bank, Role, Deposit, Withdraw, Transition } from './model'
+import { User, Supplier, Bank, Role, Deposit, Withdraw, DateLottery, Transition } from './model'
 import { emailValidate } from './utils'
 import pubsub from './pubsub'
 
@@ -79,9 +79,19 @@ export default {
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
 
+        let users = await User.find({})
+
+        users = await Promise.all(_.map(users, async(user)=>{
+                  let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
+                    return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
+                  }))            
+                  
+                  let newUser = {...user._doc, roles: _.filter(roles, (role)=>role!=undefined)};
+                  return _.omit(newUser, ['password']);
+                }))
         return { 
                 status:true,
-                data: await User.find({}),
+                data: users,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
                 }
       } catch(err) {
@@ -139,7 +149,7 @@ export default {
       }
     },
 
-    async suppliers(parent, args, context, info){
+    async homes(parent, args, context, info){
       let start = Date.now()
 
       try{
@@ -157,10 +167,56 @@ export default {
         //             data: await Supplier.find({}),
         //             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
         // }
+        let suppliers = await Supplier.find({})
+        let homes = await Promise.all(_.map(suppliers, async(item)=>{
+          return {...item._doc, ownerName: (await User.findById(item.ownerId))?.displayName}
+        }))
+
+        return {  
+                status: true,
+                data: homes,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+              }
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("getSuppliers err :", err.toString())
+        return {  
+                status:false,
+                message: err.toString(),
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+              }
+      }
+    },
+
+    async suppliers(parent, args, context, info){
+      let start = Date.now()
+
+      try{
+        // let { status, code, currentUser } = context 
+        // console.log("ping :", currentUser?._id)
+
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
+
+          let suppliers = await Supplier.find({});
+
+          suppliers = await Promise.all(_.map(suppliers, async(item)=>{
+                        return {...item._doc, ownerName: (await User.findById(item.ownerId))?.displayName}
+                      }))
+
+          return {  status:true,
+                    data: suppliers,
+                    executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+        }
 
         return {  
                 status:true,
-                data: await Supplier.find({}),
+                data: await Supplier.find({ownerId: current_user?._id}),
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
               }
       } catch(err) {
@@ -285,8 +341,17 @@ export default {
         }
         //////////////////////////
 
-        return {  status:true,
-                  data: await Withdraw.find({userIdRequest: current_user?._id}),
+        // userIdApprove
+        let withdraws = await Withdraw.find({userIdRequest: current_user?._id})
+
+        withdraws = await Promise.all(_.map(withdraws, async(item)=>{
+                                              let user = await User.findById(item.userIdApprove)
+                                              return {...item._doc, userNameApprove: user?.displayName}
+                                            }))
+
+
+        return {  status: true,
+                  data: withdraws,
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
       } catch(err) {
@@ -422,6 +487,31 @@ export default {
       }
     },
 
+    async bankAdmin(parent, args, context, info){
+      let start = Date.now()
+      try{
+        
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        return {  status:true,
+                  admin_banks : (await User.findById(mongoose.Types.ObjectId("62a2f65dcf7946010d3c7514")))?.banks,
+                  banks: await Bank.find({}),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
     async transitions(parent, args, context, info){
       let start = Date.now()
       try{
@@ -433,8 +523,205 @@ export default {
         let { status, code, current_user } =  authorization
         //////////////////////////
 
+        console.log("current_user :::", current_user)
+
+        /*
+        // Withdraw
+        let withdraws = await Withdraw.find({userIdRequest: current_user?._id, $or: [{status:"approved"}, {status:"reject"}]  });
+
+
+        // let bank = withdraw.bank[0];
+        // let bankValue = await Bank.findById(bank.bankId)
+        // bank = {...bank._doc, bankName: bankValue.name}
+        // withdraw = {...withdraw._doc, bank: [bank]}
+
+        withdraws = await Promise.all(_.map(withdraws, async(withdraw)=>{
+
+          let bank = withdraw.bank[0];
+          let bankValue = await Bank.findById(bank.bankId)
+          bank = {...bank._doc, bankName: bankValue.name, ___id:bankValue._id.toString()}
+
+          let user = await User.findById(withdraw.userIdApprove)
+          return {...withdraw._doc, type: "withdraw", userNameApprove: user.displayName, bank: [bank]}
+        }))
+
+        console.log("withdraws >> ", withdraws)
+        */
+
+        
+        let transitions = await Transition.find({userId: current_user?._id, status:"success" });
+
+        transitions = await Promise.all(_.map(transitions, async(transition)=>{
+                        switch(transition.type){ // 'supplier', 'deposit', 'withdraw'
+                          case "supplier":{
+
+                            let supplier = await Supplier.findById(transition.refId)
+
+                            let buys = _.filter(supplier.buys, (buy)=>buy.userId == current_user?._id.toString())
+                            // price, buys
+
+                            let balance = buys.length * supplier.price
+
+                            console.log("transitions > supplier :", supplier)
+
+                            return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
+                          }
+
+                          case "deposit":{
+                            let deposit = await Deposit.findById(transition.refId)
+                            console.log("balance : ", deposit.balance)
+
+                            return {...transition._doc, title: "title", balance: deposit.balance, description: "description", dateLottery: "dateLottery"}
+                          }
+
+                          case "withdraw":{
+
+                            let withdraw = await Withdraw.findById(transition.refId)
+
+                            console.log("balance : ", withdraw.balance)
+
+                            return {...transition._doc, title: "title", balance: withdraw.balance, description: "description", dateLottery: "dateLottery"}
+
+                          }
+                        }
+                      }))
+
         return {  status:true,
-                  data: await Transition.find({userIdRequest: current_user?._id}),
+                  data: transitions,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    async supplierProfile(parent, args, context, info){
+      let start = Date.now()
+      try{
+
+        console.log("supplierProfile :", args)
+
+        let { _id } = args
+
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        let user = await User.findById(_id);
+
+        let suppliers = await Supplier.find({ownerId: _id});
+       
+        user = {...user._doc, suppliers}
+
+        return {  status: true,
+                  data: user,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("supplierProfile err :", args, err.toString())
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    // 
+    async dateLotterys(parent, args, context, info){
+      let start = Date.now()
+      try{
+        console.log("dateLottery :", args)
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        return {  status:true,
+                  data: await DateLottery.find({}),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("bank err :", args, err.toString())
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    // 
+    async dateLotteryById(parent, args, context, info){
+      let start = Date.now()
+      try{
+
+        console.log("dateLotteryById :", args)
+
+        let { _id } = args
+
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        return {  status:true,
+                  data: await DateLottery.findById(_id),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+        console.log("bankById err :", args, err.toString())
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    async buys(parent, args, context, info){
+      let start = Date.now()
+      try{
+        console.log("buys :", args)
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        let transitions = await Transition.find({userId: current_user?._id, type: "supplier", status:"success" });
+
+        transitions = await Promise.all(_.map(transitions, async(transition)=>{
+                            switch(transition.type){ // 'supplier', 'deposit', 'withdraw'
+                              case "supplier":{
+
+                                let supplier = await Supplier.findById(transition.refId)
+
+                                let buys = _.filter(supplier.buys, (buy)=>buy.userId == current_user?._id.toString())
+                                // price, buys
+
+                                let balance = buys.length * supplier.price
+
+                                console.log("transitions > supplier :", supplier)
+
+                                return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
+                              }
+                            }
+                        }))
+        return {  status:true,
+                  data: transitions,
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
       } catch(err) {
@@ -917,8 +1204,6 @@ export default {
         let { status, code, current_user } =  authorization
 
         // image
-        ////////////
-
         let newFiles = [];
         if(!_.isEmpty(input.image)){
 
@@ -972,22 +1257,43 @@ export default {
         }
 
         let newInput = {...input, image:newFiles, lastAccess : Date.now()}
-        console.log("me image :", newInput)
-        ////////////
 
-        let user = await User.findOneAndUpdate({ _id: current_user?._id }, newInput , { new: true })
-        pubsub.publish("ME", {
-          me: {
-            mutation: "UPDATE",
-            data: user
-          },
-        });
+        if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
+          let user = await User.findOneAndUpdate({ _id: input.uid }, newInput , { new: true })
+          let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
+            return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
+          }))  
+          user = {...user._doc, roles}
+          user = _.omit(user, ['password'])
 
-        return {
-          status: true,
-          data: user,
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          pubsub.publish("ME", {
+            me: { mutation: "UPDATE", data: user },
+          });
+  
+          return {
+            status: true,
+            data: user,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }
+        }else{
+          let user = await User.findOneAndUpdate({ _id: current_user?._id }, newInput , { new: true })
+          let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
+            return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
+          }))  
+          user = {...user._doc, roles}
+          user = _.omit(user, ['password'])
+
+          pubsub.publish("ME", {
+            me: { mutation: "UPDATE", data: user },
+          });
+  
+          return {
+            status: true,
+            data: user,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }
         }
+       
       } catch(err) {
         logger.error( err.toString());
 
@@ -1088,47 +1394,36 @@ export default {
       }
     },
 
-    async buys(parent, args, context, info) {
+    async buy(parent, args, context, info) {
       let start = Date.now()
       try{
-        let {input} = args
+        let {_id} = args
 
-        console.log("buy : ", input)
-
-        // let user = emailValidate().test(input.username) ?  await User.findOne({email: input.username}) : await User.findOne({username: input.username})
-
-        // if(user === null){
-        //   return {
-        //     status: false,
-        //     messages: "xxx", 
-        //     data:{
-        //       _id: "",
-        //       username: "",
-        //       password: "",
-        //       email: "",
-        //       displayName: "",
-        //       roles:[]
-        //     },
-        //     executionTime: `Time to execute = ${
-        //       (Date.now() - start) / 1000
-        //     } seconds`
-        //   }
-        // }
-
-        // // update lastAccess
-        // await User.findOneAndUpdate({
-        //   _id: user._doc._id
-        // }, {
-        //   lastAccess : Date.now()
-        // }, {
-        //   new: true
-        // })
-
-        // let sessionId = await getSessionId(user._id.toString(), input)
+        let { req } = context
         
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        let supplier =  await Supplier.findById(_id);
+        if(!_.isEmpty(supplier)){
+          let buys =  _.map(supplier.buys, (buy)=>{
+                        if(buy.userId == current_user?._id.toString()){
+                          return {...buy._doc, selected: 1}
+                        }
+                        return buy
+                      })
+          supplier = await Supplier.findOneAndUpdate({ _id }, {buys}, { new: true });
+
+
+          await Transition.findOneAndUpdate({refId: supplier?._id}, 
+                                            {type: "supplier", 
+                                            refId: supplier?._id, 
+                                            userId: current_user?._id, 
+                                            status: "success"}, { upsert: true, new: true })
+        }
         return {
           status: true,
-          // data: user,
+          data: supplier,
           // sessionId,
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
@@ -1411,6 +1706,15 @@ export default {
                 
                 let deposit = await Deposit.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
 
+                if(input.status == "approved"){
+                  await Transition.create({
+                                            type: "deposit", 
+                                            refId: deposit?._id, 
+                                            userId: deposit.userIdRequest, 
+                                            status: "success"
+                                          })
+                }
+
                 return {
                   status: true,
                   mode: input.mode.toLowerCase(),
@@ -1506,13 +1810,28 @@ export default {
                 let newInput = {...input, userIdApprove: current_user?._id}
                 let withdraw = await Withdraw.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
 
-                let transition = await Transition.create({ type: "withdraw", refId: withdraw._id, userIdRequest:withdraw.userIdRequest, userIdApprove: current_user?._id });
+                if(input.status == "approved"){
+                  await Transition.create({
+                                            type: "withdraw", 
+                                            refId: withdraw?._id, 
+                                            userId: withdraw.userIdRequest, 
+                                            status: "success"
+                                          })
+                }
 
                 return {
                   status: true,
                   mode: input.mode.toLowerCase(),
                   data: withdraw,
-                  transition,
+                  // transition,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+                }
+
+
+                return {
+                  status: false,
+                  mode: input.mode.toLowerCase(),
+                  message: "Cannot approve & reject",
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
                 }
               }else{
@@ -1604,6 +1923,120 @@ export default {
               status: true,
               mode: input.mode.toLowerCase(),
               data: bank,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            }
+          }
+        }
+
+        return {
+          status: false,
+          message: "Other case",
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+
+      } catch(err) {
+        logger.error( err.toString());
+
+        return {
+          status: false,
+          messages: err.toString(), 
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }
+    },
+
+    // follow
+    async follow(parent, args, context, info) {
+      let start = Date.now()
+      try{
+        let { _id } = args
+        let { req } = context
+
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        let suppliers = await Supplier.findOne({_id})
+
+        if(suppliers){
+          let {follows} = suppliers  
+          if(!_.isEmpty(follows)){
+            let isFollow = _.find(follows, (fl)=>fl.userId == current_user?._id.toString())
+            if(_.isEmpty(isFollow)){
+              follows = [...follows, {userId: current_user?._id}]
+            }else{
+              follows = _.filter(follows, (fl)=>fl.userId != current_user?._id.toString())
+            }
+          }else{
+            follows = [{userId: current_user?._id}]
+          }
+  
+          let newSupplier = await Supplier.findOneAndUpdate({ _id }, {follows}, { new: true });
+
+          // let homes = await Promise.all(_.map(suppliers, async(item)=>{
+          //   return {...item._doc, ownerName: (await User.findById(item.ownerId))?.displayName}
+          // }))
+
+          newSupplier = {...newSupplier._doc, ownerName: (await User.findById(newSupplier.ownerId))?.displayName }
+          
+          return {
+            status: true,
+            data: newSupplier,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }
+        }else{
+          return {
+            status: false,
+            messages: "empty", 
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }
+        }
+      } catch(err) {
+        logger.error( err.toString());
+        return {
+          status: false,
+          messages: err.toString(), 
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }
+    },
+
+    async dateLottery(parent, args, context, info) {
+      let start = Date.now()
+      try{
+        let { input } = args
+        let { req } = context
+
+        console.log("dateLottery :", input)
+
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+
+        switch(input.mode.toLowerCase()){
+          case "new":{
+            input = {...input, weight: 1}
+
+            console.log("input : ", input )
+
+            let dateLottery = await DateLottery.create(input);
+            
+            return {
+              status: true,
+              mode: input.mode.toLowerCase(),
+              data: dateLottery,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            }
+          }
+
+          case "edit":{
+            let { input } = args
+
+            console.log("edit dateLottery : ", input)
+    
+            let dateLottery = await DateLottery.findOneAndUpdate({ _id: input._id }, input, { new: true });
+            return {
+              status: true,
+              mode: input.mode.toLowerCase(),
+              data: dateLottery,
               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
             }
           }
