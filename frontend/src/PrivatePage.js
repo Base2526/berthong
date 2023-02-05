@@ -57,6 +57,10 @@ import ProfileBankPage from "./ProfileBankPage"
 import UsersPage from "./UsersPage"
 import UserPage from "./UserPage"
 import TransitionsPage from "./TransitionsPage"
+import BuysPage from "./BuysPage"
+
+import DateLotterysPage from "./DateLotterysPage"
+import DateLotteryPage from "./DateLotteryPage"
 
 
 import { connect } from "react-redux";
@@ -102,7 +106,17 @@ const PrivatePage =(props) => {
                 <Route path="/user">
                     <UserPage />
                 </Route>
+                <Route path="/buys">
+                    <BuysPage />
+                </Route>
 
+                <Route path="/date-lotterys">
+                    <DateLotterysPage />
+                </Route>
+
+                <Route path="/date-lottery">
+                    <DateLotteryPage />
+                </Route>
 
                 {/*
                 <Route path="/user/:id/edit">

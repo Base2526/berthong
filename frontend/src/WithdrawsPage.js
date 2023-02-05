@@ -18,6 +18,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
+import moment from "moment";
 
 import { getHeaders, checkRole } from "./util"
 import { queryWithdraws, queryBanks, mutationWithdraw } from "./gqlQuery"
@@ -141,12 +142,25 @@ const WithdrawsPage = (props) => {
         }
       },
       {
-      Header: 'Created at',
-      accessor: 'createdAt',
-      Cell: props => {
-        let {createdAt} = props.row.values
-        return <div>{createdAt}</div>
-      }
+        Header: 'Created at',
+        accessor: 'createdAt',
+        Cell: props => {
+          let {createdAt} = props.row.values
+          createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+
+          return <div>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
+        }
+      },
+      {
+        Header: 'updated at',
+        accessor: 'updatedAt',
+        Cell: props => {
+            let {updatedAt} = props.row.values
+
+            updatedAt = new Date(updatedAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+
+            return <div>{ (moment(updatedAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
+        }
       },
       {
       Header: 'Action',
@@ -202,12 +216,14 @@ const WithdrawsPage = (props) => {
               queryWithdrawsValue.loading
               ? <CircularProgress /> 
               : <div>
-                  <button onClick={()=>{ 
-                    history.push({ 
-                      pathname: "/withdraw", 
-                      state: {from: "/", mode: "new"} 
-                    });
-                  }}>เพิ่ม แจ้งถอดเงิน</button>
+                  {
+                  checkRole(user) !== AMDINISTRATOR 
+                  ? <button 
+                      onClick={()=>{ 
+                        history.push({ pathname: "/withdraw",  state: {from: "/", mode: "new"}  });
+                      }}>เพิ่ม แจ้งถอดเงิน</button> 
+                  : ""
+                  }
                   <Table
                     columns={columns}
                     data={queryWithdrawsValue.data.withdraws.data}

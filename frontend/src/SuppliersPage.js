@@ -146,8 +146,8 @@ const SuppliersPage = (props) => {
                   return ( <div style={{ position: "relative" }} 
                             onClick={()=>{
                               history.push({
-                                pathname: "/detail",
-                                // search: "?id=5",
+                                pathname: "/p",
+                                search: `?id=${_id}`,
                                 // hash: "#react",
                                 state: { id: _id }
                               });
@@ -208,6 +208,17 @@ const SuppliersPage = (props) => {
                     // state: {from: "/", mode: "edit", id: _id } 
                   });
                 }}>{ownerName}</div>
+              }
+            },
+            {
+              Header: 'Follows',
+              accessor: 'follows',
+              Cell: props => {
+                let {follows} = props.row.original
+    
+                console.log("follows :", follows)
+    
+                return <div>{follows.length}</div>
               }
             },
             {
@@ -281,8 +292,8 @@ const SuppliersPage = (props) => {
                   return ( <div style={{ position: "relative" }} 
                             onClick={()=>{
                               history.push({
-                                pathname: "/detail",
-                                // search: "?id=5",
+                                pathname: "/p",
+                                search: `?id=${_id}`,
                                 // hash: "#react",
                                 state: { id: _id }
                               });
@@ -318,6 +329,17 @@ const SuppliersPage = (props) => {
     
     
                 return <div>{buys.length}</div>
+              }
+            },
+            {
+              Header: 'Follows',
+              accessor: 'follows',
+              Cell: props => {
+                let {follows} = props.row.original
+    
+                console.log("follows :", follows)
+    
+                return <div>{follows.length}</div>
               }
             },
             {

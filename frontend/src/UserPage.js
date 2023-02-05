@@ -87,7 +87,6 @@ const UserPage = (props) => {
         });
       }
       
-
       ////////// update cache queryUserById ///////////
       let queryUserByIdValue = cache.readQuery({ query: queryUserById, variables: {id: data._id}});
       if(queryUserByIdValue){
@@ -118,39 +117,39 @@ const UserPage = (props) => {
   });
   console.log("resultMutationMe :", resultMutationMe)
   
-  const rolesView = () =>{
+  // const rolesView = () =>{
 
-    switch(checkRole(user)){
-      case AMDINISTRATOR:{
-        if(rolesValue.loading){
-          return <LinearProgress sx={{width:"100px"}} /> 
-        }else{
-          let value = _.filter(rolesValue.data.roles.data, v => input.roles.includes(v._id))
-          return  <Autocomplete
-                    multiple
-                    id="user-roles"
-                    name="userRoles"
-                    options={ rolesValue.data.roles.data }
-                    getOptionLabel={(option) => {
-                      return option.name
-                    }}
-                    value={ value }
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="User roles"
-                        placeholder="role"
-                        required={ input.roles.length === 0 ? true : false }
-                      />
-                    )}
-                    onChange={(event, roles)=>{
-                      setInput({...input, roles:_.map(roles, v=>v._id)})
-                    }}
-                  />
-        }
-      }
-    }
-  }
+  //   switch(checkRole(user)){
+  //     case AMDINISTRATOR:{
+  //       if(rolesValue.loading){
+  //         return <LinearProgress sx={{width:"100px"}} /> 
+  //       }else{
+  //         let value = _.filter(rolesValue.data.roles.data, v => input.roles.includes(v._id))
+  //         return  <Autocomplete
+  //                   multiple
+  //                   id="user-roles"
+  //                   name="userRoles"
+  //                   options={ rolesValue.data.roles.data }
+  //                   getOptionLabel={(option) => {
+  //                     return option.name
+  //                   }}
+  //                   value={ value }
+  //                   renderInput={(params) => (
+  //                     <TextField
+  //                       {...params}
+  //                       label="User roles"
+  //                       placeholder="role"
+  //                       required={ input.roles.length === 0 ? true : false }
+  //                     />
+  //                   )}
+  //                   onChange={(event, roles)=>{
+  //                     setInput({...input, roles:_.map(roles, v=>v._id)})
+  //                   }}
+  //                 />
+  //       }
+  //     }
+  //   }
+  // }
 
   const isActiveView = () =>{
 
@@ -200,7 +199,7 @@ const UserPage = (props) => {
           displayName: input.username,
           email: input.email,
           password: input.password,
-          roles: input.roles,
+          // roles: input.roles,
           isActive: input.isActive,
           image: input.image
         }
@@ -422,9 +421,9 @@ const UserPage = (props) => {
                       )
                     }}
                   />
-                  {
+                  {/* {
                     rolesView()
-                  }
+                  } */}
                   {
                     isActiveView()
                   }
@@ -590,9 +589,9 @@ const UserPage = (props) => {
                         }}
                       />
                       
-                      {
+                      {/* {
                       rolesView()
-                      }
+                      } */}
 
                       {
                         isActiveView()

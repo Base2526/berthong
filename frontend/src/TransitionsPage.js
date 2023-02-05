@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { ToastContainer, toast } from 'react-toastify';
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
+import moment from "moment";
 
 import 'react-toastify/dist/ReactToastify.css';
 import _ from "lodash";
@@ -23,7 +24,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
 import { getHeaders, checkRole } from "./util"
-import { queryTransitions, mutationDeposit, queryWithdrawById, queryBankById } from "./gqlQuery"
+import { queryTransitions, mutationDeposit } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
 
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
@@ -167,6 +168,14 @@ const TransitionsPage = (props) => {
                 }
               },
               {
+                Header: 'Title',
+                accessor: 'title',
+                Cell: props =>{
+                    let {title} = props.row.values
+                    return ( <div style={{ position: "relative" }}>{title}</div> );
+                }
+              },
+              {
                 Header: 'Balance',
                 accessor: 'balance',
                 Cell: props => {
@@ -175,21 +184,34 @@ const TransitionsPage = (props) => {
                 }
               },
               {
-                Header: 'Bank',
-                accessor: 'bank',
+                Header: 'Description',
+                accessor: 'description',
                 Cell: props => {
-                  let {bank} = props.row.values
-                  return <div>{bank[0].bankName} {bank[0].bankNumber}</div>
+                  let {description} = props.row.values
+                  return ( <div style={{ position: "relative" }}>{description}</div> );
                 }
               },
               {
                 Header: 'Created at',
                 accessor: 'createdAt',
                 Cell: props => {
-                    let {createdAt} = props.row.values
-                    return <div>{createdAt}</div>
+                  let {createdAt} = props.row.values
+                  createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+
+                  return <div>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
                 }
-              }
+              }, 
+              {
+                Header: 'updated at',
+                accessor: 'updatedAt',
+                Cell: props => {
+                    let {updatedAt} = props.row.values
+
+                    updatedAt = new Date(updatedAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+
+                    return <div>{ (moment(updatedAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
+                }
+              },
             ]
           }
         }

@@ -77,6 +77,9 @@ const MePage = (props) => {
                                 <div>
                                     <button onClick={()=>{ history.push("/banks"); }}>จัดการ รายชือธนาคารทั้งหมด</button>
                                 </div>
+                                <div>
+                                    <button onClick={()=>{ history.push("/date-lotterys"); }}>จัดการ วันออกหวยทั้งหมด</button>
+                                </div>
                             </div>
                             <div>
                                 <button onClick={()=>{ history.push("/me+bank"); }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
@@ -85,6 +88,9 @@ const MePage = (props) => {
             }
             case AUTHENTICATED:{
                 return  <div>
+                            <div>
+                                <button onClick={()=>{ history.push("/buys"); }}>รายการ ซื้อ</button>
+                            </div>
                             <div>
                                 <button onClick={()=>{ history.push("/deposits"); }}>รายการ แจ้งฝากเงิน</button>
                             </div>

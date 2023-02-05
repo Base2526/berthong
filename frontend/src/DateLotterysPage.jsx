@@ -16,16 +16,12 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { useQuery, useMutation } from "@apollo/client";
 import { useTranslation } from "react-i18next";
-import styled from "styled-components";
+import moment from "moment";
 
-import { queryBanks } from "./gqlQuery"
+import { queryDateLotterys } from "./gqlQuery"
 import Table from "./TableContainer"
 
-export const UserListContainer = styled.div`
-  flex: 4;
-`;
-
-const BanksPage = (props) => {
+const DateLotterysPage = (props) => {
   let history = useHistory();
   const { t } = useTranslation();
 
@@ -35,9 +31,9 @@ const BanksPage = (props) => {
 
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
-  const bankValues = useQuery(queryBanks,  { notifyOnNetworkStatusChange: true });
+  const dateLotterysValues = useQuery(queryDateLotterys, { notifyOnNetworkStatusChange: true });
 
-  console.log("bankValues :", bankValues)
+  console.log("dateLotterysValues :", dateLotterysValues)
 
   // const [onDeleteBank, resultDeleteBank] = useMutation(gqlDeleteBank, 
   //   {
@@ -81,14 +77,38 @@ const BanksPage = (props) => {
   const columns = useMemo(
     () => [
         {
-          Header: 'Name',
-          accessor: 'name',
+          Header: 'Title',
+          accessor: 'title',
+        },
+        {
+          Header: 'Start date',
+          accessor: 'startDate',
+          Cell: props =>{
+            let {startDate} = props.row.values 
+            // return <div>{ (moment(startDate, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
+
+            startDate = new Date(startDate).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+
+            // console.log("startDate :", startDate)
+            return <div>{ (moment(startDate, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
+          }
+        },
+        {
+          Header: 'End date',
+          accessor: 'endDate',
+          Cell: props =>{
+            let {endDate} = props.row.values 
+
+            endDate = new Date(endDate).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+
+            // console.log("endDate :", endDate)
+            return <div>{ (moment(endDate, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
+          }
         },
         {
           Header: 'Description',
           accessor: 'description',
           Cell: props => {
-
             return (
               <Box
                 sx={{
@@ -118,7 +138,7 @@ const BanksPage = (props) => {
             return  <div>
                       <button onClick={()=>{
                         history.push({ 
-                          pathname: "/bank", 
+                          pathname: "/date-lottery", 
                           state: {from: "/", mode: "edit", _id} 
                         });
                       }}>{t("edit")}</button>
@@ -143,31 +163,18 @@ const BanksPage = (props) => {
   // the rowIndex, columnId and new value to update the
   // original data
   const updateMyData = (rowIndex, columnId, value) => {
-    console.log("updateMyData")
-    // We also turn on the flag to not reset the page
     skipResetRef.current = true
-    // setData(old =>
-    //   old.map((row, index) => {
-    //     if (index === rowIndex) {
-    //       return {
-    //         ...row,
-    //         [columnId]: value,
-    //       }
-    //     }
-    //     return row
-    //   })
-    // )
   }
   //////////////////////
 
   return (
-    <UserListContainer>
+    <div className="user-list-container">
       {
-         bankValues.loading
+         dateLotterysValues.loading
          ?  <div><CircularProgress /></div> 
          :  <Table
               columns={columns}
-              data={bankValues.data.banks.data}
+              data={dateLotterysValues.data.dateLotterys.data}
               fetchData={fetchData}
               rowsPerPage={pageOptions}
               updateMyData={updateMyData}
@@ -206,16 +213,14 @@ const BanksPage = (props) => {
         sx={{ position: 'absolute', bottom: 16, right: 16 }}
         icon={<SpeedDialIcon />}
         onClick={(e)=>{
-          // history.push("/bank/new");
-
           history.push({ 
-            pathname: "/bank", 
+            pathname: "/date-lottery", 
             state: {from: "/", mode: "new"} 
           });
         }}
       />
-    </UserListContainer>
+    </div>
   );
 };
 
-export default BanksPage;
+export default DateLotterysPage;

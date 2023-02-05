@@ -68,7 +68,7 @@ const App =(props) =>{
               <Route path="/" exact>
                 <HomePage />
               </Route>
-              <Route path="/detail">
+              <Route path="/p">
                 <DetailPage />
               </Route>
               <Route path="/user/login">

@@ -46,6 +46,8 @@ const SupplierProfilePage = (props) => {
         notifyOnNetworkStatusChange: true,
     });
 
+    console.log("profileValue :", profileValue)
+
 
     ///////////////////////
     const fetchData = useCallback(({ pageSize, pageIndex }) => {
@@ -105,8 +107,8 @@ const SupplierProfilePage = (props) => {
                         return ( <div style={{ position: "relative" }} 
                                     onClick={()=>{
                                     history.push({
-                                        pathname: "/detail",
-                                        // search: "?id=5",
+                                        pathname: "/p",
+                                        search: `?id=${_id}`,
                                         // hash: "#react",
                                         state: { id: _id }
                                     });
@@ -136,11 +138,7 @@ const SupplierProfilePage = (props) => {
                     Header: 'จำนวนที่ขายได้',
                     accessor: 'buys',
                     Cell: props => {
-                        let {buys} = props.row.original
-            
-                        console.log("buys :", buys)
-            
-            
+                        let {buys} = props.row.original            
                         return <div>{buys.length}</div>
                     }
                 },

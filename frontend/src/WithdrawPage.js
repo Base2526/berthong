@@ -19,8 +19,6 @@ import { queryWithdrawById, mutationWithdraw, queryBanks, queryWithdraws} from "
 import { logout } from "./redux/actions/auth"
 import { AMDINISTRATOR } from "./constants"
 
-import AttackFileField from "./AttackFileField";
-
 let initValues = { bank: null,  balance: "", status: "wait" }
 
 /*
