@@ -13,7 +13,9 @@ import {LOGIN,
         ADDED_BOOKMARKS, 
         ADDED_BOOKMARK,
     
-        TERMS_AND_CONDITIONS } from "../../constants"
+        TERMS_AND_CONDITIONS,
+    
+        EDITED_USER_BALANCE} from "../../constants"
 
 import _ from "lodash"
 
@@ -24,7 +26,7 @@ const initialState = {
     messages:[],
 
     notifications: [],
-    terms_and_conditions: false
+    terms_and_conditions: false,
 }
 
 const auth = (state = initialState, action) => {
@@ -181,6 +183,11 @@ const auth = (state = initialState, action) => {
         case TERMS_AND_CONDITIONS:{
             return { ...state, terms_and_conditions: action.data };
         }
+
+        case EDITED_USER_BALANCE:{
+            let {type, data} = action.data
+            return {...state, user: {...state.user, balance: data.balance}}
+        } 
     }
 
     return state

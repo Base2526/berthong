@@ -3,8 +3,7 @@ import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
 
-import { User, Session } from '../model'
-import { async } from 'regenerator-runtime';
+import { User, Session, Transition, Supplier, Deposit, Withdraw } from '../model'
 
 export const emailValidate = () =>{
     return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
@@ -116,5 +115,71 @@ export const checkAuthorizationWithSessionId = async(sessionId) => {
             code: -1,
             message: "session expired days"
         }
+    }
+}
+
+export const checkBalance = async(userId) =>{
+    let transitions = await Transition.find({userId, status:"success" });
+    try{
+        transitions = await Promise.all(_.map(transitions, async(transition)=>{
+            switch(transition.type){ // 'supplier', 'deposit', 'withdraw'
+            case "supplier":{
+
+                let supplier = await Supplier.findById(transition.refId)
+
+                let buys = _.filter(supplier.buys, (buy)=>buy.userId == userId.toString())
+                // price, buys
+
+                let balance = buys.length * supplier.price
+
+                // console.log("transitions > supplier :", supplier)
+
+                return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
+            }
+
+            case "deposit":{
+                let deposit = await Deposit.findById(transition.refId)
+                console.log("balance : ", deposit.balance)
+
+                return {...transition._doc, title: "title", balance: deposit.balance, description: "description", dateLottery: "dateLottery"}
+            }
+
+            case "withdraw":{
+
+                let withdraw = await Withdraw.findById(transition.refId)
+
+                console.log("balance : ", withdraw.balance)
+
+                return {...transition._doc, title: "title", balance: withdraw.balance, description: "description", dateLottery: "dateLottery"}
+
+            }
+            }
+        }))
+
+        let balance = 0;
+        _.map(transitions, (transition) => {
+            switch (transition.type) {
+                case "supplier": {
+                    balance += -Math.abs(transition.balance);
+                break;
+                }
+                case "withdraw": {
+                    balance += -Math.abs(transition.balance);
+                break;
+                }
+
+                case "deposit": {
+                    balance += Math.abs(transition.balance);
+                break;
+                }
+
+                default: {
+                break;
+                }
+            }
+        });
+        return {balance, transitions}
+    } catch(err) {
+        return {balance: 0, transitions: []}
     }
 }

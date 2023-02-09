@@ -35,14 +35,17 @@ const DialogLogin = (props) => {
   let [input, setInput]   = useState({ username: "",  password: ""});
   
   const [onLogin, resultLogin] = useMutation(mutationLogin, {
-    // refetchQueries: [ {query: gqlPosts}, {query : gqlHomes} ],
-    onCompleted(datas) {
-      let {status, data, sessionId} = datas.login
+    update: (cache, {data: {login}}) => {
+      let {status, data, sessionId} = login
       if(status){
           localStorage.setItem('token', sessionId)
-          login(data)
+          props.login(data)
       }
       onComplete()
+    },
+    onCompleted({data}) {
+
+     
     },
     onError(err){
       console.log("onError :", err)

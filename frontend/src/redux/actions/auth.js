@@ -11,6 +11,8 @@ import {LOGIN,
         DELETED_MESSAGE,
         ADDED_BOOKMARKS, 
         ADDED_BOOKMARK,
+
+        EDITED_USER_BALANCE,
     
         TERMS_AND_CONDITIONS} from "../../constants"
 
@@ -32,6 +34,8 @@ const _addedBookmarks = (data) => ({ type: ADDED_BOOKMARKS, data });
 const _addedBookmark = (data) => ({ type: ADDED_BOOKMARK, data });
 
 const _termsAndConditions = (data) => ({ type: TERMS_AND_CONDITIONS, data });
+
+const _editedUserBalace = (data) => ({ type: EDITED_USER_BALANCE, data });
 
 export const login = (data) => (dispatch) => {
     dispatch(_login(data));
@@ -80,3 +84,7 @@ export const addedBookmark = (data) => (dispatch) => {
 export const termsAndConditions = (data) => (dispatch) => {
     dispatch(_termsAndConditions(data));
 }
+
+export const editedUserBalace = (data) => (dispatch) =>{
+    dispatch(_editedUserBalace(data));
+};

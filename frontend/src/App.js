@@ -17,6 +17,8 @@ import { connect } from "react-redux";
 import { getHeaders } from "./util"
 import { gqlPing, subscriptionMe } from "./gqlQuery"
 
+import { editedUserBalace } from "./redux/actions/auth"
+import { EDITED_USER_BALANCE } from "./constants"
 
 import LoginPage from "./LoginPage"
 import HomePage from "./HomePage";
@@ -31,7 +33,7 @@ import PrivatePage from "./PrivatePage"
 const App =(props) =>{
   const intervalPing = useRef(null);
 
-  let { user } = props
+  let { user, editedUserBalace } = props
 
   /////////////////////// ping ///////////////////////////////////
   const pingValues =useQuery(gqlPing, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true});
@@ -43,6 +45,21 @@ const App =(props) =>{
   useSubscription(subscriptionMe, {
     onSubscriptionData: useCallback((res) => {
       console.log("subscriptionMe :", res)
+      if(!res.subscriptionData.loading){
+        let { mutation, data } = res.subscriptionData.data.subscriptionMe
+
+        switch(mutation){
+          case "DEPOSIT":
+          case "WITHDRAW":
+          case "BUY":{
+            console.log("mutation :", mutation, data)
+
+            // EDITED_USER_BALANCE
+            editedUserBalace(data)
+            break;
+          }
+        }
+      }
     }, []),
     onError: useCallback((err) => {
       console.log("subscriptionMe :", err)
@@ -137,5 +154,7 @@ const mapStateToProps = (state, ownProps) => {
   return { user:state.auth.user }
 };
 
-const mapDispatchToProps = {}
+const mapDispatchToProps = {
+  editedUserBalace
+}
 export default connect( mapStateToProps, mapDispatchToProps )(App);

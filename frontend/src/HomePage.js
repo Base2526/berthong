@@ -38,6 +38,8 @@ const HomePage = (props) => {
 
   let { user } = props
 
+  console.log("user :", user)
+
   useEffect(()=>{
     return () => {
       unsubscribeSuppliers && unsubscribeSuppliers()
@@ -105,7 +107,7 @@ const HomePage = (props) => {
 
       case AUTHENTICATED:{
         return  <div>
-                
+                  <div>Balance : {user.balance}</div>
                   <div onClick={()=>{ history.push("/me") }}>AUTHENTICATED : {user.displayName} - {user.email}</div>
                 </div>
       }

@@ -5,8 +5,11 @@ import cryptojs from "crypto-js";
 import deepdash from "deepdash";
 deepdash(_);
 import * as fs from "fs";
+
+import { AuthenticationError  } from "apollo-server-express";
+
 import { User, Supplier, Bank, Role, Deposit, Withdraw, DateLottery, Transition } from './model'
-import { emailValidate } from './utils'
+import { emailValidate, checkBalance } from './utils'
 import pubsub from './pubsub'
 
 import {fileRenamer, checkAuthorization, checkAuthorizationWithSessionId} from "./utils"
@@ -523,71 +526,8 @@ export default {
         let { status, code, current_user } =  authorization
         //////////////////////////
 
-        console.log("current_user :::", current_user)
-
-        /*
-        // Withdraw
-        let withdraws = await Withdraw.find({userIdRequest: current_user?._id, $or: [{status:"approved"}, {status:"reject"}]  });
-
-
-        // let bank = withdraw.bank[0];
-        // let bankValue = await Bank.findById(bank.bankId)
-        // bank = {...bank._doc, bankName: bankValue.name}
-        // withdraw = {...withdraw._doc, bank: [bank]}
-
-        withdraws = await Promise.all(_.map(withdraws, async(withdraw)=>{
-
-          let bank = withdraw.bank[0];
-          let bankValue = await Bank.findById(bank.bankId)
-          bank = {...bank._doc, bankName: bankValue.name, ___id:bankValue._id.toString()}
-
-          let user = await User.findById(withdraw.userIdApprove)
-          return {...withdraw._doc, type: "withdraw", userNameApprove: user.displayName, bank: [bank]}
-        }))
-
-        console.log("withdraws >> ", withdraws)
-        */
-
-        
-        let transitions = await Transition.find({userId: current_user?._id, status:"success" });
-
-        transitions = await Promise.all(_.map(transitions, async(transition)=>{
-                        switch(transition.type){ // 'supplier', 'deposit', 'withdraw'
-                          case "supplier":{
-
-                            let supplier = await Supplier.findById(transition.refId)
-
-                            let buys = _.filter(supplier.buys, (buy)=>buy.userId == current_user?._id.toString())
-                            // price, buys
-
-                            let balance = buys.length * supplier.price
-
-                            console.log("transitions > supplier :", supplier)
-
-                            return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
-                          }
-
-                          case "deposit":{
-                            let deposit = await Deposit.findById(transition.refId)
-                            console.log("balance : ", deposit.balance)
-
-                            return {...transition._doc, title: "title", balance: deposit.balance, description: "description", dateLottery: "dateLottery"}
-                          }
-
-                          case "withdraw":{
-
-                            let withdraw = await Withdraw.findById(transition.refId)
-
-                            console.log("balance : ", withdraw.balance)
-
-                            return {...transition._doc, title: "title", balance: withdraw.balance, description: "description", dateLottery: "dateLottery"}
-
-                          }
-                        }
-                      }))
-
-        return {  status:true,
-                  data: transitions,
+        return {  status: true,
+                  data: (await checkBalance(current_user?._id)).transitions,
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
       } catch(err) {
@@ -741,44 +681,22 @@ export default {
       try{
         let {input} = args
 
-        console.log("login : ", input)
-
+        console.log("params login : ", input)
+        
         let user = emailValidate().test(input.username) ?  await User.findOne({email: input.username}) : await User.findOne({username: input.username})
-
         if(user === null){
           return {
             status: false,
-            messages: "xxx", 
-            data:{
-              _id: "",
-              username: "",
-              password: "",
-              email: "",
-              displayName: "",
-              roles:[]
-            },
-            executionTime: `Time to execute = ${
-              (Date.now() - start) / 1000
-            } seconds`
+            messages: "user not found", 
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }
-
-        // update lastAccess
-        await User.findOneAndUpdate({
-          _id: user._doc._id
-        }, {
-          lastAccess : Date.now()
-        }, {
-          new: true
-        })
-
-      
-        let sessionId = await getSessionId(user._id.toString(), input)
-        
+        await User.findOneAndUpdate({ _id: user?._id }, { lastAccess : Date.now() }, { new: true })
+        user = {...user._doc, balance: (await checkBalance(user?._id)).balance}
         return {
           status: true,
-          data: user,
-          sessionId,
+          data: _.omit(user, ["password", "__v"]),
+          sessionId: await getSessionId(user?._id.toString(), input),
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
       } catch(err) {
@@ -1414,17 +1332,19 @@ export default {
                       })
           supplier = await Supplier.findOneAndUpdate({ _id }, {buys}, { new: true });
 
-
           await Transition.findOneAndUpdate({refId: supplier?._id}, 
                                             {type: "supplier", 
                                             refId: supplier?._id, 
                                             userId: current_user?._id, 
                                             status: "success"}, { upsert: true, new: true })
+
+          pubsub.publish("ME", {
+            me: { mutation: "BUY", data: {userId: current_user?._id, data: await checkBalance(current_user?._id) } },
+          });
         }
         return {
           status: true,
           data: supplier,
-          // sessionId,
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
       } catch(err) {
@@ -1713,6 +1633,10 @@ export default {
                                             userId: deposit.userIdRequest, 
                                             status: "success"
                                           })
+
+                  pubsub.publish("ME", {
+                    me: { mutation: "DEPOSIT", data: {userId: deposit.userIdRequest, data: await checkBalance(deposit.userIdRequest) } },
+                  });
                 }
 
                 return {
@@ -1817,6 +1741,10 @@ export default {
                                             userId: withdraw.userIdRequest, 
                                             status: "success"
                                           })
+
+                  pubsub.publish("ME", {
+                    me: { mutation: "WITHDRAW", data: {userId: withdraw.userIdRequest, data: await checkBalance(withdraw.userIdRequest) } },
+                  });
                 }
 
                 return {
@@ -2078,9 +2006,7 @@ export default {
             let {mutation, data} = payload.me
 
             
-
             // userId
-
             let authorization = await checkAuthorizationWithSessionId(sessionId);
             let { status, code, current_user } =  authorization
 
@@ -2145,5 +2071,32 @@ export default {
         }
       )
     },
+    // subscriptionBalance: {
+    //   resolve: (payload) =>{
+    //     return payload.balance
+    //   },
+    //   subscribe: withFilter((parent, args, context, info) => {
+    //       return pubsub.asyncIterator(["BALANCE"])
+    //     }, async(payload, variables) => {
+    //       let {mutation, data} = payload.balance
+
+    //       switch(mutation){
+    //         case "BUY":{
+    //           console.log(">>> BUY :", data, variables)
+    //         }
+    //       }
+
+    //       try{
+    //         let authorization = await checkAuthorizationWithSessionId(variables?.sessionId);
+    //         let { status, code, current_user } =  authorization
+
+    //         return data.userId.toString() == current_user?._id.toString() ? true : false;
+    //       } catch(err) {
+    //         console.log("subscriptionBalance ", err.toString())
+    //       }
+    //       return false;
+    //     }
+    //   )
+    // },
   }
 };
