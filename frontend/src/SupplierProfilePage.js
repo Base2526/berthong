@@ -41,7 +41,7 @@ const SupplierProfilePage = (props) => {
     }
 
     let profileValue = useQuery(querySupplierProfile, {
-        context: { headers: getHeaders() },
+        context: { headers: getHeaders(location) },
         variables: {id: params.u},
         notifyOnNetworkStatusChange: true,
     });
@@ -185,10 +185,6 @@ const SupplierProfilePage = (props) => {
     let { status, data } = profileValue.data.supplierProfile
 
     console.log("status, data : ", status, data)
-
-    // const suppliersValue = useQuery(querySuppliers, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true });
-
-    // console.log("suppliersValue :", suppliersValue)
 
     return (<div style={{flex:1}}>
                 <Avatar

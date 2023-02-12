@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
 import { useHistory } from "react-router-dom";
+import { connect } from "react-redux";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -18,22 +19,24 @@ import { useQuery, useMutation } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 
-import { queryBuys } from "./gqlQuery"
+import { queryBookBuyTransitions } from "./gqlQuery"
 import Table from "./TableContainer"
 
-const BuysPage = (props) => {
+const BookBuysPage = (props) => {
   let history = useHistory();
-  const { t } = useTranslation();
+  let { t } = useTranslation();
 
-  const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
-  const [pageIndex, setPageIndex] = useState(0);  
-  const [pageSize, setPageSize] = useState(pageOptions[0])
+  let { user } = props
 
-  const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
+  let [pageOptions, setPageOptions] = useState([30, 50, 100]);  
+  let [pageIndex, setPageIndex] = useState(0);  
+  let [pageSize, setPageSize] = useState(pageOptions[0])
 
-  const buysValues = useQuery(queryBuys, { notifyOnNetworkStatusChange: true });
+  let [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
-  console.log("buysValues :", buysValues)
+  let bookBuyTransitionsValues = useQuery(queryBookBuyTransitions, { notifyOnNetworkStatusChange: true });
+
+  console.log("bookBuyTransitionsValues :", bookBuyTransitionsValues)
 
   // const [onDeleteBank, resultDeleteBank] = useMutation(gqlDeleteBank, 
   //   {
@@ -77,57 +80,60 @@ const BuysPage = (props) => {
   const columns = useMemo(
     () => [
         {
-          Header: 'Type',
-          accessor: 'type',
-        },
-        {
           Header: 'Title',
           accessor: 'title',
+          Cell: props =>{
+            let {_id, title} = props.row.original
+            return (<div onClick={(e)=>{ history.push({ pathname: "/p", search: `?id=${_id}`, state: { id: _id } }) }}>{title}</div>)
+          }
         },
+        // {
+        //   Header: 'Description',
+        //   accessor: 'description',
+        //   Cell: props => {
+        //     return (
+        //       <div>
+        //         <Typography
+        //           variant="body1"
+        //           gutterBottom
+        //           dangerouslySetInnerHTML={{
+        //             __html: props.row.original.description
+        //           }}
+        //         />
+        //       </div>
+        //     );
+        //   }
+        // },
         {
-          Header: 'Description',
-          accessor: 'description',
+          Header: 'Book - Buy',
+          accessor: 'buys',
           Cell: props => {
+            let {buys} = props.row.original
 
+            let book  = _.filter(buys, buy=>buy.userId == user._id  && buy.selected == 0)
+            let buy  = _.filter(buys, buy=>buy.userId == user._id  && buy.selected == 1)
             return (
-              <Box
-                sx={{
-                  maxHeight: "inherit",
-                  width: "100%",
-                  whiteSpace: "initial",
-                  lineHeight: "16px"
-                }}
-              >
-                <Typography
-                  variant="body1"
-                  gutterBottom
-                  dangerouslySetInnerHTML={{
-                    __html: props.row.original.description
-                  }}
-                />
-              </Box>
+              <div>Book : {book.length}, Buy : {buy.length}</div>
             );
           }
         },
-        {
-          Header: 'Action',
-          Cell: props => {
-            console.log("Cell :", props)
-
-            let {_id, name} = props.row.original
-            return  <div>
-                      <button onClick={()=>{
-                        history.push({ 
-                          pathname: "/bank", 
-                          state: {from: "/", mode: "edit", _id} 
-                        });
-                      }}>{t("edit")}</button>
-                      <button onClick={(e)=>{
-                        // setOpenDialogDelete({ isOpen: true, id: _id, description: name })
-                      }}>{t("delete")}</button>
-                    </div>
-          }
-        },
+        // {
+        //   Header: 'Action',
+        //   Cell: props => {
+        //     let {_id, name} = props.row.original
+        //     return  <div>
+        //               <button onClick={()=>{
+        //                 history.push({ 
+        //                   pathname: "/bank", 
+        //                   state: {from: "/", mode: "edit", _id} 
+        //                 });
+        //               }}>{t("edit")}</button>
+        //               <button onClick={(e)=>{
+        //                 // setOpenDialogDelete({ isOpen: true, id: _id, description: name })
+        //               }}>{t("delete")}</button>
+        //             </div>
+        //   }
+        // },
     ],
     []
   )
@@ -150,11 +156,11 @@ const BuysPage = (props) => {
   return (
     <div className="user-list-container">
       {
-         buysValues.loading
-         ?  <div><CircularProgress /></div> 
+         bookBuyTransitionsValues.loading
+         ?  <CircularProgress /> 
          :  <Table
               columns={columns}
-              data={buysValues.data.buys.data}
+              data={bookBuyTransitionsValues.data.bookBuyTransitions.data}
               fetchData={fetchData}
               rowsPerPage={pageOptions}
               updateMyData={updateMyData}
@@ -191,4 +197,9 @@ const BuysPage = (props) => {
   );
 };
 
-export default BuysPage;
+const mapStateToProps = (state, ownProps) => {
+  return { user:state.auth.user }
+};
+
+const mapDispatchToProps = { }
+export default connect( mapStateToProps, mapDispatchToProps )(BookBuysPage);

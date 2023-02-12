@@ -1,0 +1,3 @@
+export const AMDINISTRATOR = "AMDINISTRATOR";
+export const AUTHENTICATED = "AUTHENTICATED";
+export const ANONYMOUS     = "ANONYMOUS";

@@ -47,7 +47,7 @@ const DepositPage = (props) => {
   let editValues = null;
 
   const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
-    context: { headers: getHeaders() },
+    context: { headers: getHeaders(location) },
     update: (cache, {data: {deposit}}) => {
       let { data, mode, status } = deposit
       console.log("")
@@ -269,7 +269,7 @@ const DepositPage = (props) => {
 
     case "edit":{
       editValues = useQuery(queryDepositById, {
-                        context: { headers: getHeaders() },
+                        context: { headers: getHeaders(location) },
                         variables: {id},
                         notifyOnNetworkStatusChange: true,
                       });

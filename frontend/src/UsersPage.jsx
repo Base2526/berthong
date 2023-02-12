@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { useLocation, useHistory } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -27,6 +27,7 @@ export const UserListContainer = styled.div`flex: 4;`;
 
 const UsersPage = (props) => {
   let history = useHistory();
+  let location = useLocation();
   const { t } = useTranslation();
 
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
@@ -35,7 +36,7 @@ const UsersPage = (props) => {
 
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
-  const usersValue = useQuery(queryUsers, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true });
+  const usersValue = useQuery(queryUsers, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
 
   console.log("usersValue :", usersValue)
 
@@ -147,7 +148,7 @@ const UsersPage = (props) => {
           let {_id, balance} = props.row.original
           const balanceByIdValue = useQuery(queryBalanceById, 
                                           { 
-                                            context: { headers: getHeaders() },
+                                            context: { headers: getHeaders(location) },
                                             variables: {id: _id},
                                             notifyOnNetworkStatusChange: true 
                                           });

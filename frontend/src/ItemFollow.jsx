@@ -4,32 +4,35 @@ import { useMutation } from "@apollo/client";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import _ from "lodash"
 import { connect } from "react-redux";
+import { useHistory, useLocation } from "react-router-dom";
 
-import { mutationFollow, queryHomes, querySupplierById } from "./gqlQuery"
+import { mutationFollow, querySupplierById } from "./gqlQuery"
 import { getHeaders } from "./util"
 
 let unsubscribe =null
 const ItemFollow = (props) => {
+  let location = useLocation();
+  
   let { user, item, onDialogLogin } = props 
 
   const [onMutationFollow, resultMutationFollowValue] = useMutation(mutationFollow,{
-    context: { headers: getHeaders() },
+    context: { headers: getHeaders(location) },
     update: (cache, {data: {follow}}) => {
       
-      console.log("follow :", follow)
+      // console.log("follow :", follow)
 
       let { data, status } = follow
 
       if(status){
-        let queryHomesValue = cache.readQuery({ query: queryHomes });
-        if(!_.isEmpty(queryHomesValue)){
-          let newData = _.map(queryHomesValue.homes.data, (item)=> item._id == data._id ? data : item ) 
+        // let queryHomesValue = cache.readQuery({ query: queryHomes });
+        // if(!_.isEmpty(queryHomesValue)){
+        //   let newData = _.map(queryHomesValue.homes.data, (item)=> item._id == data._id ? data : item ) 
           
-          cache.writeQuery({
-            query: queryHomes,
-            data: { homes: {...queryHomesValue.homes, data: newData} }
-          });
-        }
+        //   cache.writeQuery({
+        //     query: queryHomes,
+        //     data: { homes: {...queryHomesValue.homes, data: newData} }
+        //   });
+        // }
 
         let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: { id: data._id  } });
         if(!_.isEmpty(querySupplierByIdValue)){

@@ -24,13 +24,13 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
 import { getHeaders, checkRole } from "./util"
-import { queryTransitions, mutationDeposit } from "./gqlQuery"
+import { queryHistoryTransitions, mutationDeposit } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
 
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 import Table from "./TableContainer"
 
-const TransitionsPage = (props) => {
+const HistoryTransitionsPage = (props) => {
   let history = useHistory();
   let location = useLocation();
   let { t } = useTranslation();
@@ -45,12 +45,12 @@ const TransitionsPage = (props) => {
 
   console.log("user :", user)
 
-  const transitionsValue = useQuery(queryTransitions, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true });
+  const historyTransitionsValue = useQuery(queryHistoryTransitions, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
 
-  console.log("transitionsValue :", transitionsValue)
+  console.log("historyTransitionsValue :", historyTransitionsValue)
 
   const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
-    context: { headers: getHeaders() },
+    context: { headers: getHeaders(location) },
     update: (cache, {data: {deposit}}) => {
       let { data, mode, status } = deposit
 
@@ -113,7 +113,7 @@ const TransitionsPage = (props) => {
           case AMDINISTRATOR:{
             return [
               {
-                Header: 'Type >><<',
+                Header: 'Type',
                 accessor: 'type',
                 Cell: props =>{
                     let {type} = props.row.values
@@ -160,7 +160,7 @@ const TransitionsPage = (props) => {
           case AUTHENTICATED:{
             return [
               {
-                Header: 'Type >><<',
+                Header: 'Type',
                 accessor: 'type',
                 Cell: props =>{
                     let {type} = props.row.values
@@ -249,12 +249,12 @@ const TransitionsPage = (props) => {
 
   return (<div style={{flex:1}}>
          {
-            transitionsValue.loading
+            historyTransitionsValue.loading
             ? <CircularProgress /> 
             : <div>
                 <Table
                   columns={columns}
-                  data={transitionsValue.data.transitions.data}
+                  data={historyTransitionsValue.data.historyTransitions.data}
                   fetchData={fetchData}
                   rowsPerPage={pageOptions}
                   updateMyData={updateMyData}
@@ -300,4 +300,4 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = { logout }
 
-export default connect( mapStateToProps, mapDispatchToProps )(TransitionsPage);
+export default connect( mapStateToProps, mapDispatchToProps )(HistoryTransitionsPage);

@@ -1,46 +1,33 @@
-import logo from './logo.svg';
 import './App.css';
-
-import React, { useState, useEffect, useRef, useCallback} from "react";
-import { useQuery, useSubscription } from "@apollo/client";
+import React, { useEffect, useRef, useCallback} from "react";
+import { useApolloClient, useQuery, useSubscription } from "@apollo/client";
 import moment from "moment";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  useHistory,
-  Link,
-  useLocation
-} from "react-router-dom";
+import { Switch, Route, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
+import _ from "lodash"
 
 import { getHeaders } from "./util"
-import { gqlPing, subscriptionMe } from "./gqlQuery"
-
-import { editedUserBalace } from "./redux/actions/auth"
-import { EDITED_USER_BALANCE } from "./constants"
-
+import { gqlPing, subscriptionMe, querySuppliers, querySupplierById } from "./gqlQuery"
+import { editedUserBalace, editedUserBalaceBook } from "./redux/actions/auth"
 import LoginPage from "./LoginPage"
 import HomePage from "./HomePage";
 import DetailPage from "./DetailPage";
 import SuppliersPage from "./SuppliersPage";
 import SupplierPage from "./SupplierPage";
 import SupplierProfilePage from "./SupplierProfilePage";
-
 import PrivateRoute from "./PrivateRoute"
 import PrivatePage from "./PrivatePage"
 
 const App =(props) =>{
-  const intervalPing = useRef(null);
+  let client = useApolloClient();
+  let location = useLocation();
+  let intervalPing = useRef(null);
 
-  let { user, editedUserBalace } = props
+  let { user, editedUserBalace, editedUserBalaceBook } = props
 
   /////////////////////// ping ///////////////////////////////////
-  const pingValues =useQuery(gqlPing, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true});
+  const pingValues =useQuery(gqlPing, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true});
 
-
-  // const meValue = useSubscription(subscriptionMe, {userId: "xxxx"}, { context: { headers: getHeaders() } } )
-  // console.log("meValue :", meValue)
 
   useSubscription(subscriptionMe, {
     onSubscriptionData: useCallback((res) => {
@@ -52,10 +39,12 @@ const App =(props) =>{
           case "DEPOSIT":
           case "WITHDRAW":
           case "BUY":{
-            console.log("mutation :", mutation, data)
-
-            // EDITED_USER_BALANCE
             editedUserBalace(data)
+            break;
+          }
+
+          case "BOOK":{
+            editedUserBalaceBook(data)
             break;
           }
         }
@@ -72,7 +61,57 @@ const App =(props) =>{
       pingValues && pingValues.refetch()
         
       console.log("ping, auth : ", moment().format("DD-MM-YYYY hh:mm:ss") )
-    }, 20000);
+
+      const suppliersValue = client.readQuery({ query: querySuppliers });
+      if(!_.isNull(suppliersValue)){
+        let { status, data } = suppliersValue.suppliers
+        let newData = _.map(data, (item)=>{
+                        let { buys } = item
+
+                        let newBuys = _.transform(
+                          buys,
+                          (result, n) => {
+                            var now = moment(new Date()); //todays date
+                            var end = moment(n.createdAt); // another date
+                            var duration = moment.duration(now.diff(end));
+
+                            console.log("duration :", duration.asMinutes(), duration.asHours())
+                            
+                            if( duration.asHours() <= 1 || n.selected == 1) {
+                              result.push(n);
+                            }
+                          },
+                          []
+                        );
+
+                        if(!_.isEqual(newBuys, buys)){
+
+                          let newItem = {...item, buys: newBuys}
+
+                          let supplierByIdValue = client.readQuery({ query: querySupplierById, variables: {id: item._id}});
+                          if(!_.isNull(supplierByIdValue)){
+                            console.log("supplierByIdValue :", supplierByIdValue, newItem)
+
+                            client.writeQuery({  query: querySupplierById, 
+                                                data: { supplierById: {...supplierByIdValue.supplierById, data: newItem } }, 
+                                                variables: { id: item._id } 
+                                            }); 
+                          }
+                          
+                          return newItem
+                        }
+                        return item
+                      })
+
+        if(!_.isEqual(data, newData)){
+          client.writeQuery({
+            query: querySuppliers,
+            data: { suppliers: {...suppliersValue.suppliers, data: newData} }
+          });
+        }
+      }
+      
+    }, 60000 /*1 min*/);
     return ()=> clearInterval(intervalPing.current);
   }, []);
 
@@ -155,6 +194,7 @@ const mapStateToProps = (state, ownProps) => {
 };
 
 const mapDispatchToProps = {
-  editedUserBalace
+  editedUserBalace,
+  editedUserBalaceBook
 }
 export default connect( mapStateToProps, mapDispatchToProps )(App);

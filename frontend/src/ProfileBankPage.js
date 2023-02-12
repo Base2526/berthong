@@ -27,6 +27,7 @@ let initValues = { banks: [] }
 
 const ProfileBankPage = (props) => {
   let history = useHistory();
+  let location = useLocation();
   let { t } = useTranslation();
 
   let { user } = props
@@ -35,14 +36,18 @@ const ProfileBankPage = (props) => {
   let [error, setError]       = useState(initValues);
 
   const [onMutationMe, resultMutationMe] = useMutation(mutationMe, {
-    context: { headers: getHeaders() },
+    context: { headers: getHeaders(location) },
     update: (cache, {data: {me}}) => {
       const queryMeValue = cache.readQuery({ query: queryMe });
       // let newData = {...queryMeValue.me.data, me.data};
-      cache.writeQuery({
-        query: queryMe,
-        data: { me: {...queryMeValue.me, data: me.data} }
-      });
+
+      if(!_.isNull(queryMeValue)){
+        cache.writeQuery({
+          query: queryMe,
+          data: { me: {...queryMeValue.me, data: me.data} }
+        });
+      }
+     
     },
     onCompleted({ data }) {
       history.goBack()
@@ -57,7 +62,7 @@ const ProfileBankPage = (props) => {
     event.preventDefault();
     let newInput =  {...user, banks: input.banks}
 
-    newInput = _.omitDeep(newInput, ['_id', '__v', 'createdAt', 'updatedAt'])
+    newInput = _.omitDeep(newInput, ['_id', '__v', 'createdAt', 'updatedAt', 'balanceBook'])
     console.log("submitForm :", newInput)
     onMutationMe({ variables: { input: newInput } });
   }

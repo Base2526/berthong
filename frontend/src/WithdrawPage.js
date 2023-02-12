@@ -51,7 +51,7 @@ const WithdrawPage = (props) => {
   // console.log("user :", user)
 
   const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
-    context: { headers: getHeaders() },
+    context: { headers: getHeaders(location) },
     update: (cache, {data: {withdraw}}) => {
       let { data, mode, status } = withdraw
 
@@ -253,7 +253,7 @@ const WithdrawPage = (props) => {
 
     case "edit":{
       editValues = useQuery(queryWithdrawById, {
-                        context: { headers: getHeaders() },
+                        context: { headers: getHeaders(location) },
                         variables: {id},
                         notifyOnNetworkStatusChange: true,
                       });

@@ -210,15 +210,16 @@ export const client = new ApolloClient({
     //     }
     //   }
     // }),
-    cache: new InMemoryCache({
-      typePolicies: {
-        Query: {
-          fields: {
-            books: relayStylePagination(),
-          },
-        },
-      },
-    }),
+    // cache: new InMemoryCache({
+    //   typePolicies: {
+    //     Query: {
+    //       fields: {
+    //         books: relayStylePagination(),
+    //       },
+    //     },
+    //   },
+    // }),
+    cache: new InMemoryCache(),
     onError: ({ networkError, graphQLErrors }) => {
       console.log("graphQLErrors", graphQLErrors)
       console.log("networkError", networkError)

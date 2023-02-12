@@ -460,7 +460,9 @@ export default gql`
 
     balanceById(_id: ID!): JSON
 
-    transitions: JSON
+    bookBuyTransitions: JSON
+
+    historyTransitions: JSON
 
     supplierProfile(_id: ID): JSON
 

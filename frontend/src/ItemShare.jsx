@@ -11,8 +11,6 @@ let unsubscribe =  null
 const ItemShare = (props) => {
   let {user, index,  item, onOpenMenuShare} = props 
 
-  console.log("itemshare : ", props)
-
   useEffect(()=>{
     return () => {
       unsubscribe && unsubscribe()

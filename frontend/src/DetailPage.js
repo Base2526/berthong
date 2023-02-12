@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -20,10 +20,11 @@ import { FacebookShareButton, TwitterShareButton } from "react-share";
 import { FacebookIcon, TwitterIcon } from "react-share";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import queryString from 'query-string';
+import moment from "moment";
 
 import { login } from "./redux/actions/auth"
 import { getHeaders, bookView, sellView, showToast } from "./util"
-import { querySupplierById, gqlBook, gqlBuy, subscriptionSupplierById } from "./gqlQuery"
+import { querySupplierById, gqlBook, gqlBuy, subscriptionSupplierById, querySuppliers } from "./gqlQuery"
 import DialogLogin from "./DialogLogin"
 import DialogBuy from "./DialogBuy"
 import ItemFollow from "./ItemFollow"
@@ -34,13 +35,17 @@ let unsubscribeSupplierById = null;
 const DetailPage = (props) => {
   let history = useHistory();
   let location = useLocation();
+  let client = useApolloClient();
   let { t } = useTranslation();
+  let interval = useRef(null);
+
   let [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
   let [datas, setDatas] = useState([])
   let [dialogLogin, setDialogLogin] = useState(false);
   let [dialogBuy, setDialogBuy] = useState(false);
   let [openMenuSetting, setOpenMenuSetting] = useState(null);
   let [openMenuShare, setOpenMenuShare] = useState(null);
+  
 
   let params = queryString.parse(location.search)
 
@@ -53,26 +58,70 @@ const DetailPage = (props) => {
       newDatas = [...newDatas, {id: i, title:  i > 9 ? "" + i: "0" + i, selected: -1}]
     }
     setDatas(newDatas)
+
+    interval.current = setInterval(() => {
+      console.log("--DetailPage--", moment().format("DD-MM-YYYY hh:mm:ss"))
+
+      let supplierByIdValue = client.readQuery({ query: querySupplierById, variables: {id}});
+      if(!_.isNull(supplierByIdValue)){
+        console.log("supplierByIdValue :", supplierByIdValue)
+
+        let { buys } = supplierByIdValue.supplierById.data
+
+        let newBuys = _.transform(
+          buys,
+          (result, n) => {
+            var now = moment(new Date()); //todays date
+            var end = moment(n.createdAt); // another date
+            var duration = moment.duration(now.diff(end));
+
+            // console.log("duration :", duration.asMinutes(), duration.asHours())
+            
+            if( duration.asHours() <= 1 || n.selected == 1) {
+              result.push(n);
+            }
+          },
+          []
+        );
+
+        let newData = {...supplierByIdValue.supplierById.data, buys: newBuys}
+        if(!_.isEqual(supplierByIdValue.supplierById.data, newData)){
+          client.writeQuery({  query: querySupplierById, 
+                                  data: { supplierById: {...supplierByIdValue.supplierById, data: newData } }, 
+                                  variables: { id } 
+                              }); 
+        }
+      }
+    
+    }, 60000 /*1 min*/);
+
     return () => {
       unsubscribeSupplierById && unsubscribeSupplierById()
+      clearInterval(interval.current)
     };
   }, [])
 
   const [onBook, resultBookValues] = useMutation(gqlBook,{
-    context: { headers: getHeaders() },
+    context: { headers: getHeaders(location) },
     update: (cache, {data: {book}}) => {
       let { status, data } = book
-      if(status){
+      let supplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
+      if(status && supplierByIdValue){
+        cache.writeQuery({ query: querySupplierById, data: { supplierById: { data } }, variables: { id: data._id } }); 
+      }
+
+       ////////// update cache querySuppliers ///////////
+       let suppliersValue = cache.readQuery({ query: querySuppliers });
+       if(!_.isNull(suppliersValue)){
+        let { suppliers } = suppliersValue
+        let newData = _.map(suppliers.data, (supplier) => supplier._id == data._id ? data : supplier)
         cache.writeQuery({
-          query: supplierById,
-          data: {
-            supplierById: {
-              data
-            } 
-          },
-          variables: { id: data._id }
-        }); 
-      }    
+          query: querySuppliers,
+          data: { suppliers: {...suppliersValue.suppliers, data: newData} }
+        });
+       }
+ 
+       ////////// update cache querySuppliers ///////////
     },
     onCompleted({ data }) {
       console.log("onCompleted")
@@ -83,7 +132,7 @@ const DetailPage = (props) => {
   });
 
   const [onBuy, resultBuyValues] = useMutation(gqlBuy,{
-    context: { headers: getHeaders() },
+    context: { headers: getHeaders(location) },
     update: (cache, {data: {buy}}) => {
       let { status, data } = buy
          
@@ -97,6 +146,14 @@ const DetailPage = (props) => {
         });
       }
       ////////// update cache queryUserById ///////////    
+
+      ////////// update cache querySuppliers ///////////
+      let suppliersValue = cache.readQuery({ query: querySuppliers });
+      if(!_.isNull(suppliersValue)){
+        console.log("suppliersValue :", suppliersValue)
+      }
+
+      ////////// update cache querySuppliers ///////////
     },
     onCompleted({ data }) {
       console.log("onCompleted")
@@ -107,7 +164,7 @@ const DetailPage = (props) => {
   });
 
   let querySupplierByIdValue = useQuery(querySupplierById, {
-    context: { headers: getHeaders() },
+    context: { headers: getHeaders(location) },
     variables: { id },
     notifyOnNetworkStatusChange: true,
   });
@@ -154,7 +211,17 @@ const DetailPage = (props) => {
       selected = fn.selected == -1 ? 0 : -1
     }
 
-    setDatas(_.map(datas, (itm, k)=>itemId == k ? {...itm, selected }: itm))
+    if(selected == 0){
+      let check = user?.balance - (user?.balanceBook + data.price)
+      if(check < 0){
+        showToast("error", `ยอดเงินคงเหลือไม่สามารถจองได้`)
+
+        return;
+      }
+    }
+
+    let newDatas =  _.map(datas, (itm, k)=>itemId == k ? {...itm, selected }: itm)
+    setDatas(newDatas)
 
     selected ==0 
     ? showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
@@ -164,11 +231,7 @@ const DetailPage = (props) => {
   }
 
   const selected = () =>{
-    // let filter = _.filter(datas, (im)=>im.selected).map((curr)=> `${curr.title}`).toString()
-
     let fn = _.filter(data.buys, (buy)=>buy.userId == user._id && buy.selected == 0 ).map((curr)=> `${curr.itemId}`).toString()
-
-    // console.log("filter :", fn)
 
     if(_.isEmpty(fn)){
       return <div></div>
@@ -197,7 +260,7 @@ const DetailPage = (props) => {
 
   const imageView = () =>{
 
-    console.log("imageView :", data)
+    // console.log("imageView :", data)
     return (
       <div style={{ position: "relative" }}>
         <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
@@ -219,7 +282,7 @@ const DetailPage = (props) => {
   }
 
   const menuShareView = (item, index) =>{
-    console.log("menuShareView :", item)
+    // console.log("menuShareView :", item)
     return  <Menu
               anchorEl={openMenuShare && openMenuShare[index]}
               keepMounted
@@ -293,10 +356,16 @@ const DetailPage = (props) => {
   }
 
   return (<div style={{flex:1}}>
-            <div>{data.title}</div>
-            <div>จอง :{bookView(data)}</div>
-            <div>ขายไปแล้ว :{sellView(data)}</div>
-            <div>{user.displayName} - {user.email} : Balance : </div>
+
+            {_.isEmpty(user) ? "" : <div className="itm">{user.displayName} - {user.email} : Balance : { user?.balance } [-{user?.balanceBook}] </div>}
+            
+
+            <div className="itm">
+              <div>ชื่อ :{data.title},  ราคา : {data?.price}</div>
+              <div>จอง :{bookView(data)}</div>
+              <div>ขายไปแล้ว :{sellView(data)}</div>
+            </div>
+           
             {menuShareView(data, 1)}
             {menuSettingView(data, 1)}
             {imageView()}
@@ -395,6 +464,8 @@ const DetailPage = (props) => {
 }
 
 const mapStateToProps = (state, ownProps) => {
+
+  console.log("mapStateToProps : ", state.auth.user)
   return {user: state.auth.user}
 };
 

@@ -49,7 +49,7 @@ const SupplierPage = (props) => {
   }, [input])
 
   const [onSupplier, resultSupplier] = useMutation(gqlSupplier, {
-    context: { headers: getHeaders() },
+    context: { headers: getHeaders(location) },
     update: (cache, {data: {supplier}}) => {
 
       let { data, mode, status } = supplier
@@ -231,7 +231,7 @@ const SupplierPage = (props) => {
 
     case "edit":{
       editValues = useQuery(querySupplierById, {
-                        context: { headers: getHeaders() },
+                        context: { headers: getHeaders(location) },
                         variables: {id},
                         notifyOnNetworkStatusChange: true,
                       });

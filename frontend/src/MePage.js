@@ -25,7 +25,7 @@ const MePage = (props) => {
     console.log("params :", params)
 
     let meValues = useQuery(queryMe, {
-        context: { headers: getHeaders() },
+        context: { headers: getHeaders(location) },
         notifyOnNetworkStatusChange: true,
     });
 
@@ -36,23 +36,6 @@ const MePage = (props) => {
         if(status){
             login(data)
         }
-    }
-
-    const balanceView = () =>{
-        const balanceByIdValue = useQuery(queryBalanceById, 
-            { 
-            context: { headers: getHeaders() },
-            variables: {id: user._id},
-            notifyOnNetworkStatusChange: true 
-            });
-
-        console.log("balanceByIdValue :", balanceByIdValue)
-
-        if(balanceByIdValue.loading){
-            return <div> Balance : <LinearProgress sx={{width:"100px"}} /> </div>
-        }
-
-        return <div> Balance : {balanceByIdValue.data.balanceById.data}</div>
     }
 
     const managementView = () =>{
@@ -89,7 +72,7 @@ const MePage = (props) => {
             case AUTHENTICATED:{
                 return  <div>
                             <div>
-                                <button onClick={()=>{ history.push("/buys"); }}>รายการ ซื้อ</button>
+                                <button onClick={()=>{ history.push("/book+buys"); }}>รายการ จอง-ซื้อ</button>
                             </div>
                             <div>
                                 <button onClick={()=>{ history.push("/deposits"); }}>รายการ แจ้งฝากเงิน</button>
@@ -105,7 +88,7 @@ const MePage = (props) => {
                             </div>
 
                             <div>
-                                <button onClick={()=>{history.push("/transitions"); }}>History-Transitions</button>
+                                <button onClick={()=>{history.push("/history-transitions"); }}>History-Transitions</button>
                             </div>
                         </div>
             }
@@ -118,7 +101,7 @@ const MePage = (props) => {
                         // history.push({pathname: "/profile", search: `?u=${val.ownerId}` })
                         history.push({ pathname: "/user",  search: `?u=${user._id}`, state: {from: "/", mode: "edit", id: user._id } });
                     }}>แก้ไขข้อมูล</button>
-                    {balanceView()}
+                    <div> Balance : { user?.balance }[-{ user?.balanceBook }]</div>
                     {managementView()}
                     <button onClick={()=>{
                         logout()

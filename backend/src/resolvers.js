@@ -6,15 +6,18 @@ import deepdash from "deepdash";
 deepdash(_);
 import * as fs from "fs";
 
+import moment from "moment"
+
 import { AuthenticationError  } from "apollo-server-express";
+import { __TypeKind } from 'graphql';
+import mongoose from 'mongoose';
 
 import { User, Supplier, Bank, Role, Deposit, Withdraw, DateLottery, Transition } from './model'
-import { emailValidate, checkBalance } from './utils'
+import { emailValidate, checkBalance, checkBalanceBook } from './utils'
 import pubsub from './pubsub'
 
 import {fileRenamer, checkAuthorization, checkAuthorizationWithSessionId} from "./utils"
-import { __TypeKind } from 'graphql';
-import mongoose from 'mongoose';
+import { AMDINISTRATOR, AUTHENTICATED, ANONYMOUS } from "./constants"
 
 const path = require('path');
 const fetch = require("node-fetch");
@@ -46,6 +49,34 @@ export default {
           console.log("ping other")
         }
 
+
+        //////////////// clear book ////////////////
+        let suppliers = await Supplier.find({buys: {$elemMatch:{selected: 0}}});
+        await Promise.all(_.map(suppliers, async(supplier)=>{
+                              let { buys } = supplier
+                              
+                              let newBuys = _.transform(
+                                buys,
+                                (result, n) => {
+                                  var now = moment(new Date()); //todays date
+                                  var end = moment(n.createdAt); // another date
+                                  var duration = moment.duration(now.diff(end));
+
+                                  // console.log("duration :", duration.asMinutes(), duration.asHours())
+                                  
+                                  if( duration.asHours() <= 1 || n.selected == 1) {
+                                    result.push(n);
+                                  }
+                                },
+                                []
+                              );
+
+                              if(!_.isEqual(newBuys, buys)){
+                                await Supplier.updateOne({ _id: supplier?._id }, { ...supplier._doc, buys: newBuys });
+                              }
+                          }))
+        //////////////// clear book ////////////////
+
         return { status:true }
       } catch(err) {
         logger.error(err.toString());
@@ -62,10 +93,14 @@ export default {
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
 
-        return { 
-                status:true,
-                data: await User.findById(current_user?._id),
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+        let user = await User.findById(current_user?._id)
+        user = {...user._doc, 
+                balance: (await checkBalance(current_user?._id)).balance,
+                balanceBook: await checkBalanceBook(current_user?._id)}
+
+        return {  status:true,
+                  data: _.omit(user, ["password", "__v"]),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
                 }
       } catch(err) {
         logger.error(err.toString());
@@ -152,12 +187,13 @@ export default {
       }
     },
 
+    /*
     async homes(parent, args, context, info){
       let start = Date.now()
 
       try{
         // let { status, code, currentUser } = context 
-        // console.log("ping :", currentUser?._id)
+        console.log("homes context :", context)
 
         let { req } = context
 
@@ -190,6 +226,7 @@ export default {
               }
       }
     },
+    */
 
     async suppliers(parent, args, context, info){
       let start = Date.now()
@@ -202,29 +239,41 @@ export default {
 
         ///////////////////////////
         let authorization = await checkAuthorization(req);
-        let { status, code, current_user } =  authorization
+        let { status, code, pathname, current_user } =  authorization
 
-        if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
+        switch(pathname){
+          case "/":{
+            return {  
+              status: true,
+              data: await Supplier.find(),
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+            }
+          }
 
-          let suppliers = await Supplier.find({});
+          default:{
+            if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
 
-          suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-                        return {...item._doc, ownerName: (await User.findById(item.ownerId))?.displayName}
-                      }))
+              let suppliers = await Supplier.find({});
+    
+              suppliers = await Promise.all(_.map(suppliers, async(item)=>{
+                            return {...item._doc, ownerName: (await User.findById(item.ownerId))?.displayName}
+                          }))
+    
+              return {  status: true,
+                        data: suppliers,
+                        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+            }
 
-          return {  status:true,
-                    data: suppliers,
-                    executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+            return {  
+              status: true,
+              data: await Supplier.find({ownerId: current_user?._id}),
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+            }
+          }
         }
-
-        return {  
-                status:true,
-                data: await Supplier.find({ownerId: current_user?._id}),
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
-              }
       } catch(err) {
         logger.error(err.toString());
-        console.log("getSuppliers err :", err.toString())
+        console.log("suppliers err :", err.toString())
         return {  
                 status:false,
                 message: err.toString(),
@@ -278,8 +327,11 @@ export default {
                     executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
         }
 
+        let deposits = await Deposit.find({userIdRequest: current_user?._id})
+
+        deposits = _.orderBy(deposits, i => i.updatedAt, 'desc');
         return {  status:true,
-                  data: await Deposit.find({userIdRequest: current_user?._id}),
+                  data: deposits,
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
       } catch(err) {
@@ -331,30 +383,19 @@ export default {
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
 
-        console.log("withdraws current_user :", current_user)
-
-        // if(current_user?.roles){
-
-        // }
-
         if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
           return {  status:true,
                     data: await Withdraw.find({status: "wait"}),
                     executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
         }
-        //////////////////////////
-
-        // userIdApprove
         let withdraws = await Withdraw.find({userIdRequest: current_user?._id})
-
         withdraws = await Promise.all(_.map(withdraws, async(item)=>{
                                               let user = await User.findById(item.userIdApprove)
                                               return {...item._doc, userNameApprove: user?.displayName}
                                             }))
 
-
         return {  status: true,
-                  data: withdraws,
+                  data: _.orderBy(withdraws, i => i.updatedAt, 'desc'),
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
       } catch(err) {
@@ -515,10 +556,49 @@ export default {
       }
     },
 
-    async transitions(parent, args, context, info){
+    async bookBuyTransitions(parent, args, context, info){
       let start = Date.now()
       try{
-        console.log("transitions :", args)
+        console.log("bookBuyTransitions :", args)
+        let { req } = context
+
+        ///////////////////////////
+        let authorization = await checkAuthorization(req);
+        let { status, code, current_user } =  authorization
+        //////////////////////////
+
+        ///////////////////////
+        let transitions = await Transition.find({userId: current_user?._id, type: "supplier",status:"success" });
+        transitions = _.filter( await Promise.all(_.map(transitions, async(transition)=>{
+                        let supplier = await Supplier.findById(transition.refId)
+
+                        let { buys } = supplier
+                        let book  = _.filter(buys, buy=>buy.userId == current_user?._id  && buy.selected == 0)
+                        let buy  = _.filter(buys, buy=>buy.userId == current_user?._id  && buy.selected == 1)
+
+                        return book.length > 0 || buy.length > 0 ? {...transition._doc, ...supplier._doc } : null
+                      })), item=>!_.isNull(item) ) 
+
+        console.log("bookBuyTransitions  transitions :", transitions)
+        //////////////////////
+
+        return {  status: true,
+                  data: transitions,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+      } catch(err) {
+        logger.error(err.toString());
+
+        return {  status:false,
+                  message: err.toString(),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+
+    async historyTransitions(parent, args, context, info){
+      let start = Date.now()
+      try{
+        console.log("historyTransitions :", args)
         let { req } = context
 
         ///////////////////////////
@@ -682,7 +762,7 @@ export default {
         let {input} = args
 
         console.log("params login : ", input)
-        
+
         let user = emailValidate().test(input.username) ?  await User.findOne({email: input.username}) : await User.findOne({username: input.username})
         if(user === null){
           return {
@@ -691,8 +771,15 @@ export default {
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }
-        await User.findOneAndUpdate({ _id: user?._id }, { lastAccess : Date.now() }, { new: true })
-        user = {...user._doc, balance: (await checkBalance(user?._id)).balance}
+
+        await User.updateOne({ _id: user?._id }, { lastAccess : Date.now() });
+
+        user = await User.findById(user?._id)
+
+        user = {...user._doc, 
+                balance: (await checkBalance(user?._id)).balance,
+                balanceBook: await checkBalanceBook(user?._id)}
+
         return {
           status: true,
           data: _.omit(user, ["password", "__v"]),
@@ -1116,7 +1203,7 @@ export default {
         let { input } = args
         let { req } = context
 
-        console.log("me :", input)
+        console.log("params me :", input)
 
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
@@ -1240,31 +1327,31 @@ export default {
         let supplier = await Supplier.findById(supplierId);
 
         if(supplier){
+          if(_.isNull(await Transition.findOne({ refId: supplier?._id }))){
+            await Transition.create( {type: "supplier",  refId: supplier?._id,  userId: current_user?._id,  status: "success"} )
+          }
+
           let { buys } = supplier
+
           if(selected == 0){
-            let ch = _.find(buys, (buy)=> buy.itemId == itemId )
-            if(!ch){
-              let newBuys = [...buys, {userId: current_user?._id.toString(), itemId, selected}]
+            if( _.isEmpty( _.find(buys, (buy)=> buy.itemId == itemId ) ) ){
+              await Supplier.updateOne(
+                                    { _id: supplierId }, 
+                                    {...supplier._doc, buys: [...buys, {userId: current_user?._id.toString(), itemId, selected}] } );
 
-              let newInput = {...supplier._doc, buys: newBuys}
-
-              let newSupplier = await Supplier.findOneAndUpdate({ _id: supplierId }, newInput, { new: true });
-
+              let newSupplier = await Supplier.findById(supplierId)
               pubsub.publish("SUPPLIER_BY_ID", {
-                supplierById: {
-                  mutation: "BOOK",
-                  data: newSupplier,
-                },
+                supplierById: { mutation: "BOOK", data: newSupplier },
               });
 
               pubsub.publish("SUPPLIERS", {
-                suppliers: {
-                  mutation: "BOOK",
-                  data: newSupplier,
-                },
+                suppliers: { mutation: "BOOK", data: newSupplier },
               });
 
-              // console.log("newSupplier #1 : ", newSupplier)
+              pubsub.publish("ME", {
+                me: { mutation: "BOOK", data: {userId: current_user?._id, data: { balance: (await checkBalance(current_user?._id)).balance , balanceBook: await checkBalanceBook(current_user?._id) } } },
+              });
+
               return {
                 status: true,
                 data: newSupplier,
@@ -1272,23 +1359,21 @@ export default {
               }
             }
           }else{
-            let newBuys = _.filter(buys, (buy)=> buy.itemId != itemId )
-            let newInput = {...supplier._doc, buys: newBuys}
-            let newSupplier = await Supplier.findOneAndUpdate({ _id: supplierId }, newInput, { new: true });
+            await Supplier.updateOne(
+            { _id: supplierId }, 
+            {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId ) },  );
 
-            // console.log("newSupplier #2 : ", newSupplier)
+            let newSupplier = await Supplier.findById(supplierId)
             pubsub.publish("SUPPLIER_BY_ID", {
-              supplierById: {
-                mutation: "UNBOOK",
-                data: newSupplier,
-              },
+              supplierById: { mutation: "UNBOOK", data: newSupplier },
             });
 
             pubsub.publish("SUPPLIERS", {
-              suppliers: {
-                mutation: "UNBOOK",
-                data: newSupplier,
-              },
+              suppliers: { mutation: "UNBOOK", data: newSupplier },
+            });
+
+            pubsub.publish("ME", {
+              me: { mutation: "BOOK", data: {userId: current_user?._id, data: { balance: (await checkBalance(current_user?._id)).balance, balanceBook: await checkBalanceBook(current_user?._id) } } },
             });
 
             return {
@@ -1296,13 +1381,15 @@ export default {
               data: newSupplier,
               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
             }
-          }
+          }          
         }
         return {
           status: false,
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
       } catch(err) {
+        console.log("book error :", err)
+
         logger.error(err.toString());
         return {
           status: false,
@@ -1322,29 +1409,18 @@ export default {
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
 
-        let supplier =  await Supplier.findById(_id);
+        let supplier = await Supplier.findById(_id);
         if(!_.isEmpty(supplier)){
-          let buys =  _.map(supplier.buys, (buy)=>{
-                        if(buy.userId == current_user?._id.toString()){
-                          return {...buy._doc, selected: 1}
-                        }
-                        return buy
-                      })
-          supplier = await Supplier.findOneAndUpdate({ _id }, {buys}, { new: true });
-
-          await Transition.findOneAndUpdate({refId: supplier?._id}, 
-                                            {type: "supplier", 
-                                            refId: supplier?._id, 
-                                            userId: current_user?._id, 
-                                            status: "success"}, { upsert: true, new: true })
+          let buys =  _.map(supplier.buys, (buy)=> buy.userId == current_user?._id.toString() ? {...buy._doc, selected: 1} : buy )
+          await Supplier.updateOne({ _id }, {buys });
 
           pubsub.publish("ME", {
-            me: { mutation: "BUY", data: {userId: current_user?._id, data: await checkBalance(current_user?._id) } },
+            me: { mutation: "BUY", data: {userId: current_user?._id, data: {...await checkBalance(current_user?._id), balanceBook: await checkBalanceBook(current_user?._id) }  } },
           });
         }
         return {
           status: true,
-          data: supplier,
+          data: await Supplier.findById(_id),
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
       } catch(err) {
@@ -1888,27 +1964,20 @@ export default {
         if(suppliers){
           let {follows} = suppliers  
           if(!_.isEmpty(follows)){
-            let isFollow = _.find(follows, (fl)=>fl.userId == current_user?._id.toString())
+            let isFollow = _.find(follows, (follow)=>follow.userId == current_user?._id.toString())
             if(_.isEmpty(isFollow)){
               follows = [...follows, {userId: current_user?._id}]
             }else{
-              follows = _.filter(follows, (fl)=>fl.userId != current_user?._id.toString())
+              follows = _.filter(follows, (follow)=>follow.userId != current_user?._id.toString())
             }
           }else{
             follows = [{userId: current_user?._id}]
           }
   
-          let newSupplier = await Supplier.findOneAndUpdate({ _id }, {follows}, { new: true });
-
-          // let homes = await Promise.all(_.map(suppliers, async(item)=>{
-          //   return {...item._doc, ownerName: (await User.findById(item.ownerId))?.displayName}
-          // }))
-
-          newSupplier = {...newSupplier._doc, ownerName: (await User.findById(newSupplier.ownerId))?.displayName }
-          
+          await Supplier.updateOne( { _id }, { follows } );
           return {
             status: true,
-            data: newSupplier,
+            data: {...suppliers._doc, ownerName: (await User.findById(suppliers.ownerId))?.displayName },
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }else{
@@ -1996,7 +2065,6 @@ export default {
           return pubsub.asyncIterator(["ME"])
         }, async(payload, variables) => {
           try{
-            console.log("Subscription : ME #1 =", payload, variables)
 
             let { sessionId } = variables
             if(_.isEmpty(sessionId)){
@@ -2005,14 +2073,9 @@ export default {
 
             let {mutation, data} = payload.me
 
-            
             // userId
             let authorization = await checkAuthorizationWithSessionId(sessionId);
             let { status, code, current_user } =  authorization
-
-            
-
-            console.log("Subscription : ME #2 =", status, code, current_user?._id, data.userId )
 
             return data.userId.toString() == current_user?._id.toString() ? true : false;
           } catch(err) {
@@ -2029,8 +2092,6 @@ export default {
       subscribe: withFilter((parent, args, context, info) => {
           return pubsub.asyncIterator(["SUPPLIER_BY_ID"])
         }, (payload, variables) => {
-
-          console.log("Subscription : SUPPLIER_BY_ID :", payload, variables)
 
           let {mutation, data} = payload.supplierById
           switch(mutation){
@@ -2052,51 +2113,11 @@ export default {
           return pubsub.asyncIterator(["SUPPLIERS"])
         }, (payload, variables) => {
 
-          
-
           let {mutation, data} = payload.suppliers
 
-          console.log("Subscription : SUPPLIERS :", JSON.parse(variables.supplierIds), data._id.toString() )
-          // switch(mutation){
-          //   case "BOOK":
-          //   case "UNBOOK":
-          //     {
-          //       return variables.supplierById == data._id
-          //     }
-          // }
-          
-
-          let check =  _.includes( JSON.parse(variables.supplierIds), data._id.toString()) ;
-          return check;
+          return _.includes( JSON.parse(variables.supplierIds), data._id.toString());
         }
       )
     },
-    // subscriptionBalance: {
-    //   resolve: (payload) =>{
-    //     return payload.balance
-    //   },
-    //   subscribe: withFilter((parent, args, context, info) => {
-    //       return pubsub.asyncIterator(["BALANCE"])
-    //     }, async(payload, variables) => {
-    //       let {mutation, data} = payload.balance
-
-    //       switch(mutation){
-    //         case "BUY":{
-    //           console.log(">>> BUY :", data, variables)
-    //         }
-    //       }
-
-    //       try{
-    //         let authorization = await checkAuthorizationWithSessionId(variables?.sessionId);
-    //         let { status, code, current_user } =  authorization
-
-    //         return data.userId.toString() == current_user?._id.toString() ? true : false;
-    //       } catch(err) {
-    //         console.log("subscriptionBalance ", err.toString())
-    //       }
-    //       return false;
-    //     }
-    //   )
-    // },
   }
 };

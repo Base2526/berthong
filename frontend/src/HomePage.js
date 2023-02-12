@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import CircularProgress from '@mui/material/CircularProgress';
@@ -17,7 +17,7 @@ import { FacebookShareButton, TwitterShareButton } from "react-share";
 import { FacebookIcon, TwitterIcon } from "react-share";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
-import { queryHomes, subscriptionSuppliers, mutationMe } from "./gqlQuery"
+import { querySuppliers, subscriptionSuppliers, mutationMe } from "./gqlQuery"
 import { getHeaders, checkRole, bookView, sellView } from "./util"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 import { login, logout } from "./redux/actions/auth"
@@ -29,6 +29,7 @@ import ItemShare from "./ItemShare";
 let unsubscribeSuppliers = null;
 const HomePage = (props) => {
   let history = useHistory();
+  let location = useLocation();
   let { t } = useTranslation();
   let [dialogLogin, setDialogLogin] = useState(false);
   let [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
@@ -38,8 +39,6 @@ const HomePage = (props) => {
 
   let { user } = props
 
-  console.log("user :", user)
-
   useEffect(()=>{
     return () => {
       unsubscribeSuppliers && unsubscribeSuppliers()
@@ -47,7 +46,7 @@ const HomePage = (props) => {
   }, [])
 
   const [onMe, resultMeValues] = useMutation(mutationMe,{
-    context: { headers: getHeaders() },
+    context: { headers: getHeaders(location) },
     update: (cache, {data: {me}}) => {
       console.log("onMe :", me)
     },
@@ -59,13 +58,13 @@ const HomePage = (props) => {
     }
   });
   
-  const suppliersValues =useQuery(queryHomes, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true});
+  const suppliersValues =useQuery(querySuppliers, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true});
 
-  console.log("suppliersValues: ", suppliersValues)
+  // console.log("suppliersValues: ", suppliersValues)
   if(suppliersValues.loading){
     return <div><CircularProgress /></div>
   }else{
-    if(_.isEmpty(suppliersValues.data.homes)){
+    if(_.isEmpty(suppliersValues.data.suppliers)){
       return;
     }
 
@@ -106,8 +105,8 @@ const HomePage = (props) => {
       }
 
       case AUTHENTICATED:{
-        return  <div>
-                  <div>Balance : {user.balance}</div>
+        return  <div className="itm">
+                  <div>Balance : {user?.balance} [-{user?.balanceBook}]</div>
                   <div onClick={()=>{ history.push("/me") }}>AUTHENTICATED : {user.displayName} - {user.email}</div>
                 </div>
       }
@@ -124,7 +123,7 @@ const HomePage = (props) => {
   }
 
   const menuShareView = (item, index) =>{
-    console.log("menuShareView :", item)
+    // console.log("menuShareView :", item)
     return  <Menu
               anchorEl={openMenuShare && openMenuShare[index]}
               keepMounted
@@ -222,7 +221,7 @@ const HomePage = (props) => {
             
             {managementView()}
             {
-              _.map(suppliersValues.data.homes.data, (val, k)=>{
+              _.map(suppliersValues.data.suppliers.data, (val, k)=>{
                 return  <div key={k} className="home-item" >
                           <div onClick={()=>{
                             history.push({pathname: "/profile", search: `?u=${val.ownerId}` })
@@ -232,7 +231,7 @@ const HomePage = (props) => {
 
                           {imageView(val)}
 
-                          <div>{val.title}</div>
+                          <div>ชื่อ :{val.title}, ราคา : {val.price}</div>
                           <div>จอง :{bookView(val)}</div>
                           <div>ขายไปแล้ว :{sellView(val)}</div>
                           <button onClick={(evt)=>{

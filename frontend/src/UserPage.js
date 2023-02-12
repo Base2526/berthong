@@ -74,7 +74,7 @@ const UserPage = (props) => {
   let editValues = null;
 
   const [onMutationMe, resultMutationMe] = useMutation(mutationMe, {
-    context: { headers: getHeaders() },
+    context: { headers: getHeaders(location) },
     update: (cache, {data: {me}}) => {
       let { data, status } = me
 
@@ -436,7 +436,7 @@ const UserPage = (props) => {
 
     case "edit":{
       editValues = useQuery(queryUserById, {
-                        context: { headers: getHeaders() },
+                        context: { headers: getHeaders(location) },
                         variables: {id},
                         notifyOnNetworkStatusChange: true,
                       });

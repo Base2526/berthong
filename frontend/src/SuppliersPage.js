@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useCallback, useMemo, useRef  } from "react";
 import Box from "@mui/material/Box";
 import { useQuery, useMutation } from "@apollo/client";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -33,6 +33,7 @@ import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 
 const SuppliersPage = (props) => {
   let history = useHistory();
+  let location = useLocation();
   const { t } = useTranslation();
   let { user } = props
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
@@ -69,7 +70,7 @@ const SuppliersPage = (props) => {
   
   */
 
-  const suppliersValue = useQuery(querySuppliers, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true });
+  const suppliersValue = useQuery(querySuppliers, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
 
   console.log("suppliersValue :", suppliersValue)
 

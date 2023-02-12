@@ -15,7 +15,8 @@ import {LOGIN,
     
         TERMS_AND_CONDITIONS,
     
-        EDITED_USER_BALANCE} from "../../constants"
+        EDITED_USER_BALANCE,
+        EDITED_USER_BALANCE_BOOK} from "../../constants"
 
 import _ from "lodash"
 
@@ -33,7 +34,7 @@ const auth = (state = initialState, action) => {
     // console.log("auth :", action);
     switch (action.type) {
         case LOGIN:{
-            return { ...state, user: action.data };
+            return _.isEqual(state.user, action.data) ? state : { ...state, user: action.data }
         }
 
         case LOGOUT:{
@@ -186,8 +187,15 @@ const auth = (state = initialState, action) => {
 
         case EDITED_USER_BALANCE:{
             let {type, data} = action.data
-            return {...state, user: {...state.user, balance: data.balance}}
+            return {...state, user: {...state.user, balance: data.balance, balanceBook: data.balanceBook}}
         } 
+
+        case EDITED_USER_BALANCE_BOOK: 
+        {
+            let {type, data} = action.data
+            return {...state, user: {...state.user, balance: data.balance, balanceBook: data.balanceBook}}
+        } 
+
     }
 
     return state

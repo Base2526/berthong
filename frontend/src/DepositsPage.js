@@ -21,6 +21,8 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import moment from "moment";
 import LinearProgress from '@mui/material/LinearProgress';
+import Lightbox from "react-image-lightbox";
+import "react-image-lightbox/style.css";
 
 import { getHeaders, checkRole } from "./util"
 import { queryDeposits, mutationDeposit, queryBanks } from "./gqlQuery"
@@ -43,12 +45,12 @@ const DepositsPage = (props) => {
 
   console.log("user :", user)
 
-  const depositsValue = useQuery(queryDeposits, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true });
+  const depositsValue = useQuery(queryDeposits, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
 
   console.log("depositsValue :", depositsValue)
 
   const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
-    context: { headers: getHeaders() },
+    context: { headers: getHeaders(location) },
     update: (cache, {data: {deposit}}) => {
       let { data, mode, status } = deposit
 
@@ -105,17 +107,16 @@ const DepositsPage = (props) => {
   })
   ///////////////
   const columns = useMemo(
-      () => [
+      () => 
+       {
+        return [
           {
             Header: 'รูป',
             accessor: 'files',
             Cell: props =>{
               if(props.value.length < 1){
                 return <div />
-              }
-
-              console.log("files :", props.value)
-              
+              }              
               return (
                 <div style={{ position: "relative" }}>
                   <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
@@ -173,8 +174,6 @@ const DepositsPage = (props) => {
                 }
                 let find = _.find(valueBanks.data.banks.data, (item)=>item._id.toString() == bank[0].bankId.toString() )            
                 return <div style={{ position: "relative" }}>{bank[0].bankId} : {find.name}</div>
-
-                // return ( <div style={{ position: "relative" }}>bank</div> );
             }
           },
           {
@@ -182,18 +181,17 @@ const DepositsPage = (props) => {
             accessor: 'dateTranfer',
             Cell: props => {
                 let {dateTranfer} = props.row.values
-                return <div>{dateTranfer}</div>
+                // return <div>{dateTranfer}</div>
+
+                dateTranfer = new Date(dateTranfer).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+
+                return <div>{ (moment(dateTranfer, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
             }
           },
           {
             Header: 'Status',
             accessor: 'status',
             Cell: props => {
-              // switch(checkRole(user)){
-              //   case AMDINISTRATOR:{
-              //     return <div>AMDINISTRATOR</div>
-              //   }
-              // }
               let {status} = props.row.values
               return <div>{status}</div>
             }
@@ -220,23 +218,61 @@ const DepositsPage = (props) => {
             }
           },
           {
-          Header: 'Action',
-          Cell: props => {
-            let {_id, description} = props.row.original
-            return  <div className="Btn--posts">
-                        <button onClick={(evt)=>{
-                          history.push({ 
-                            pathname: "/deposit", 
-                            state: {from: "/", mode: "edit", id: _id } 
-                          });
-                        }}><EditIcon/>{t("edit")}</button>
-                        <button onClick={(e)=>{
-                          setOpenDialogDelete({ isOpen: true, id: _id, description });
-                        }}><DeleteForeverIcon/>{t("delete")}</button>
-                    </div>
-          }
+            Header: 'Action',
+            Cell: props => {
+              let {_id, status, description} = props.row.original
+              switch(status){
+                case "wait":{
+                  return  <div className="Btn--posts">
+                              <button onClick={(evt)=>{
+                                history.push({ 
+                                  pathname: "/deposit", 
+                                  state: {from: "/", mode: "edit", id: _id } 
+                                });
+                              }}><EditIcon/>{t("edit")}</button>
+                              <button onClick={(e)=>{
+                                setOpenDialogDelete({ isOpen: true, id: _id, description });
+                              }}><DeleteForeverIcon/>{t("delete")}</button>
+                          </div>
+                  break;
+                }
+                case "approved":{
+                  return  <div className="Btn--posts">
+                            {/* <button onClick={(evt)=>{
+                              history.push({ 
+                                pathname: "/deposit", 
+                                state: {from: "/", mode: "edit", id: _id } 
+                              });
+                            }}><EditIcon/>{t("edit")}</button> */}
+                            <button onClick={(e)=>{
+                              setOpenDialogDelete({ isOpen: true, id: _id, description });
+                            }}><DeleteForeverIcon/>{t("delete")}</button>
+                        </div>
+                  break;
+                }
+                case "reject":{
+                  return  <div className="Btn--posts">
+                            <button onClick={(evt)=>{
+                              history.push({ 
+                                pathname: "/deposit", 
+                                state: {from: "/", mode: "edit", id: _id } 
+                              });
+                            }}><EditIcon/>{t("edit")}</button>
+                            <button onClick={(e)=>{
+                              setOpenDialogDelete({ isOpen: true, id: _id, description });
+                            }}><DeleteForeverIcon/>{t("delete")}</button>
+                          </div>
+                  break;
+                }
+
+                default:{
+                  return <div />
+                }
+              }             
+            }
           },
-      ],
+      ]
+       },
       []
   )
   
@@ -273,7 +309,6 @@ const DepositsPage = (props) => {
             depositsValue.loading
             ? <CircularProgress /> 
             : <div>
-                
                 {
                   checkRole(user) !== AMDINISTRATOR 
                   ? <button onClick={()=>{  
@@ -281,7 +316,6 @@ const DepositsPage = (props) => {
                     }}>เพิ่ม แจ้งฝากเงิน</button>
                   : ""
                   }
-                
                 <Table
                   columns={columns}
                   data={depositsValue.data.deposits.data}
@@ -321,6 +355,32 @@ const DepositsPage = (props) => {
               </DialogActions>
             </Dialog>
           )}
+
+          {lightbox.isOpen && (
+              <Lightbox
+                mainSrc={lightbox.images[lightbox.photoIndex].url}
+                nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
+                prevSrc={
+                  lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
+                }
+                onCloseRequest={() => {
+                  setLightbox({ ...lightbox, isOpen: false });
+                }}
+                onMovePrevRequest={() => {
+                  setLightbox({
+                    ...lightbox,
+                    photoIndex:
+                      (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
+                  });
+                }}
+                onMoveNextRequest={() => {
+                  setLightbox({
+                    ...lightbox,
+                    photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
+                  });
+                }}
+              />
+            )}
           </div>);
 }
 

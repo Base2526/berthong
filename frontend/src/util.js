@@ -63,11 +63,12 @@ export const numberCurrency = (number) =>{
 
 export const getCurrentLanguage = () => i18n.language || localStorage.getItem("i18n")
 
-export const getHeaders = () =>{
+export const getHeaders = (params) =>{
     return  {
                 "apollo-require-preflight": true,
-                "Content-Type": "application/json",
-                authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : ''
+                "content-Type": "application/json",
+                authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : '',
+                "custom-location":  JSON.stringify(params)
             }
 }
 

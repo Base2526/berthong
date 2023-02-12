@@ -43,7 +43,7 @@ const WithdrawsPage = (props) => {
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
 
-  const queryWithdrawsValue = useQuery(queryWithdraws, { context: { headers: getHeaders() }, notifyOnNetworkStatusChange: true });
+  const queryWithdrawsValue = useQuery(queryWithdraws, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
 
   console.log("queryWithdrawsValue :", queryWithdrawsValue)
 
@@ -67,7 +67,7 @@ const WithdrawsPage = (props) => {
   */
 
   const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
-    context: { headers: getHeaders() },
+    context: { headers: getHeaders(location) },
     update: (cache, {data: {withdraw}}) => {
       let { data, mode, status } = withdraw
 
@@ -165,18 +165,46 @@ const WithdrawsPage = (props) => {
       {
       Header: 'Action',
       Cell: props => {
-        let {_id, description} = props.row.original
-        return  <div className="Btn--posts">
-                    <button onClick={(evt)=>{
-                      history.push({ 
-                        pathname: "/withdraw", 
-                        state: {from: "/", mode: "edit", id: _id } 
-                      });
-                    }}><EditIcon/>{t("edit")}</button>
-                    <button onClick={(e)=>{
-                      setOpenDialogDelete({ isOpen: true, id: _id, description });
-                    }}><DeleteForeverIcon/>{t("delete")}</button>
-                </div>
+        let {_id, status, description} = props.row.original
+        switch(status){
+          case "wait":{
+            return  <div className="Btn--posts">
+                      <button onClick={(evt)=>{
+                        history.push({ 
+                          pathname: "/withdraw", 
+                          state: {from: "/", mode: "edit", id: _id } 
+                        });
+                      }}><EditIcon/>{t("edit")}</button>
+                      <button onClick={(e)=>{
+                        setOpenDialogDelete({ isOpen: true, id: _id, description });
+                      }}><DeleteForeverIcon/>{t("delete")}</button>
+                  </div>
+          }
+          case "approved":{
+            return  <div className="Btn--posts">
+                      <button onClick={(e)=>{
+                        setOpenDialogDelete({ isOpen: true, id: _id, description });
+                      }}><DeleteForeverIcon/>{t("delete")}</button>
+                  </div>
+          }
+          case "reject":{
+            return  <div className="Btn--posts">
+                      <button onClick={(evt)=>{
+                        history.push({ 
+                          pathname: "/withdraw", 
+                          state: {from: "/", mode: "edit", id: _id } 
+                        });
+                      }}><EditIcon/>{t("edit")}</button>
+                      <button onClick={(e)=>{
+                        setOpenDialogDelete({ isOpen: true, id: _id, description });
+                      }}><DeleteForeverIcon/>{t("delete")}</button>
+                  </div>
+          }
+
+          default:{
+            return <div />
+          }
+        }   
       }
       },
     ],

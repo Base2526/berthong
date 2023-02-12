@@ -5,6 +5,8 @@ deepdash(_);
 
 import { User, Session, Transition, Supplier, Deposit, Withdraw } from '../model'
 
+import { AMDINISTRATOR, AUTHENTICATED, ANONYMOUS } from "../constants"
+
 export const emailValidate = () =>{
     return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 }
@@ -29,6 +31,12 @@ export const getSessionId = async(userId, input) => {
 }
 
 export const checkAuthorization = async(req) => {
+    let pathname = ""
+    if(req.headers && req.headers["custom-location"]){
+        let customLocation = JSON.parse(req.headers["custom-location"])
+
+        pathname = customLocation?.pathname
+    }
     if (req.headers && req.headers.authorization) {
         var auth    = req.headers.authorization;
         var parts   = auth.split(" ");
@@ -59,6 +67,7 @@ export const checkAuthorization = async(req) => {
                     return {
                         status: true,
                         code: 1,
+                        pathname,
                         current_user: await User.findById(userId),
                     }
                 }
@@ -123,36 +132,23 @@ export const checkBalance = async(userId) =>{
     try{
         transitions = await Promise.all(_.map(transitions, async(transition)=>{
             switch(transition.type){ // 'supplier', 'deposit', 'withdraw'
-            case "supplier":{
+                case "supplier":{
+                    let supplier = await Supplier.findById(transition.refId)
+                    let buys = _.filter(supplier.buys, (buy)=>buy.userId == userId.toString())
+                    
+                    let balance = buys.length * supplier.price
+                    return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
+                }
 
-                let supplier = await Supplier.findById(transition.refId)
+                case "deposit":{
+                    let deposit = await Deposit.findById(transition.refId)
+                    return {...transition._doc, title: "title", balance: deposit.balance, description: "description", dateLottery: "dateLottery"}
+                }
 
-                let buys = _.filter(supplier.buys, (buy)=>buy.userId == userId.toString())
-                // price, buys
-
-                let balance = buys.length * supplier.price
-
-                // console.log("transitions > supplier :", supplier)
-
-                return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
-            }
-
-            case "deposit":{
-                let deposit = await Deposit.findById(transition.refId)
-                console.log("balance : ", deposit.balance)
-
-                return {...transition._doc, title: "title", balance: deposit.balance, description: "description", dateLottery: "dateLottery"}
-            }
-
-            case "withdraw":{
-
-                let withdraw = await Withdraw.findById(transition.refId)
-
-                console.log("balance : ", withdraw.balance)
-
-                return {...transition._doc, title: "title", balance: withdraw.balance, description: "description", dateLottery: "dateLottery"}
-
-            }
+                case "withdraw":{
+                    let withdraw = await Withdraw.findById(transition.refId)
+                    return {...transition._doc, title: "title", balance: withdraw.balance, description: "description", dateLottery: "dateLottery"}
+                }
             }
         }))
 
@@ -182,4 +178,31 @@ export const checkBalance = async(userId) =>{
     } catch(err) {
         return {balance: 0, transitions: []}
     }
+}
+
+export const checkBalanceBook = async(userId) =>{
+    try{
+        let suppliers = await Supplier.find({});
+        let prices  = _.filter( await Promise.all(_.map(suppliers, async(supplier)=>{
+                        let { price, buys } = supplier;
+                        let filters = _.filter(buys, (buy)=>buy.userId == userId.toString() && buy.selected == 0)
+                        return price * filters.length
+                    })), (p)=>p!=0)
+        return _.reduce(prices, (ps, i) => ps + i, 0);
+    } catch(err) {
+        console.log("error :", err)
+        return 0;
+    }
+}
+
+export const checkRole = (user) =>{
+    if(user?.roles){
+        if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a2")){
+            return AMDINISTRATOR;
+        }
+        // else if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a6")){
+        return AUTHENTICATED;
+        // }
+    }
+    return ANONYMOUS;
 }
