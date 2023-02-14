@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import CircularProgress from '@mui/material/CircularProgress';
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useSubscription } from "@apollo/client";
 import _ from "lodash"
 import CardActionArea from "@material-ui/core/CardActionArea";
 import Avatar from "@mui/material/Avatar";
@@ -17,7 +17,7 @@ import { FacebookShareButton, TwitterShareButton } from "react-share";
 import { FacebookIcon, TwitterIcon } from "react-share";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
-import { querySuppliers, subscriptionSuppliers, mutationMe } from "./gqlQuery"
+import { querySuppliers, subscriptionSuppliers, mutationMe, queryMe } from "./gqlQuery"
 import { getHeaders, checkRole, bookView, sellView } from "./util"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 import { login, logout } from "./redux/actions/auth"
@@ -36,14 +36,29 @@ const HomePage = (props) => {
 
   let [openMenuSetting, setOpenMenuSetting] = useState(null);
   let [openMenuShare, setOpenMenuShare] = useState(null);
+  
+  let [sycMe, setSycMe] = useState(false);
 
-  let { user } = props
+  let { user, login } = props
+
+  // let meValues = useQuery(queryMe, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
+  // if(!meValues.loading){
+  //   let { status, data } = meValues.data.me
+  //   if(status){
+  //     console.log("")
+  //   }
+  // }
+  // console.log("meValues :", meValues)
 
   useEffect(()=>{
     return () => {
       unsubscribeSuppliers && unsubscribeSuppliers()
     };
   }, [])
+
+  // useEffect(()=>{
+  //   console.log("sycMe")
+  // }, [sycMe=true])
 
   const [onMe, resultMeValues] = useMutation(mutationMe,{
     context: { headers: getHeaders(location) },
@@ -68,30 +83,69 @@ const HomePage = (props) => {
       return;
     }
 
-    // let {subscribeToMore, networkStatus} = suppliersValues
-    // let keys = _.map(suppliersValues.data.suppliers.data, _.property("_id"));
-    
-    // unsubscribeSuppliers && unsubscribeSuppliers()
-    // unsubscribeSuppliers =  subscribeToMore({
-		// 	document: subscriptionSuppliers,
+    let {subscribeToMore, networkStatus} = suppliersValues
+    let keys = _.map(suppliersValues.data.suppliers.data, _.property("_id"));
+
+    // useSubscription(subscriptionSuppliers, {
+    //   onSubscriptionData: useCallback((res) => {
+    //     console.log("subscriptionMe :", res)
+    //     // if(!res.subscriptionData.loading){
+    //     //   let { mutation, data } = res.subscriptionData.data.subscriptionMe
+  
+    //     //   switch(mutation){
+    //     //     case "DEPOSIT":
+    //     //     case "WITHDRAW":
+    //     //     case "BUY":{
+    //     //       editedUserBalace(data)
+    //     //       break;
+    //     //     }
+  
+    //     //     case "BOOK":{
+    //     //       editedUserBalaceBook(data)
+    //     //       break;
+    //     //     }
+    //     //   }
+    //     // }
+    //   }, []),
+    //   onError: useCallback((err) => {
+    //     console.log("subscriptionMe :", err)
+    //   }, []),
     //   variables: { supplierIds: JSON.stringify(keys) },
-		// 	updateQuery: (prev, {subscriptionData}) => {        
-    //     if (!subscriptionData.data) return prev;
+    // });
+    
+    
+    unsubscribeSuppliers && unsubscribeSuppliers()
+    unsubscribeSuppliers =  subscribeToMore({
+			document: subscriptionSuppliers,
+      variables: { supplierIds: JSON.stringify(keys) },
+			updateQuery: (prev, {subscriptionData}) => {        
+        try{
+          if (!subscriptionData.data) return prev;
 
-    //     let { mutation, data } = subscriptionData.data.subscriptionSuppliers;
-    //     switch(mutation){
-    //       case "BOOK":
-    //       case "UNBOOK":{
-    //         let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
+          let { mutation, data } = subscriptionData.data.subscriptionSuppliers;
 
-    //         let newPrev = {...prev.suppliers, data: newData}
-    //         return {suppliers: newPrev}; 
-    //       }
-    //       default:
-    //         return prev;
-    //     }
-		// 	}
-		// });
+          console.log("mutation, data :", mutation, data)
+          switch(mutation){
+            case "BOOK":
+            case "UNBOOK":{
+              let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
+              let newPrev = {...prev.suppliers, data: newData}
+              return {suppliers: newPrev}; 
+            }
+            case "AUTO_CLEAR_BOOK":{
+              let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
+              let newPrev = {...prev.suppliers, data: newData}
+              return {suppliers: newPrev}; 
+            }
+            default:
+              return prev;
+          }
+        }catch(err){
+          console.log("err :", err)
+        }
+			}
+		});
+    
   }
 
   // console.log("checkRole :", checkRole(user), user)

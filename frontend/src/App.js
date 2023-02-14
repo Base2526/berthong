@@ -62,6 +62,7 @@ const App =(props) =>{
         
       console.log("ping, auth : ", moment().format("DD-MM-YYYY hh:mm:ss") )
 
+      /*
       const suppliersValue = client.readQuery({ query: querySuppliers });
       if(!_.isNull(suppliersValue)){
         let { status, data } = suppliersValue.suppliers
@@ -110,6 +111,8 @@ const App =(props) =>{
           });
         }
       }
+      
+      */
       
     }, 60000 /*1 min*/);
     return ()=> clearInterval(intervalPing.current);

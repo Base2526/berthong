@@ -59,6 +59,7 @@ const DetailPage = (props) => {
     }
     setDatas(newDatas)
 
+    /*
     interval.current = setInterval(() => {
       console.log("--DetailPage--", moment().format("DD-MM-YYYY hh:mm:ss"))
 
@@ -93,7 +94,8 @@ const DetailPage = (props) => {
         }
       }
     
-    }, 60000 /*1 min*/);
+    }, 60000 );
+    */
 
     return () => {
       unsubscribeSupplierById && unsubscribeSupplierById()
@@ -190,7 +192,12 @@ const DetailPage = (props) => {
           case "BOOK":
           case "UNBOOK":{
             let newPrev = {...prev.supplierById, data}
+            return {supplierById: newPrev}; 
+          }
 
+          case "AUTO_CLEAR_BOOK":{
+            let newPrev = {...prev.supplierById, data}
+            console.log("AUTO_CLEAR_BOOK :", user, newPrev)
             return {supplierById: newPrev}; 
           }
 

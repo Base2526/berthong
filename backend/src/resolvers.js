@@ -64,7 +64,7 @@ export default {
 
                                   // console.log("duration :", duration.asMinutes(), duration.asHours())
                                   
-                                  if( duration.asHours() <= 1 || n.selected == 1) {
+                                  if( duration.asMinutes() <= 1 || n.selected == 1) {
                                     result.push(n);
                                   }
                                 },
@@ -73,6 +73,19 @@ export default {
 
                               if(!_.isEqual(newBuys, buys)){
                                 await Supplier.updateOne({ _id: supplier?._id }, { ...supplier._doc, buys: newBuys });
+                              
+                                let newSupplier = await Supplier.findById(supplier?._id)
+                                pubsub.publish("SUPPLIER_BY_ID", {
+                                  supplierById: { mutation: "AUTO_CLEAR_BOOK", data: newSupplier },
+                                });
+
+                                pubsub.publish("SUPPLIERS", {
+                                  suppliers: { mutation: "AUTO_CLEAR_BOOK", data: newSupplier },
+                                });
+
+                                // pubsub.publish("ME", {
+                                //   me: { mutation: "BOOK", data: {userId: current_user?._id, data: { balance: (await checkBalance(current_user?._id)).balance , balanceBook: await checkBalanceBook(current_user?._id) } } },
+                                // });
                               }
                           }))
         //////////////// clear book ////////////////
@@ -92,6 +105,10 @@ export default {
 
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
+
+        if( !status ){
+          return { status:false, executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+        }
 
         let user = await User.findById(current_user?._id)
         user = {...user._doc, 
@@ -241,7 +258,9 @@ export default {
         let authorization = await checkAuthorization(req);
         let { status, code, pathname, current_user } =  authorization
 
+        console.log(">>> suppliers : ", pathname)
         switch(pathname){
+          case undefined:
           case "/":{
             return {  
               status: true,
@@ -322,8 +341,12 @@ export default {
         //////////////////////////
 
         if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
-          return {  status:true,
-                    data: await Deposit.find({status: "wait"}),
+
+          let deposits = await Deposit.find({status: "wait"})
+          deposits = _.orderBy(deposits, i => i.updatedAt, 'desc');
+
+          return {  status: true,
+                    data: deposits,
                     executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
         }
 
@@ -384,8 +407,10 @@ export default {
         let { status, code, current_user } =  authorization
 
         if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
-          return {  status:true,
-                    data: await Withdraw.find({status: "wait"}),
+          let withdraws = await Withdraw.find({status: "wait"})
+
+          return {  status: true,
+                    data: _.orderBy(withdraws, i => i.updatedAt, 'desc'),
                     executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
         }
         let withdraws = await Withdraw.find({userIdRequest: current_user?._id})
@@ -575,6 +600,8 @@ export default {
                         let { buys } = supplier
                         let book  = _.filter(buys, buy=>buy.userId == current_user?._id  && buy.selected == 0)
                         let buy  = _.filter(buys, buy=>buy.userId == current_user?._id  && buy.selected == 1)
+
+                        console.log("book, buy :", book.length, buy.length, transition._id)
 
                         return book.length > 0 || buy.length > 0 ? {...transition._doc, ...supplier._doc } : null
                       })), item=>!_.isNull(item) ) 
@@ -1327,18 +1354,19 @@ export default {
         let supplier = await Supplier.findById(supplierId);
 
         if(supplier){
-          if(_.isNull(await Transition.findOne({ refId: supplier?._id }))){
-            await Transition.create( {type: "supplier",  refId: supplier?._id,  userId: current_user?._id,  status: "success"} )
+          if(_.isNull(await Transition.findOne({ refId: supplier?._id, userId: current_user?._id}))){
+            await Transition.create( {type: "supplier", refId: supplier?._id, userId: current_user?._id, status: "success"} )
           }
 
           let { buys } = supplier
-
           if(selected == 0){
             if( _.isEmpty( _.find(buys, (buy)=> buy.itemId == itemId ) ) ){
-              await Supplier.updateOne(
+              let checkupdate = await Supplier.updateOne(
                                     { _id: supplierId }, 
                                     {...supplier._doc, buys: [...buys, {userId: current_user?._id.toString(), itemId, selected}] } );
 
+              console.log("check update :", checkupdate, supplierId);
+                
               let newSupplier = await Supplier.findById(supplierId)
               pubsub.publish("SUPPLIER_BY_ID", {
                 supplierById: { mutation: "BOOK", data: newSupplier },
@@ -2097,6 +2125,7 @@ export default {
           switch(mutation){
             case "BOOK":
             case "UNBOOK":
+            case "AUTO_CLEAR_BOOK":
               {
                 return variables.supplierById == data._id
               }
@@ -2115,7 +2144,19 @@ export default {
 
           let {mutation, data} = payload.suppliers
 
-          return _.includes( JSON.parse(variables.supplierIds), data._id.toString());
+          switch(mutation){
+            case "BOOK":
+            case "UNBOOK":
+            case "AUTO_CLEAR_BOOK":
+              {
+
+                console.log("SUPPLIERS :", JSON.parse(variables.supplierIds), data._id.toString(), _.includes(JSON.parse(variables.supplierIds), data._id.toString()) )
+
+                return _.includes(JSON.parse(variables.supplierIds), data._id.toString())
+              }
+          }
+
+          return false;
         }
       )
     },
