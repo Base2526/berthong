@@ -83,6 +83,8 @@ export default {
                                   suppliers: { mutation: "AUTO_CLEAR_BOOK", data: newSupplier },
                                 });
 
+                                console.log("ping :AUTO_CLEAR_BOOK AUTO_CLEAR_BOOK ", newSupplier)
+
                                 // pubsub.publish("ME", {
                                 //   me: { mutation: "BOOK", data: {userId: current_user?._id, data: { balance: (await checkBalance(current_user?._id)).balance , balanceBook: await checkBalanceBook(current_user?._id) } } },
                                 // });
