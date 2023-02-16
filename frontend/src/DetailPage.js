@@ -46,7 +46,6 @@ const DetailPage = (props) => {
   let [openMenuSetting, setOpenMenuSetting] = useState(null);
   let [openMenuShare, setOpenMenuShare] = useState(null);
   
-
   let params = queryString.parse(location.search)
 
   let { id } = params; //location.state
