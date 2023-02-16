@@ -4,6 +4,7 @@ import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ToastContainer, toast } from 'react-toastify';
 import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
 import 'react-toastify/dist/ReactToastify.css';
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
@@ -14,8 +15,13 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+
 import { getHeaders } from "./util"
-import { querySuppliers, gqlSupplier, querySupplierById } from "./gqlQuery"
+import { querySuppliers, gqlSupplier, querySupplierById, queryDateLotterys } from "./gqlQuery"
 
 import Editor from "./editor/Editor";
 import AttackFileField from "./AttackFileField";
@@ -38,15 +44,44 @@ const SupplierPage = (props) => {
   let [input, setInput]       = useState(initValues);
   let [error, setError]       = useState(initValues);
 
+  let [editValues, setEditValues] = useState([]);
+  let [dateLotterysValues, setDateLotterysValues] = useState([]);
+
   console.log("location :", location.state )
 
   let { mode, id } = location.state
 
-  let editValues = null;
+  // let editValues = null;
+
+  let { loading: loadingDateLotterys, data: dataDateLotterys, error: errorDateLotterys } = useQuery(queryDateLotterys, { notifyOnNetworkStatusChange: true });
+
+  let { loading: loadingSupplierById, data: dataSupplierById, error: errorSupplierById } =  useQuery(querySupplierById, {
+                                      context: { headers: getHeaders(location) },
+                                      variables: {id},
+                                      notifyOnNetworkStatusChange: true,
+                                    })
 
   useEffect(()=>{
-    console.log("input :", input)
-  }, [input])
+    // do some checking here to ensure data exist
+    if (dataSupplierById) {
+      // mutate data if you need to
+      // setEditValues(dataSupplierById)
+
+      console.log("dataSupplierById :", dataSupplierById)
+    }
+  }, [dataSupplierById])
+
+  useEffect(()=>{
+    // do some checking here to ensure data exist
+    if (dataDateLotterys) {
+      // mutate data if you need to
+
+      let { status, data } = dataDateLotterys.dateLotterys
+
+      console.log("dateLotterys :", status, data)
+      setDateLotterysValues(data)
+    }
+  }, [dataDateLotterys])
 
   const [onSupplier, resultSupplier] = useMutation(gqlSupplier, {
     context: { headers: getHeaders(location) },
@@ -58,23 +93,28 @@ const SupplierPage = (props) => {
         switch(mode){
           case "new":{
             const querySuppliersValue = cache.readQuery({ query: querySuppliers });
-            let newData = [...querySuppliersValue.suppliers.data, supplier.data];
 
-            cache.writeQuery({
-              query: querySuppliers,
-              data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-            });
+            if(!_.isNull(querySuppliersValue)){
+              let newData = [...querySuppliersValue.suppliers.data, supplier.data];
+
+              cache.writeQuery({
+                query: querySuppliers,
+                data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+              });
+            }
             break;
           }
 
           case "edit":{
             const querySuppliersValue = cache.readQuery({ query: querySuppliers });
-            let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
+            if(!_.isNull(querySuppliersValue)){
+              let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
 
-            cache.writeQuery({
-              query: querySuppliers,
-              data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-            });
+              cache.writeQuery({
+                query: querySuppliers,
+                data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+              });
+            }
             
             break;
           }
@@ -196,14 +236,22 @@ const SupplierPage = (props) => {
                       onBlur={validateInput}
                       helperText={_.isEmpty(error.priceUnit) ? "" : error.priceUnit}
                       error={_.isEmpty(error.priceUnit) ? false : true}/>
-                    <DesktopDatePicker
-                      label={"ออกงวดวันที่"}
-                      inputFormat="dd/MM/yyyy"
-                      value={ input.dateLottery }
-                      onChange={(newDate) => {
-                          setInput({...input, dateLottery: newDate})
-                      }}
-                      renderInput={(params) => <TextField {...params} required={input.dateLottery === null ? true: false} />}/>
+
+                    {
+                      _.isEmpty(dateLotterysValues) 
+                      ? <LinearProgress />
+                      : <select name="cars" id="cars" onChange={(event)=>{
+                          console.log("selectObject :", event.target.value)
+
+                          setInput({...input, dateLottery:  event.target.value})
+                        }}>
+                          <option value={""}>ไม่เลือก</option>
+                          {_.map(dateLotterysValues, (dateLotterysValue)=>{
+                            return <option value={dateLotterysValue._id}>{dateLotterysValue.title}</option>
+                          })}
+                        </select>
+                    }
+                      
                     <Editor 
                       label={t("detail")} 
                       initData={ input.description }
@@ -230,11 +278,17 @@ const SupplierPage = (props) => {
     }
 
     case "edit":{
-      editValues = useQuery(querySupplierById, {
-                        context: { headers: getHeaders(location) },
-                        variables: {id},
-                        notifyOnNetworkStatusChange: true,
-                      });
+
+      if(loadingSupplierById){
+        return <CircularProgress />
+      }
+
+      /*
+      // editValues = useQuery(querySupplierById, {
+      //                   context: { headers: getHeaders(location) },
+      //                   variables: {id},
+      //                   notifyOnNetworkStatusChange: true,
+      //                 });
 
       console.log("editValues :", editValues)
 
@@ -333,6 +387,8 @@ const SupplierPage = (props) => {
                       <Button type="submit" variant="contained" color="primary">{t("update")}</Button>
                     </Box>
                   </LocalizationProvider>
+
+                  */
     }
   }
 

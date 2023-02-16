@@ -47,7 +47,6 @@ const ProfileBankPage = (props) => {
           data: { me: {...queryMeValue.me, data: me.data} }
         });
       }
-     
     },
     onCompleted({ data }) {
       history.goBack()

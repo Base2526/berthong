@@ -64,7 +64,7 @@ export default {
 
                                   // console.log("duration :", duration.asMinutes(), duration.asHours())
                                   
-                                  if( duration.asHours() <= 1 || n.selected == 1) {
+                                  if( duration.asMinutes() <= 1 || n.selected == 1) {
                                     result.push(n);
                                   }
                                 },
@@ -72,7 +72,23 @@ export default {
                               );
 
                               if(!_.isEqual(newBuys, buys)){
+
+                                try{
+
+                                }catch(error){}
                                 await Supplier.updateOne({ _id: supplier?._id }, { ...supplier._doc, buys: newBuys });
+                              
+                                let newSupplier = await Supplier.findById(supplier?._id)
+                                pubsub.publish("SUPPLIER_BY_ID", {
+                                  supplierById: { mutation: "AUTO_CLEAR_BOOK", data: newSupplier },
+                                });
+
+                                pubsub.publish("SUPPLIERS", {
+                                  suppliers: { mutation: "AUTO_CLEAR_BOOK", data: newSupplier },
+                                });
+
+                                console.log("SUPPLIER_BY_ID, SUPPLIERS")
+                             
                               }
                           }))
         //////////////// clear book ////////////////
@@ -242,10 +258,16 @@ export default {
         let { status, code, pathname, current_user } =  authorization
 
         switch(pathname){
+          case undefined:
           case "/":{
+            let suppliers = await Supplier.find({});
+            suppliers = await Promise.all(_.map(suppliers, async(item)=>{
+              return {...item._doc, ownerName: (await User.findById(item.ownerId))?.displayName}
+            }))
+
             return {  
               status: true,
-              data: await Supplier.find(),
+              data: suppliers,
               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
             }
           }
@@ -543,7 +565,7 @@ export default {
         //////////////////////////
 
         return {  status:true,
-                  admin_banks : (await User.findById(mongoose.Types.ObjectId("62a2f65dcf7946010d3c7514")))?.banks,
+                  admin_banks : (await User.findById(mongoose.Types.ObjectId("62a2f65dcf7946010d3c7511")))?.banks,
                   banks: await Bank.find({}),
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
@@ -1263,7 +1285,7 @@ export default {
 
         let newInput = {...input, image:newFiles, lastAccess : Date.now()}
 
-        if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
+        if(_.includes( current_user?.roles, "62a2f65dcf7946010d3c7511")){
           let user = await User.findOneAndUpdate({ _id: input.uid }, newInput , { new: true })
           let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
             return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
@@ -1327,7 +1349,7 @@ export default {
         let supplier = await Supplier.findById(supplierId);
 
         if(supplier){
-          if(_.isNull(await Transition.findOne({ refId: supplier?._id }))){
+          if(_.isNull(await Transition.findOne({ refId: supplier?._id, userId: current_user?._id }))){
             await Transition.create( {type: "supplier",  refId: supplier?._id,  userId: current_user?._id,  status: "success"} )
           }
 
@@ -2093,10 +2115,14 @@ export default {
           return pubsub.asyncIterator(["SUPPLIER_BY_ID"])
         }, (payload, variables) => {
 
+          
           let {mutation, data} = payload.supplierById
+
+          console.log("subscriptionSupplierById : ", mutation, variables.supplierById == data._id)
           switch(mutation){
             case "BOOK":
             case "UNBOOK":
+            case "AUTO_CLEAR_BOOK":
               {
                 return variables.supplierById == data._id
               }
@@ -2112,6 +2138,8 @@ export default {
       subscribe: withFilter((parent, args, context, info) => {
           return pubsub.asyncIterator(["SUPPLIERS"])
         }, (payload, variables) => {
+
+          console.log("subscriptionSuppliers")
 
           let {mutation, data} = payload.suppliers
 

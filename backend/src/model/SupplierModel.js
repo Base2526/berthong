@@ -32,7 +32,7 @@ const SupplierSchema = new Schema({
     price: { type: Number, required:[true, "Price is a required field"] },
     priceUnit: { type: Number, required:[true, "Price-Unit is a required field"] },
     description: { type: String },
-    dateLottery: { type: Date, required:[true, "Date-Lottery is a required field"] },
+    dateLottery: { type: Schema.Types.ObjectId, required:[true, "Date-Lottery is a required field"] },
     files: [File],
     buys: [BuyInput],
     publish: { type: Boolean, default: false },

@@ -188,7 +188,8 @@ const DetailPage = (props) => {
         let { mutation, data } = subscriptionData.data.subscriptionSupplierById;
         switch(mutation){
           case "BOOK":
-          case "UNBOOK":{
+          case "UNBOOK":
+          case "AUTO_CLEAR_BOOK":{
             let newPrev = {...prev.supplierById, data}
 
             return {supplierById: newPrev}; 
