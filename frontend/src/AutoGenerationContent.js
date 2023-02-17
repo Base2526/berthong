@@ -10,11 +10,16 @@ import queryString from 'query-string';
 const { faker } = require("@faker-js/faker");
 
 import { getHeaders, checkRole } from "./util"
-import { gqlSupplier } from "./gqlQuery"
+import { gqlSupplier, queryDateLotterys } from "./gqlQuery"
 import { login, logout } from "./redux/actions/auth"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 
 const AutoGenerationContent = (props) => {
+    let location = useLocation();
+
+    let dateLotterysValue = useQuery(queryDateLotterys, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
+
+    console.log("dateLotterysValue :", dateLotterysValue)
 
     const [onSupplier, resultSupplier] = useMutation(gqlSupplier, {
         context: { headers: getHeaders(location) },
@@ -69,25 +74,48 @@ const AutoGenerationContent = (props) => {
                         })
         }
         return files
+
+        /*
+            url: { type: String },
+    filename: { type: String },
+    mimetype: { type: String },
+    encoding: { type: String },
+        */
+    }
+
+    const makeNumber = (length)=> {
+        var result           = '';
+        var characters       = '0123456789';
+        var charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+          result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
     }
 
     return(<div className="div-management">
                 <div>Auto-Generation</div>
                 <div>
                     <button onClick={()=>{
-                        let newInput =  {
-                            mode: "NEW",
-                            title: faker.lorem.lines(1),
-                            price: parseInt(makeNumber(3)),
-                            priceUnit: parseInt(makeNumber(2)),
-                            description: faker.lorem.paragraph(),
-                            dateLottery: input.dateLottery,
-                            files: makeFile(5)
+
+                        let { data } = dateLotterysValue.data.dateLotterys
+
+                        for ( var i = 0; i < 100; i++ ) {
+                            let newInput =  {
+                                mode: "NEW",
+                                title: faker.lorem.lines(1),
+                                price: parseInt(makeNumber(3)),
+                                priceUnit: parseInt(makeNumber(2)),
+                                description: faker.lorem.paragraph(),
+                                dateLottery: data[i % 2]?._id,
+                                files: makeFile(5),
+                                auto: true
+                            }
+
+                            console.log("submitForm :", newInput)
+                            onSupplier({ variables: { input: newInput } });
                         }
-
-                        // console.log("submitForm :", newInput)
-                        // onSupplier({ variables: { input: newInput } });
-
+                        
                     }}>สร้าง สินค้า</button>
                 </div>
             </div>)

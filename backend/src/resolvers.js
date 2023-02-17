@@ -1477,41 +1477,57 @@ export default {
             console.log("createSupplier : ", input, current_user, current_user?._id )
 
             let newFiles = [];
-            if(!_.isEmpty(input.files)){
-              for (let i = 0; i < input.files.length; i++) {
-                const { createReadStream, filename, encoding, mimetype } = (await input.files[i]).file //await input.files[i];
-    
-                const stream = createReadStream();
-                const assetUniqName = fileRenamer(filename);
-                let pathName = `/app/uploads/${assetUniqName}`;
-      
-                const output = fs.createWriteStream(pathName)
-                stream.pipe(output);
-      
-                await new Promise(function (resolve, reject) {
-                  output.on('close', () => {
-                    resolve();
-                  });
+            if(!input.auto){
+              if(!_.isEmpty(input.files)){
             
-                  output.on('error', (err) => {
-                    logger.error(err.toString());
+                for (let i = 0; i < input.files.length; i++) {
+                  const { createReadStream, filename, encoding, mimetype } = (await input.files[i]).file //await input.files[i];
       
-                    reject(err);
+                  const stream = createReadStream();
+                  const assetUniqName = fileRenamer(filename);
+                  let pathName = `/app/uploads/${assetUniqName}`;
+        
+                  const output = fs.createWriteStream(pathName)
+                  stream.pipe(output);
+        
+                  await new Promise(function (resolve, reject) {
+                    output.on('close', () => {
+                      resolve();
+                    });
+              
+                    output.on('error', (err) => {
+                      logger.error(err.toString());
+        
+                      reject(err);
+                    });
                   });
-                });
-      
-                const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
-                newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+        
+                  const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+                  newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+                }
+              }
+
+              let supplier = await Supplier.create({ ...input, files:newFiles, ownerId: current_user?._id });
+            
+              return {
+                status: true,
+                mode: input.mode.toLowerCase(),
+                data: supplier,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+              }
+            }else{
+              let supplier = await Supplier.create({ ...input, ownerId: current_user?._id });
+              return {
+                status: true,
+                mode: input.mode.toLowerCase(),
+                data: supplier,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
               }
             }
-            let supplier = await Supplier.create({ ...input, files:newFiles, ownerId: current_user?._id });
             
-            return {
-              status: true,
-              mode: input.mode.toLowerCase(),
-              data: supplier,
-              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-            }
+            
+            
+            
           }
 
           case "edit":{

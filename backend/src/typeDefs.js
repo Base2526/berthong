@@ -656,10 +656,11 @@ export default gql`
     price: Int
     priceUnit: Int
     description: String
-    dateLottery: DATETIME
+    dateLottery: ID
     files: [JSON]
     buys: [JSON]
     publish: Boolean
+    auto: Boolean = false
   }
 
   enum WithdrawModeType {
