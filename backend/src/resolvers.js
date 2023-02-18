@@ -55,6 +55,8 @@ export default {
         await Promise.all(_.map(suppliers, async(supplier)=>{
                               let { buys } = supplier
                               
+                              let users = [];
+
                               let newBuys = _.transform(
                                 buys,
                                 (result, n) => {
@@ -66,6 +68,8 @@ export default {
                                   
                                   if( duration.asMinutes() <= 1 || n.selected == 1) {
                                     result.push(n);
+                                  }else{
+                                    users.push(n.userId)
                                   }
                                 },
                                 []
@@ -85,9 +89,13 @@ export default {
 
                                 console.log("ping :AUTO_CLEAR_BOOK AUTO_CLEAR_BOOK ", newSupplier)
 
-                                // pubsub.publish("ME", {
-                                //   me: { mutation: "BOOK", data: {userId: current_user?._id, data: { balance: (await checkBalance(current_user?._id)).balance , balanceBook: await checkBalanceBook(current_user?._id) } } },
-                                // });
+                                if(!_.isEmpty(users)){
+                                  _.map(_.uniqWith(users, _.isEqual), async(userId)=>{
+                                    pubsub.publish("ME", {
+                                      me: { mutation: "BOOK", data: {userId, data: { balance: (await checkBalance(userId)).balance , balanceBook: await checkBalanceBook(userId) } } },
+                                    });
+                                  })
+                                }
                               }
                           }))
         //////////////// clear book ////////////////
@@ -206,47 +214,6 @@ export default {
       }
     },
 
-    /*
-    async homes(parent, args, context, info){
-      let start = Date.now()
-
-      try{
-        // let { status, code, currentUser } = context 
-        console.log("homes context :", context)
-
-        let { req } = context
-
-        ///////////////////////////
-        let authorization = await checkAuthorization(req);
-        let { status, code, current_user } =  authorization
-
-        // if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
-        //   return {  status:true,
-        //             data: await Supplier.find({}),
-        //             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-        // }
-        let suppliers = await Supplier.find({})
-        let homes = await Promise.all(_.map(suppliers, async(item)=>{
-          return {...item._doc, ownerName: (await User.findById(item.ownerId))?.displayName}
-        }))
-
-        return {  
-                status: true,
-                data: homes,
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
-              }
-      } catch(err) {
-        logger.error(err.toString());
-        console.log("getSuppliers err :", err.toString())
-        return {  
-                status:false,
-                message: err.toString(),
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
-              }
-      }
-    },
-    */
-
     async suppliers(parent, args, context, info){
       let start = Date.now()
 
@@ -260,13 +227,19 @@ export default {
         let authorization = await checkAuthorization(req);
         let { status, code, pathname, current_user } =  authorization
 
-        console.log(">>> suppliers : ", pathname)
         switch(pathname){
           case undefined:
           case "/":{
+
+            let suppliers = await Supplier.find({}).limit(20);
+            suppliers = await Promise.all(_.map(suppliers, async(item)=>{
+              let user = (await User.findById(item.ownerId));
+              return {...item._doc,  owner: user?._doc }
+            }))
+
             return {  
               status: true,
-              data: await Supplier.find(),
+              data: suppliers,
               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
             }
           }
@@ -277,7 +250,8 @@ export default {
               let suppliers = await Supplier.find({});
     
               suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-                            return {...item._doc, ownerName: (await User.findById(item.ownerId))?.displayName}
+                            let user = (await User.findById(item.ownerId));
+                            return {...item._doc, owner: user?._doc}
                           }))
     
               return {  status: true,
@@ -285,9 +259,14 @@ export default {
                         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
             }
 
+            let suppliers = await Supplier.find({ownerId: current_user?._id});
+            suppliers = await Promise.all(_.map(suppliers, async(item)=>{
+                          return {...item._doc, owner: current_user?._doc}
+                        }))
+
             return {  
               status: true,
-              data: await Supplier.find({ownerId: current_user?._id}),
+              data: suppliers,
               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
             }
           }
@@ -335,13 +314,14 @@ export default {
     async deposits(parent, args, context, info){
       let start = Date.now()
       try{
-        console.log("deposit :", args)
+        
         let { req } = context
         ///////////////////////////
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
         //////////////////////////
 
+        console.log("deposit :", args)
         if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
 
           let deposits = await Deposit.find({status: "wait"})
@@ -570,7 +550,7 @@ export default {
         //////////////////////////
 
         return {  status:true,
-                  admin_banks : (await User.findById(mongoose.Types.ObjectId("62a2f65dcf7946010d3c7511")))?.banks,
+                  admin_banks : (await User.findById(mongoose.Types.ObjectId("62a2c0cecf7946010d3c743f")))?.banks,
                   banks: await Bank.find({}),
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
@@ -1362,10 +1342,10 @@ export default {
 
           let { buys } = supplier
           if(selected == 0){
-            if( _.isEmpty( _.find(buys, (buy)=> buy.itemId == itemId ) ) ){
+            if( _.isEmpty( _.find(buys, (buy)=> buy.itemId == itemId && buy.userId == current_user?._id ) ) ){
               let checkupdate = await Supplier.updateOne(
                                     { _id: supplierId }, 
-                                    {...supplier._doc, buys: [...buys, {userId: current_user?._id.toString(), itemId, selected}] } );
+                                    {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, selected}] } );
 
               console.log("check update :", checkupdate, supplierId);
                 
@@ -1391,7 +1371,7 @@ export default {
           }else{
             await Supplier.updateOne(
             { _id: supplierId }, 
-            {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId ) },  );
+            {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id ) },  );
 
             let newSupplier = await Supplier.findById(supplierId)
             pubsub.publish("SUPPLIER_BY_ID", {
@@ -2167,9 +2147,6 @@ export default {
             case "UNBOOK":
             case "AUTO_CLEAR_BOOK":
               {
-
-                console.log("SUPPLIERS :", JSON.parse(variables.supplierIds), data._id.toString(), _.includes(JSON.parse(variables.supplierIds), data._id.toString()) )
-
                 return _.includes(JSON.parse(variables.supplierIds), data._id.toString())
               }
           }

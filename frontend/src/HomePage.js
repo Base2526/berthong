@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import CircularProgress from '@mui/material/CircularProgress';
-import { useQuery, useMutation, useSubscription } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import _ from "lodash"
 import CardActionArea from "@material-ui/core/CardActionArea";
 import Avatar from "@mui/material/Avatar";
@@ -17,12 +17,11 @@ import { FacebookShareButton, TwitterShareButton } from "react-share";
 import { FacebookIcon, TwitterIcon } from "react-share";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
-import { querySuppliers, subscriptionSuppliers, mutationMe, queryMe } from "./gqlQuery"
+import { querySuppliers, subscriptionSuppliers } from "./gqlQuery"
 import { getHeaders, checkRole, bookView, sellView } from "./util"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 import { login, logout } from "./redux/actions/auth"
 import DialogLogin from "./DialogLogin"
-
 import ItemFollow from "./ItemFollow"
 import ItemShare from "./ItemShare";
 
@@ -33,122 +32,71 @@ const HomePage = (props) => {
   let { t } = useTranslation();
   let [dialogLogin, setDialogLogin] = useState(false);
   let [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
-
   let [openMenuSetting, setOpenMenuSetting] = useState(null);
   let [openMenuShare, setOpenMenuShare] = useState(null);
-  
-  let [sycMe, setSycMe] = useState(false);
+  let [datas, setDatas] = useState([]);
+  const { loading:loadingSuppliers, data: dataSuppliers, error: errorSuppliers, subscribeToMore, networkStatus } = useQuery(querySuppliers, { context: { headers: getHeaders(location) }, fetchPolicy: 'network-only', notifyOnNetworkStatusChange: true});
 
   let { user, login } = props
-
-  // let meValues = useQuery(queryMe, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
-  // if(!meValues.loading){
-  //   let { status, data } = meValues.data.me
-  //   if(status){
-  //     console.log("")
-  //   }
-  // }
-  // console.log("meValues :", meValues)
 
   useEffect(()=>{
     return () => {
       unsubscribeSuppliers && unsubscribeSuppliers()
+      unsubscribeSuppliers = null;
     };
   }, [])
 
-  // useEffect(()=>{
-  //   console.log("sycMe")
-  // }, [sycMe=true])
-
-  const [onMe, resultMeValues] = useMutation(mutationMe,{
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {me}}) => {
-      console.log("onMe :", me)
-    },
-    onCompleted({ data }) {
-      console.log("onCompleted")
-    },
-    onError: (err) => {
-      console.log("onError :", err)
+  useEffect(() => {
+    if (dataSuppliers) {
+      let { status, data } = dataSuppliers.suppliers
+      if(status){
+        setDatas(data)
+      }
     }
-  });
-  
-  const suppliersValues =useQuery(querySuppliers, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true});
+  }, [dataSuppliers])
 
-  // console.log("suppliersValues: ", suppliersValues)
-  if(suppliersValues.loading){
-    return <div><CircularProgress /></div>
+  if(loadingSuppliers){
+    return <CircularProgress />
   }else{
-    if(_.isEmpty(suppliersValues.data.suppliers)){
+    if(_.isEmpty(datas)){
       return;
     }
 
-    let {subscribeToMore, networkStatus} = suppliersValues
-    let keys = _.map(suppliersValues.data.suppliers.data, _.property("_id"));
+    let supplierIds = JSON.stringify(_.map(datas, _.property("_id")));
 
-    // useSubscription(subscriptionSuppliers, {
-    //   onSubscriptionData: useCallback((res) => {
-    //     console.log("subscriptionMe :", res)
-    //     // if(!res.subscriptionData.loading){
-    //     //   let { mutation, data } = res.subscriptionData.data.subscriptionMe
+    if(_.isNull(unsubscribeSuppliers)){
+      unsubscribeSuppliers =  subscribeToMore({
+        document: subscriptionSuppliers,
+        variables: { supplierIds },
+        updateQuery: (prev, {subscriptionData}) => {        
+          try{
+            if (!subscriptionData.data) return prev;
   
-    //     //   switch(mutation){
-    //     //     case "DEPOSIT":
-    //     //     case "WITHDRAW":
-    //     //     case "BUY":{
-    //     //       editedUserBalace(data)
-    //     //       break;
-    //     //     }
+            let { mutation, data } = subscriptionData.data.subscriptionSuppliers;
   
-    //     //     case "BOOK":{
-    //     //       editedUserBalaceBook(data)
-    //     //       break;
-    //     //     }
-    //     //   }
-    //     // }
-    //   }, []),
-    //   onError: useCallback((err) => {
-    //     console.log("subscriptionMe :", err)
-    //   }, []),
-    //   variables: { supplierIds: JSON.stringify(keys) },
-    // });
-    
-    
-    unsubscribeSuppliers && unsubscribeSuppliers()
-    unsubscribeSuppliers =  subscribeToMore({
-			document: subscriptionSuppliers,
-      variables: { supplierIds: JSON.stringify(keys) },
-			updateQuery: (prev, {subscriptionData}) => {        
-        try{
-          if (!subscriptionData.data) return prev;
-
-          let { mutation, data } = subscriptionData.data.subscriptionSuppliers;
-
-          console.log("mutation, data :", mutation, data)
-          switch(mutation){
-            case "BOOK":
-            case "UNBOOK":{
-              let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
-              let newPrev = {...prev.suppliers, data: newData}
-              return {suppliers: newPrev}; 
+            console.log("mutation, data :", mutation, data)
+            switch(mutation){
+              case "BOOK":
+              case "UNBOOK":{
+                let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
+                let newPrev = {...prev.suppliers, data: newData}
+                return {suppliers: newPrev}; 
+              }
+              case "AUTO_CLEAR_BOOK":{
+                let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
+                let newPrev = {...prev.suppliers, data: newData}
+                return {suppliers: newPrev}; 
+              }
+              default:
+                return prev;
             }
-            case "AUTO_CLEAR_BOOK":{
-              let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
-              let newPrev = {...prev.suppliers, data: newData}
-              return {suppliers: newPrev}; 
-            }
-            default:
-              return prev;
+          }catch(err){
+            console.log("err :", err)
           }
-        }catch(err){
-          console.log("err :", err)
         }
-			}
-		});
-    
+      });
+    }
   }
-
-  // console.log("checkRole :", checkRole(user), user)
 
   const managementView = () =>{
     switch(checkRole(user)){
@@ -177,7 +125,6 @@ const HomePage = (props) => {
   }
 
   const menuShareView = (item, index) =>{
-    // console.log("menuShareView :", item)
     return  <Menu
               anchorEl={openMenuShare && openMenuShare[index]}
               keepMounted
@@ -272,14 +219,14 @@ const HomePage = (props) => {
   }
 
   return (<div style={{flex:1}}>
-            
             {managementView()}
             {
-              _.map(suppliersValues.data.suppliers.data, (val, k)=>{
+              _.map(datas, (val, k)=>{
                 return  <div key={k} className="home-item" >
+                          <img width={25} height={25} src={"https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/1176.jpg"} />
                           <div onClick={()=>{
                             history.push({pathname: "/profile", search: `?u=${val.ownerId}` })
-                          }}>Supplier : {val.ownerName}</div>
+                          }}>Supplier : {val?.owner?.displayName}</div>
                           {menuShareView(val, k)}
                           {menuSettingView(val, k)}
 

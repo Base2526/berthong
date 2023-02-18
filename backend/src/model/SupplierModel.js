@@ -10,7 +10,7 @@ var File = new Schema({
 })
 
 var BuyInput = new Schema({
-    userId: { type: String, required:[true, "User-ID is a required field"]},
+    userId: { type: Schema.Types.ObjectId, required:[true, "User-ID is a required field"]},
     itemId: Number,
     selected:{
         type: Number,
