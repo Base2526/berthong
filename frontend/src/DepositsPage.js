@@ -7,7 +7,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import 'react-toastify/dist/ReactToastify.css';
 import _ from "lodash";
 import deepdash from "deepdash";
-deepdash(_);
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import Avatar from "@mui/material/Avatar";
@@ -29,6 +28,8 @@ import { queryDeposits, mutationDeposit, queryBanks } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
 import { AMDINISTRATOR } from "./constants"
 import Table from "./TableContainer"
+
+deepdash(_);
 
 const DepositsPage = (props) => {
   const navigate = useNavigate();
@@ -229,10 +230,7 @@ const DepositsPage = (props) => {
                                 //   pathname: "/deposit", 
                                 //   state: {from: "/", mode: "edit", id: _id } 
                                 // });
-                                navigate({
-                                  pathname: "/deposit",
-                                  state: {from: "/", mode: "edit", id: _id } 
-                                })
+                                navigate("/deposit", {state: {from: "/", mode: "edit", id: _id }} )
                               }}><EditIcon/>{t("edit")}</button>
                               <button onClick={(e)=>{
                                 setOpenDialogDelete({ isOpen: true, id: _id, description });
@@ -261,10 +259,8 @@ const DepositsPage = (props) => {
                               //   pathname: "/deposit", 
                               //   state: {from: "/", mode: "edit", id: _id } 
                               // });
-                              navigate({
-                                pathname: "/deposit",
-                                state: {from: "/", mode: "edit", id: _id } 
-                              })
+
+                              navigate("/deposit", {state: {from: "/", mode: "edit", id: _id }} )
                             }}><EditIcon/>{t("edit")}</button>
                             <button onClick={(e)=>{
                               setOpenDialogDelete({ isOpen: true, id: _id, description });
@@ -321,10 +317,7 @@ const DepositsPage = (props) => {
                   checkRole(user) !== AMDINISTRATOR 
                   ? <button onClick={()=>{  
                       // history.push({ pathname: "/deposit", state: {from: "/", mode: "new"}  });
-                      navigate({
-                        pathname: "/deposit",
-                        state: {from: "/", mode: "new"}
-                      })
+                      navigate("/deposit", {state: {from: "/", mode: "new"}} )
                     }}>เพิ่ม แจ้งฝากเงิน</button>
                   : ""
                   }

@@ -1,27 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { ToastContainer, toast } from 'react-toastify';
-import CircularProgress from '@mui/material/CircularProgress';
-import 'react-toastify/dist/ReactToastify.css';
 import _ from "lodash";
 import deepdash from "deepdash";
-deepdash(_);
-
-import { useQuery, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
-
 import { getHeaders } from "./util"
 import { mutationMe, queryMe } from "./gqlQuery"
-
 import { login } from "./redux/actions/auth"
 import BankInputField from "./BankInputField"
+
+deepdash(_);
 
 let initValues = { banks: [] }
 

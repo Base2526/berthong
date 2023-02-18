@@ -29,6 +29,7 @@ const SupplierProfilePage = (props) => {
     let [pageOptions, setPageOptions] = useState([30, 50, 100]);  
     let [pageIndex, setPageIndex]     = useState(0);  
     let [pageSize, setPageSize]       = useState(pageOptions[0])
+    const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
 
     let params = queryString.parse(location.search)
     
@@ -41,11 +42,12 @@ const SupplierProfilePage = (props) => {
         return;
     }
 
-    let profileValue = useQuery(querySupplierProfile, {
-        context: { headers: getHeaders(location) },
-        variables: {id: params.u},
-        notifyOnNetworkStatusChange: true,
-    });
+    let profileValue;
+    // let profileValue = useQuery(querySupplierProfile, {
+    //     context: { headers: getHeaders(location) },
+    //     variables: {id: params.u},
+    //     notifyOnNetworkStatusChange: true,
+    // });
 
     console.log("profileValue :", profileValue)
 

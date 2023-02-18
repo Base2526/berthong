@@ -36,7 +36,11 @@ const HomePage = (props) => {
   let [openMenuSetting, setOpenMenuSetting] = useState(null);
   let [openMenuShare, setOpenMenuShare] = useState(null);
   let [datas, setDatas] = useState([]);
-  const { loading:loadingSuppliers, data: dataSuppliers, error: errorSuppliers, subscribeToMore, networkStatus } = useQuery(querySuppliers, { context: { headers: getHeaders(location) }, fetchPolicy: 'network-only', notifyOnNetworkStatusChange: true});
+  const { loading:loadingSuppliers, 
+          data: dataSuppliers, 
+          error: errorSuppliers, 
+          subscribeToMore, 
+          networkStatus } = useQuery(querySuppliers, { context: { headers: getHeaders(location) }, fetchPolicy: 'network-only', notifyOnNetworkStatusChange: true});
 
   let { user, login } = props
 
@@ -81,11 +85,17 @@ const HomePage = (props) => {
               case "UNBOOK":{
                 let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
                 let newPrev = {...prev.suppliers, data: newData}
+
+                setDatas(newData)
+
                 return {suppliers: newPrev}; 
               }
               case "AUTO_CLEAR_BOOK":{
                 let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
                 let newPrev = {...prev.suppliers, data: newData}
+
+                setDatas(newData)
+
                 return {suppliers: newPrev}; 
               }
               default:

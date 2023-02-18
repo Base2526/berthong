@@ -59,6 +59,8 @@ const DetailPage = (props) => {
       let supplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
       if(status && supplierByIdValue){
         cache.writeQuery({ query: querySupplierById, data: { supplierById: { data } }, variables: { id: data._id } }); 
+     
+        setDatasSupplierById(data)
       }
 
        ////////// update cache querySuppliers ///////////
@@ -120,9 +122,13 @@ const DetailPage = (props) => {
           networkStatus } = useQuery( querySupplierById, { 
                                       context: { headers: getHeaders(location) }, 
                                       variables: { id }, 
-                                      fetchPolicy: 'network-only', 
+                                      // fetchPolicy: 'cache-first', 
+                                      // fetchPolicy: 'cache-and-network',
+                                      // nextFetchPolicy: 'cache-only',
+                                      // partialRefetch: true,
                                       notifyOnNetworkStatusChange: true});
 
+  console.log(">>>", loadingSupplierById, dataSupplierById, errorSupplierById)
   useEffect(()=>{
     let newDatas = []
     for (let i = 0; i < 100; i++) {
@@ -167,12 +173,16 @@ const DetailPage = (props) => {
             case "BOOK":
             case "UNBOOK":{
               let newPrev = {...prev.supplierById, data}
+
+              setDatasSupplierById(data)
               return {supplierById: newPrev}; 
             }
   
             case "AUTO_CLEAR_BOOK":{
               let newPrev = {...prev.supplierById, data}
               console.log("AUTO_CLEAR_BOOK :", user, newPrev)
+
+              setDatasSupplierById(data)
               return {supplierById: newPrev}; 
             }
   

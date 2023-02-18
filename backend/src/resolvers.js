@@ -584,10 +584,10 @@ export default {
                         let supplier = await Supplier.findById(transition.refId)
 
                         let { buys } = supplier
-                        let book  = _.filter(buys, buy=>buy.userId == current_user?._id  && buy.selected == 0)
-                        let buy  = _.filter(buys, buy=>buy.userId == current_user?._id  && buy.selected == 1)
+                        let book  = _.filter(buys, buy=> _.isEqual(buy.userId, current_user?._id)  && buy.selected == 0)
+                        let buy  = _.filter(buys, buy=>_.isEqual(buy.userId, current_user?._id)  && buy.selected == 1)
 
-                        console.log("book, buy :", book.length, buy.length, transition._id)
+                        // console.log("book, buy :", book.length, buy.length, transition._id, current_user?._id)
 
                         return book.length > 0 || buy.length > 0 ? {...transition._doc, ...supplier._doc } : null
                       })), item=>!_.isNull(item) ) 
@@ -1609,6 +1609,8 @@ export default {
 
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
+
+        console.log("deposit current_user :", current_user?._id)
 
         switch(input.mode.toLowerCase()){
           case "new":{

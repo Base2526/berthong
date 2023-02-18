@@ -1,21 +1,13 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback  } from "react";
+import React, { useState, useMemo, useRef, useCallback  } from "react";
 import { useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { ToastContainer, toast } from 'react-toastify';
 import CircularProgress from '@mui/material/CircularProgress';
-import LinearProgress from '@mui/material/LinearProgress';
 import moment from "moment";
-
 import 'react-toastify/dist/ReactToastify.css';
 import _ from "lodash";
 import deepdash from "deepdash";
-deepdash(_);
-import { useQuery, useMutation, useApolloClient } from "@apollo/client";
-import CardActionArea from "@material-ui/core/CardActionArea";
-import Avatar from "@mui/material/Avatar";
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import EditIcon from '@mui/icons-material/Edit';
+import { useQuery, useMutation } from "@apollo/client";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -24,11 +16,12 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
 import { getHeaders, checkRole } from "./util"
-import { queryHistoryTransitions, mutationDeposit } from "./gqlQuery"
+import { queryHistoryTransitions, mutationDeposit, queryDeposits } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
-
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 import Table from "./TableContainer"
+
+deepdash(_);
 
 const HistoryTransitionsPage = (props) => {
   const location = useLocation();

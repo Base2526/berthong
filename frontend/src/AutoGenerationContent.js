@@ -4,15 +4,11 @@ import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import 'react-toastify/dist/ReactToastify.css';
 import _ from "lodash"
-import { useQuery, useMutation, useSubscription } from "@apollo/client";
-import LinearProgress from '@mui/material/LinearProgress';
-import queryString from 'query-string';
-const { faker } = require("@faker-js/faker");
-
-import { getHeaders, checkRole } from "./util"
+import { useQuery, useMutation } from "@apollo/client";
+import { getHeaders } from "./util"
 import { gqlSupplier, queryDateLotterys } from "./gqlQuery"
-import { login, logout } from "./redux/actions/auth"
-import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
+
+const { faker } = require("@faker-js/faker");
 
 const AutoGenerationContent = (props) => {
     let location = useLocation();
