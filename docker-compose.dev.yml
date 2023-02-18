@@ -12,7 +12,7 @@ services:
       - WATCHPACK_POLLING=${WATCHPACK_POLLING}
       
       - REACT_APP_NODE_ENV=${REACT_APP_NODE_ENV}
-      - REACT_APP_HOST_GRAPHAL=${REACT_APP_HOST_GRAPHAL}
+      - REACT_APP_HOST_GRAPHAL=${REACT_APP_HOST_GRAPHAL}:${GRAPHQL_PORT}
       - FRONTEND_PORT=${FRONTEND_PORT}
       - PORT=${FRONTEND_PORT}
 
@@ -21,7 +21,7 @@ services:
 
       - REACT_APP_FACEBOOK_APPID=448400870781752
     ports:
-      - "3001:3000"
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     volumes:
       - ./frontend/src:/app/src
       - ./uploads:/var/storage
@@ -37,18 +37,18 @@ services:
       context: ./backend
       dockerfile: Dockerfile.dev                
     ports:
-      - "4001:4001"
+      - "${GRAPHQL_PORT}:${GRAPHQL_PORT}"
     volumes:
       - ./backend/src:/app/src        
       - ./uploads:/app/uploads    
     environment:
       - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING}
       - WATCHPACK_POLLING=${WATCHPACK_POLLING}
-      - RA_HOST=${RA_HOST}
+      - RA_HOST=${RA_HOST}:${GRAPHQL_PORT}/
       - GRAPHQL_PORT=${GRAPHQL_PORT}
       - JWT_SECRET=${JWT_SECRET}
       # - MONGO_URI=mongodb://${MONGO_INITDB_USERNAME}:${MONGO_INITDB_PASSWORD}@mongo:${MONGO_PORT}/${MONGO_INITDB_DATABASE}?authMechanism=DEFAULT
-      - MONGO_URI=mongodb://${MONGO_INITDB_USERNAME}:${MONGO_INITDB_PASSWORD}@mongo:27017/${MONGO_INITDB_DATABASE}
+      - MONGO_URI=mongodb://${MONGO_INITDB_USERNAME}:${MONGO_INITDB_PASSWORD}@mongo:${MONGO_PORT}/${MONGO_INITDB_DATABASE}
       # - MONGO_URI=mongodb://root:b9be11166d72e9e3ae7fd407165e4bd2@banlist.info:29102/?authMechanism=DEFAULT
       - GITHUB_URL_OAUTH_ACCESS_TOKEN=${GITHUB_URL_OAUTH_ACCESS_TOKEN}
       - GITHUB_URL_OAUTH_USER=${GITHUB_URL_OAUTH_USER}
@@ -77,11 +77,12 @@ services:
   #   networks:
   #     - nodejs
   mongo:
-    image: mongo
-    expose:
-      - 27017       # port intenal
+    image: mongo:${MONGO_VERSION}
+    command: mongod --port ${MONGO_PORT}
+    # expose:
+    #   - 27017       # port intenal
     ports:
-      - 27018:27017 # port extenal
+      - ${MONGO_PORT}:${MONGO_PORT} # port extenal
     volumes:
       - ./restore:/home/restore
     networks:

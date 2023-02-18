@@ -13,6 +13,8 @@ import { queryMe, queryBalanceById } from "./gqlQuery"
 import { login, logout } from "./redux/actions/auth"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 
+import AutoGenerationContent from "./AutoGenerationContent"
+
 const MePage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -88,6 +90,8 @@ const MePage = (props) => {
                                     navigate("/me+bank");
                                 }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
                             </div>
+
+                            <AutoGenerationContent />
                         </div>
             }
             case AUTHENTICATED:{

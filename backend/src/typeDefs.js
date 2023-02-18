@@ -650,16 +650,17 @@ export default gql`
   }
 
   input SupplierInput{
-    mode: SupplierModeType
+    mode: SupplierModeType!
     _id: ID
-    title: String
-    price: Int
-    priceUnit: Int
+    title: String!
+    price: Int!
+    priceUnit: Int!
     description: String
-    dateLottery: ID
+    dateLottery: ID!
     files: [JSON]
     buys: [JSON]
-    publish: Boolean
+    publish: Boolean = false
+    auto: Boolean = false
   }
 
   enum WithdrawModeType {

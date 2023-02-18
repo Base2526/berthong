@@ -2,8 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback  } from "react
 import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { ToastContainer, toast } from 'react-toastify';
-import CircularProgress from '@mui/material/CircularProgress';
+import { CircularProgress, LinearProgress } from '@mui/material';
 import 'react-toastify/dist/ReactToastify.css';
 import _ from "lodash"
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
@@ -12,11 +11,9 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-// import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Autocomplete from "@mui/material/Autocomplete";
-
 
 import { getHeaders, checkRole } from "./util"
 import { queryDeposits, queryDepositById, mutationDeposit, queryBankAdmin } from "./gqlQuery"
@@ -196,7 +193,7 @@ const DepositPage = (props) => {
                   <div >
                   {
                       bankAdminValue.loading
-                      ? <CircularProgress /> 
+                      ? <LinearProgress /> 
                       : <Autocomplete
                           disablePortal
                           id="bank-id"

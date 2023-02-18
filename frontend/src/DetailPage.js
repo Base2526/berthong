@@ -45,60 +45,12 @@ const DetailPage = (props) => {
   let [openMenuSetting, setOpenMenuSetting] = useState(null);
   let [openMenuShare, setOpenMenuShare] = useState(null);
   
-
   let params = queryString.parse(location.search)
 
   let { id } = params; //location.state
   let { user } = props
 
-  useEffect(()=>{
-    let newDatas = []
-    for (let i = 0; i < 100; i++) {
-      newDatas = [...newDatas, {id: i, title:  i > 9 ? "" + i: "0" + i, selected: -1}]
-    }
-    setDatas(newDatas)
-
-    interval.current = setInterval(() => {
-      console.log("--DetailPage--", moment().format("DD-MM-YYYY hh:mm:ss"))
-
-      let supplierByIdValue = client.readQuery({ query: querySupplierById, variables: {id}});
-      if(!_.isNull(supplierByIdValue)){
-        console.log("supplierByIdValue :", supplierByIdValue)
-
-        let { buys } = supplierByIdValue.supplierById.data
-
-        let newBuys = _.transform(
-          buys,
-          (result, n) => {
-            var now = moment(new Date()); //todays date
-            var end = moment(n.createdAt); // another date
-            var duration = moment.duration(now.diff(end));
-
-            // console.log("duration :", duration.asMinutes(), duration.asHours())
-            
-            if( duration.asHours() <= 1 || n.selected == 1) {
-              result.push(n);
-            }
-          },
-          []
-        );
-
-        let newData = {...supplierByIdValue.supplierById.data, buys: newBuys}
-        if(!_.isEqual(supplierByIdValue.supplierById.data, newData)){
-          client.writeQuery({  query: querySupplierById, 
-                                  data: { supplierById: {...supplierByIdValue.supplierById, data: newData } }, 
-                                  variables: { id } 
-                              }); 
-        }
-      }
-    
-    }, 60000 /*1 min*/);
-
-    return () => {
-      unsubscribeSupplierById && unsubscribeSupplierById()
-      clearInterval(interval.current)
-    };
-  }, [])
+  let [datasSupplierById, setDatasSupplierById] = useState([]);
 
   const [onBook, resultBookValues] = useMutation(gqlBook,{
     context: { headers: getHeaders(location) },
@@ -151,7 +103,6 @@ const DetailPage = (props) => {
       if(!_.isNull(suppliersValue)){
         console.log("suppliersValue :", suppliersValue)
       }
-
       ////////// update cache querySuppliers ///////////
     },
     onCompleted({ data }) {
@@ -162,49 +113,81 @@ const DetailPage = (props) => {
     }
   });
 
-  let querySupplierByIdValue = useQuery(querySupplierById, {
-    context: { headers: getHeaders(location) },
-    variables: { id },
-    notifyOnNetworkStatusChange: true,
-  });
+  const { loading:loadingSupplierById, 
+          data: dataSupplierById, 
+          error: errorSupplierById, 
+          subscribeToMore, 
+          networkStatus } = useQuery( querySupplierById, { 
+                                      context: { headers: getHeaders(location) }, 
+                                      variables: { id }, 
+                                      fetchPolicy: 'network-only', 
+                                      notifyOnNetworkStatusChange: true});
 
-  if(querySupplierByIdValue.loading){
+  useEffect(()=>{
+    let newDatas = []
+    for (let i = 0; i < 100; i++) {
+      newDatas = [...newDatas, {id: i, title:  i > 9 ? "" + i: "0" + i, selected: -1}]
+    }
+    setDatas(newDatas)
+
+    return () => {
+      unsubscribeSupplierById && unsubscribeSupplierById()
+      unsubscribeSupplierById = null;
+    };
+  }, [])
+
+  useEffect(() => {
+    if (dataSupplierById) {
+      let { status, data } = dataSupplierById.supplierById
+      if(status){
+        setDatasSupplierById(data)
+      }
+    }
+  }, [dataSupplierById])
+
+  if(loadingSupplierById){
     return <div><CircularProgress /></div>
   }else{
-    if(_.isEmpty(querySupplierByIdValue.data.supplierById)){
+    if(_.isEmpty(datasSupplierById)){
       return;
     }
 
-    let {subscribeToMore, networkStatus} = querySupplierByIdValue
+    // let {subscribeToMore, networkStatus} = querySupplierByIdValue
 
-    unsubscribeSupplierById && unsubscribeSupplierById()
-    unsubscribeSupplierById =  subscribeToMore({
-			document: subscriptionSupplierById,
-      variables: { supplierById: id },
-			updateQuery: (prev, {subscriptionData}) => {
-        if (!subscriptionData.data) return prev;
-
-        let { mutation, data } = subscriptionData.data.subscriptionSupplierById;
-        switch(mutation){
-          case "BOOK":
-          case "UNBOOK":
-          case "AUTO_CLEAR_BOOK":{
-            let newPrev = {...prev.supplierById, data}
-
-            return {supplierById: newPrev}; 
+    // unsubscribeSupplierById && unsubscribeSupplierById()
+    if(_.isNull(unsubscribeSupplierById)){
+      unsubscribeSupplierById =  subscribeToMore({
+        document: subscriptionSupplierById,
+        variables: { supplierById: id },
+        updateQuery: (prev, {subscriptionData}) => {
+          if (!subscriptionData.data) return prev;
+  
+          let { mutation, data } = subscriptionData.data.subscriptionSupplierById;
+          switch(mutation){
+            case "BOOK":
+            case "UNBOOK":{
+              let newPrev = {...prev.supplierById, data}
+              return {supplierById: newPrev}; 
+            }
+  
+            case "AUTO_CLEAR_BOOK":{
+              let newPrev = {...prev.supplierById, data}
+              console.log("AUTO_CLEAR_BOOK :", user, newPrev)
+              return {supplierById: newPrev}; 
+            }
+  
+            default:
+              return prev;
           }
-
-          default:
-            return prev;
         }
-			}
-		});
+      });
+    }
   }
 
-  let {status, data} = querySupplierByIdValue.data.supplierById
+  // let {status, data} = querySupplierByIdValue.data.supplierById
 
   const onSelected = (evt, itemId) =>{
-    let fn = _.find(data.buys, (buy)=>buy.itemId == itemId)
+    let fn = _.find(datasSupplierById.buys, (buy)=>buy.itemId == itemId)
 
     let selected = 0;
     if(fn){
@@ -212,7 +195,7 @@ const DetailPage = (props) => {
     }
 
     if(selected == 0){
-      let check = user?.balance - (user?.balanceBook + data.price)
+      let check = user?.balance - (user?.balanceBook + datasSupplierById.price)
       if(check < 0){
         showToast("error", `ยอดเงินคงเหลือไม่สามารถจองได้`)
 
@@ -231,7 +214,7 @@ const DetailPage = (props) => {
   }
 
   const selected = () =>{
-    let fn = _.filter(data.buys, (buy)=>buy.userId == user._id && buy.selected == 0 ).map((curr)=> `${curr.itemId}`).toString()
+    let fn = _.filter(datasSupplierById.buys, (buy)=>buy.userId == user._id && buy.selected == 0 ).map((curr)=> `${curr.itemId}`).toString()
 
     if(_.isEmpty(fn)){
       return <div></div>
@@ -241,7 +224,7 @@ const DetailPage = (props) => {
               <button onClick={()=>{
                 // onBuy({ variables: { id } })
                 setDialogBuy(true)
-              }}>BUY ({_.filter(data.buys, (buy)=>buy.userId == user._id && buy.selected == 0 ).length})</button>
+              }}>BUY ({_.filter(datasSupplierById.buys, (buy)=>buy.userId == user._id && buy.selected == 0 ).length})</button>
             </div>;
   }
 
@@ -268,14 +251,14 @@ const DetailPage = (props) => {
             sx={{ height: 100, width: 100 }}
             variant="rounded"
             alt="Example Alt"
-            src={data?.files[0].url}
+            src={datasSupplierById?.files[0].url}
             onClick={(e) => {
-              setLightbox({ isOpen: true, photoIndex: 0, images: data?.files })
+              setLightbox({ isOpen: true, photoIndex: 0, images: datasSupplierById?.files })
             }}
           />
         </CardActionArea>
         <div style={{ position: "absolute", bottom: "5px", right: "5px", padding: "5px", backgroundColor: "#e1dede", color: "#919191"}}>
-          {(_.filter(data?.files, (v)=>v.url)).length}
+          {(_.filter(datasSupplierById?.files, (v)=>v.url)).length}
         </div>
       </div>
     );
@@ -361,19 +344,19 @@ const DetailPage = (props) => {
             
 
             <div className="itm">
-              <div>ชื่อ :{data.title},  ราคา : {data?.price}</div>
-              <div>จอง :{bookView(data)}</div>
-              <div>ขายไปแล้ว :{sellView(data)}</div>
+              <div>ชื่อ :{datasSupplierById.title},  ราคา : {datasSupplierById?.price}</div>
+              <div>จอง :{bookView(datasSupplierById)}</div>
+              <div>ขายไปแล้ว :{sellView(datasSupplierById)}</div>
             </div>
            
-            {menuShareView(data, 1)}
-            {menuSettingView(data, 1)}
+            {menuShareView(datasSupplierById, 1)}
+            {menuSettingView(datasSupplierById, 1)}
             {imageView()}
             <ToastContainer />
             <div>
               <ItemFollow 
                 {...props} 
-                item={data} 
+                item={datasSupplierById} 
                 onDialogLogin={(e)=>{
                   setDialogLogin(true)
                 }}/>
@@ -392,7 +375,7 @@ const DetailPage = (props) => {
             {
               _.map(datas, (val, key)=>{
              
-                let fn = _.find(data.buys, (buy)=>buy.itemId == key)
+                let fn = _.find(datasSupplierById.buys, (buy)=>buy.itemId == key)
 
                 let cn = ""
                 if(!_.isEmpty(fn)){
@@ -427,7 +410,7 @@ const DetailPage = (props) => {
               dialogBuy && (
                 <DialogBuy 
                   {...props}
-                  data={data} 
+                  data={datasSupplierById} 
                   onBuy={()=>{
                     onBuy({ variables: { id } })
                     setDialogBuy(false)
