@@ -2,7 +2,7 @@ import React , {useState} from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 import CircularProgress from '@mui/material/CircularProgress';
 import DatePicker from "react-datepicker";
@@ -16,8 +16,8 @@ let editValues = undefined;
 let initValues =  { mode: "NEW",  title : "", startDate: null, endDate: null, description: "" }
 
 const DateLotteryPage = (props) => {
-  let location = useLocation();
-  let history = useHistory();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [input, setInput] = useState(initValues)
 
@@ -70,7 +70,8 @@ const DateLotteryPage = (props) => {
 
         },
         onCompleted({ data }) {
-          history.goBack();
+          // history.goBack();
+          navigate(-1);
         },
         onError({error}){
           console.log("error :", error)

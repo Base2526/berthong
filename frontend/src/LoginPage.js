@@ -2,7 +2,7 @@ import React , {useState, useEffect} from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import { useHistory, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -22,7 +22,7 @@ import { login } from "./redux/actions/auth"
 import { mutationLogin } from "./gqlQuery"
 
 const LoginPage = (props) => {
-    let history = useHistory();
+    const navigate = useNavigate();
     let deviceData = useDeviceData();
     let client = useApolloClient();
 
@@ -31,7 +31,8 @@ const LoginPage = (props) => {
     // console.log("user :", user)
 
     if(!_.isEmpty(user)){
-        history.push("/me");
+        // history.push("/me");
+        navigate("/me")
     }
 
     let [input, setInput]   = useState({ username: "",  password: ""});
@@ -48,7 +49,8 @@ const LoginPage = (props) => {
             // await client.cache.reset();
             // await client.resetStore();
 
-            history.push("/");
+            // history.push("/");
+            navigate("/")
         },
         onError(err){
           console.log("onError :", err)

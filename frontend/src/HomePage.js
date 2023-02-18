@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import CircularProgress from '@mui/material/CircularProgress';
@@ -28,11 +28,11 @@ import ItemShare from "./ItemShare";
 
 let unsubscribeSuppliers = null;
 const HomePage = (props) => {
-  let history = useHistory();
-  let location = useLocation();
-  let { t } = useTranslation();
-  let [dialogLogin, setDialogLogin] = useState(false);
-  let [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
+  const [dialogLogin, setDialogLogin] = useState(false);
+  const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
 
   let [openMenuSetting, setOpenMenuSetting] = useState(null);
   let [openMenuShare, setOpenMenuShare] = useState(null);
@@ -45,18 +45,18 @@ const HomePage = (props) => {
     };
   }, [])
 
-  const [onMe, resultMeValues] = useMutation(mutationMe,{
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {me}}) => {
-      console.log("onMe :", me)
-    },
-    onCompleted({ data }) {
-      console.log("onCompleted")
-    },
-    onError: (err) => {
-      console.log("onError :", err)
-    }
-  });
+  // const [onMe, resultMeValues] = useMutation(mutationMe,{
+  //   context: { headers: getHeaders(location) },
+  //   update: (cache, {data: {me}}) => {
+  //     console.log("onMe :", me)
+  //   },
+  //   onCompleted({ data }) {
+  //     console.log("onCompleted")
+  //   },
+  //   onError: (err) => {
+  //     console.log("onError :", err)
+  //   }
+  // });
   
   const suppliersValues =useQuery(querySuppliers, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true});
 
@@ -100,14 +100,20 @@ const HomePage = (props) => {
     switch(checkRole(user)){
       case AMDINISTRATOR:{
         return  <div>
-                  <div onClick={()=>{ history.push("/me") }}>AMDINISTRATOR : {user.displayName} - {user.email}</div>
+                  <div onClick={()=>{ 
+                                      // history.push("/me") 
+                                      navigate("/me")
+                                }}>AMDINISTRATOR : {user.displayName} - {user.email}</div>
                 </div>
       }
 
       case AUTHENTICATED:{
         return  <div className="itm">
                   <div>Balance : {user?.balance} [-{user?.balanceBook}]</div>
-                  <div onClick={()=>{ history.push("/me") }}>AUTHENTICATED : {user.displayName} - {user.email}</div>
+                  <div onClick={()=>{ 
+                    // history.push("/me") 
+                    navigate("/me")
+                    }}>AUTHENTICATED : {user.displayName} - {user.email}</div>
                 </div>
       }
       
@@ -224,7 +230,11 @@ const HomePage = (props) => {
               _.map(suppliersValues.data.suppliers.data, (val, k)=>{
                 return  <div key={k} className="home-item" >
                           <div onClick={()=>{
-                            history.push({pathname: "/profile", search: `?u=${val.ownerId}` })
+                            // history.push({pathname: "/profile", search: `?u=${val.ownerId}` })
+                            navigate({
+                              pathname: "/profile",
+                              search: `?${createSearchParams({ u: val.ownerId})}`
+                            })
                           }}>Supplier : {val.ownerName}</div>
                           {menuShareView(val, k)}
                           {menuSettingView(val, k)}
@@ -235,12 +245,18 @@ const HomePage = (props) => {
                           <div>จอง :{bookView(val)}</div>
                           <div>ขายไปแล้ว :{sellView(val)}</div>
                           <button onClick={(evt)=>{
-                            history.push({
+                            // history.push({
+                            //   pathname: "/p",
+                            //   search: `?id=${val._id}`,
+                            //   // hash: "#react",
+                            //   state: { id: val._id }
+                            // });
+
+                            navigate({
                               pathname: "/p",
-                              search: `?id=${val._id}`,
-                              // hash: "#react",
+                              search: `?${createSearchParams({ id: val._id})}`,
                               state: { id: val._id }
-                            });
+                            })
                           }}>ดูรายละเอียด</button>
 
                           <div>

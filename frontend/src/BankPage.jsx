@@ -2,7 +2,7 @@ import React , {useState} from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -14,12 +14,10 @@ let editValues = undefined;
 let initValues =  { mode: "NEW",  name : "",  description: "" }
 
 const BankPage = (props) => {
-  let location = useLocation();
-  let history = useHistory();
-
-  const [input, setInput] = useState(initValues)
-
-  let { mode, _id } = location.state
+  const location = useLocation();
+  const navigate = useNavigate();
+  let [input, setInput] = useState(initValues)
+  const { mode, _id } = location.state
 
   console.log("mode, id :", mode, _id)
 
@@ -64,7 +62,7 @@ const BankPage = (props) => {
           ////////// update cache queryBankById ///////////
         },
         onCompleted({ data }) {
-          history.goBack();
+          navigate(-1)
         }
       }
   );

@@ -1,8 +1,7 @@
-import { Link } from "react-router-dom";
 import { useState, useCallback, useMemo, useRef  } from "react";
 import Box from "@mui/material/Box";
 import { useQuery, useMutation } from "@apollo/client";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -32,8 +31,8 @@ import Table from "./TableContainer"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 
 const SuppliersPage = (props) => {
-  let history = useHistory();
-  let location = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   let { user } = props
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
@@ -146,12 +145,16 @@ const SuppliersPage = (props) => {
                   let {_id, title} = props.row.original
                   return ( <div style={{ position: "relative" }} 
                             onClick={()=>{
-                              history.push({
+                              // history.push({
+                              //   pathname: "/p",
+                              //   search: `?id=${_id}`,
+                              //   state: { id: _id }
+                              // });
+                              navigate({
                                 pathname: "/p",
-                                search: `?id=${_id}`,
-                                // hash: "#react",
+                                search: `?${createSearchParams({ id: _id})}`,
                                 state: { id: _id }
-                              });
+                              })
                             }}>{title}</div> );
               }
             },
@@ -203,11 +206,16 @@ const SuppliersPage = (props) => {
 
                 console.log("props.row.original",  props.row.original)
                 return <div onClick={()=>{
-                  history.push({ 
-                    pathname: "/profile", 
-                    search: `?u=${ownerId}`,
-                    // state: {from: "/", mode: "edit", id: _id } 
-                  });
+                  // history.push({ 
+                  //   pathname: "/profile", 
+                  //   search: `?u=${ownerId}`,
+                  //   // state: {from: "/", mode: "edit", id: _id } 
+                  // });
+
+                  navigate({
+                    pathname: "/profile",
+                    search: `?${createSearchParams({ u: ownerId})}`
+                  })
                 }}>{ownerName}</div>
               }
             },
@@ -228,10 +236,16 @@ const SuppliersPage = (props) => {
                 let {_id, description} = props.row.original
                 return  <div className="Btn--posts">
                             <button onClick={(evt)=>{
-                              history.push({ 
-                                pathname: "/supplier", 
+                              // history.push({ 
+                              //   pathname: "/supplier", 
+                              //   state: {from: "/", mode: "edit", id: _id } 
+                              // });
+
+                              navigate({
+                                pathname: "/supplier",
                                 state: {from: "/", mode: "edit", id: _id } 
-                              });
+                              })
+
                             }}><EditIcon/>{t("edit")}</button>
                             <button onClick={(e)=>{
                               setOpenDialogDelete({ isOpen: true, id: _id, description });
@@ -292,12 +306,17 @@ const SuppliersPage = (props) => {
                   let {_id, title} = props.row.original
                   return ( <div style={{ position: "relative" }} 
                             onClick={()=>{
-                              history.push({
+                              // history.push({
+                              //   pathname: "/p",
+                              //   search: `?id=${_id}`,
+                              //   // hash: "#react",
+                              //   state: { id: _id }
+                              // });
+                              navigate({
                                 pathname: "/p",
-                                search: `?id=${_id}`,
-                                // hash: "#react",
+                                search: `?${createSearchParams({ id: _id})}`,
                                 state: { id: _id }
-                              });
+                              })
                             }}>{title}</div> );
               }
             },
@@ -349,10 +368,15 @@ const SuppliersPage = (props) => {
                 let {_id, description} = props.row.original
                 return  <div className="Btn--posts">
                             <button onClick={(evt)=>{
-                              history.push({ 
-                                pathname: "/supplier", 
+                              // history.push({ 
+                              //   pathname: "/supplier", 
+                              //   state: {from: "/", mode: "edit", id: _id } 
+                              // });
+
+                              navigate({
+                                pathname: "/supplier",
                                 state: {from: "/", mode: "edit", id: _id } 
-                              });
+                              })
                             }}><EditIcon/>{t("edit")}</button>
                             <button onClick={(e)=>{
                               setOpenDialogDelete({ isOpen: true, id: _id, description });
@@ -468,7 +492,17 @@ const SuppliersPage = (props) => {
                 ariaLabel="SpeedDial basic example"
                 sx={{ position: 'absolute', bottom: 16, right: 16 }}
                 icon={<SpeedDialIcon />}
-                onClick={(e)=>{ history.push({ pathname: "/supplier", state: {from: "/", mode: "new"} }) }}>
+                onClick={(e)=>{ 
+                  // history.push({ 
+                  //   pathname: "/supplier", 
+                  //   state: {from: "/", mode: "new"} 
+                  // }) 
+
+                  navigate({
+                    pathname: "/supplier",
+                    state: {from: "/", mode: "new"} 
+                  })
+                }}>
               </SpeedDial>
             </Box>
           </div>);

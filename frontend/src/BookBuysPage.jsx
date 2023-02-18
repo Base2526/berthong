@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate, createSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -23,8 +23,8 @@ import { queryBookBuyTransitions } from "./gqlQuery"
 import Table from "./TableContainer"
 
 const BookBuysPage = (props) => {
-  let history = useHistory();
-  let { t } = useTranslation();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
 
   let { user } = props
 
@@ -84,7 +84,14 @@ const BookBuysPage = (props) => {
           accessor: 'title',
           Cell: props =>{
             let {_id, title} = props.row.original
-            return (<div onClick={(e)=>{ history.push({ pathname: "/p", search: `?id=${_id}`, state: { id: _id } }) }}>{title}</div>)
+            return (<div onClick={(e)=>{ 
+              // history.push({ pathname: "/p", search: `?id=${_id}`, state: { id: _id } }) 
+              navigate({
+                        pathname: "/p",
+                        search: `?${createSearchParams({ id: _id})}`,
+                        state: { id: _id }
+                      })
+            }}>{title}</div>)
           }
         },
         // {

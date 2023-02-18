@@ -4,7 +4,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import Typography from "@mui/material/Typography";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 import { useDeviceData } from "react-device-detect";
 import AccountCircle from "@material-ui/icons/AccountCircle";
@@ -23,12 +23,11 @@ import { useTranslation } from "react-i18next";
 import { mutationLogin, mutationLoginWithSocial } from "./gqlQuery"
 
 const DialogLogin = (props) => {
-  let { t } = useTranslation();
-  
-  let googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-  let facebookAppId =  process.env.REACT_APP_FACEBOOK_APPID
-  let history = useHistory();
-  let deviceData = useDeviceData();
+  const { t } = useTranslation();
+  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+  const facebookAppId =  process.env.REACT_APP_FACEBOOK_APPID
+  const navigate = useNavigate();
+  const deviceData = useDeviceData();
 
   let { login, onComplete, onClose, selectedValue, open } = props;
 
@@ -81,7 +80,8 @@ const DialogLogin = (props) => {
         // });
       },
       onCompleted({ data }) {
-        history.push("/");
+        // history.push("/");
+        navigate("/")
       },
       onError({error}){
         console.log("onError :")

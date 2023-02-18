@@ -1,7 +1,5 @@
-// import "./styles.css";
-
-import React, {useState, useEffect} from "react";
-import { Route, Redirect } from "react-router-dom";
+import React from "react";
+import { Route, Navigate } from "react-router-dom";
 import { connect } from "react-redux";
 import _ from "lodash"
 
@@ -14,11 +12,12 @@ const PrivateRoute = ({ user,  children, ...rest }) => {
             {
             return  !_.isEmpty(user)
                     ? children
-                    : <Redirect
+                    : /* <Redirect
                         to={{
                             pathname: "/",
                             state: { from: location }
-                        }}/>
+                        }}/>*/
+                      <Route path="*" element={<Navigate to="/" replace />} />
             }
         }/>
     );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ToastContainer, toast } from 'react-toastify';
@@ -36,9 +36,9 @@ let initValues = {
 }
 
 const SupplierPage = (props) => {
-  let history = useHistory();
-  let location = useLocation();
-  let { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
 
   let [snackbar, setSnackbar] = useState({open:false, message:""});
   let [input, setInput]       = useState(initValues);
@@ -122,7 +122,8 @@ const SupplierPage = (props) => {
       }
     },
     onCompleted({ data }) {
-      history.goBack()
+      // history.goBack()
+      navigate(-1)
     },
     onError({error}){
       console.log("onError :")

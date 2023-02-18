@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ToastContainer, toast } from 'react-toastify';
@@ -33,10 +33,9 @@ import ItemShare from "./ItemShare";
 let unsubscribeSupplierById = null;
 
 const DetailPage = (props) => {
-  let history = useHistory();
-  let location = useLocation();
-  let client = useApolloClient();
-  let { t } = useTranslation();
+  const location = useLocation();
+  const client = useApolloClient();
+  const { t } = useTranslation();
   let interval = useRef(null);
 
   let [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });

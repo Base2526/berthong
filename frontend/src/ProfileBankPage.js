@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ToastContainer, toast } from 'react-toastify';
@@ -26,11 +26,10 @@ import BankInputField from "./BankInputField"
 let initValues = { banks: [] }
 
 const ProfileBankPage = (props) => {
-  let history = useHistory();
-  let location = useLocation();
-  let { t } = useTranslation();
-
-  let { user } = props
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
+  const { user } = props
 
   let [input, setInput]       = useState( _.isEmpty(user.banks) ? {banks: [{ bankNumber: "", bankId: "" }]} : {banks: user.banks});
   let [error, setError]       = useState(initValues);
@@ -49,7 +48,8 @@ const ProfileBankPage = (props) => {
       }
     },
     onCompleted({ data }) {
-      history.goBack()
+      // history.goBack()
+      navigate(-1)
     },
     onError({error}){
       console.log("onError :", error)

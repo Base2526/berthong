@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback  } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ToastContainer, toast } from 'react-toastify';
@@ -31,9 +31,9 @@ import { AMDINISTRATOR } from "./constants"
 import Table from "./TableContainer"
 
 const DepositsPage = (props) => {
-  let history = useHistory();
-  let location = useLocation();
-  let { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
 
   let { user, logout } = props
 
@@ -225,10 +225,14 @@ const DepositsPage = (props) => {
                 case "wait":{
                   return  <div className="Btn--posts">
                               <button onClick={(evt)=>{
-                                history.push({ 
-                                  pathname: "/deposit", 
+                                // history.push({ 
+                                //   pathname: "/deposit", 
+                                //   state: {from: "/", mode: "edit", id: _id } 
+                                // });
+                                navigate({
+                                  pathname: "/deposit",
                                   state: {from: "/", mode: "edit", id: _id } 
-                                });
+                                })
                               }}><EditIcon/>{t("edit")}</button>
                               <button onClick={(e)=>{
                                 setOpenDialogDelete({ isOpen: true, id: _id, description });
@@ -253,10 +257,14 @@ const DepositsPage = (props) => {
                 case "reject":{
                   return  <div className="Btn--posts">
                             <button onClick={(evt)=>{
-                              history.push({ 
-                                pathname: "/deposit", 
+                              // history.push({ 
+                              //   pathname: "/deposit", 
+                              //   state: {from: "/", mode: "edit", id: _id } 
+                              // });
+                              navigate({
+                                pathname: "/deposit",
                                 state: {from: "/", mode: "edit", id: _id } 
-                              });
+                              })
                             }}><EditIcon/>{t("edit")}</button>
                             <button onClick={(e)=>{
                               setOpenDialogDelete({ isOpen: true, id: _id, description });
@@ -312,7 +320,11 @@ const DepositsPage = (props) => {
                 {
                   checkRole(user) !== AMDINISTRATOR 
                   ? <button onClick={()=>{  
-                      history.push({ pathname: "/deposit", state: {from: "/", mode: "new"}  });
+                      // history.push({ pathname: "/deposit", state: {from: "/", mode: "new"}  });
+                      navigate({
+                        pathname: "/deposit",
+                        state: {from: "/", mode: "new"}
+                      })
                     }}>เพิ่ม แจ้งฝากเงิน</button>
                   : ""
                   }

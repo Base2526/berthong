@@ -2,7 +2,7 @@ import './App.css';
 import React, { useEffect, useRef, useCallback} from "react";
 import { useApolloClient, useQuery, useSubscription } from "@apollo/client";
 import moment from "moment";
-import { Switch, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import _ from "lodash"
 
@@ -120,29 +120,18 @@ const App =(props) =>{
       <div className="App">
         <div className="container">
           <div className="row">
-            <Switch>
-              <Route path="/" exact>
-                <HomePage />
-              </Route>
-              <Route path="/p">
-                <DetailPage />
-              </Route>
-              <Route path="/user/login">
-                <LoginPage />
-              </Route>
-              <Route path="/suppliers">
-                <SuppliersPage />
-              </Route>
-              <Route path="/supplier">
-                <SupplierPage />
-              </Route>
-              <Route path="/profile">
-                <SupplierProfilePage />
-              </Route>
+            <Route>
+              <Route path="/" exact element={<HomePage />} />
+              <Route path="/p" element={<DetailPage />} />
+              <Route path="/user/login" element={<LoginPage />} />
+              <Route path="/suppliers" element={<SuppliersPage />} />
+              <Route path="/supplier" element={<SupplierPage />} />
+              <Route path="/profile" element={<SupplierProfilePage />}/>
 
-              <PrivateRoute path="/">
+              <PrivateRoute path="/" element={<PrivatePage />} />   
+              {/* <PrivateRoute path="/">
                 <PrivatePage />
-              </PrivateRoute>   
+              </PrivateRoute>    */}
 
               {/*
               <Route path="/detail/:id">
@@ -181,7 +170,7 @@ const App =(props) =>{
               <Route path="*">
                 <NoMatch />
               </Route>      */}
-            </Switch>
+            </Route>
           </div>
         </div>
       </div>

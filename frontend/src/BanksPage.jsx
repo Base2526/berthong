@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -26,7 +26,7 @@ export const UserListContainer = styled.div`
 `;
 
 const BanksPage = (props) => {
-  let history = useHistory();
+  const navigate = useNavigate();
   const { t } = useTranslation();
 
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
@@ -117,10 +117,12 @@ const BanksPage = (props) => {
             let {_id, name} = props.row.original
             return  <div>
                       <button onClick={()=>{
-                        history.push({ 
-                          pathname: "/bank", 
-                          state: {from: "/", mode: "edit", _id} 
-                        });
+                        // history.push({ 
+                        //   pathname: "/bank", 
+                        //   state: {from: "/", mode: "edit", _id} 
+                        // });
+
+                        navigate("/bank", {state: {from: "/", mode: "edit", _id}})
                       }}>{t("edit")}</button>
                       <button onClick={(e)=>{
                         // setOpenDialogDelete({ isOpen: true, id: _id, description: name })
@@ -206,12 +208,12 @@ const BanksPage = (props) => {
         sx={{ position: 'absolute', bottom: 16, right: 16 }}
         icon={<SpeedDialIcon />}
         onClick={(e)=>{
-          // history.push("/bank/new");
 
-          history.push({ 
-            pathname: "/bank", 
-            state: {from: "/", mode: "new"} 
-          });
+          // history.push({ 
+          //   pathname: "/bank", 
+          //   state: {from: "/", mode: "new"} 
+          // });
+          navigate("/bank", {state: {from: "/", mode: "new"} })
         }}
       />
     </UserListContainer>

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import 'react-toastify/dist/ReactToastify.css';
@@ -22,9 +22,9 @@ import Table from "./TableContainer"
 import ReadMoreMaster from "./ReadMoreMaster"
 
 const SupplierProfilePage = (props) => {
-    let history = useHistory();
-    let location = useLocation();
-    let { t } = useTranslation();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { t } = useTranslation();
 
     let [pageOptions, setPageOptions] = useState([30, 50, 100]);  
     let [pageIndex, setPageIndex]     = useState(0);  
@@ -36,7 +36,8 @@ const SupplierProfilePage = (props) => {
 
     console.log("params :", params)
     if(_.isEmpty(params.u)){
-        history.push({ pathname: "/" });
+        // history.push({ pathname: "/" });
+        navigate(-1)
         return;
     }
 
@@ -106,12 +107,16 @@ const SupplierProfilePage = (props) => {
                         let {_id, title} = props.row.original
                         return ( <div style={{ position: "relative" }} 
                                     onClick={()=>{
-                                    history.push({
+                                    // history.push({
+                                    //     pathname: "/p",
+                                    //     search: `?id=${_id}`,
+                                    //     state: { id: _id }
+                                    // });
+                                    navigate({
                                         pathname: "/p",
-                                        search: `?id=${_id}`,
-                                        // hash: "#react",
+                                        search: `?${createSearchParams({ id: _id})}`,
                                         state: { id: _id }
-                                    });
+                                      })
                                     }}>{title}</div> );
                     }
                 },
