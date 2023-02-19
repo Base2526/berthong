@@ -1,14 +1,12 @@
 const cron = require('node-cron');
-import _ from "lodash";
-// import deepdash from "deepdash";
+// import _ from "lodash";
+// import moment from "moment"
+import { Supplier} from './model'
+import pubsub from './pubsub'
+import { checkBalance, checkBalanceBook } from './utils'
 
-import moment from "moment"
-
-// deepdash(_);
-
-import { User, Supplier, Bank, Role, Deposit, Withdraw, DateLottery, Transition } from './src/model'
-import pubsub from './src/pubsub'
-import { checkBalance, checkBalanceBook } from './src/utils'
+const _ = require('lodash');
+const moment = require('moment');
 
 cron.schedule('*/2 * * * *', async() => {
   console.log('Run task every minute #1 :', new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));

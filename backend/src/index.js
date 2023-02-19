@@ -14,7 +14,7 @@ import resolvers from "./resolvers";
 import pubsub from './pubsub'
 
 require('./mongo');
-require('../cron-jobs.js');
+require('./cron-jobs.js');
 
 const path = require('path');
 
