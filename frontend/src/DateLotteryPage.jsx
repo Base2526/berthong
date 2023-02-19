@@ -1,8 +1,8 @@
-import React , {useState} from "react";
+import React , {useState, useEffect} from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 import CircularProgress from '@mui/material/CircularProgress';
 import DatePicker from "react-datepicker";
@@ -16,14 +16,23 @@ let editValues = undefined;
 let initValues =  { mode: "NEW",  title : "", startDate: null, endDate: null, description: "" }
 
 const DateLotteryPage = (props) => {
-  let location = useLocation();
-  let history = useHistory();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [input, setInput] = useState(initValues)
+  let [data, setData] = useState(initValues)
 
   let { mode, _id } = location.state
 
   console.log("mode, id :", mode, _id)
+
+  const { loading: loadingDateLotteryById, 
+          data: dataDateLotteryById, 
+          error: errorDateLotteryById,
+          refetch: refetchDateLotteryById} = useQuery(queryDateLotteryById, {
+                                    // variables: {id: _id},
+                                    notifyOnNetworkStatusChange: true,
+                                  });
 
   const [onMutationDateLottery, resultMutationDateLotteryValues] = useMutation(mutationDateLottery
     , {
@@ -70,7 +79,8 @@ const DateLotteryPage = (props) => {
 
         },
         onCompleted({ data }) {
-          history.goBack();
+          // history.goBack();
+          navigate(-1);
         },
         onError({error}){
           console.log("error :", error)
@@ -78,7 +88,24 @@ const DateLotteryPage = (props) => {
       }
   );
 
-  console.log("resultMutationDateLotteryValues :", resultMutationDateLotteryValues)
+  // console.log("resultMutationDateLotteryValues :", resultMutationDateLotteryValues)
+
+  useEffect(()=>{
+    if(mode == "edit" && _id){
+      refetchDateLotteryById({id: _id});
+    }
+  }, [_id])
+
+  useEffect(()=>{
+    if(mode == "edit"){
+      if (dataDateLotteryById) {
+        let { status, data } = dataDateLotteryById.dateLotteryById
+        if(status){
+          setData(data)
+        }
+      }
+    }
+  }, [dataDateLotteryById])
 
   switch(mode){
     case "new":{
@@ -87,29 +114,38 @@ const DateLotteryPage = (props) => {
     }
 
     case "edit":{
-      editValues = useQuery(queryDateLotteryById, {
-        variables: {id: _id},
-        notifyOnNetworkStatusChange: true,
-      });
+      // editValues = useQuery(queryDateLotteryById, {
+      //   variables: {id: _id},
+      //   notifyOnNetworkStatusChange: true,
+      // });
      
       console.log("editValues : ", editValues, input)
 
       if(_.isEqual(input, initValues)) {
-        if(!_.isEmpty(editValues)){
-          let {loading}  = editValues
+        // if(!_.isEmpty(editValues)){
+        //   let {loading}  = editValues
           
-          if(!loading){
-            let {status, data} = editValues.data.dateLotteryById
+        //   if(!loading){
+        //     let {status, data} = editValues.data.dateLotteryById
 
-            if(status){
-              setInput({
+        //     if(status){
+        //       setInput({
+        //         title: data.title,
+        //         startDate: new Date(data.startDate),
+        //         endDate: new Date(data.endDate),
+        //         description: data.description
+        //       })
+        //     }
+        //   }
+        // }
+
+        if(!loadingDateLotteryById){
+          setInput({
                 title: data.title,
                 startDate: new Date(data.startDate),
                 endDate: new Date(data.endDate),
                 description: data.description
               })
-            }
-          }
         }
       }
       break;

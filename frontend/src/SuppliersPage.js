@@ -1,8 +1,7 @@
-import { Link } from "react-router-dom";
-import { useState, useCallback, useMemo, useRef  } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import Box from "@mui/material/Box";
 import { useQuery, useMutation } from "@apollo/client";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -15,8 +14,6 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import Lightbox from "react-image-lightbox";
 import "react-image-lightbox/style.css";
-import SpeedDialAction from '@mui/material/SpeedDialAction';
-import AddIcCallIcon from '@mui/icons-material/AddIcCall';
 import { connect } from "react-redux";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
@@ -24,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import "react-image-lightbox/style.css";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import Avatar from "@mui/material/Avatar";
+import moment from "moment";
 
 import { getHeaders, checkRole } from "./util"
 import { querySuppliers } from "./gqlQuery"
@@ -32,8 +30,8 @@ import Table from "./TableContainer"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 
 const SuppliersPage = (props) => {
-  let history = useHistory();
-  let location = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   let { user } = props
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
@@ -42,6 +40,7 @@ const SuppliersPage = (props) => {
   const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
+  let [data, setData] = useState([]);
   /*
   const [onDeletePhone, resultDeletePhone] = useMutation(gqlDeletePhone, {
     context: { headers: getHeaders() },
@@ -70,9 +69,25 @@ const SuppliersPage = (props) => {
   
   */
 
-  const suppliersValue = useQuery(querySuppliers, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
+  // const suppliersValue = useQuery(querySuppliers, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
 
-  console.log("suppliersValue :", suppliersValue)
+  const { loading: loadingSuppliers, 
+          data: dataSuppliers, 
+          error: errorSuppliers, 
+          subscribeToMore, 
+          networkStatus } = useQuery( querySuppliers, { 
+                                      context: { headers: getHeaders(location) }, 
+                                      fetchPolicy: 'network-only', 
+                                      notifyOnNetworkStatusChange: true});
+
+  useEffect(() => {
+    if (dataSuppliers) {
+      let { status, data } = dataSuppliers.suppliers
+      if(status){
+        setData(data)
+      }
+    }
+  }, [dataSuppliers])
 
   ///////////////
   const fetchData = useCallback(({ pageSize, pageIndex }) => {
@@ -146,12 +161,16 @@ const SuppliersPage = (props) => {
                   let {_id, title} = props.row.original
                   return ( <div style={{ position: "relative" }} 
                             onClick={()=>{
-                              history.push({
+                              // history.push({
+                              //   pathname: "/p",
+                              //   search: `?id=${_id}`,
+                              //   state: { id: _id }
+                              // });
+                              navigate({
                                 pathname: "/p",
-                                search: `?id=${_id}`,
-                                // hash: "#react",
+                                search: `?${createSearchParams({ id: _id})}`,
                                 state: { id: _id }
-                              });
+                              })
                             }}>{title}</div> );
               }
             },
@@ -203,11 +222,16 @@ const SuppliersPage = (props) => {
 
                 console.log("props.row.original",  props.row.original)
                 return <div onClick={()=>{
-                  history.push({ 
-                    pathname: "/profile", 
-                    search: `?u=${ownerId}`,
-                    // state: {from: "/", mode: "edit", id: _id } 
-                  });
+                  // history.push({ 
+                  //   pathname: "/profile", 
+                  //   search: `?u=${ownerId}`,
+                  //   // state: {from: "/", mode: "edit", id: _id } 
+                  // });
+
+                  navigate({
+                    pathname: "/profile",
+                    search: `?${createSearchParams({ u: ownerId})}`
+                  })
                 }}>{ownerName}</div>
               }
             },
@@ -223,15 +247,26 @@ const SuppliersPage = (props) => {
               }
             },
             {
+              Header: 'Created at',
+              accessor: 'createdAt',
+              Cell: props => {
+                let {createdAt} = props.row.values
+                createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+      
+                return <div>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
+              }
+            },
+            {
               Header: 'Action',
               Cell: props => {
                 let {_id, description} = props.row.original
                 return  <div className="Btn--posts">
                             <button onClick={(evt)=>{
-                              history.push({ 
-                                pathname: "/supplier", 
-                                state: {from: "/", mode: "edit", id: _id } 
-                              });
+                              // history.push({ 
+                              //   pathname: "/supplier", 
+                              //   state: {from: "/", mode: "edit", id: _id } 
+                              // });
+                              navigate("/supplier", {state: {from: "/", mode: "edit", id: _id} })
                             }}><EditIcon/>{t("edit")}</button>
                             <button onClick={(e)=>{
                               setOpenDialogDelete({ isOpen: true, id: _id, description });
@@ -292,12 +327,17 @@ const SuppliersPage = (props) => {
                   let {_id, title} = props.row.original
                   return ( <div style={{ position: "relative" }} 
                             onClick={()=>{
-                              history.push({
+                              // history.push({
+                              //   pathname: "/p",
+                              //   search: `?id=${_id}`,
+                              //   // hash: "#react",
+                              //   state: { id: _id }
+                              // });
+                              navigate({
                                 pathname: "/p",
-                                search: `?id=${_id}`,
-                                // hash: "#react",
+                                search: `?${createSearchParams({ id: _id})}`,
                                 state: { id: _id }
-                              });
+                              })
                             }}>{title}</div> );
               }
             },
@@ -344,15 +384,27 @@ const SuppliersPage = (props) => {
               }
             },
             {
+              Header: 'Created at',
+              accessor: 'createdAt',
+              Cell: props => {
+                let {createdAt} = props.row.values
+                createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+      
+                return <div>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
+              }
+            },
+            
+            {
               Header: 'Action',
               Cell: props => {
                 let {_id, description} = props.row.original
                 return  <div className="Btn--posts">
                             <button onClick={(evt)=>{
-                              history.push({ 
-                                pathname: "/supplier", 
-                                state: {from: "/", mode: "edit", id: _id } 
-                              });
+                              // history.push({ 
+                              //   pathname: "/supplier", 
+                              //   state: {from: "/", mode: "edit", id: _id } 
+                              // });
+                              navigate("/supplier", {state: {from: "/", mode: "edit", id: _id} })
                             }}><EditIcon/>{t("edit")}</button>
                             <button onClick={(e)=>{
                               setOpenDialogDelete({ isOpen: true, id: _id, description });
@@ -398,11 +450,11 @@ const SuppliersPage = (props) => {
   return (<div className="pl-2 pr-2">
             <Box style={{ flex: 4 }} className="table-responsive">
               {
-                suppliersValue.loading
-                ? <div><CircularProgress /></div> 
+                loadingSuppliers
+                ? <CircularProgress />
                 : <Table
                   columns={columns}
-                  data={suppliersValue.data.suppliers.data}
+                  data={data}
                   fetchData={fetchData}
                   rowsPerPage={pageOptions}
                   updateMyData={updateMyData}
@@ -468,7 +520,9 @@ const SuppliersPage = (props) => {
                 ariaLabel="SpeedDial basic example"
                 sx={{ position: 'absolute', bottom: 16, right: 16 }}
                 icon={<SpeedDialIcon />}
-                onClick={(e)=>{ history.push({ pathname: "/supplier", state: {from: "/", mode: "new"} }) }}>
+                onClick={(e)=>{ 
+                  navigate("/supplier", {state: {from: "/", mode: "new"} })
+                }}>
               </SpeedDial>
             </Box>
           </div>);

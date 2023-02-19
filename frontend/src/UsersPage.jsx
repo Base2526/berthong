@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
-import { useLocation, useHistory } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -26,8 +26,8 @@ import { getHeaders } from "./util"
 export const UserListContainer = styled.div`flex: 4;`;
 
 const UsersPage = (props) => {
-  let history = useHistory();
-  let location = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
 
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
@@ -122,10 +122,15 @@ const UsersPage = (props) => {
         Cell: props => {
           let {_id, displayName} = props.row.original
           return  <div onClick={()=>{
-                      history.push({ 
-                        pathname: "/user", 
+                      // history.push({ 
+                      //   pathname: "/user", 
+                      //   state: {from: "/", mode: "edit", id: _id } 
+                      // });
+
+                      navigate({
+                        pathname: "/user",
                         state: {from: "/", mode: "edit", id: _id } 
-                      });
+                      })
                     }}>{displayName}</div>
         }
       },
@@ -174,10 +179,15 @@ const UsersPage = (props) => {
                       console.log("Force logout")
                     }}><ExitToAppIcon />Force logout</button>
                     <button onClick={()=>{
-                      history.push({ 
-                        pathname: "/user", 
+                      // history.push({ 
+                      //   pathname: "/user", 
+                      //   state: {from: "/", mode: "edit", id: _id } 
+                      // });
+
+                      navigate({
+                        pathname: "/user",
                         state: {from: "/", mode: "edit", id: _id } 
-                      });
+                      })
                     }}><EditIcon/>{t("edit")}</button>
                     <button onClick={(e)=>{
                       setOpenDialogDelete({ isOpen: true, id: _id, description: displayName });
@@ -275,10 +285,14 @@ const UsersPage = (props) => {
           sx={{ position: 'absolute', bottom: 16, right: 16 }}
           icon={<SpeedDialIcon />}
           onClick={(e)=>{
-            history.push({ 
-              pathname: "/user", 
+            // history.push({ 
+            //   pathname: "/user", 
+            //   state: {from: "/", mode: "new" } 
+            // });
+            navigate({
+              pathname: "/user",
               state: {from: "/", mode: "new" } 
-            });
+            })
           }}/>
       </UserListContainer>
     </div>

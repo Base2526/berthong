@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Redirect, Link, Switch, Route, useRouteMatch } from "react-router-dom";
+import { Navigate, Routes, Route } from "react-router-dom";
 import { connect } from "react-redux";
 import _ from "lodash"
 
@@ -19,54 +19,24 @@ import DateLotterysPage from "./DateLotterysPage"
 import DateLotteryPage from "./DateLotteryPage"
 
 const PrivatePage =(props) => {
-  let { path, url } = useRouteMatch();
+//   let { path, url } = useRouteMatch();
 
   return !_.isEmpty(props.user)
-        ?   <Switch>
-                <Route path="/me">
-                    <MePage />
-                </Route>
-                <Route path="/deposits">
-                    <DepositsPage />
-                </Route>
-                <Route path="/deposit">
-                    <DepositPage />
-                </Route>
-                <Route path="/withdraws">
-                    <WithdrawsPage />
-                </Route>
-                <Route path="/withdraw">
-                    <WithdrawPage />
-                </Route>
-                <Route path="/banks">
-                    <BanksPage />
-                </Route>
-                <Route path="/bank">
-                    <BankPage />
-                </Route>
-                <Route path="/history-transitions">
-                    <HistoryTransitionsPage />
-                </Route>
-                <Route path="/me+bank">
-                    <ProfileBankPage />
-                </Route>
-                <Route path="/users">
-                    <UsersPage />
-                </Route>
-                <Route path="/user">
-                    <UserPage />
-                </Route>
-                <Route path="/book+buys">
-                    <BookBuysPage />
-                </Route>
-
-                <Route path="/date-lotterys">
-                    <DateLotterysPage />
-                </Route>
-
-                <Route path="/date-lottery">
-                    <DateLotteryPage />
-                </Route>
+        ?   <Routes>
+                <Route path="/me" element={<MePage />} />
+                <Route path="/deposits" element={<DepositsPage />} />
+                <Route path="/deposit" element={<DepositPage />} />
+                <Route path="/withdraws" element={<WithdrawsPage />} />
+                <Route path="/withdraw" element={<WithdrawPage />} />
+                <Route path="/banks" element={<BanksPage />} />
+                <Route path="/bank" element={<BankPage />} />
+                <Route path="/history-transitions" element={<HistoryTransitionsPage />} />
+                <Route path="/me+bank" element={<ProfileBankPage />} />
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/user" element={<UserPage />} />
+                <Route path="/book+buys" element={<BookBuysPage />} />
+                <Route path="/date-lotterys" element={<DateLotterysPage />} />
+                <Route path="/date-lottery" element={<DateLotteryPage />} />
 
                 {/*
                 <Route path="/user/:id/edit">
@@ -186,9 +156,8 @@ const PrivatePage =(props) => {
                 <Route path="/contact-us-list">
                     <ContactUsList />
                 </Route> */}
-            </Switch>
-        :   <Redirect to="/" />
-  
+            </Routes>
+        : <Route path="*" element={<Navigate to="/" replace />} />
 }
 
 const mapStateToProps = (state, ownProps) => {

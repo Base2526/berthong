@@ -49,12 +49,15 @@ export default {
           console.log("ping other")
         }
 
+        /*
 
         //////////////// clear book ////////////////
         let suppliers = await Supplier.find({buys: {$elemMatch:{selected: 0}}});
         await Promise.all(_.map(suppliers, async(supplier)=>{
                               let { buys } = supplier
                               
+                              let users = [];
+
                               let newBuys = _.transform(
                                 buys,
                                 (result, n) => {
@@ -66,6 +69,8 @@ export default {
                                   
                                   if( duration.asMinutes() <= 1 || n.selected == 1) {
                                     result.push(n);
+                                  }else{
+                                    users.push(n.userId)
                                   }
                                 },
                                 []
@@ -87,11 +92,19 @@ export default {
                                   suppliers: { mutation: "AUTO_CLEAR_BOOK", data: newSupplier },
                                 });
 
-                                console.log("SUPPLIER_BY_ID, SUPPLIERS")
-                             
+                                console.log("ping :AUTO_CLEAR_BOOK AUTO_CLEAR_BOOK ", newSupplier)
+
+                                if(!_.isEmpty(users)){
+                                  _.map(_.uniqWith(users, _.isEqual), async(userId)=>{
+                                    pubsub.publish("ME", {
+                                      me: { mutation: "BOOK", data: {userId, data: { balance: (await checkBalance(userId)).balance , balanceBook: await checkBalanceBook(userId) } } },
+                                    });
+                                  })
+                                }
                               }
                           }))
         //////////////// clear book ////////////////
+        */
 
         return { status:true }
       } catch(err) {
@@ -108,6 +121,10 @@ export default {
 
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
+
+        if( !status ){
+          return { status:false, executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+        }
 
         let user = await User.findById(current_user?._id)
         user = {...user._doc, 
@@ -203,47 +220,6 @@ export default {
       }
     },
 
-    /*
-    async homes(parent, args, context, info){
-      let start = Date.now()
-
-      try{
-        // let { status, code, currentUser } = context 
-        console.log("homes context :", context)
-
-        let { req } = context
-
-        ///////////////////////////
-        let authorization = await checkAuthorization(req);
-        let { status, code, current_user } =  authorization
-
-        // if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
-        //   return {  status:true,
-        //             data: await Supplier.find({}),
-        //             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-        // }
-        let suppliers = await Supplier.find({})
-        let homes = await Promise.all(_.map(suppliers, async(item)=>{
-          return {...item._doc, ownerName: (await User.findById(item.ownerId))?.displayName}
-        }))
-
-        return {  
-                status: true,
-                data: homes,
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
-              }
-      } catch(err) {
-        logger.error(err.toString());
-        console.log("getSuppliers err :", err.toString())
-        return {  
-                status:false,
-                message: err.toString(),
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
-              }
-      }
-    },
-    */
-
     async suppliers(parent, args, context, info){
       let start = Date.now()
 
@@ -260,9 +236,11 @@ export default {
         switch(pathname){
           case undefined:
           case "/":{
-            let suppliers = await Supplier.find({});
+
+            let suppliers = await Supplier.find({}).limit(20);
             suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-              return {...item._doc, ownerName: (await User.findById(item.ownerId))?.displayName}
+              let user = (await User.findById(item.ownerId));
+              return {...item._doc,  owner: user?._doc }
             }))
 
             return {  
@@ -278,7 +256,8 @@ export default {
               let suppliers = await Supplier.find({});
     
               suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-                            return {...item._doc, ownerName: (await User.findById(item.ownerId))?.displayName}
+                            let user = (await User.findById(item.ownerId));
+                            return {...item._doc, owner: user?._doc}
                           }))
     
               return {  status: true,
@@ -286,9 +265,14 @@ export default {
                         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
             }
 
+            let suppliers = await Supplier.find({ownerId: current_user?._id});
+            suppliers = await Promise.all(_.map(suppliers, async(item)=>{
+                          return {...item._doc, owner: current_user?._doc}
+                        }))
+
             return {  
               status: true,
-              data: await Supplier.find({ownerId: current_user?._id}),
+              data: suppliers,
               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
             }
           }
@@ -336,16 +320,21 @@ export default {
     async deposits(parent, args, context, info){
       let start = Date.now()
       try{
-        console.log("deposit :", args)
+        
         let { req } = context
         ///////////////////////////
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
         //////////////////////////
 
+        console.log("deposit :", args)
         if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
-          return {  status:true,
-                    data: await Deposit.find({status: "wait"}),
+
+          let deposits = await Deposit.find({status: "wait"})
+          deposits = _.orderBy(deposits, i => i.updatedAt, 'desc');
+
+          return {  status: true,
+                    data: deposits,
                     executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
         }
 
@@ -406,8 +395,10 @@ export default {
         let { status, code, current_user } =  authorization
 
         if(_.includes( current_user?.roles, "62a2ccfbcf7946010d3c74a2")){
-          return {  status:true,
-                    data: await Withdraw.find({status: "wait"}),
+          let withdraws = await Withdraw.find({status: "wait"})
+
+          return {  status: true,
+                    data: _.orderBy(withdraws, i => i.updatedAt, 'desc'),
                     executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
         }
         let withdraws = await Withdraw.find({userIdRequest: current_user?._id})
@@ -565,7 +556,7 @@ export default {
         //////////////////////////
 
         return {  status:true,
-                  admin_banks : (await User.findById(mongoose.Types.ObjectId("62a2f65dcf7946010d3c7511")))?.banks,
+                  admin_banks : (await User.findById(mongoose.Types.ObjectId("62a2c0cecf7946010d3c743f")))?.banks,
                   banks: await Bank.find({}),
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
@@ -595,8 +586,10 @@ export default {
                         let supplier = await Supplier.findById(transition.refId)
 
                         let { buys } = supplier
-                        let book  = _.filter(buys, buy=>buy.userId == current_user?._id  && buy.selected == 0)
-                        let buy  = _.filter(buys, buy=>buy.userId == current_user?._id  && buy.selected == 1)
+                        let book  = _.filter(buys, buy=> _.isEqual(buy.userId, current_user?._id)  && buy.selected == 0)
+                        let buy  = _.filter(buys, buy=>_.isEqual(buy.userId, current_user?._id)  && buy.selected == 1)
+
+                        // console.log("book, buy :", book.length, buy.length, transition._id, current_user?._id)
 
                         return book.length > 0 || buy.length > 0 ? {...transition._doc, ...supplier._doc } : null
                       })), item=>!_.isNull(item) ) 
@@ -1349,18 +1342,19 @@ export default {
         let supplier = await Supplier.findById(supplierId);
 
         if(supplier){
-          if(_.isNull(await Transition.findOne({ refId: supplier?._id, userId: current_user?._id }))){
-            await Transition.create( {type: "supplier",  refId: supplier?._id,  userId: current_user?._id,  status: "success"} )
+          if(_.isNull(await Transition.findOne({ refId: supplier?._id, userId: current_user?._id}))){
+            await Transition.create( {type: "supplier", refId: supplier?._id, userId: current_user?._id, status: "success"} )
           }
 
           let { buys } = supplier
-
           if(selected == 0){
-            if( _.isEmpty( _.find(buys, (buy)=> buy.itemId == itemId ) ) ){
-              await Supplier.updateOne(
+            if( _.isEmpty( _.find(buys, (buy)=> buy.itemId == itemId && buy.userId == current_user?._id ) ) ){
+              let checkupdate = await Supplier.updateOne(
                                     { _id: supplierId }, 
-                                    {...supplier._doc, buys: [...buys, {userId: current_user?._id.toString(), itemId, selected}] } );
+                                    {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, selected}] } );
 
+              console.log("check update :", checkupdate, supplierId);
+                
               let newSupplier = await Supplier.findById(supplierId)
               pubsub.publish("SUPPLIER_BY_ID", {
                 supplierById: { mutation: "BOOK", data: newSupplier },
@@ -1383,7 +1377,7 @@ export default {
           }else{
             await Supplier.updateOne(
             { _id: supplierId }, 
-            {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId ) },  );
+            {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id ) },  );
 
             let newSupplier = await Supplier.findById(supplierId)
             pubsub.publish("SUPPLIER_BY_ID", {
@@ -1469,41 +1463,57 @@ export default {
             console.log("createSupplier : ", input, current_user, current_user?._id )
 
             let newFiles = [];
-            if(!_.isEmpty(input.files)){
-              for (let i = 0; i < input.files.length; i++) {
-                const { createReadStream, filename, encoding, mimetype } = (await input.files[i]).file //await input.files[i];
-    
-                const stream = createReadStream();
-                const assetUniqName = fileRenamer(filename);
-                let pathName = `/app/uploads/${assetUniqName}`;
-      
-                const output = fs.createWriteStream(pathName)
-                stream.pipe(output);
-      
-                await new Promise(function (resolve, reject) {
-                  output.on('close', () => {
-                    resolve();
-                  });
+            if(!input.auto){
+              if(!_.isEmpty(input.files)){
             
-                  output.on('error', (err) => {
-                    logger.error(err.toString());
+                for (let i = 0; i < input.files.length; i++) {
+                  const { createReadStream, filename, encoding, mimetype } = (await input.files[i]).file //await input.files[i];
       
-                    reject(err);
+                  const stream = createReadStream();
+                  const assetUniqName = fileRenamer(filename);
+                  let pathName = `/app/uploads/${assetUniqName}`;
+        
+                  const output = fs.createWriteStream(pathName)
+                  stream.pipe(output);
+        
+                  await new Promise(function (resolve, reject) {
+                    output.on('close', () => {
+                      resolve();
+                    });
+              
+                    output.on('error', (err) => {
+                      logger.error(err.toString());
+        
+                      reject(err);
+                    });
                   });
-                });
-      
-                const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
-                newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+        
+                  const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+                  newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+                }
+              }
+
+              let supplier = await Supplier.create({ ...input, files:newFiles, ownerId: current_user?._id });
+            
+              return {
+                status: true,
+                mode: input.mode.toLowerCase(),
+                data: supplier,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+              }
+            }else{
+              let supplier = await Supplier.create({ ...input, ownerId: current_user?._id });
+              return {
+                status: true,
+                mode: input.mode.toLowerCase(),
+                data: supplier,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
               }
             }
-            let supplier = await Supplier.create({ ...input, files:newFiles, ownerId: current_user?._id });
             
-            return {
-              status: true,
-              mode: input.mode.toLowerCase(),
-              data: supplier,
-              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-            }
+            
+            
+            
           }
 
           case "edit":{
@@ -1601,6 +1611,8 @@ export default {
 
         let authorization = await checkAuthorization(req);
         let { status, code, current_user } =  authorization
+
+        console.log("deposit current_user :", current_user?._id)
 
         switch(input.mode.toLowerCase()){
           case "new":{
@@ -2143,7 +2155,16 @@ export default {
 
           let {mutation, data} = payload.suppliers
 
-          return _.includes( JSON.parse(variables.supplierIds), data._id.toString());
+          switch(mutation){
+            case "BOOK":
+            case "UNBOOK":
+            case "AUTO_CLEAR_BOOK":
+              {
+                return _.includes(JSON.parse(variables.supplierIds), data._id.toString())
+              }
+          }
+
+          return false;
         }
       )
     },

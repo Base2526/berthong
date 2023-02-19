@@ -1,8 +1,8 @@
-import React , {useState} from "react";
+import React , {useEffect, useState} from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -14,14 +14,21 @@ let editValues = undefined;
 let initValues =  { mode: "NEW",  name : "",  description: "" }
 
 const BankPage = (props) => {
-  let location = useLocation();
-  let history = useHistory();
-
-  const [input, setInput] = useState(initValues)
-
-  let { mode, _id } = location.state
+  const location = useLocation();
+  const navigate = useNavigate();
+  let [input, setInput] = useState(initValues)
+  let [data, setData] = useState(initValues)
+  const { mode, _id } = location.state
 
   console.log("mode, id :", mode, _id)
+
+  const { loading: loadingBankById, 
+          data: dataBankById, 
+          error: errorBankById,
+          refetch: refetchBankById} = useQuery(queryBankById, {
+                                    // variables: {id: _id},
+                                    notifyOnNetworkStatusChange: true,
+                                  });
 
   const [onMutationBank, resultMutationBankValues] = useMutation(mutationBank
     , {
@@ -64,12 +71,28 @@ const BankPage = (props) => {
           ////////// update cache queryBankById ///////////
         },
         onCompleted({ data }) {
-          history.goBack();
+          navigate(-1)
         }
       }
   );
+  // console.log("resultMutationBankValues :", resultMutationBankValues)
 
-  console.log("resultMutationBankValues :", resultMutationBankValues)
+  useEffect(()=>{
+    if(mode == "edit" && _id){
+      refetchBankById({id: _id});
+    }
+  }, [_id])
+
+  useEffect(()=>{
+    if(mode == "edit"){
+      if (dataBankById) {
+        let { status, data } = dataBankById.bankById
+        if(status){
+          setData(data)
+        }
+      }
+    }
+  }, [dataBankById])
 
   switch(mode){
     case "new":{
@@ -78,27 +101,31 @@ const BankPage = (props) => {
     }
 
     case "edit":{
-      editValues = useQuery(queryBankById, {
-        variables: {id: _id},
-        notifyOnNetworkStatusChange: true,
-      });
+      // editValues = useQuery(queryBankById, {
+      //   variables: {id: _id},
+      //   notifyOnNetworkStatusChange: true,
+      // });
      
-      console.log("editValues : ", editValues, input)
+      // console.log("editValues : ", editValues, input)
 
-      if(_.isEqual(input, initValues)) {
-        if(!_.isEmpty(editValues)){
-          let {loading}  = editValues
+      // if(_.isEqual(input, initValues)) {
+      //   if(!_.isEmpty(editValues)){
+      //     let {loading}  = editValues
           
-          if(!loading){
-            let {status, data} = editValues.data.bankById
-            if(status){
-              setInput({
-                name: data.name,
-                description: data.description
-              })
-            }
-          }
-        }
+      //     if(!loading){
+      //       let {status, data} = editValues.data.bankById
+      //       if(status){
+      //         setInput({
+      //           name: data.name,
+      //           description: data.description
+      //         })
+      //       }
+      //     }
+      //   }
+      // }
+
+      if(!loadingBankById){
+        setInput({ name: data.name, description: data.description })
       }
       break;
     }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { styled } from "@mui/material/styles";
@@ -42,11 +42,10 @@ let initValues =  {
 }
 
 const UserPage = (props) => {
-  let history = useHistory();
-  let location = useLocation();
-  let { t } = useTranslation();
-
-  let { user } = props
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
+  const { user } = props
 
   let [snackbar, setSnackbar] = useState({open:false, message:""});
   let [input, setInput]       = useState(initValues);
@@ -101,12 +100,14 @@ const UserPage = (props) => {
     onCompleted({ data }) {
       switch(checkRole(user)){
         case AMDINISTRATOR:{
-          history.push("/users")
+          // history.push("/users")
+          navigate("/users")
           break
         }
 
         case AUTHENTICATED:{
-          history.goBack()
+          // history.goBack()
+          navigate(-1)
           break;
         }
       }

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback  } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ToastContainer, toast } from 'react-toastify';
 import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
 import 'react-toastify/dist/ReactToastify.css';
 import _ from "lodash"
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
@@ -19,36 +20,66 @@ import { queryWithdrawById, mutationWithdraw, queryBanks, queryWithdraws} from "
 import { logout } from "./redux/actions/auth"
 import { AMDINISTRATOR } from "./constants"
 
-let initValues = { bank: null,  balance: "", status: "wait" }
-
-/*
-bankId : "630a0c3ee0359b0140ea2ce4"
-bankNumber : "88822212"
-_id : "63d3b6155e0c230029c57274"
-*/
+let initValues = { _id: "", bank: null,  balance: "", status: "wait" }
 
 const WithdrawPage = (props) => {
-  let history = useHistory();
-  let location = useLocation();
-  let { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
   let [snackbar, setSnackbar] = useState({open:false, message:""});
   let [input, setInput]       = useState(initValues);
   let [error, setError]       = useState(initValues);
 
   const [inputList, setInputList] = useState([]);
 
+  const [banks, setBanks] = useState([]);
+
   let { user, logout } = props
   let { mode, id } = location.state
 
-  console.log("location.state : ", location.state)
+  const { loading: loadingBanks, 
+          data: dataBanks, 
+          error: errorBanks} = useQuery(queryBanks, { notifyOnNetworkStatusChange: true, });
 
-  let valueBanks = useQuery(queryBanks, { notifyOnNetworkStatusChange: true, });
+  const { loading: loadingWithdrawById, 
+          data: dataWithdrawById, 
+          error: errorWithdrawById,
+          refetch: refetchWithdrawById} = useQuery(queryWithdrawById, {
+                                                    context: { headers: getHeaders(location) },
+                                                    // variables: {id},
+                                                    notifyOnNetworkStatusChange: true,
+                                                  });
+  
+  useEffect(()=>{
+    if (dataBanks) {
+      let { status, data } = dataBanks.banks
+      if(status){
+        setBanks(data)
+      }
+    }
+  }, [dataBanks, loadingBanks])
 
-  console.log("valueBanks :", valueBanks)
+  useEffect(()=>{
+    if(mode == "edit" && id){
+      refetchWithdrawById({id});
+    }
+  }, [id])
 
-  let editValues = null;
-
-  // console.log("user :", user)
+  useEffect(()=>{
+    if(mode == "edit"){
+      if (dataWithdrawById) {
+        let { status, data } = dataWithdrawById.withdrawById
+        if(status){
+          setInput({
+            _id: data._id,
+            bank: data.bank[0],  
+            balance: data.balance,
+            status: data.status
+          })
+        }
+      }
+    }
+  }, [dataWithdrawById, loadingWithdrawById])
 
   const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
     context: { headers: getHeaders(location) },
@@ -111,7 +142,8 @@ const WithdrawPage = (props) => {
       }
     },
     onCompleted({ data }) {
-      history.goBack();
+      // history.goBack();
+      navigate(-1)
     },
     onError({error}){
       console.log("onError :")
@@ -142,8 +174,9 @@ const WithdrawPage = (props) => {
     }
 
     if(mode == "edit"){
-      newInput = {...newInput, _id: editValues.data.withdrawById.data._id}
+      newInput = {...newInput, _id: input?._id}
     }
+
     onMutationWithdraw({ variables: { input: newInput } });
   }
 
@@ -173,7 +206,11 @@ const WithdrawPage = (props) => {
         }
         case "balance": {
           if (!value) {
-            stateObj[name] = "Please enter Balance.";
+            stateObj[name] = "Please enter balance.";
+          }else if(value > user.balance - user.balanceBook){
+            // console.log("balance :", value > user.balance - user.balanceBook, value , user.balance - user.balanceBook, user.balanceBook, user.balance )
+          
+            stateObj[name] = "Please enter cannot balance.";
           }
           break;
         }
@@ -206,21 +243,35 @@ const WithdrawPage = (props) => {
           }
   }
 
+  const defaultValue = () =>{
+    if(_.isEmpty(input?.bank)){
+      return null
+    } 
+
+    let x = _.find(user?.banks, bank=>{
+      console.log("defaultValue #1:", user?.banks, bank.bankId, input.bank?.bankId)
+      return bank.bankId == input.bank?.bankId
+    })
+    console.log("defaultValue #2:", x)
+
+    return x
+  }
+
   switch(mode){
     case "new":{
       return  <LocalizationProvider dateAdapter={AdapterDateFns} >
                 <Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }}  onSubmit={submitForm}>
                   <div>
                     {
-                      valueBanks.loading
-                      ? <CircularProgress /> 
+                      loadingBanks
+                      ? <LinearProgress /> 
                       : <Autocomplete
                           disablePortal
                           id="bank-id"
                           options={user.banks}
                           getOptionLabel={(option) => {
                             console.log("getOptionLabel :", option)
-                            let find = _.find(valueBanks.data.banks.data, (item)=>item._id.toString() == option.bankId.toString())   
+                            let find = _.find(banks, (item)=>item._id.toString() == option.bankId.toString())   
                             return option.bankNumber +" - "+find.name
                           }}
                           defaultValue={ input.bank }
@@ -244,6 +295,7 @@ const WithdrawPage = (props) => {
                       helperText={ _.isEmpty(error.balance) ? "" : error.balance }
                       error={_.isEmpty(error.balance) ? false : true}/>
                   </div>
+                  <div>ยอดที่สามารถถอดได้ { user.balance - input.balance - user.balanceBook } บาท</div>
                   <Button type="submit" variant="contained" color="primary">
                       {t("withdraw")}
                   </Button>
@@ -252,52 +304,54 @@ const WithdrawPage = (props) => {
     }
 
     case "edit":{
-      editValues = useQuery(queryWithdrawById, {
-                        context: { headers: getHeaders(location) },
-                        variables: {id},
-                        notifyOnNetworkStatusChange: true,
-                      });
+      // editValues = useQuery(queryWithdrawById, {
+      //                   context: { headers: getHeaders(location) },
+      //                   variables: {id},
+      //                   notifyOnNetworkStatusChange: true,
+      //                 });
 
-      
-
-      if(_.isEqual(input, initValues)) {
-        if(!_.isEmpty(editValues)){
-          let {loading}  = editValues
+      // if(_.isEqual(input, initValues)) {
+      //   if(!_.isEmpty(editValues)){
+      //     let {loading}  = editValues
           
-          if(!loading){
-            let {status, data} = editValues.data.withdrawById
+      //     if(!loading){
+      //       let {status, data} = editValues.data.withdrawById
 
-            console.log("editValues.data.withdrawById :", status, data)
-            if(status){
+      //       console.log("editValues.data.withdrawById :", status, data)
+      //       if(status){
 
-              console.log("data.bank :", data)
-              setInput({
-                bank: data.bank[0],  
-                balance: data.balance,
-                status: data.status
-              })
-            }
-          }
-        }
-      }
+      //         console.log("data.bank :", data)
+      //         setInput({
+      //           bank: data.bank[0],  
+      //           balance: data.balance,
+      //           status: data.status
+      //         })
+      //       }
+      //     }
+      //   }
+      // }
 
-      return  editValues != null && editValues.loading
-                ? <div><CircularProgress /></div> 
-                : <LocalizationProvider dateAdapter={AdapterDateFns} >
+      return  loadingWithdrawById
+              ? <CircularProgress />
+              : <LocalizationProvider dateAdapter={AdapterDateFns} >
                     <Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }}  onSubmit={submitForm}>
                       <div>
                         {
-                          valueBanks.loading
-                          ? <CircularProgress /> 
+                          loadingBanks || loadingWithdrawById
+                          ? <LinearProgress /> 
                           : <Autocomplete
                               disablePortal
                               id="bank-id"
                               options={user.banks}
                               getOptionLabel={(option) => {
-                                let find = _.find(valueBanks.data.banks.data, (item)=>item._id.toString() == option.bankId?.toString())   
-                                return option.bankNumber +" - "+find.name
+                                let find = _.find(banks, (item)=>{
+                                  // console.log("find item :", item._id == option.bankId, item._id, option.bankId )
+
+                                  return item._id == option.bankId
+                                } )  
+                                return option.bankNumber +" - "+find?.name
                               }}
-                              defaultValue={ input.bank }
+                              defaultValue={ defaultValue() }
                               renderInput={(params) => 
                               {
                                 return <TextField {...params} label={t("bank_account_name")} required={ _.isEmpty(input.bank) ? true : false } />
@@ -316,10 +370,12 @@ const WithdrawPage = (props) => {
                           onChange={onInputChange}
                           onBlur={validateInput}
                           helperText={ _.isEmpty(error.balance) ? "" : error.balance }
-                          error={_.isEmpty(error.balance) ? false : true}/>
-
+                          error={_.isEmpty(error.balance) ? false : true}
+                          />
+                        
                           {adminView()}
                       </div>
+                     
                       <Button type="submit" variant="contained" color="primary">
                           {t("withdraw")}
                       </Button>

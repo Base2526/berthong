@@ -108,7 +108,7 @@ export const checkAuthorizationWithSessionId = async(sessionId) => {
             let userId  = jwt.verify(session.token, process.env.JWT_SECRET);
 
 
-            console.log("checkAuthorization : ", session.token, userId )
+            // console.log("checkAuthorization : ", session.token, userId )
             // return {...req, currentUser: await User.findById(userId)} 
 
             return {

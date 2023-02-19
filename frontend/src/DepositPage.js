@@ -1,50 +1,51 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback  } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { ToastContainer, toast } from 'react-toastify';
-import CircularProgress from '@mui/material/CircularProgress';
+import { CircularProgress, LinearProgress } from '@mui/material';
 import 'react-toastify/dist/ReactToastify.css';
 import _ from "lodash"
-import { useQuery, useMutation, useApolloClient } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-// import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Autocomplete from "@mui/material/Autocomplete";
 
-
 import { getHeaders, checkRole } from "./util"
-import { queryDeposits, queryDepositById, mutationDeposit, queryBankAdmin } from "./gqlQuery"
+import { queryDeposits, mutationDeposit, queryBankAdmin, queryDepositById } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
 import { AMDINISTRATOR } from "./constants"
 import AttackFileField from "./AttackFileField";
 
-let initValues = { balance: "", bank: null, status: "wait", dateTranfer: null, attackFiles:[] }
+let initValues = { _id: "", balance: "", bank: null, status: "wait", dateTranfer: null, attackFiles:[] }
 
 const DepositPage = (props) => {
-  let history = useHistory();
-  let location = useLocation();
-  let { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
   let [snackbar, setSnackbar] = useState({open:false, message:""});
   let [input, setInput]       = useState(initValues);
   let [error, setError]       = useState(initValues);
-
-  // const [startDate, setStartDate] = useState(new Date());
-
+  const [data, setData]       = useState({});
   let { user, logout } = props
   let { mode, id } = location.state
 
-  let bankAdminValue = useQuery(queryBankAdmin, { notifyOnNetworkStatusChange: true, });
+  const { loading: loadingBankAdmin, 
+          data: dataBankAdmin, 
+          error: errorBankAdmin} = useQuery(queryBankAdmin, { notifyOnNetworkStatusChange: true, });
 
-  console.log("bankAdminValue :", bankAdminValue)
-
-  // console.log("location.state : ", location.state)
-  let editValues = null;
+  const { loading: loadingDepositById, 
+          data: dataDepositById, 
+          error: errorDepositById,
+          refetch: refetchDepositById} = useQuery(queryDepositById, {
+                                    context: { headers: getHeaders(location) },
+                                    // variables: {id},
+                                    notifyOnNetworkStatusChange: true,
+                                  });
 
   const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
     context: { headers: getHeaders(location) },
@@ -87,13 +88,45 @@ const DepositPage = (props) => {
       }
     },
     onCompleted({ data }) {
-      history.goBack()
+      // history.goBack()
+      navigate(-1);
     },
     onError({error}){
       console.log("onError :")
     }
   });
-  console.log("resultMutationDeposit :", resultMutationDeposit)
+
+  useEffect(()=>{
+    if (dataBankAdmin) {
+      let { status, admin_banks, banks } = dataBankAdmin.bankAdmin
+      if(status){
+        setData({admin_banks, banks})
+      }
+    }
+  }, [dataBankAdmin])
+
+  useEffect(()=>{
+    if(mode == "edit" && id){
+      refetchDepositById({id});
+    }
+  }, [id])
+
+  // 
+  useEffect(()=>{
+    if (dataDepositById) {
+      let { status, data } = dataDepositById.depositById
+      if(status){
+        setInput({
+          _id: data._id,
+          balance: data.balance,
+          dateTranfer: new Date(data.dateTranfer),
+          bank: data.bank,
+          attackFiles: data.files,
+          status: data.status
+        })
+      }
+    }
+  }, [dataDepositById])
 
   const adminView = () =>{
     switch(checkRole(user)){
@@ -142,7 +175,7 @@ const DepositPage = (props) => {
     }
 
     if(mode == "edit"){
-      newInput = {...newInput, _id: editValues.data.depositById.data._id}
+      newInput = {...newInput, _id: input._id}
     }
 
     console.log("newInput :", newInput)
@@ -190,19 +223,21 @@ const DepositPage = (props) => {
   // 
   switch(mode){
     case "new":{
-      return  <LocalizationProvider dateAdapter={AdapterDateFns} >
+      return  loadingBankAdmin 
+              ? <CircularProgress />
+              : <LocalizationProvider dateAdapter={AdapterDateFns} >
                 <Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }} onSubmit={submitForm}>
                   <div >
                   {
-                      bankAdminValue.loading
-                      ? <CircularProgress /> 
+                      loadingBankAdmin
+                      ? <LinearProgress /> 
                       : <Autocomplete
                           disablePortal
                           id="bank-id"
-                          options={bankAdminValue.data.bankAdmin.admin_banks}
+                          options={data.admin_banks}
                           getOptionLabel={(option) => {
                             console.log("getOptionLabel :", option)
-                            let find = _.find(bankAdminValue.data.bankAdmin.banks, (item)=>item._id.toString() == option.bankId.toString())   
+                            let find = _.find(data.banks, (item)=>item._id.toString() == option.bankId.toString())   
                             return option.bankNumber +" - "+find.name
                           }}
                           defaultValue={ input.bank }
@@ -268,95 +303,107 @@ const DepositPage = (props) => {
     }
 
     case "edit":{
-      editValues = useQuery(queryDepositById, {
-                        context: { headers: getHeaders(location) },
-                        variables: {id},
-                        notifyOnNetworkStatusChange: true,
-                      });
+      // editValues = useQuery(queryDepositById, {
+      //                   context: { headers: getHeaders(location) },
+      //                   variables: {id},
+      //                   notifyOnNetworkStatusChange: true,
+      //                 });
 
-      console.log("editValues :", editValues)
+      // console.log("editValues :", editValues)
 
-      if(_.isEqual(input, initValues)) {
-        if(!_.isEmpty(editValues)){
-          let {loading}  = editValues
+      // if(_.isEqual(input, initValues)) {
+      //   if(!_.isEmpty(editValues)){
+      //     let {loading}  = editValues
           
-          if(!loading){
-            let {status, data} = editValues.data.depositById
+      //     if(!loading){
+      //       let {status, data} = editValues.data.depositById
 
-            console.log("edit editValues : ", data)
-            if(status){
-              setInput({
-                balance: data.balance,
-                dateTranfer: new Date(data.dateTranfer),
-                bank: data.bank,
-                attackFiles: data.files,
-                status: data.status
-              })
-            }
-          }
+      //       console.log("edit editValues : ", data)
+      //       if(status){
+      //         setInput({
+      //           balance: data.balance,
+      //           dateTranfer: new Date(data.dateTranfer),
+      //           bank: data.bank,
+      //           attackFiles: data.files,
+      //           status: data.status
+      //         })
+      //       }
+      //     }
+      //   }
+
+        if(loadingDepositById){
+            return <CircularProgress />
         }
-      }
+      // }
 
-      return  editValues != null && editValues.loading
-                ? <div><CircularProgress /></div> 
-                : <LocalizationProvider dateAdapter={AdapterDateFns} >
-                    <Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }} onSubmit={submitForm}>
-                      <div >
-                      <TextField
-                        id="balance"
-                        name="balance"
-                        label={"ยอดเงิน"}
-                        variant="filled"
-                        type="number"
-                        required
-                        value={ input.balance }
-                        onChange={onInputChange}
-                        onBlur={validateInput}
-                        helperText={ _.isEmpty(error.balance) ? "" : error.balance }
-                        error={_.isEmpty(error.balance) ? false : true}/>
-                        {/* <DesktopDatePicker
-                          label={"ออกงวดวันที่"}
-                          inputFormat="dd/MM/yyyy"
-                          value={ input.dateLottery }
-                          onChange={(newDate) => {
-                              setInput({...input, dateLottery: newDate})
-                          }}
-                          renderInput={(params) => <TextField {...params} required={input.dateLottery === null ? true: false} />}/> */}
-                        
-                        <DatePicker
-                          label={t("date_tranfer")}
-                          placeholderText={t("date_tranfer")}
-                          required={true}
-                          selected={input.dateTranfer}
-                          onChange={(date) => {
-                            setInput({...input, dateTranfer: date})
-                          }}
-                          timeInputLabel="Time:"
-                          dateFormat="MM/dd/yyyy h:mm aa"
-                          showTimeInput/>
-                        
-                        {/* <Editor 
-                          label={t("detail")} 
-                          initData={ input.description }
-                          onEditorChange={(newDescription)=>{
-                              setInput({...input, description: newDescription})
-                          }}/> */}
-                        <AttackFileField
-                          label={t("attack_file")}
-                          values={input.attackFiles}
-                          onChange={(values) => {
-                              console.log("AttackFileField :", values)
-                              setInput({...input, attackFiles: values})
-                          }}
-                          onSnackbar={(data) => {
-                              setSnackbar(data);
-                          }}/>
+      // if(_.isEqual(input, initValues)) {
+      //   setInput({
+      //     balance: data.balance,
+      //     dateTranfer: new Date(data.dateTranfer),
+      //     bank: data.bank,
+      //     attackFiles: data.files,
+      //     status: data.status
+      //   })
+      // }
 
-                          {adminView()}
-                      </div>
-                      <Button type="submit" variant="contained" color="primary">{t("deposit")}</Button>
-                    </Box>
-                  </LocalizationProvider>
+      return  <LocalizationProvider dateAdapter={AdapterDateFns} >
+                <Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }} onSubmit={submitForm}>
+                  <div >
+                  <TextField
+                    id="balance"
+                    name="balance"
+                    label={"ยอดเงิน"}
+                    variant="filled"
+                    type="number"
+                    required
+                    value={ input.balance }
+                    onChange={onInputChange}
+                    onBlur={validateInput}
+                    helperText={ _.isEmpty(error.balance) ? "" : error.balance }
+                    error={_.isEmpty(error.balance) ? false : true}/>
+                    {/* <DesktopDatePicker
+                      label={"ออกงวดวันที่"}
+                      inputFormat="dd/MM/yyyy"
+                      value={ input.dateLottery }
+                      onChange={(newDate) => {
+                          setInput({...input, dateLottery: newDate})
+                      }}
+                      renderInput={(params) => <TextField {...params} required={input.dateLottery === null ? true: false} />}/> */}
+                    
+                    <DatePicker
+                      label={t("date_tranfer")}
+                      placeholderText={t("date_tranfer")}
+                      required={true}
+                      selected={input.dateTranfer}
+                      onChange={(date) => {
+                        setInput({...input, dateTranfer: date})
+                      }}
+                      timeInputLabel="Time:"
+                      dateFormat="MM/dd/yyyy h:mm aa"
+                      showTimeInput/>
+                    
+                    {/* <Editor 
+                      label={t("detail")} 
+                      initData={ input.description }
+                      onEditorChange={(newDescription)=>{
+                          setInput({...input, description: newDescription})
+                      }}/> */}
+                    <AttackFileField
+                      label={t("attack_file")}
+                      values={input.attackFiles}
+                      onChange={(values) => {
+                          console.log("AttackFileField :", values)
+                          setInput({...input, attackFiles: values})
+                      }}
+                      onSnackbar={(data) => {
+                          setSnackbar(data);
+                      }}/>
+
+                      {adminView()}
+                  </div>
+                  <Button type="submit" variant="contained" color="primary">{t("deposit")}</Button>
+                </Box>
+              </LocalizationProvider>
     }
 
     default:{

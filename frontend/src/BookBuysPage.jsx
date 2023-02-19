@@ -1,6 +1,5 @@
-import { Link } from "react-router-dom";
 import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate, createSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -8,23 +7,17 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import CircularProgress from '@mui/material/CircularProgress';
-import Avatar from "@mui/material/Avatar";
 import _ from "lodash"
-import SpeedDial from '@mui/material/SpeedDial';
-import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { useQuery, useMutation } from "@apollo/client";
 import { useTranslation } from "react-i18next";
-import styled from "styled-components";
 
 import { queryBookBuyTransitions } from "./gqlQuery"
 import Table from "./TableContainer"
 
 const BookBuysPage = (props) => {
-  let history = useHistory();
-  let { t } = useTranslation();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
 
   let { user } = props
 
@@ -32,11 +25,26 @@ const BookBuysPage = (props) => {
   let [pageIndex, setPageIndex] = useState(0);  
   let [pageSize, setPageSize] = useState(pageOptions[0])
 
+  let [datas, setDatas] = useState([]);
+
   let [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
-  let bookBuyTransitionsValues = useQuery(queryBookBuyTransitions, { notifyOnNetworkStatusChange: true });
+  const { loading:loadingBookBuyTransitions, 
+          data: dataBookBuyTransitions, 
+          error: errorBookBuyTransitions, 
+          subscribeToMore, 
+          networkStatus } = useQuery(queryBookBuyTransitions, { fetchPolicy: 'network-only', notifyOnNetworkStatusChange: true });
 
-  console.log("bookBuyTransitionsValues :", bookBuyTransitionsValues)
+  // console.log("bookBuyTransitionsValues :", bookBuyTransitionsValues)
+
+  useEffect(() => {
+    if (dataBookBuyTransitions) {
+      let { status, data } = dataBookBuyTransitions.bookBuyTransitions
+      if(status){
+        setDatas(data)
+      }
+    }
+  }, [dataBookBuyTransitions])
 
   // const [onDeleteBank, resultDeleteBank] = useMutation(gqlDeleteBank, 
   //   {
@@ -84,7 +92,14 @@ const BookBuysPage = (props) => {
           accessor: 'title',
           Cell: props =>{
             let {_id, title} = props.row.original
-            return (<div onClick={(e)=>{ history.push({ pathname: "/p", search: `?id=${_id}`, state: { id: _id } }) }}>{title}</div>)
+            return (<div onClick={(e)=>{ 
+              // history.push({ pathname: "/p", search: `?id=${_id}`, state: { id: _id } }) 
+              navigate({
+                        pathname: "/p",
+                        search: `?${createSearchParams({ id: _id})}`,
+                        state: { id: _id }
+                      })
+            }}>{title}</div>)
           }
         },
         // {
@@ -156,11 +171,11 @@ const BookBuysPage = (props) => {
   return (
     <div className="user-list-container">
       {
-         bookBuyTransitionsValues.loading
+         loadingBookBuyTransitions
          ?  <CircularProgress /> 
          :  <Table
               columns={columns}
-              data={bookBuyTransitionsValues.data.bookBuyTransitions.data}
+              data={datas}
               fetchData={fetchData}
               rowsPerPage={pageOptions}
               updateMyData={updateMyData}

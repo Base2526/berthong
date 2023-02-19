@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ToastContainer, toast } from 'react-toastify';
@@ -36,9 +36,9 @@ let initValues = {
 }
 
 const SupplierPage = (props) => {
-  let history = useHistory();
-  let location = useLocation();
-  let { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
 
   let [snackbar, setSnackbar] = useState({open:false, message:""});
   let [input, setInput]       = useState(initValues);
@@ -46,6 +46,8 @@ const SupplierPage = (props) => {
 
   let [editValues, setEditValues] = useState([]);
   let [dateLotterysValues, setDateLotterysValues] = useState([]);
+
+  let [editData, setEditData] = useState([]);
 
   console.log("location :", location.state )
 
@@ -62,12 +64,20 @@ const SupplierPage = (props) => {
                                     })
 
   useEffect(()=>{
-    // do some checking here to ensure data exist
-    if (dataSupplierById) {
-      // mutate data if you need to
-      // setEditValues(dataSupplierById)
-
-      console.log("dataSupplierById :", dataSupplierById)
+    if(mode == "edit"){
+      if (dataSupplierById) {
+        let { status, data } = dataSupplierById.supplierById
+        if(status){
+          setInput({
+            title: data.title, 
+            price: data.price, 
+            priceUnit: data.priceUnit, 
+            description: data.description, 
+            dateLottery: data.dateLottery, 
+            attackFiles: data.files, 
+          })
+        }
+      }
     }
   }, [dataSupplierById])
 
@@ -122,7 +132,8 @@ const SupplierPage = (props) => {
       }
     },
     onCompleted({ data }) {
-      history.goBack()
+      // history.goBack()
+      navigate(-1)
     },
     onError({error}){
       console.log("onError :")
@@ -278,10 +289,89 @@ const SupplierPage = (props) => {
     }
 
     case "edit":{
+      return loadingSupplierById
+             ?  <CircularProgress />
+             :  <LocalizationProvider dateAdapter={AdapterDateFns} >
+                  <Box
+                    component="form"
+                    sx={{
+                        "& .MuiTextField-root": { m: 1, width: "50ch" }
+                    }}
+                    onSubmit={submitForm}>
+                    <div >
+                      <TextField
+                        id="title"
+                        name="title"
+                        label={"ชื่อ"}
+                        variant="filled"
+                        required
+                        value={input.title}
+                        onChange={onInputChange}
+                        onBlur={validateInput}
+                        helperText={error.title}
+                        error={_.isEmpty(error.title) ? false : true}/>
+                      <TextField
+                        id="price"
+                        name="price"
+                        label={"ราคาสินค้า"}
+                        variant="filled"
+                        type="number"
+                        required
+                        value={ input.price }
+                        onChange={onInputChange}
+                        onBlur={validateInput}
+                        helperText={ error.price }
+                        error={_.isEmpty(error.price) ? false : true}/>
+                      <TextField
+                        id="price-unit"
+                        name="priceUnit"
+                        label={"ขายเบอละ"}
+                        variant="filled"
+                        type="number"
+                        required
+                        value={ input.priceUnit }
+                        onChange={onInputChange}
+                        onBlur={validateInput}
+                        helperText={ error.priceUnit }
+                        error={_.isEmpty(error.priceUnit) ? false : true}/>
 
-      if(loadingSupplierById){
-        return <CircularProgress />
-      }
+                      {
+                          _.isEmpty(dateLotterysValues) 
+                          ? <LinearProgress />
+                          : <select 
+                              name="dateLottery"
+                              id="dateLottery" 
+                              defaultValue={ !_.isEmpty(input.dateLottery) ? input.dateLottery : ""}
+                              onChange={(event)=>{
+                                setInput({...input, dateLottery:  event.target.value})
+                              }}>
+                              <option value={""}>ไม่เลือก</option>
+                              {_.map(dateLotterysValues, (dateLotterysValue)=>{
+                                return <option value={dateLotterysValue._id}>{dateLotterysValue.title}</option>
+                              })}
+                            </select>
+                        }
+                      
+                      <Editor 
+                        label={t("detail")} 
+                        initData={ input?.description }
+                        onEditorChange={(newDescription)=>{
+                            setInput({...input, description: newDescription})
+                        }}/>
+                      <AttackFileField
+                        label={t("attack_file")}
+                        values={input.attackFiles}
+                        onChange={(values) => {
+                            console.log("AttackFileField :", values)
+                            setInput({...input, attackFiles: values})
+                        }}
+                        onSnackbar={(data) => {
+                            setSnackbar(data);
+                        }}/>
+                    </div>
+                    <Button type="submit" variant="contained" color="primary">{t("update")}</Button>
+                  </Box>
+                </LocalizationProvider>
 
       /*
       // editValues = useQuery(querySupplierById, {
