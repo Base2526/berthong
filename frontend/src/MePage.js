@@ -142,11 +142,10 @@ const MePage = (props) => {
                     <div> Profile Page {user.displayName} - {user.email} </div>
                     <button onClick={()=>{
                         // history.push({ pathname: "/user",  search: `?u=${user._id}`, state: {from: "/", mode: "edit", id: user._id } });
-                        navigate({
-                            pathname: "/user",
-                            search: `?${createSearchParams({ u: user._id})}`,
-                            state: {from: "/", mode: "edit", id: user._id }
-                          })
+                        navigate("/user",  {
+                                                search: `?${createSearchParams({ u: user._id})}`,
+                                                state: {from: "/", mode: "edit", id: user._id }
+                                            })
                     }}>แก้ไขข้อมูล</button>
                     <div> Balance : { user?.balance }[-{ user?.balanceBook }]</div>
                     {managementView()}

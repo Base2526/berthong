@@ -174,10 +174,7 @@ const WithdrawsPage = (props) => {
                         //   pathname: "/withdraw", 
                         //   state: {from: "/", mode: "edit", id: _id } 
                         // });
-                        navigate({
-                          pathname: "/withdraw",
-                          state: {from: "/", mode: "edit", id: _id } 
-                        })
+                        navigate("/withdraw", { state: {from: "/", mode: "edit", id: _id } })
                       }}><EditIcon/>{t("edit")}</button>
                       <button onClick={(e)=>{
                         setOpenDialogDelete({ isOpen: true, id: _id, description });
@@ -199,10 +196,7 @@ const WithdrawsPage = (props) => {
                         //   state: {from: "/", mode: "edit", id: _id } 
                         // });
 
-                        navigate({
-                          pathname: "/withdraw",
-                          state: {from: "/", mode: "edit", id: _id } 
-                        })
+                        navigate("/withdraw", {state: {from: "/", mode: "edit", id: _id }})
                       }}><EditIcon/>{t("edit")}</button>
                       <button onClick={(e)=>{
                         setOpenDialogDelete({ isOpen: true, id: _id, description });
@@ -262,10 +256,7 @@ const WithdrawsPage = (props) => {
                         //   state: {from: "/", mode: "new"}  
                         // });
 
-                        navigate({
-                          pathname: "/withdraw",
-                          state: {from: "/", mode: "new"}  
-                        })
+                        navigate("/withdraw", { state: {from: "/", mode: "new"} })
                       }}>เพิ่ม แจ้งถอดเงิน</button> 
                   : ""
                   }

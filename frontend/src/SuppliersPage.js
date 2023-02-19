@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef  } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import Box from "@mui/material/Box";
 import { useQuery, useMutation } from "@apollo/client";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
@@ -14,8 +14,6 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import Lightbox from "react-image-lightbox";
 import "react-image-lightbox/style.css";
-import SpeedDialAction from '@mui/material/SpeedDialAction';
-import AddIcCallIcon from '@mui/icons-material/AddIcCall';
 import { connect } from "react-redux";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
@@ -23,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import "react-image-lightbox/style.css";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import Avatar from "@mui/material/Avatar";
+import moment from "moment";
 
 import { getHeaders, checkRole } from "./util"
 import { querySuppliers } from "./gqlQuery"
@@ -41,6 +40,7 @@ const SuppliersPage = (props) => {
   const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
+  let [data, setData] = useState([]);
   /*
   const [onDeletePhone, resultDeletePhone] = useMutation(gqlDeletePhone, {
     context: { headers: getHeaders() },
@@ -69,9 +69,25 @@ const SuppliersPage = (props) => {
   
   */
 
-  const suppliersValue = useQuery(querySuppliers, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
+  // const suppliersValue = useQuery(querySuppliers, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
 
-  console.log("suppliersValue :", suppliersValue)
+  const { loading: loadingSuppliers, 
+          data: dataSuppliers, 
+          error: errorSuppliers, 
+          subscribeToMore, 
+          networkStatus } = useQuery( querySuppliers, { 
+                                      context: { headers: getHeaders(location) }, 
+                                      fetchPolicy: 'network-only', 
+                                      notifyOnNetworkStatusChange: true});
+
+  useEffect(() => {
+    if (dataSuppliers) {
+      let { status, data } = dataSuppliers.suppliers
+      if(status){
+        setData(data)
+      }
+    }
+  }, [dataSuppliers])
 
   ///////////////
   const fetchData = useCallback(({ pageSize, pageIndex }) => {
@@ -231,6 +247,16 @@ const SuppliersPage = (props) => {
               }
             },
             {
+              Header: 'Created at',
+              accessor: 'createdAt',
+              Cell: props => {
+                let {createdAt} = props.row.values
+                createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+      
+                return <div>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
+              }
+            },
+            {
               Header: 'Action',
               Cell: props => {
                 let {_id, description} = props.row.original
@@ -240,12 +266,7 @@ const SuppliersPage = (props) => {
                               //   pathname: "/supplier", 
                               //   state: {from: "/", mode: "edit", id: _id } 
                               // });
-
-                              navigate({
-                                pathname: "/supplier",
-                                state: {from: "/", mode: "edit", id: _id } 
-                              })
-
+                              navigate("/supplier", {state: {from: "/", mode: "edit", id: _id} })
                             }}><EditIcon/>{t("edit")}</button>
                             <button onClick={(e)=>{
                               setOpenDialogDelete({ isOpen: true, id: _id, description });
@@ -363,6 +384,17 @@ const SuppliersPage = (props) => {
               }
             },
             {
+              Header: 'Created at',
+              accessor: 'createdAt',
+              Cell: props => {
+                let {createdAt} = props.row.values
+                createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+      
+                return <div>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
+              }
+            },
+            
+            {
               Header: 'Action',
               Cell: props => {
                 let {_id, description} = props.row.original
@@ -372,11 +404,7 @@ const SuppliersPage = (props) => {
                               //   pathname: "/supplier", 
                               //   state: {from: "/", mode: "edit", id: _id } 
                               // });
-
-                              navigate({
-                                pathname: "/supplier",
-                                state: {from: "/", mode: "edit", id: _id } 
-                              })
+                              navigate("/supplier", {state: {from: "/", mode: "edit", id: _id} })
                             }}><EditIcon/>{t("edit")}</button>
                             <button onClick={(e)=>{
                               setOpenDialogDelete({ isOpen: true, id: _id, description });
@@ -422,11 +450,11 @@ const SuppliersPage = (props) => {
   return (<div className="pl-2 pr-2">
             <Box style={{ flex: 4 }} className="table-responsive">
               {
-                suppliersValue.loading
-                ? <div><CircularProgress /></div> 
+                loadingSuppliers
+                ? <CircularProgress />
                 : <Table
                   columns={columns}
-                  data={suppliersValue.data.suppliers.data}
+                  data={data}
                   fetchData={fetchData}
                   rowsPerPage={pageOptions}
                   updateMyData={updateMyData}
@@ -493,15 +521,7 @@ const SuppliersPage = (props) => {
                 sx={{ position: 'absolute', bottom: 16, right: 16 }}
                 icon={<SpeedDialIcon />}
                 onClick={(e)=>{ 
-                  // history.push({ 
-                  //   pathname: "/supplier", 
-                  //   state: {from: "/", mode: "new"} 
-                  // }) 
-
-                  navigate({
-                    pathname: "/supplier",
-                    state: {from: "/", mode: "new"} 
-                  })
+                  navigate("/supplier", {state: {from: "/", mode: "new"} })
                 }}>
               </SpeedDial>
             </Box>

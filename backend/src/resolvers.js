@@ -49,6 +49,7 @@ export default {
           console.log("ping other")
         }
 
+        /*
 
         //////////////// clear book ////////////////
         let suppliers = await Supplier.find({buys: {$elemMatch:{selected: 0}}});
@@ -103,6 +104,7 @@ export default {
                               }
                           }))
         //////////////// clear book ////////////////
+        */
 
         return { status:true }
       } catch(err) {

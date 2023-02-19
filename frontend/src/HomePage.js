@@ -239,6 +239,8 @@ const HomePage = (props) => {
             {managementView()}
             {
               _.map(datas, (val, k)=>{
+
+                console.log(">> vale : ", val)
                 return  <div key={k} className="home-item" >
                           <img width={25} height={25} src={"https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/1176.jpg"} />
                           <div onClick={()=>{
@@ -247,7 +249,7 @@ const HomePage = (props) => {
                               pathname: "/profile",
                               search: `?${createSearchParams({ u: val.ownerId})}`
                             })
-                          }}>Supplier : {val.ownerName}</div>
+                          }}>Supplier : {val?.owner?.displayName}</div>
                           {menuShareView(val, k)}
                           {menuSettingView(val, k)}
 

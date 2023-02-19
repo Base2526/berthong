@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -32,6 +32,7 @@ const SupplierProfilePage = (props) => {
     const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
 
     let params = queryString.parse(location.search)
+    let [data, setData] = useState([]);  
     
     let { user } = props
 
@@ -42,14 +43,32 @@ const SupplierProfilePage = (props) => {
         return;
     }
 
-    let profileValue;
+    // let profileValue;
     // let profileValue = useQuery(querySupplierProfile, {
     //     context: { headers: getHeaders(location) },
     //     variables: {id: params.u},
     //     notifyOnNetworkStatusChange: true,
     // });
 
-    console.log("profileValue :", profileValue)
+    const { loading: loadingSupplierProfile, 
+            data: dataSupplierProfile, 
+            error: errorSupplierProfile, 
+            subscribeToMore, 
+            networkStatus } = useQuery( querySupplierProfile, { 
+                                        context: { headers: getHeaders(location) }, 
+                                        variables: {id: params.u},
+                                        fetchPolicy: 'network-only', 
+                                        notifyOnNetworkStatusChange: true});
+
+
+    useEffect(() => {
+        if (dataSupplierProfile) {
+          let { status, data } = dataSupplierProfile.supplierProfile
+          if(status){
+            setData(data)
+          }
+        }
+    }, [dataSupplierProfile, loadingSupplierProfile])
 
 
     ///////////////////////
@@ -66,10 +85,8 @@ const SupplierProfilePage = (props) => {
                     accessor: 'files',
                     Cell: props =>{
                         if(props.value.length < 1){
-                        return <div />
+                            return <div />
                         }
-            
-                        console.log("files :", props.value)
                         
                         return (
                         <div style={{ position: "relative" }}>
@@ -142,13 +159,13 @@ const SupplierProfilePage = (props) => {
                     }
                 },
                 {
-                    Header: 'จำนวนที่ขายได้',
+                    Header: 'จำนวนที่ จอง-ขายได้',
                     accessor: 'buys',
                     Cell: props => {
-                        let {buys} = props.row.original            
-                        return <div>{buys.length}</div>
+                        let {buys} = props.row.original      
+                        return <div>{(_.filter(buys, (buy)=>buy.selected == 0)).length}-{(_.filter(buys, (buy)=>buy.selected == 1)).length}</div>
                     }
-                },
+                }
             ] 
         } ,
         []
@@ -183,16 +200,15 @@ const SupplierProfilePage = (props) => {
     //////////////////////
     //////////////////////
     
-    if(profileValue.loading){
+    if( loadingSupplierProfile ){
         return <CircularProgress />
     }
 
-    console.log("profileValue :", profileValue)
 
-    let { status, data } = profileValue.data.supplierProfile
+   
 
-    console.log("status, data : ", status, data)
-
+    let suppliers = data?.suppliers?.slice(0, 10)
+    console.log("data?.suppliers ", data?.suppliers, suppliers)
     return (<div style={{flex:1}}>
                 <Avatar
                     className={"user-profile"}
@@ -204,11 +220,11 @@ const SupplierProfilePage = (props) => {
                     alt="Example Alt"
                     // src={_.isEmpty(data.image) ? "" : data.image[0].url }
                     />
-                <div> Name : {data.displayName}</div>
+                <div> Name : {data?.displayName}</div>
                 <div>
                     <Table
                     columns={columns}
-                    data={data.suppliers}
+                    data={_.isEmpty( data?.suppliers ) ? [] :  data?.suppliers }
                     fetchData={fetchData}
                     rowsPerPage={pageOptions}
                     updateMyData={updateMyData}
