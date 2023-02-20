@@ -16,7 +16,6 @@ import MenuItem from "@mui/material/MenuItem";
 import { FacebookShareButton, TwitterShareButton } from "react-share";
 import { FacebookIcon, TwitterIcon } from "react-share";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-
 import { querySuppliers, subscriptionSuppliers } from "./gqlQuery"
 import { getHeaders, checkRole, bookView, sellView } from "./util"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
@@ -66,12 +65,7 @@ const HomePage = (props) => {
   if(loadingSuppliers){
     return <CircularProgress />
   }else{
-    // if(_.isEmpty(datas)){
-    //   return;
-    // }
-
     let supplierIds = JSON.stringify(_.map(datas, _.property("_id")));
-
     if(_.isNull(unsubscribeSuppliers)){
       unsubscribeSuppliers =  subscribeToMore({
         document: subscriptionSuppliers,
@@ -115,30 +109,20 @@ const HomePage = (props) => {
   const managementView = () =>{
     switch(checkRole(user)){
       case AMDINISTRATOR:{
-        return  <div>
-                  <div onClick={()=>{ 
-                                      // history.push("/me") 
-                                      navigate("/me")
-                                }}>AMDINISTRATOR : {user.displayName} - {user.email}</div>
-                </div>
+        return  <div><div onClick={()=>navigate("/me")}>AMDINISTRATOR : {user.displayName} - {user.email}</div></div>
       }
 
       case AUTHENTICATED:{
         return  <div className="itm">
                   <div>Balance : {user?.balance} [-{user?.balanceBook}]</div>
-                  <div onClick={()=>{ 
-                    // history.push("/me") 
-                    navigate("/me")
-                    }}>AUTHENTICATED : {user.displayName} - {user.email}</div>
+                  <div onClick={()=>navigate("/me")}>AUTHENTICATED : {user.displayName} - {user.email}</div>
                 </div>
       }
       
       default:{
         return  <div>
                   <div>ANONYMOUS</div>
-                  <div>
-                    <button onClick={()=>setDialogLogin(true)}>Login</button>
-                  </div>
+                  <div><button onClick={()=>setDialogLogin(true)}>Login</button></div>
                 </div>
       }
     }
@@ -342,4 +326,5 @@ const mapStateToProps = (state, ownProps) => {
 };
 
 const mapDispatchToProps = { login, logout }
+
 export default connect( mapStateToProps, mapDispatchToProps )(HomePage);

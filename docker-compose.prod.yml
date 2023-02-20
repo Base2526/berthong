@@ -65,6 +65,7 @@ services:
       - ./mongo-single/data:/data/db
       - ./mongo-single/restore:/mongo-single/restore
       - ./mongo-single/mongod.conf:/etc/mongod.conf
+      - ./restore:/home/restore
     restart: always
     networks:
       - berthong

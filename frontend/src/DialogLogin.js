@@ -37,10 +37,14 @@ const DialogLogin = (props) => {
     update: (cache, {data: {login}}) => {
       let {status, data, sessionId} = login
       if(status){
-          localStorage.setItem('token', sessionId)
-          props.login(data)
+        localStorage.setItem('token', sessionId)
+        props.login(data)
+
+        onComplete()
+      }else{
+        console.log("login false : ", login)
       }
-      onComplete()
+      
     },
     onCompleted({data}) {
 
@@ -99,10 +103,9 @@ const DialogLogin = (props) => {
     gapi.load("client:auth2", initClient)
   }, [])
 
-  useEffect(()=>{
-    console.log("input :", input)
-  }, [input])
-
+  // useEffect(()=>{
+  //   console.log("input :", input)
+  // }, [input])
 
   const callbackFacebook = (response) => {
     console.log( "callbackFacebook :", response);
@@ -202,17 +205,7 @@ const DialogLogin = (props) => {
 
   const handleSubmit = (event, type) =>{
     event.preventDefault();
-
     onLogin({ variables: { input: { username: input.username,  password: input.password, deviceAgent: JSON.stringify(deviceData) }} })
-  
-    // switch(type){
-    //   case "manual":{
-    //     onLoginManual(input)
-    //     break;
-    //   }
-    // }
-  
-    // console.log("handleSubmit ", type)
   }
 
   const onInputChange = (e) => {
