@@ -254,7 +254,6 @@ const modelExists =()=>{
       // console.log('Not found BasicContent, creating');
       let newBasicContent = new BasicContent({});
       await newBasicContent.save();
-
       await BasicContent.deleteMany({})
     }
   });
@@ -270,7 +269,6 @@ const modelExists =()=>{
                                       dateLottery: new mongoose.Types.ObjectId(),
                                       ownerId: new mongoose.Types.ObjectId() });
       await newSupplier.save();
-
       await Supplier.deleteMany({})
     }
   });
@@ -283,7 +281,6 @@ const modelExists =()=>{
         // console.log('Not found BasicContent, creating');
         let newDeposit = new Deposit({ accountNumber: "test", userIdRequest: new mongoose.Types.ObjectId(), userIdApprove: new mongoose.Types.ObjectId() });
         await newDeposit.save();
-  
         await Deposit.deleteMany({})
       }
     } catch(err) {

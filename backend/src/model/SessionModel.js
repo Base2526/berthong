@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema
-
 const sessionSchema = new Schema({
   userId: { type: String },
   token: { type: String },

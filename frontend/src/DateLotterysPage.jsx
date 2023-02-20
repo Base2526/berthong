@@ -141,10 +141,7 @@ const DateLotterysPage = (props) => {
                         //   pathname: "/date-lottery", 
                         //   state: {from: "/", mode: "edit", _id} 
                         // });
-                        navigate({
-                          pathname: "/date-lottery",
-                          state: {from: "/", mode: "edit", _id} 
-                        })
+                        navigate("/date-lottery", { state: {from: "/", mode: "edit", _id} })
                       }}>{t("edit")}</button>
                       <button onClick={(e)=>{
                         // setOpenDialogDelete({ isOpen: true, id: _id, description: name })
@@ -221,10 +218,7 @@ const DateLotterysPage = (props) => {
           //   pathname: "/date-lottery", 
           //   state: {from: "/", mode: "new"} 
           // });
-          navigate({
-                    pathname: "/date-lottery", 
-                    state: {from: "/", mode: "new"} 
-                  })
+          navigate("/date-lottery", { state: {from: "/", mode: "new"}})
         }}
       />
     </div>

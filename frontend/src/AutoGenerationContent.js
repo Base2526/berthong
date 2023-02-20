@@ -93,10 +93,8 @@ const AutoGenerationContent = (props) => {
                 <div>Auto-Generation</div>
                 <div>
                     <button onClick={()=>{
-
                         let { data } = dateLotterysValue.data.dateLotterys
-
-                        for ( var i = 0; i < 1000; i++ ) {
+                        for ( var i = 0; i < 20; i++ ) {
                             let newInput =  {
                                 mode: "NEW",
                                 title: faker.lorem.lines(1),
@@ -107,11 +105,8 @@ const AutoGenerationContent = (props) => {
                                 files: makeFile(5),
                                 auto: true
                             }
-
-                            console.log("submitForm :", newInput)
                             onSupplier({ variables: { input: newInput } });
                         }
-                        
                     }}>สร้าง สินค้า</button>
                 </div>
             </div>)
