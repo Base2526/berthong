@@ -36,11 +36,14 @@ const HomePage = (props) => {
   let [openMenuSetting, setOpenMenuSetting] = useState(null);
   let [openMenuShare, setOpenMenuShare] = useState(null);
   let [datas, setDatas] = useState([]);
-  const { loading:loadingSuppliers, 
+  const { loading: loadingSuppliers, 
           data: dataSuppliers, 
           error: errorSuppliers, 
           subscribeToMore, 
           networkStatus } = useQuery(querySuppliers, { context: { headers: getHeaders(location) }, fetchPolicy: 'network-only', notifyOnNetworkStatusChange: true});
+
+
+  console.log("HomePage : ", dataSuppliers, errorSuppliers )
 
   let { user, login } = props
 
@@ -58,14 +61,14 @@ const HomePage = (props) => {
         setDatas(data)
       }
     }
-  }, [dataSuppliers])
+  }, [dataSuppliers, loadingSuppliers])
 
   if(loadingSuppliers){
     return <CircularProgress />
   }else{
-    if(_.isEmpty(datas)){
-      return;
-    }
+    // if(_.isEmpty(datas)){
+    //   return;
+    // }
 
     let supplierIds = JSON.stringify(_.map(datas, _.property("_id")));
 

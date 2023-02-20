@@ -50,8 +50,8 @@ ReactDOM.render(
         <ApolloProvider client={client}>
           <Router>
             <Store>
-              {/* <App /> */}
-              <div>Hello world!</div>
+              <App />
+              {/* <div>Hello world!</div> */}
             </Store>
           </Router>
         </ApolloProvider>
