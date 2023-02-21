@@ -286,6 +286,8 @@ const HomePage = (props) => {
                 open={dialogLogin}
                 onComplete={async(data)=>{
                   setDialogLogin(false);
+
+                  // window.location.reload(false)
                 }}
                 onClose={() => {
                   setDialogLogin(false);

@@ -187,8 +187,8 @@ const DateLotteryPage = (props) => {
             />
 
             <DatePicker
-              label="Start date"
-              placeholderText="Start date"
+              label="วันที่หวยออก"
+              placeholderText="วันที่หวยออก"
               required={true}
               selected={input.startDate}
               onChange={(date) => {
@@ -198,7 +198,7 @@ const DateLotteryPage = (props) => {
               dateFormat="MM/dd/yyyy h:mm aa"
               showTimeInput/>
 
-            <DatePicker
+            {/* <DatePicker
               label="End date"
               placeholderText="End date"
               required={true}
@@ -208,7 +208,7 @@ const DateLotteryPage = (props) => {
               }}
               timeInputLabel="Time:"
               dateFormat="MM/dd/yyyy h:mm aa"
-              showTimeInput/>
+              showTimeInput/> */}
 
             <Editor 
               name="description" 

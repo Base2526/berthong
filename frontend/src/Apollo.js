@@ -61,19 +61,23 @@ const wsLink = new GraphQLWsLink(createClient({
     //   textHeaders: "axxxx2",
     //   options:{ reconnect: true }
     // },
-    connectionParams: () => {
-        // Note: getSession() is a placeholder function created by you
-        const session = localStorage.getItem('token');
-        if (!session) {
-            return {};
-        }
-        console.log("")
-        return {
-            // Authorization: `Bearer ${session.token}`,
-            authToken: localStorage.getItem('token'),
-            options:{ reconnect: true }
-        };
-    },
+    // connectionParams: () => {
+    //     // Note: getSession() is a placeholder function created by you
+    //     const session = localStorage.getItem('token');
+    //     if (!session) {
+    //         return {};
+    //     }
+    //     console.log("")
+    //     return {
+    //         // Authorization: `Bearer ${session.token}`,
+    //         authToken: localStorage.getItem('token'),
+    //         options:{ reconnect: true }
+    //     };
+    // },
+
+    connectionParams: () => ({
+        authToken: localStorage.getItem('token'),
+    }),
     on: {
         error: (err) => {
             console.log("Apollo :", err); // 👈 does this log?
@@ -81,12 +85,12 @@ const wsLink = new GraphQLWsLink(createClient({
         // connected: () => console.log("connected client"),
         connecting: () => {
             // this.setState({ socketStatus: 'connecting' });
-            // console.log("wsLink connecting");
+            console.log("wsLink connecting");
 
             connecting(true)
         },
         closed: () =>{
-                // console.log("wsLink closed");
+                console.log("wsLink closed");
                 activeSocket =null
                 connecting(false)
         } ,
@@ -122,11 +126,10 @@ const wsLink = new GraphQLWsLink(createClient({
                 restartRequestedBeforeConnected = false;
                 gracefullyRestart();
             }
-            
         },
         keepAlive: 10, // ping server every 10 seconds
         ping: (received) => {
-        console.log("ping #0")
+            console.log("ping #0")
 
             if (!received){
                 console.log("#1")
