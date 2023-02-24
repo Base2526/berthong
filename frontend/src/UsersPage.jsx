@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import moment from "moment";
 
-import { queryUsers, queryBalanceById } from "./gqlQuery"
+import { queryUsers } from "./gqlQuery"
 import Table from "./TableContainer"
 import { getHeaders } from "./util"
 
@@ -150,16 +150,18 @@ const UsersPage = (props) => {
         Header: 'Balance',
         accessor: 'balance',
         Cell: props => {
-          let {_id, balance} = props.row.original
-          const balanceByIdValue = useQuery(queryBalanceById, 
-                                          { 
-                                            context: { headers: getHeaders(location) },
-                                            variables: {id: _id},
-                                            notifyOnNetworkStatusChange: true 
-                                          });
-          return  balanceByIdValue.loading 
-                  ? <LinearProgress sx={{width:"100px"}} />
-                  : <div>{balanceByIdValue.data.balanceById.data}</div>
+          // let {_id, balance} = props.row.original
+          // const balanceByIdValue = useQuery(queryBalanceById, 
+          //                                 { 
+          //                                   context: { headers: getHeaders(location) },
+          //                                   variables: {id: _id},
+          //                                   notifyOnNetworkStatusChange: true 
+          //                                 });
+          // return  balanceByIdValue.loading 
+          //         ? <LinearProgress sx={{width:"100px"}} />
+          //         : <div>{balanceByIdValue.data.balanceById.data}</div>
+
+          return <div>balance</div>
         } 
       },
       {

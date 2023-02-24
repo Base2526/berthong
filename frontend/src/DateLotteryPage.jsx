@@ -13,7 +13,7 @@ import { mutationDateLottery, queryDateLotteryById, queryDateLotterys } from "./
 import _ from "lodash";
 
 let editValues = undefined;
-let initValues =  { mode: "NEW",  title : "", startDate: null, endDate: null, description: "" }
+let initValues =  { mode: "NEW",  title : "", date: null, description: "" }
 
 const DateLotteryPage = (props) => {
   const location = useLocation();
@@ -157,8 +157,7 @@ const DateLotteryPage = (props) => {
     // startDate: null, endDate: null
     let newInput = {  mode: mode.toUpperCase(), 
                       title: input.title, 
-                      startDate: input.startDate,
-                      endDate: input.endDate,
+                      date: input.date,
                       description: input.description }
     if(mode == "edit"){
       newInput = {...newInput, _id: editValues.data.dateLotteryById.data._id}
@@ -190,9 +189,9 @@ const DateLotteryPage = (props) => {
               label="วันที่หวยออก"
               placeholderText="วันที่หวยออก"
               required={true}
-              selected={input.startDate}
+              selected={input.date}
               onChange={(date) => {
-                setInput({...input, startDate: date})
+                setInput({...input, date})
               }}
               timeInputLabel="Time:"
               dateFormat="MM/dd/yyyy h:mm aa"

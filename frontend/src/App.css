@@ -79,3 +79,8 @@
 .user-list-container{
   flex: 4;
 }
+
+.ws{
+  background-color: rgb(133, 38, 68);
+  color: white;
+}

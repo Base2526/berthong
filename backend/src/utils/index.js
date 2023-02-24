@@ -5,7 +5,7 @@ deepdash(_);
 
 import { User, Session, Transition, Supplier, Deposit, Withdraw } from '../model'
 
-import { AMDINISTRATOR, AUTHENTICATED, ANONYMOUS } from "../constants"
+import { AMDINISTRATOR, AUTHENTICATED, ANONYMOUS, SUCCESS, ERROR, FORCE_LOGOUT, DATA_NOT_FOUND, USER_NOT_FOUND } from "../constants"
 
 export const emailValidate = () =>{
     return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
@@ -20,7 +20,7 @@ export const fileRenamer = (filename) => {
 };
 
 export const getSessionId = async(userId, input) => {
-    let newInput = {...input, userId, token: jwt.sign(userId, process.env.JWT_SECRET)}
+    let newInput = {...input, userId, token: jwt.sign(userId.toString(), process.env.JWT_SECRET)}
   
     let session = await Session.findOne({userId, deviceAgent: newInput.deviceAgent})
     if(_.isEmpty(session)){
@@ -37,22 +37,19 @@ export const checkAuthorization = async(req) => {
 
         pathname = customLocation?.pathname
     }
+
     if (req.headers && req.headers.authorization) {
         var auth    = req.headers.authorization;
         var parts   = auth.split(" ");
         var bearer  = parts[0];
         var sessionId   = parts[1];
-
+        
         if (bearer == "Bearer") {
             // let decode = jwt.verify(token, process.env.JWT_SECRET);
             // console.log("sessionId > ", sessionId)
             let session = await Session.findById(sessionId)   
-
             if(!_.isEmpty(session)){
                 var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));
-
-                // console.log("session expired :", session.expired, expiredDays, req)
-    
                 // code
                 // -1 : force logout
                 //  0 : anonymums
@@ -61,31 +58,33 @@ export const checkAuthorization = async(req) => {
                     let userId  = jwt.verify(session.token, process.env.JWT_SECRET);
     
     
-                    console.log("checkAuthorization : ", session.token, userId )
+                    console.log("checkAuthorization expiredDays : ", session.token, userId, expiredDays )
                     // return {...req, currentUser: await User.findById(userId)} 
     
                     return {
                         status: true,
-                        code: 1,
+                        code: SUCCESS,
                         pathname,
                         current_user: await User.findById(userId),
                     }
                 }
-    
-                // force logout
-                return {
-                    status: false,
-                    code: -1,
-                    message: "session expired days"
-                }
             }
+
+            await Session.deleteOne( {"_id": sessionId} )
+        }
+
+        // force logout
+        return {
+            status: false,
+            code: FORCE_LOGOUT,
+            message: "session expired days"
         }
     }
 
     // without user
     return {
         status: false,
-        code: 0,
+        code: USER_NOT_FOUND,
         message: "without user"
     }
 }
@@ -113,17 +112,26 @@ export const checkAuthorizationWithSessionId = async(sessionId) => {
 
             return {
                 status: true,
-                code: 1,
+                code: SUCCESS,
                 current_user: await User.findById(userId),
             }
         }
 
+        await Session.deleteOne( {"_id": sessionId} )
+
         // force logout
         return {
             status: false,
-            code: -1,
+            code: FORCE_LOGOUT,
             message: "session expired days"
         }
+    }
+
+    // without user
+    return {
+        status: false,
+        code: USER_NOT_FOUND,
+        message: "without user"
     }
 }
 

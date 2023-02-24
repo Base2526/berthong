@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
-import { useTranslation } from "react-i18next";
 import CircularProgress from '@mui/material/CircularProgress';
 import { useQuery } from "@apollo/client";
 import _ from "lodash"
@@ -18,7 +17,7 @@ import { FacebookIcon, TwitterIcon } from "react-share";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { querySuppliers, subscriptionSuppliers } from "./gqlQuery"
 import { getHeaders, checkRole, bookView, sellView } from "./util"
-import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
+import { AMDINISTRATOR, AUTHENTICATED, FORCE_LOGOUT, SUCCESS, ERROR } from "./constants"
 import { login, logout } from "./redux/actions/auth"
 import DialogLogin from "./DialogLogin"
 import ItemFollow from "./ItemFollow"
@@ -28,24 +27,26 @@ let unsubscribeSuppliers = null;
 const HomePage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation();
   const [dialogLogin, setDialogLogin] = useState(false);
   const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
 
   let [openMenuSetting, setOpenMenuSetting] = useState(null);
   let [openMenuShare, setOpenMenuShare] = useState(null);
   let [datas, setDatas] = useState([]);
+
   const { loading: loadingSuppliers, 
           data: dataSuppliers, 
           error: errorSuppliers, 
           subscribeToMore, 
-          networkStatus } = useQuery(querySuppliers, { context: { headers: getHeaders(location) }, fetchPolicy: 'network-only', notifyOnNetworkStatusChange: true});
+          networkStatus } = useQuery(querySuppliers, 
+                                      { 
+                                      context: { headers: getHeaders(location) }, 
+                                      fetchPolicy: 'network-only', // Used for first execution
+                                      nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                      notifyOnNetworkStatusChange: true
+                                    });
 
-
-  console.log("HomePage : ", dataSuppliers, errorSuppliers )
-
-  let { user, login } = props
-
+  let { user, login, logout } = props
   useEffect(()=>{
     return () => {
       unsubscribeSuppliers && unsubscribeSuppliers()
@@ -55,9 +56,22 @@ const HomePage = (props) => {
 
   useEffect(() => {
     if (dataSuppliers) {
-      let { status, data } = dataSuppliers.suppliers
-      if(status){
-        setDatas(data)
+      if(dataSuppliers.suppliers != undefined){
+        let { status, code, data } = dataSuppliers.suppliers
+        if(status){
+          setDatas(data)
+        }else{
+          switch(code){
+            case FORCE_LOGOUT:{
+              logout()
+              break
+            }
+
+            default:{
+              break;
+            }
+          }
+        }
       }
     }
   }, [dataSuppliers, loadingSuppliers])
@@ -227,7 +241,7 @@ const HomePage = (props) => {
             {
               _.map(datas, (val, k)=>{
 
-                console.log(">> vale : ", val)
+                // console.log(">> vale : ", val)
                 return  <div key={k} className="home-item" >
                           <img width={25} height={25} src={"https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/1176.jpg"} />
                           <div onClick={()=>{

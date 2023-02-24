@@ -153,7 +153,6 @@ async function startApolloServer(typeDefs, resolvers) {
         plugins: [
             // Proper shutdown for the HTTP server.
             ApolloServerPluginDrainHttpServer({ httpServer }),
-        
             // Proper shutdown for the WebSocket server.
             {
                 async serverWillStart() {
@@ -164,65 +163,78 @@ async function startApolloServer(typeDefs, resolvers) {
                 };
                 },
             },
-
+            {
+                requestDidStart(requestContext) {
+                    return {
+                      didResolveOperation(context) {
+                        // console.log("requestDidStart > didResolveOperation :", context)
+                        let { operation, operationName } = context
+                        const operationType = operation.operation;
+                        console.log(`${operationType} recieved: ${operationName}`)
+                      }
+                    };
+                  }
+            },
             ApolloServerPluginLandingPageLocalDefault({ embed: true }),
         ],
-
-        context: async ({ req }) => {
+        context: async ( req /*{ req }*/) => {
             // console.log("ApolloServer context :", req.headers.authorization)
 
             // https://daily.dev/blog/authentication-and-authorization-in-graphql
             // throw Error("throw Error(user.msg);");
 
             // const decode = jwt.verify(token, 'secret');
-            try {
-                if (req.headers && req.headers.authorization) {
-                    var auth    = req.headers.authorization;
-                    var parts   = auth.split(" ");
-                    var bearer  = parts[0];
-                    var sessionId   = parts[1];
+            
+            // try {
+            //     if (req.headers && req.headers.authorization) {
+            //         var auth    = req.headers.authorization;
+            //         var parts   = auth.split(" ");
+            //         var bearer  = parts[0];
+            //         var sessionId   = parts[1];
 
-                    if (bearer == "Bearer") {
-                        // let decode = jwt.verify(token, process.env.JWT_SECRET);
-                        let session = await Session.findById(sessionId)   
+            //         if (bearer == "Bearer") {
+            //             // let decode = jwt.verify(token, process.env.JWT_SECRET);
+            //             let session = await Session.findById(sessionId)   
                         
-                        var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));
+            //             var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));
 
-                        // console.log("session expired :", session.expired, expiredDays, req)
+            //             // console.log("session expired :", session.expired, expiredDays, req)
 
-                        // code
-                        // -1 : force logout
-                        //  0 : anonymums
-                        //  1 : OK
-                        if(expiredDays >= 0){
-                            let userId  = jwt.verify(session.token, process.env.JWT_SECRET);
+            //             // code
+            //             // -1 : force logout
+            //             //  0 : anonymums
+            //             //  1 : OK
+            //             if(expiredDays >= 0){
+            //                 let userId  = jwt.verify(session.token, process.env.JWT_SECRET);
     
-                            // return {...req, currentUser: await User.findById(userId)} 
+            //                 // return {...req, currentUser: await User.findById(userId)} 
 
-                            return {
-                                status: true,
-                                code: 1,
-                                currentUser: await User.findById(userId),
-                                req
-                            }
-                        }
+            //                 return {
+            //                     status: true,
+            //                     code: 1,
+            //                     currentUser: await User.findById(userId),
+            //                     req
+            //                 }
+            //             }
 
-                        // force logout
-                        return {
-                            status: false,
-                            code: -1,
-                            req
-                        }
-                    }
-                }
-            } catch(err) {
-                logger.error( err.toString() );
-            }
-            return {
-                status: true,
-                code: 0,
-                req
-            }
+            //             // force logout
+            //             return {
+            //                 status: false,
+            //                 code: -1,
+            //                 req
+            //             }
+            //         }
+            //     }
+            // } catch(err) {
+            //     logger.error( err.toString() );
+            // }
+            // return {
+            //     status: true,
+            //     code: 0,
+            //     req
+            // }
+
+            return req;
         },
         // subscriptions: {
         //     onConnect: (connectionParams, webSocket, context) => {
@@ -252,7 +264,6 @@ async function startApolloServer(typeDefs, resolvers) {
 
     
     app.use(express.static("/app/uploads"));
-
     app.use(bodyParser.json());
     app.use(bodyParser.json({ type: "text/*" }));
     app.use(bodyParser.urlencoded({ extended: false }));
@@ -273,7 +284,7 @@ async function startApolloServer(typeDefs, resolvers) {
         console.log(`🚀 Query endpoint ready at http://localhost:${PORT}${server.graphqlPath}`);
         console.log(`🚀 Subscription endpoint ready at ws://localhost:${PORT}${server.graphqlPath}`);
 
-        console.log("process.env :", process.env)
+        // console.log("process.env :", process.env)
     });
 }
 

@@ -81,28 +81,16 @@ const DateLotterysPage = (props) => {
           accessor: 'title',
         },
         {
-          Header: 'Start date',
-          accessor: 'startDate',
+          Header: 'Date',
+          accessor: 'date',
           Cell: props =>{
-            let {startDate} = props.row.values 
+            let {date} = props.row.values 
             // return <div>{ (moment(startDate, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
 
-            startDate = new Date(startDate).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+            date = new Date(date).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
 
             // console.log("startDate :", startDate)
-            return <div>{ (moment(startDate, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
-          }
-        },
-        {
-          Header: 'End date',
-          accessor: 'endDate',
-          Cell: props =>{
-            let {endDate} = props.row.values 
-
-            endDate = new Date(endDate).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-
-            // console.log("endDate :", endDate)
-            return <div>{ (moment(endDate, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
+            return <div>{ (moment(date, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
           }
         },
         {

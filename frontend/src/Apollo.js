@@ -9,8 +9,10 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { createUploadLink } from 'apollo-upload-client' // v15.0.0
 
-// import {ls_connecting} from "./redux/actions/ws"
+import {ws_status} from "./redux/actions/ws"
 import {store, persistor } from "./Redux"
+
+import {WS_CONNECTION, WS_CONNECTED, WS_CLOSED, WS_SHOULD_RETRY} from "./constants"
 
 /////////////////////////
 
@@ -54,6 +56,7 @@ const wsLink = new GraphQLWsLink(createClient({
     },
     shouldRetry: (errOrCloseEvent) => {
         console.log("wsLink shouldRetry :")
+        store.dispatch(ws_status(WS_SHOULD_RETRY));
         return true;
     },
     // connectionParams: {
@@ -79,6 +82,7 @@ const wsLink = new GraphQLWsLink(createClient({
         authToken: localStorage.getItem('token'),
     }),
     on: {
+        // 
         error: (err) => {
             console.log("Apollo :", err); // 👈 does this log?
         },
@@ -88,11 +92,15 @@ const wsLink = new GraphQLWsLink(createClient({
             console.log("wsLink connecting");
 
             connecting(true)
+
+            store.dispatch(ws_status(WS_CONNECTION));
         },
         closed: () =>{
-                console.log("wsLink closed");
-                activeSocket =null
-                connecting(false)
+            console.log("wsLink closed");
+            activeSocket =null
+            connecting(false)
+
+            store.dispatch(ws_status(WS_CLOSED));
         } ,
         connected: (socket) =>{
             activeSocket = socket
@@ -117,7 +125,7 @@ const wsLink = new GraphQLWsLink(createClient({
 
             gracefullyRestart = () => {
                 if (socket.readyState === WebSocket.OPEN) {
-                socket.close(4205, 'Client Restart');
+                    socket.close(4205, 'Client Restart');
                 }
             };
 
@@ -126,6 +134,8 @@ const wsLink = new GraphQLWsLink(createClient({
                 restartRequestedBeforeConnected = false;
                 gracefullyRestart();
             }
+
+            store.dispatch(ws_status(WS_CONNECTED));
         },
         keepAlive: 10, // ping server every 10 seconds
         ping: (received) => {
