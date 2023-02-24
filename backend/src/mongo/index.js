@@ -216,7 +216,7 @@ const modelExists =()=>{
       // console.log('Found Session');
     } else {
       // console.log('Not found Session, creating');
-      let newSession = new Session({});
+      let newSession = new Session({ userId: new mongoose.Types.ObjectId(), token: "token", expired:new Date() });
       await newSession.save();
 
       await Session.deleteMany({})
@@ -315,8 +315,7 @@ const modelExists =()=>{
     if (result.length > 0) {
     } else {
       let newDateLottery = new DateLottery({  title: "title",
-                                              startDate: new Date(),
-                                              endDate: new Date(),
+                                              date: new Date(),
                                               weight: 1 });
       await newDateLottery.save();
       await DateLottery.deleteMany({})

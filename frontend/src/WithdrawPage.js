@@ -20,7 +20,7 @@ import { queryWithdrawById, mutationWithdraw, queryBanks, queryWithdraws} from "
 import { logout } from "./redux/actions/auth"
 import { AMDINISTRATOR } from "./constants"
 
-let initValues = { _id: "", bank: null,  balance: "", status: "wait" }
+let initValues = { bank: null,  balance: "", status: "wait" }
 
 const WithdrawPage = (props) => {
   const navigate = useNavigate();
@@ -41,15 +41,6 @@ const WithdrawPage = (props) => {
           data: dataBanks, 
           error: errorBanks} = useQuery(queryBanks, { notifyOnNetworkStatusChange: true, });
 
-  const { loading: loadingWithdrawById, 
-          data: dataWithdrawById, 
-          error: errorWithdrawById,
-          refetch: refetchWithdrawById} = useQuery(queryWithdrawById, {
-                                                    context: { headers: getHeaders(location) },
-                                                    // variables: {id},
-                                                    notifyOnNetworkStatusChange: true,
-                                                  });
-  
   useEffect(()=>{
     if (dataBanks) {
       let { status, data } = dataBanks.banks
@@ -58,28 +49,6 @@ const WithdrawPage = (props) => {
       }
     }
   }, [dataBanks, loadingBanks])
-
-  useEffect(()=>{
-    if(mode == "edit" && id){
-      refetchWithdrawById({id});
-    }
-  }, [id])
-
-  useEffect(()=>{
-    if(mode == "edit"){
-      if (dataWithdrawById) {
-        let { status, data } = dataWithdrawById.withdrawById
-        if(status){
-          setInput({
-            _id: data._id,
-            bank: data.bank[0],  
-            balance: data.balance,
-            status: data.status
-          })
-        }
-      }
-    }
-  }, [dataWithdrawById, loadingWithdrawById])
 
   const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
     context: { headers: getHeaders(location) },
@@ -173,10 +142,6 @@ const WithdrawPage = (props) => {
       status: input.status,
     }
 
-    if(mode == "edit"){
-      newInput = {...newInput, _id: input?._id}
-    }
-
     onMutationWithdraw({ variables: { input: newInput } });
   }
 
@@ -220,174 +185,49 @@ const WithdrawPage = (props) => {
       return stateObj;
     });
   };
-
-  const adminView = () =>{
-     switch(checkRole(user)){
-            case AMDINISTRATOR:{
-              return  <Autocomplete
-                        disablePortal
-                        id="bank-id"
-                        options={['wait','approved', 'reject']}
-                        getOptionLabel={(option) => {
-                          return option
-                        }}
-                        defaultValue={ input.status }
-                        renderInput={(params) => 
-                        {
-                          return <TextField {...params} label={t("status")} required={ false } />
-                        }}
-                        onChange={(event, status) =>{
-                          setInput({...input, status})
-                        }}/>
-            }
-          }
-  }
-
-  const defaultValue = () =>{
-    if(_.isEmpty(input?.bank)){
-      return null
-    } 
-
-    let x = _.find(user?.banks, bank=>{
-      console.log("defaultValue #1:", user?.banks, bank.bankId, input.bank?.bankId)
-      return bank.bankId == input.bank?.bankId
-    })
-    console.log("defaultValue #2:", x)
-
-    return x
-  }
-
-  switch(mode){
-    case "new":{
-      return  <LocalizationProvider dateAdapter={AdapterDateFns} >
-                <Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }}  onSubmit={submitForm}>
-                  <div>
-                    {
-                      loadingBanks
-                      ? <LinearProgress /> 
-                      : <Autocomplete
-                          disablePortal
-                          id="bank-id"
-                          options={user.banks}
-                          getOptionLabel={(option) => {
-                            console.log("getOptionLabel :", option)
-                            let find = _.find(banks, (item)=>item._id.toString() == option.bankId.toString())   
-                            return option.bankNumber +" - "+find.name
-                          }}
-                          defaultValue={ input.bank }
-                          renderInput={(params) => 
-                          {
-                            return <TextField {...params} label={t("bank_account_name")} required={ _.isEmpty(input.bank) ? true : false } />
-                          }}
-                          onChange={(event, values) => onBankIdChange(event, values)}/>
-                    }
-                    
-                    <TextField
-                      id="balance"
-                      name="balance"
-                      label={"ยอดเงิน"}
-                      variant="filled"
-                      type="number"
-                      required
-                      value={ _.isEmpty(input.balance) ? "" : input.balance}
-                      onChange={onInputChange}
-                      onBlur={validateInput}
-                      helperText={ _.isEmpty(error.balance) ? "" : error.balance }
-                      error={_.isEmpty(error.balance) ? false : true}/>
-                  </div>
-                  <div>ยอดที่สามารถถอดได้ { user.balance - input.balance - user.balanceBook } บาท</div>
-                  <Button type="submit" variant="contained" color="primary">
-                      {t("withdraw")}
-                  </Button>
-                </Box>
-              </LocalizationProvider>
-    }
-
-    case "edit":{
-      // editValues = useQuery(queryWithdrawById, {
-      //                   context: { headers: getHeaders(location) },
-      //                   variables: {id},
-      //                   notifyOnNetworkStatusChange: true,
-      //                 });
-
-      // if(_.isEqual(input, initValues)) {
-      //   if(!_.isEmpty(editValues)){
-      //     let {loading}  = editValues
-          
-      //     if(!loading){
-      //       let {status, data} = editValues.data.withdrawById
-
-      //       console.log("editValues.data.withdrawById :", status, data)
-      //       if(status){
-
-      //         console.log("data.bank :", data)
-      //         setInput({
-      //           bank: data.bank[0],  
-      //           balance: data.balance,
-      //           status: data.status
-      //         })
-      //       }
-      //     }
-      //   }
-      // }
-
-      return  loadingWithdrawById
-              ? <CircularProgress />
-              : <LocalizationProvider dateAdapter={AdapterDateFns} >
-                    <Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }}  onSubmit={submitForm}>
-                      <div>
-                        {
-                          loadingBanks || loadingWithdrawById
-                          ? <LinearProgress /> 
-                          : <Autocomplete
-                              disablePortal
-                              id="bank-id"
-                              options={user.banks}
-                              getOptionLabel={(option) => {
-                                let find = _.find(banks, (item)=>{
-                                  // console.log("find item :", item._id == option.bankId, item._id, option.bankId )
-
-                                  return item._id == option.bankId
-                                } )  
-                                return option.bankNumber +" - "+find?.name
-                              }}
-                              defaultValue={ defaultValue() }
-                              renderInput={(params) => 
-                              {
-                                return <TextField {...params} label={t("bank_account_name")} required={ _.isEmpty(input.bank) ? true : false } />
-                              }}
-                              onChange={(event, values) => onBankIdChange(event, values)}/>
-                        }
-                        
-                        <TextField
-                          id="balance"
-                          name="balance"
-                          label={"ยอดเงิน"}
-                          variant="filled"
-                          type="number"
-                          required
-                          value={ input.balance}
-                          onChange={onInputChange}
-                          onBlur={validateInput}
-                          helperText={ _.isEmpty(error.balance) ? "" : error.balance }
-                          error={_.isEmpty(error.balance) ? false : true}
-                          />
-                        
-                          {adminView()}
-                      </div>
-                     
-                      <Button type="submit" variant="contained" color="primary">
-                          {t("withdraw")}
-                      </Button>
-                    </Box>
-                  </LocalizationProvider>
-    }
-
-    default:{
-      break;
-    }
-  }
-  return (<div style={{flex:1}}>ฟอร์ม แจ้งถอดเงิน</div>);
+ 
+  return  <LocalizationProvider dateAdapter={AdapterDateFns} >
+            <Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }}  onSubmit={submitForm}>
+              <div>
+                {
+                  loadingBanks
+                  ? <LinearProgress /> 
+                  : <Autocomplete
+                      disablePortal
+                      id="bank-id"
+                      options={user.banks}
+                      getOptionLabel={(option) => {
+                        console.log("getOptionLabel :", option)
+                        let find = _.find(banks, (item)=>item._id.toString() == option.bankId.toString())   
+                        return option.bankNumber +" - "+find.name
+                      }}
+                      defaultValue={ input.bank }
+                      renderInput={(params) => 
+                      {
+                        return <TextField {...params} label={t("bank_account_name")} required={ _.isEmpty(input.bank) ? true : false } />
+                      }}
+                      onChange={(event, values) => onBankIdChange(event, values)}/>
+                }
+                
+                <TextField
+                  id="balance"
+                  name="balance"
+                  label={"ยอดเงิน"}
+                  variant="filled"
+                  type="number"
+                  required
+                  value={ _.isEmpty(input.balance) ? "" : input.balance}
+                  onChange={onInputChange}
+                  onBlur={validateInput}
+                  helperText={ _.isEmpty(error.balance) ? "" : error.balance }
+                  error={_.isEmpty(error.balance) ? false : true}/>
+              </div>
+              <div>ยอดที่สามารถถอดได้ { user.balance - input.balance - user.balanceBook } บาท</div>
+              <Button type="submit" variant="contained" color="primary">
+                  {t("withdraw")}
+              </Button>
+            </Box>
+          </LocalizationProvider>
 }
 
 const mapStateToProps = (state, ownProps) => {

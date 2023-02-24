@@ -21,7 +21,7 @@ import { logout } from "./redux/actions/auth"
 import { AMDINISTRATOR } from "./constants"
 import AttackFileField from "./AttackFileField";
 
-let initValues = { _id: "", balance: "", bank: null, status: "wait", dateTranfer: null, attackFiles:[] }
+let initValues = { balance: "", bank: null, status: "wait", dateTranfer: null, attackFiles:[] }
 
 const DepositPage = (props) => {
   const navigate = useNavigate();
@@ -37,15 +37,6 @@ const DepositPage = (props) => {
   const { loading: loadingBankAdmin, 
           data: dataBankAdmin, 
           error: errorBankAdmin} = useQuery(queryBankAdmin, { notifyOnNetworkStatusChange: true, });
-
-  const { loading: loadingDepositById, 
-          data: dataDepositById, 
-          error: errorDepositById,
-          refetch: refetchDepositById} = useQuery(queryDepositById, {
-                                    context: { headers: getHeaders(location) },
-                                    // variables: {id},
-                                    notifyOnNetworkStatusChange: true,
-                                  });
 
   const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
     context: { headers: getHeaders(location) },
@@ -84,7 +75,6 @@ const DepositPage = (props) => {
             break;
           }
         }
-        
       }
     },
     onCompleted({ data }) {
@@ -105,28 +95,6 @@ const DepositPage = (props) => {
     }
   }, [dataBankAdmin])
 
-  useEffect(()=>{
-    if(mode == "edit" && id){
-      refetchDepositById({id});
-    }
-  }, [id])
-
-  // 
-  useEffect(()=>{
-    if (dataDepositById) {
-      let { status, data } = dataDepositById.depositById
-      if(status){
-        setInput({
-          _id: data._id,
-          balance: data.balance,
-          dateTranfer: new Date(data.dateTranfer),
-          bank: data.bank,
-          attackFiles: data.files,
-          status: data.status
-        })
-      }
-    }
-  }, [dataDepositById])
 
   const adminView = () =>{
     switch(checkRole(user)){
@@ -174,10 +142,6 @@ const DepositPage = (props) => {
       files: input.attackFiles
     }
 
-    if(mode == "edit"){
-      newInput = {...newInput, _id: input._id}
-    }
-
     console.log("newInput :", newInput)
     onMutationDeposit({ variables: { input: newInput } });
   }
@@ -220,197 +184,84 @@ const DepositPage = (props) => {
       return stateObj;
     });
   };
-  // 
-  switch(mode){
-    case "new":{
-      return  loadingBankAdmin 
-              ? <CircularProgress />
-              : <LocalizationProvider dateAdapter={AdapterDateFns} >
-                <Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }} onSubmit={submitForm}>
-                  <div >
-                  {
-                      loadingBankAdmin
-                      ? <LinearProgress /> 
-                      : <Autocomplete
-                          disablePortal
-                          id="bank-id"
-                          options={data.admin_banks}
-                          getOptionLabel={(option) => {
-                            console.log("getOptionLabel :", option)
-                            let find = _.find(data.banks, (item)=>item._id.toString() == option.bankId.toString())   
-                            return option.bankNumber +" - "+find.name
-                          }}
-                          defaultValue={ input.bank }
-                          renderInput={(params) => 
-                          {
-                            return <TextField {...params} label={t("bank_account_name")} required={ _.isEmpty(input.bank) ? true : false } />
-                          }}
-                          onChange={(event, values) => onBankIdChange(event, values)}/>
-                    }
 
-
-                    <TextField
-                      id="balance"
-                      name="balance"
-                      label={"ยอดเงิน"}
-                      variant="filled"
-                      type="number"
-                      required
-                      value={ _.isEmpty(input.balance) ? "" : input.balance}
-                      onChange={onInputChange}
-                      onBlur={validateInput}
-                      helperText={ _.isEmpty(error.balance) ? "" : error.balance }
-                      error={_.isEmpty(error.balance) ? false : true}/>
-
-                    {/* <DesktopDatePicker
-                      label={t("date_tranfer")}
-                      inputFormat="dd/MM/yyyy"
-                      value={ input.dateTranfer }
-                      onChange={(newDate) => {
-                        setInput({...input, dateTranfer: newDate})
+  return  loadingBankAdmin 
+          ? <CircularProgress />
+          : <LocalizationProvider dateAdapter={AdapterDateFns} >
+            <Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }} onSubmit={submitForm}>
+              <div >
+              {
+                  loadingBankAdmin
+                  ? <LinearProgress /> 
+                  : <Autocomplete
+                      disablePortal
+                      id="bank-id"
+                      options={data.admin_banks}
+                      getOptionLabel={(option) => {
+                        console.log("getOptionLabel :", option)
+                        let find = _.find(data.banks, (item)=>item._id.toString() == option.bankId.toString())   
+                        return option.bankNumber +" - "+find.name
                       }}
-                      renderInput={(params) => <TextField {...params} required={input.dateTranfer === null ? true: false} />}
-                    /> */}
-
-                    <DatePicker
-                      label={t("date_tranfer")}
-                      placeholderText={t("date_tranfer")}
-                      required={true}
-                      selected={input.dateTranfer}
-                      onChange={(date) => {
-                        setInput({...input, dateTranfer: date})
+                      defaultValue={ input.bank }
+                      renderInput={(params) => 
+                      {
+                        return <TextField {...params} label={t("bank_account_name")} required={ _.isEmpty(input.bank) ? true : false } />
                       }}
-                      timeInputLabel="Time:"
-                      dateFormat="MM/dd/yyyy h:mm aa"
-                      showTimeInput/>
+                      onChange={(event, values) => onBankIdChange(event, values)}/>
+                }
 
-                    <AttackFileField
-                      label={t("attack_file")}
-                      values={input.attackFiles}
-                      onChange={(values) => {
-                          console.log("AttackFileField :", values)
-                          setInput({...input, attackFiles: values})
-                      }}
-                      onSnackbar={(data) => {
-                          setSnackbar(data);
-                      }}/>
-                  </div>
-                  <Button type="submit" variant="contained" color="primary">
-                      {t("deposit")}
-                  </Button>
-                </Box>
-              </LocalizationProvider>
-    }
 
-    case "edit":{
-      // editValues = useQuery(queryDepositById, {
-      //                   context: { headers: getHeaders(location) },
-      //                   variables: {id},
-      //                   notifyOnNetworkStatusChange: true,
-      //                 });
+                <TextField
+                  id="balance"
+                  name="balance"
+                  label={"ยอดเงิน"}
+                  variant="filled"
+                  type="number"
+                  required
+                  value={ _.isEmpty(input.balance) ? "" : input.balance}
+                  onChange={onInputChange}
+                  onBlur={validateInput}
+                  helperText={ _.isEmpty(error.balance) ? "" : error.balance }
+                  error={_.isEmpty(error.balance) ? false : true}/>
 
-      // console.log("editValues :", editValues)
+                {/* <DesktopDatePicker
+                  label={t("date_tranfer")}
+                  inputFormat="dd/MM/yyyy"
+                  value={ input.dateTranfer }
+                  onChange={(newDate) => {
+                    setInput({...input, dateTranfer: newDate})
+                  }}
+                  renderInput={(params) => <TextField {...params} required={input.dateTranfer === null ? true: false} />}
+                /> */}
 
-      // if(_.isEqual(input, initValues)) {
-      //   if(!_.isEmpty(editValues)){
-      //     let {loading}  = editValues
-          
-      //     if(!loading){
-      //       let {status, data} = editValues.data.depositById
+                <DatePicker
+                  label={t("date_tranfer")}
+                  placeholderText={t("date_tranfer")}
+                  required={true}
+                  selected={input.dateTranfer}
+                  onChange={(date) => {
+                    setInput({...input, dateTranfer: date})
+                  }}
+                  timeInputLabel="Time:"
+                  dateFormat="MM/dd/yyyy h:mm aa"
+                  showTimeInput/>
 
-      //       console.log("edit editValues : ", data)
-      //       if(status){
-      //         setInput({
-      //           balance: data.balance,
-      //           dateTranfer: new Date(data.dateTranfer),
-      //           bank: data.bank,
-      //           attackFiles: data.files,
-      //           status: data.status
-      //         })
-      //       }
-      //     }
-      //   }
-
-        if(loadingDepositById){
-            return <CircularProgress />
-        }
-      // }
-
-      // if(_.isEqual(input, initValues)) {
-      //   setInput({
-      //     balance: data.balance,
-      //     dateTranfer: new Date(data.dateTranfer),
-      //     bank: data.bank,
-      //     attackFiles: data.files,
-      //     status: data.status
-      //   })
-      // }
-
-      return  <LocalizationProvider dateAdapter={AdapterDateFns} >
-                <Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }} onSubmit={submitForm}>
-                  <div >
-                  <TextField
-                    id="balance"
-                    name="balance"
-                    label={"ยอดเงิน"}
-                    variant="filled"
-                    type="number"
-                    required
-                    value={ input.balance }
-                    onChange={onInputChange}
-                    onBlur={validateInput}
-                    helperText={ _.isEmpty(error.balance) ? "" : error.balance }
-                    error={_.isEmpty(error.balance) ? false : true}/>
-                    {/* <DesktopDatePicker
-                      label={"ออกงวดวันที่"}
-                      inputFormat="dd/MM/yyyy"
-                      value={ input.dateLottery }
-                      onChange={(newDate) => {
-                          setInput({...input, dateLottery: newDate})
-                      }}
-                      renderInput={(params) => <TextField {...params} required={input.dateLottery === null ? true: false} />}/> */}
-                    
-                    <DatePicker
-                      label={t("date_tranfer")}
-                      placeholderText={t("date_tranfer")}
-                      required={true}
-                      selected={input.dateTranfer}
-                      onChange={(date) => {
-                        setInput({...input, dateTranfer: date})
-                      }}
-                      timeInputLabel="Time:"
-                      dateFormat="MM/dd/yyyy h:mm aa"
-                      showTimeInput/>
-                    
-                    {/* <Editor 
-                      label={t("detail")} 
-                      initData={ input.description }
-                      onEditorChange={(newDescription)=>{
-                          setInput({...input, description: newDescription})
-                      }}/> */}
-                    <AttackFileField
-                      label={t("attack_file")}
-                      values={input.attackFiles}
-                      onChange={(values) => {
-                          console.log("AttackFileField :", values)
-                          setInput({...input, attackFiles: values})
-                      }}
-                      onSnackbar={(data) => {
-                          setSnackbar(data);
-                      }}/>
-
-                      {adminView()}
-                  </div>
-                  <Button type="submit" variant="contained" color="primary">{t("deposit")}</Button>
-                </Box>
-              </LocalizationProvider>
-    }
-
-    default:{
-      break;
-    }
-  }
-  return (<div style={{flex:1}}>ฟอร์ม แจ้งฝากเงิน</div>);
+                <AttackFileField
+                  label={t("attack_file")}
+                  values={input.attackFiles}
+                  onChange={(values) => {
+                      console.log("AttackFileField :", values)
+                      setInput({...input, attackFiles: values})
+                  }}
+                  onSnackbar={(data) => {
+                      setSnackbar(data);
+                  }}/>
+              </div>
+              <Button type="submit" variant="contained" color="primary">
+                  {t("deposit")}
+              </Button>
+            </Box>
+          </LocalizationProvider>;
 }
 
 const mapStateToProps = (state, ownProps) => {

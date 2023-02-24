@@ -1,8 +1,9 @@
-import { IS_CONNECTIING } from "../../constants"
+import { IS_CONNECTIING, WS_STATUS } from "../../constants"
 import _ from "lodash"
 
 const initialState = {
-    is_connnecting: true
+    is_connnecting: true,
+    ws_status:""
 }
 
 const ws = (state = initialState, action) => {
@@ -11,8 +12,10 @@ const ws = (state = initialState, action) => {
         case IS_CONNECTIING:{
             return { ...state, is_connnecting: action.data };
         }
+        case WS_STATUS:{
+            return { ...state, ws_status: action.data };
+        }
     }
-
     return state
 }
 

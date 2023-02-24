@@ -448,17 +448,15 @@ export default gql`
     supplierById(_id: ID): JSON
 
     deposits: JSON
-    depositById(_id: ID): JSON
+    depositById(_id: ID!): JSON
 
     withdraws: JSON
-    withdrawById(_id: ID): JSON
+    withdrawById(_id: ID!): JSON
 
     banks: JSON
-    bankById(_id: ID): JSON
+    bankById(_id: ID!): JSON
 
     bankAdmin: JSON
-
-    balanceById(_id: ID!): JSON
 
     bookBuyTransitions: JSON
 
@@ -636,12 +634,8 @@ export default gql`
 
   input BookInput{
     supplierId: ID!
-    itemId: Long
-    selected: Int
-  }
-
-  input BuyInput{
-    ids: [ID!]
+    itemId: Long!
+    selected: Int!
   }
 
   enum SupplierModeType {
@@ -722,8 +716,7 @@ export default gql`
     mode: DateLotteryModeType!
     _id: ID
     title: String!
-    startDate: Date!
-    endDate: Date!
+    date: Date!
     description: String
   }
 
@@ -733,15 +726,12 @@ export default gql`
     loginWithGithub(code: String!):JSON
     me(input: MeInput): JSON
     book(input: BookInput): JSON
-    buy(_id: ID): JSON
+    buy(_id: ID!): JSON
     supplier(input: SupplierInput): JSON    
     deposit(input: DepositInput): JSON 
     withdraw(input: WithdrawInput): JSON 
-
     bank(input: BankInput): JSON 
-
     follow(_id: ID): JSON 
-
     dateLottery(input: DateLotteryInput): JSON 
   }
 

@@ -9,7 +9,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import queryString from 'query-string';
 
 import { getHeaders, checkRole } from "./util"
-import { queryMe, queryBalanceById } from "./gqlQuery"
+import { queryMe } from "./gqlQuery"
 import { login, logout } from "./redux/actions/auth"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 
@@ -83,14 +83,14 @@ const MePage = (props) => {
                                         navigate("/date-lotterys");
                                     }}>จัดการ วันออกหวยทั้งหมด</button>
                                 </div>
-                            </div>
-                            <div>
-                                <button onClick={()=>{ 
-                                    // history.push("/me+bank"); 
-                                    navigate("/me+bank");
-                                }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
-                            </div>
 
+                                <div>
+                                    <button onClick={()=>{ 
+                                        // history.push("/me+bank"); 
+                                        navigate("/me+bank");
+                                    }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
+                                </div>
+                            </div>
                             <AutoGenerationContent />
                         </div>
             }
@@ -105,13 +105,15 @@ const MePage = (props) => {
                             <div>
                                 <button onClick={()=>{ 
                                     // history.push("/deposits"); 
-                                    navigate("/deposits");
+                                    // navigate("/deposits");
+                                    navigate("/deposit", {state: {from: "/", mode: "new"}} )
                                 }}>รายการ แจ้งฝากเงิน</button>
                             </div>
                             <div>
                                 <button onClick={()=>{ 
                                     // history.push("/withdraws"); 
-                                    navigate("/withdraws");
+                                    // navigate("/withdraws");
+                                    navigate("/withdraw", {state: {from: "/", mode: "new"}} )
                                 }}>รายการ แจ้งถอนเงิน</button>
                             </div>
                             <div>

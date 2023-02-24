@@ -1,3 +1,12 @@
 export const AMDINISTRATOR = "AMDINISTRATOR";
 export const AUTHENTICATED = "AUTHENTICATED";
 export const ANONYMOUS     = "ANONYMOUS";
+
+
+// SUCCESS, ERROR, FORCE_LOGOUT, DATA_NOT_FOUND
+export const SUCCESS        = "SUCCESS";
+export const ERROR          = "ERROR";
+export const FORCE_LOGOUT   = "FORCE_LOGOUT";
+export const DATA_NOT_FOUND = "DATA_NOT_FOUND";
+export const USER_NOT_FOUND = "USER_NOT_FOUND";
+export const UNAUTHENTICATED= "UNAUTHENTICATED";

@@ -2,11 +2,11 @@ import './App.css';
 import React, { useEffect, useRef, useCallback} from "react";
 import { useApolloClient, useQuery, useSubscription } from "@apollo/client";
 import moment from "moment";
-import { Routes, Route, useLocation, Navigate, Outlet } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate, Outlet, useNavigate } from "react-router-dom";
 import { connect } from "react-redux";
 import _ from "lodash"
 
-import { getHeaders } from "./util"
+import { getHeaders, checkRole } from "./util"
 import { gqlPing, subscriptionMe, querySuppliers, querySupplierById } from "./gqlQuery"
 import { editedUserBalace, editedUserBalaceBook } from "./redux/actions/auth"
 import LoginPage from "./LoginPage"
@@ -30,12 +30,20 @@ import BookBuysPage from "./BookBuysPage"
 import DateLotterysPage from "./DateLotterysPage"
 import DateLotteryPage from "./DateLotteryPage"
 
+import Breadcs from "./components/breadcrumbs"
+
+import {WS_CONNECTION, WS_CONNECTED, WS_CLOSED, WS_SHOULD_RETRY,
+        AMDINISTRATOR, AUTHENTICATED }  from "./constants"
+
 const App =(props) =>{
-  let client = useApolloClient();
-  let location = useLocation();
+  const client = useApolloClient();
+  const location = useLocation();
+  const navigate = useNavigate();
   let intervalPing = useRef(null);
 
-  let { user, editedUserBalace, editedUserBalaceBook } = props
+  let { ws, user, editedUserBalace, editedUserBalaceBook } = props
+
+  console.log("ws :", location)
 
   /////////////////////// ping ///////////////////////////////////
   const pingValues =useQuery(gqlPing, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true});
@@ -78,16 +86,50 @@ const App =(props) =>{
     return ()=> clearInterval(intervalPing.current);
   }, []);
 
-  const ProtectedRoute = ({ user, redirectPath = '/' }) => {
-    if (_.isEmpty(user)) {
-      return <Navigate to={redirectPath} replace />;
+  const ProtectedAuthenticatedRoute = ({ user, redirectPath = '/' }) => {
+    switch(checkRole(user)){
+      case AMDINISTRATOR:
+      case AUTHENTICATED:{
+        return <Outlet />;
+      }
+      default:{
+        return <Navigate to={redirectPath} replace />;
+      }
     }
-  
-    return <Outlet />;
   };
+
+  const ProtectedAdministratorRoute = ({ user, redirectPath = '/' }) => {
+    switch(checkRole(user)){
+      case AMDINISTRATOR:{
+        return <Outlet />;
+      }
+      default:{
+        return <Navigate to={redirectPath} replace />;
+      }
+    }
+  };
+
+  const statusView = () =>{
+    switch(ws?.ws_status){
+      case WS_CONNECTION :
+      case WS_CONNECTED :{
+        return <div />
+      }
+
+      case WS_SHOULD_RETRY: {
+        return <div className="ws">server กำลังทำการเชื่อมต่อ <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
+      }
+
+      case WS_CLOSED:{
+        return <div className="ws">server มีปัญหา <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
+      }
+    }
+  }
 
   return (
       <div className="App">
+        {statusView()}
+        <Breadcs />
         <div className="container">
           <div className="row">
             <Routes>
@@ -97,21 +139,23 @@ const App =(props) =>{
               <Route path="/suppliers" element={<SuppliersPage />} />
               <Route path="/supplier" element={<SupplierPage />} />
               <Route path="/profile" element={<SupplierProfilePage />}/>
-              <Route element={<ProtectedRoute user={user} />}>
+              <Route element={<ProtectedAuthenticatedRoute user={user} />}>
                 <Route path="/me" element={<MePage />} />
-                <Route path="/deposits" element={<DepositsPage />} />
                 <Route path="/deposit" element={<DepositPage />} />
-                <Route path="/withdraws" element={<WithdrawsPage />} />
                 <Route path="/withdraw" element={<WithdrawPage />} />
-                <Route path="/banks" element={<BanksPage />} />
-                <Route path="/bank" element={<BankPage />} />
                 <Route path="/history-transitions" element={<HistoryTransitionsPage />} />
                 <Route path="/me+bank" element={<ProfileBankPage />} />
-                <Route path="/users" element={<UsersPage />} />
-                <Route path="/user" element={<UserPage />} />
                 <Route path="/book+buys" element={<BookBuysPage />} />
+              </Route>
+              <Route element={<ProtectedAdministratorRoute user={user} />}>
+                <Route path="/deposits" element={<DepositsPage />} />
+                <Route path="/withdraws" element={<WithdrawsPage />} />
                 <Route path="/date-lotterys" element={<DateLotterysPage />} />
                 <Route path="/date-lottery" element={<DateLotteryPage />} />
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/user" element={<UserPage />} />
+                <Route path="/banks" element={<BanksPage />} />
+                <Route path="/bank" element={<BankPage />} />
               </Route>
               <Route path="*" element={<p>There's nothing here: 404!</p>} />
             </Routes>
@@ -122,7 +166,7 @@ const App =(props) =>{
 }
 
 const mapStateToProps = (state, ownProps) => {
-  return { user:state.auth.user }
+  return { user:state.auth.user, ws: state.ws }
 };
 
 const mapDispatchToProps = {

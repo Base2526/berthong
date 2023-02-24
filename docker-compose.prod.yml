@@ -3,26 +3,27 @@ services:
   ################################
   #   Setup React-admin container
   ################################
-  # frontend:
-  #   build: 
-  #     context: ./frontend
-  #     dockerfile: Dockerfile.prod
-  #     args:
-  #       REACT_APP_HOST_GRAPHAL: ${REACT_APP_HOST_GRAPHAL} 
-  #       REACT_APP_NODE_ENV: ${REACT_APP_NODE_ENV} 
-  #       REACT_APP_GOOGLE_CLIENT_ID: ${REACT_APP_GOOGLE_CLIENT_ID} 
-  #       REACT_APP_FACEBOOK_APPID: ${REACT_APP_FACEBOOK_APPID} 
-        
-  #       REACT_APP_GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
-  #       REACT_APP_GOOGLE_ANALYTICS4: ${REACT_APP_GOOGLE_ANALYTICS4}
-  #   ports:
-  #     - "8011:80"
-  #     - "443:443"
-  #   volumes:
-  #     - ./frontend/src:/app/src
-  #     - ./uploads:/var/storage
-  #   networks:
-  #     - berthong
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        REACT_APP_HOST_GRAPHAL: banlist.info
+        REACT_APP_NODE_ENV: production
+        REACT_APP_GOOGLE_CLIENT_ID: 1094203865843-jqaj9am4tevtocg75tdirmtkh95k27cb.apps.googleusercontent.com
+        REACT_APP_FACEBOOK_APPID: 1227094848056324 
+        REACT_APP_GITHUB_CLIENT_ID: 04e44718d32d5ddbec4c
+        REACT_APP_GOOGLE_ANALYTICS4: G-M8LZ0N9TRY
+    ports:
+      - "8011:80"
+      - "443:443"
+    env_file:
+      - ./env/.env.prod
+    volumes:
+      - ./frontend/src:/app/src
+      - ./uploads:/var/storage
+    networks:
+      - berthong
   ################################
 
   ################################
@@ -34,19 +35,21 @@ services:
       dockerfile: Dockerfile.prod   
     ports:
       # - "4001:4001"
-      - "${GRAPHQL_PORT}:${GRAPHQL_PORT}"
+      - "4000:4000"
+    env_file:
+      - ./env/.env.prod
     volumes:
       - ./uploads:/app/uploads  
-    environment:
-      - MONGO_URI=mongodb://${MONGO_INITDB_USERNAME}:${MONGO_INITDB_PASSWORD}@mongo:${MONGO_PORT}/${MONGO_INITDB_DATABASE}?authMechanism=DEFAULT
-      - RA_HOST=${RA_HOST}
-      - GRAPHQL_PORT=${GRAPHQL_PORT}
-      - JWT_SECRET=${JWT_SECRET}
+    # environment:
+    #   - MONGO_URI=mongodb://${MONGO_INITDB_USERNAME}:${MONGO_INITDB_PASSWORD}@mongo:${MONGO_PORT}/${MONGO_INITDB_DATABASE}?authMechanism=DEFAULT
+    #   - RA_HOST=${RA_HOST}
+    #   - GRAPHQL_PORT=${GRAPHQL_PORT}
+    #   - JWT_SECRET=${JWT_SECRET}
 
-      - GITHUB_URL_OAUTH_ACCESS_TOKEN=${GITHUB_URL_OAUTH_ACCESS_TOKEN}
-      - GITHUB_URL_OAUTH_USER=${GITHUB_URL_OAUTH_USER}
-      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
-      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET} 
+    #   - GITHUB_URL_OAUTH_ACCESS_TOKEN=${GITHUB_URL_OAUTH_ACCESS_TOKEN}
+    #   - GITHUB_URL_OAUTH_USER=${GITHUB_URL_OAUTH_USER}
+    #   - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+    #   - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET} 
     networks:
       - berthong
   ################################
@@ -55,12 +58,12 @@ services:
   #   Setup Api Mongo and mongo-express container
   ################################
   mongo:
-    image: mongo:${MONGO_VERSION}
-    command: mongod --port ${MONGO_PORT}
+    image: mongo:6.0.1
+    command: mongod --port 29102
     expose:
-      - ${MONGO_PORT}
+      - 29102
     ports:
-      - "${MONGO_PORT}:${MONGO_PORT}"
+      - 29102:29102
     volumes:
       - ./mongo-single/data:/data/db
       - ./mongo-single/restore:/mongo-single/restore

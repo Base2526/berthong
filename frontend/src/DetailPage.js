@@ -22,21 +22,19 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import queryString from 'query-string';
 import moment from "moment";
 
-import { login } from "./redux/actions/auth"
+import { login, logout } from "./redux/actions/auth"
 import { getHeaders, bookView, sellView, showToast } from "./util"
 import { querySupplierById, gqlBook, gqlBuy, subscriptionSupplierById, querySuppliers } from "./gqlQuery"
 import DialogLogin from "./DialogLogin"
 import DialogBuy from "./DialogBuy"
 import ItemFollow from "./ItemFollow"
 import ItemShare from "./ItemShare";
+import { DATA_NOT_FOUND, UNAUTHENTICATED, ERROR, FORCE_LOGOUT } from "./constants";
 
 let unsubscribeSupplierById = null;
 
 const DetailPage = (props) => {
   const location = useLocation();
-  const client = useApolloClient();
-  const { t } = useTranslation();
-  let interval = useRef(null);
 
   let [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
   let [datas, setDatas] = useState([])
@@ -48,39 +46,65 @@ const DetailPage = (props) => {
   let params = queryString.parse(location.search)
 
   let { id } = params; //location.state
-  let { user } = props
+  let { user, logout } = props
 
   let [datasSupplierById, setDatasSupplierById] = useState([]);
 
   const [onBook, resultBookValues] = useMutation(gqlBook,{
     context: { headers: getHeaders(location) },
     update: (cache, {data: {book}}) => {
-      let { status, data } = book
+      let { status, action, data } = book
+
+      let {mode, itemId} = action
+      switch(mode){
+        case "BOOK":{
+          showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+          break
+        }
+
+        case "UNBOOK":{
+          showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+          break
+        }
+      }
+
       let supplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
       if(status && supplierByIdValue){
         cache.writeQuery({ query: querySupplierById, data: { supplierById: { data } }, variables: { id: data._id } }); 
-     
+      
         setDatasSupplierById(data)
       }
 
-       ////////// update cache querySuppliers ///////////
-       let suppliersValue = cache.readQuery({ query: querySuppliers });
-       if(!_.isNull(suppliersValue)){
+      ////////// update cache querySuppliers ///////////
+      let suppliersValue = cache.readQuery({ query: querySuppliers });
+      if(!_.isNull(suppliersValue)){
         let { suppliers } = suppliersValue
         let newData = _.map(suppliers.data, (supplier) => supplier._id == data._id ? data : supplier)
         cache.writeQuery({
           query: querySuppliers,
           data: { suppliers: {...suppliersValue.suppliers, data: newData} }
         });
-       }
- 
-       ////////// update cache querySuppliers ///////////
+      }
+      ////////// update cache querySuppliers ///////////
     },
     onCompleted({ data }) {
       console.log("onCompleted")
     },
-    onError: (err) => {
-      console.log("onError :", err)
+    onError: (error) => {
+      _.map(error?.graphQLErrors, (e)=>{
+        switch(e?.extensions?.code){
+          case FORCE_LOGOUT:{
+            logout()
+            break;
+          }
+          case DATA_NOT_FOUND:
+          case UNAUTHENTICATED:
+          case ERROR:{
+            showToast("error", error?.message)
+            break;
+          }
+        }
+      })
     }
   });
 
@@ -149,7 +173,7 @@ const DetailPage = (props) => {
         setDatasSupplierById(data)
       }
     }
-  }, [dataSupplierById])
+  }, [dataSupplierById, loadingSupplierById])
 
   if(loadingSupplierById){
     return <div><CircularProgress /></div>
@@ -158,9 +182,6 @@ const DetailPage = (props) => {
       return;
     }
 
-    // let {subscribeToMore, networkStatus} = querySupplierByIdValue
-
-    // unsubscribeSupplierById && unsubscribeSupplierById()
     if(_.isNull(unsubscribeSupplierById)){
       unsubscribeSupplierById =  subscribeToMore({
         document: subscriptionSupplierById,
@@ -194,8 +215,6 @@ const DetailPage = (props) => {
     }
   }
 
-  // let {status, data} = querySupplierByIdValue.data.supplierById
-
   const onSelected = (evt, itemId) =>{
     let fn = _.find(datasSupplierById.buys, (buy)=>buy.itemId == itemId)
 
@@ -216,9 +235,9 @@ const DetailPage = (props) => {
     let newDatas =  _.map(datas, (itm, k)=>itemId == k ? {...itm, selected }: itm)
     setDatas(newDatas)
 
-    selected ==0 
-    ? showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
-    : showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+    // selected ==0 
+    // ? showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+    // : showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
 
     onBook({ variables: { input: { supplierId: id, itemId, selected } } });
   }
@@ -229,12 +248,14 @@ const DetailPage = (props) => {
     if(_.isEmpty(fn)){
       return <div></div>
     }
+
+    let selected = _.filter(datasSupplierById.buys, (buy)=>buy.userId == user._id && buy.selected == 0 )
     return  <div className="div-buy">
               <div>รายการเลือก : {fn}</div>
               <button onClick={()=>{
                 // onBuy({ variables: { id } })
                 setDialogBuy(true)
-              }}>BUY ({_.filter(datasSupplierById.buys, (buy)=>buy.userId == user._id && buy.selected == 0 ).length})</button>
+              }}>BUY ({selected?.length} - {selected?.length * datasSupplierById?.price})</button>
             </div>;
   }
 
@@ -462,6 +483,6 @@ const mapStateToProps = (state, ownProps) => {
   return {user: state.auth.user}
 };
 
-const mapDispatchToProps = { login }
+const mapDispatchToProps = { login, logout }
 
 export default connect( mapStateToProps, mapDispatchToProps )(DetailPage);
