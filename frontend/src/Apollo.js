@@ -1,18 +1,16 @@
 import {
-    ApolloClient,
-    InMemoryCache,
-    split,
-    ApolloLink,
+    ApolloClient, ApolloLink, InMemoryCache,
+    split
 } from "@apollo/client";
-import { relayStylePagination, getMainDefinition } from "@apollo/client/utilities"
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
+import { getMainDefinition } from "@apollo/client/utilities";
+import { createUploadLink } from 'apollo-upload-client'; // v15.0.0
 import { createClient } from 'graphql-ws';
-import { createUploadLink } from 'apollo-upload-client' // v15.0.0
 
-import {ws_status} from "./redux/actions/ws"
-import {store, persistor } from "./Redux"
+import { store } from "./Redux";
+import { ws_status } from "./redux/actions/ws";
 
-import {WS_CONNECTION, WS_CONNECTED, WS_CLOSED, WS_SHOULD_RETRY} from "./constants"
+import { WS_CLOSED, WS_CONNECTED, WS_CONNECTION, WS_SHOULD_RETRY } from "./constants";
 
 /////////////////////////
 

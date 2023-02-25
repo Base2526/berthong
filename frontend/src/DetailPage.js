@@ -1,42 +1,37 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useEffect, useState, useRef } from "react";
 import { connect } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
-import CircularProgress from '@mui/material/CircularProgress';
-import _ from "lodash"
-import { useQuery, useMutation, useApolloClient } from "@apollo/client";
+import { useLocation } from "react-router-dom";
+import { toast } from 'react-toastify';
+import { useMutation, useQuery, NetworkStatus } from "@apollo/client";
 import CardActionArea from "@material-ui/core/CardActionArea";
-import Avatar from "@mui/material/Avatar";
-import Lightbox from "react-image-lightbox";
-import "react-image-lightbox/style.css";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import Avatar from "@mui/material/Avatar";
+import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import { FacebookShareButton, TwitterShareButton } from "react-share";
-import { FacebookIcon, TwitterIcon } from "react-share";
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import _ from "lodash";
 import queryString from 'query-string';
-import moment from "moment";
+import Lightbox from "react-image-lightbox";
+import "react-image-lightbox/style.css";
+import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
 
-import { login, logout } from "./redux/actions/auth"
-import { getHeaders, bookView, sellView, showToast } from "./util"
-import { querySupplierById, gqlBook, gqlBuy, subscriptionSupplierById, querySuppliers } from "./gqlQuery"
-import DialogLogin from "./DialogLogin"
-import DialogBuy from "./DialogBuy"
-import ItemFollow from "./ItemFollow"
+import { DATA_NOT_FOUND, ERROR, FORCE_LOGOUT, UNAUTHENTICATED, 
+         WS_CLOSED, WS_CONNECTED, WS_SHOULD_RETRY } from "./constants";
+import DialogBuy from "./DialogBuy";
+import DialogLogin from "./DialogLogin";
+import { gqlBook, gqlBuy, querySupplierById, querySuppliers, subscriptionSupplierById } from "./gqlQuery";
+import ItemFollow from "./ItemFollow";
 import ItemShare from "./ItemShare";
-import { DATA_NOT_FOUND, UNAUTHENTICATED, ERROR, FORCE_LOGOUT } from "./constants";
+import { login, logout } from "./redux/actions/auth";
+import { bookView, getHeaders, sellView, showToast } from "./util";
 
 let unsubscribeSupplierById = null;
-
 const DetailPage = (props) => {
   const location = useLocation();
-
-  let [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
+  const toastIdRef = useRef(null)
+  let [lightbox, setLightbox] = useState({ isOpen: false, photoIndex: 0, images: [] });
   let [datas, setDatas] = useState([])
   let [dialogLogin, setDialogLogin] = useState(false);
   let [dialogBuy, setDialogBuy] = useState(false);
@@ -45,8 +40,8 @@ const DetailPage = (props) => {
   
   let params = queryString.parse(location.search)
 
-  let { id } = params; //location.state
-  let { user, logout } = props
+  let { id } = params; 
+  let { user, ws, logout } = props;
 
   let [datasSupplierById, setDatasSupplierById] = useState([]);
 
@@ -146,13 +141,10 @@ const DetailPage = (props) => {
           networkStatus } = useQuery( querySupplierById, { 
                                       context: { headers: getHeaders(location) }, 
                                       variables: { id }, 
-                                      // fetchPolicy: 'cache-first', 
-                                      // fetchPolicy: 'cache-and-network',
-                                      // nextFetchPolicy: 'cache-only',
-                                      // partialRefetch: true,
+                                      fetchPolicy: 'network-only', // Used for first execution
+                                      nextFetchPolicy: 'cache-first', // Used for subsequent executions
                                       notifyOnNetworkStatusChange: true});
 
-  console.log(">>>", loadingSupplierById, dataSupplierById, errorSupplierById)
   useEffect(()=>{
     let newDatas = []
     for (let i = 0; i < 100; i++) {
@@ -167,53 +159,50 @@ const DetailPage = (props) => {
   }, [])
 
   useEffect(() => {
-    if (dataSupplierById) {
-      let { status, data } = dataSupplierById.supplierById
-      if(status){
-        setDatasSupplierById(data)
+    if(!loadingSupplierById){
+      if(!_.isEmpty(dataSupplierById?.supplierById)){
+        let { status, data } = dataSupplierById?.supplierById
+        if(status){
+          setDatasSupplierById(data)
+        }
       }
     }
   }, [dataSupplierById, loadingSupplierById])
 
-  if(loadingSupplierById){
-    return <div><CircularProgress /></div>
-  }else{
-    if(_.isEmpty(datasSupplierById)){
-      return;
-    }
+  useEffect(()=>{
+    unsubscribeSupplierById && unsubscribeSupplierById()
+    unsubscribeSupplierById = null;
 
-    if(_.isNull(unsubscribeSupplierById)){
-      unsubscribeSupplierById =  subscribeToMore({
-        document: subscriptionSupplierById,
-        variables: { supplierById: id },
-        updateQuery: (prev, {subscriptionData}) => {
-          if (!subscriptionData.data) return prev;
-  
-          let { mutation, data } = subscriptionData.data.subscriptionSupplierById;
-          switch(mutation){
-            case "BOOK":
-            case "UNBOOK":{
-              let newPrev = {...prev.supplierById, data}
+    unsubscribeSupplierById =  subscribeToMore({
+      document: subscriptionSupplierById,
+      variables: { supplierById: id },
+      updateQuery: (prev, {subscriptionData}) => {
+        if (!subscriptionData.data) return prev;
 
-              setDatasSupplierById(data)
-              return {supplierById: newPrev}; 
-            }
-  
-            case "AUTO_CLEAR_BOOK":{
-              let newPrev = {...prev.supplierById, data}
-              console.log("AUTO_CLEAR_BOOK :", user, newPrev)
+        let { mutation, data } = subscriptionData.data.subscriptionSupplierById;
+        switch(mutation){
+          case "BOOK":
+          case "UNBOOK":{
+            let newPrev = {...prev.supplierById, data}
 
-              setDatasSupplierById(data)
-              return {supplierById: newPrev}; 
-            }
-  
-            default:
-              return prev;
+            setDatasSupplierById(data)
+            return {supplierById: newPrev}; 
           }
+
+          case "AUTO_CLEAR_BOOK":{
+            let newPrev = {...prev.supplierById, data}
+            console.log("AUTO_CLEAR_BOOK :", user, newPrev)
+
+            setDatasSupplierById(data)
+            return {supplierById: newPrev}; 
+          }
+
+          default:
+            return prev;
         }
-      });
-    }
-  }
+      }
+    });
+  }, [id])
 
   const onSelected = (evt, itemId) =>{
     let fn = _.find(datasSupplierById.buys, (buy)=>buy.itemId == itemId)
@@ -274,7 +263,7 @@ const DetailPage = (props) => {
 
   const imageView = () =>{
 
-    // console.log("imageView :", data)
+    console.log("imageView :", datasSupplierById)
     return (
       <div style={{ position: "relative" }}>
         <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
@@ -282,7 +271,7 @@ const DetailPage = (props) => {
             sx={{ height: 100, width: 100 }}
             variant="rounded"
             alt="Example Alt"
-            src={datasSupplierById?.files[0].url}
+            src={_.isEmpty(datasSupplierById?.files) ? "" : datasSupplierById?.files[0].url}
             onClick={(e) => {
               setLightbox({ isOpen: true, photoIndex: 0, images: datasSupplierById?.files })
             }}
@@ -369,118 +358,163 @@ const DetailPage = (props) => {
             </Menu>
   }
 
-  return (<div style={{flex:1}}>
+  const mainView = () =>{
+    switch(ws?.ws_status){
+      case WS_SHOULD_RETRY: 
+      case WS_CLOSED:{
+        if(_.isNull(toastIdRef.current)){
+          toastIdRef.current =  toast.promise(
+            new Promise(resolve => setTimeout(resolve, 300000)),
+            {
+              pending: 'Network not stable 🤯',
+              // success: 'Promise resolved 👌',
+              // error: 'Promise rejected 🤯'
+            }
+          );
+        }
+        break;
+      }
 
-            {_.isEmpty(user) ? "" : <div className="itm">{user.displayName} - {user.email} : Balance : { user?.balance } [-{user?.balanceBook}] </div>}
+      case WS_CONNECTED:{
+        if(!_.isNull(toastIdRef.current)){
+          toast.dismiss()
+        }
+        break;
+      }
+    }
+    
+    switch(networkStatus){
+      case NetworkStatus.error:{
+        return <div>Network not stable 🤯</div>
+      }
+
+      case NetworkStatus.refetch:{
+        break;
+      }
+
+      case NetworkStatus.loading:{
+        break;
+      }
+
+      case NetworkStatus.poll:{
+        console.log("poll")
+        break;
+      }
+    }
+
+    return loadingSupplierById
+          ? <CircularProgress />
+          : <div style={{flex:1}}>
+              {_.isEmpty(user) ? "" : <div className="itm">{user.displayName} - {user.email} : Balance : { user?.balance } [-{user?.balanceBook}] </div>}
             
+              <div className="itm">
+                <div>ชื่อ :{datasSupplierById.title},  ราคา : {datasSupplierById?.price}</div>
+                <div>จอง :{bookView(datasSupplierById)}</div>
+                <div>ขายไปแล้ว :{sellView(datasSupplierById)}</div>
+              </div>
+            
+              {menuShareView(datasSupplierById, 1)}
+              {menuSettingView(datasSupplierById, 1)}
+              {imageView()}
+              <div>
+                <ItemFollow 
+                  {...props} 
+                  item={datasSupplierById} 
+                  onDialogLogin={(e)=>{
+                    setDialogLogin(true)
+                  }}/>
+                <ItemShare 
+                  {...props}  
+                  onOpenMenuShare={(e)=>{
+                    setOpenMenuShare({ [1]: e.currentTarget });
+                  }}/>
+                <IconButton  onClick={(e) => { setOpenMenuSetting({ [1]: e.currentTarget }) }}>
+                  <MoreVertIcon />
+                </IconButton>
+              </div>
 
-            <div className="itm">
-              <div>ชื่อ :{datasSupplierById.title},  ราคา : {datasSupplierById?.price}</div>
-              <div>จอง :{bookView(datasSupplierById)}</div>
-              <div>ขายไปแล้ว :{sellView(datasSupplierById)}</div>
-            </div>
-           
-            {menuShareView(datasSupplierById, 1)}
-            {menuSettingView(datasSupplierById, 1)}
-            {imageView()}
-            <ToastContainer />
-            <div>
-              <ItemFollow 
-                {...props} 
-                item={datasSupplierById} 
-                onDialogLogin={(e)=>{
-                  setDialogLogin(true)
-                }}/>
-              <ItemShare 
-                {...props}  
-                onOpenMenuShare={(e)=>{
-                  setOpenMenuShare({ [1]: e.currentTarget });
-                }}/>
-              <IconButton  onClick={(e) => { setOpenMenuSetting({ [1]: e.currentTarget }) }}>
-                <MoreVertIcon />
-              </IconButton>
-            </div>
+              <div>{selected()}</div>
+              <div className="container">  
+              {
+                _.map(datas, (val, key)=>{
+              
+                  let fn = _.find(datasSupplierById.buys, (buy)=>buy.itemId == key)
 
-            <div>{selected()}</div>
-            <div className="container">  
-            {
-              _.map(datas, (val, key)=>{
-             
-                let fn = _.find(datasSupplierById.buys, (buy)=>buy.itemId == key)
-
-                let cn = ""
-                if(!_.isEmpty(fn)){
-                  cn = fn.selected == 0 ? "itm-green" : fn.selected == 1 ? "itm-gold" : ""
-                }
-                
-                return  <div className={`itm  ${cn}`} key={key}> 
-                          <button 
-                          disabled={isDisabled(fn)}
-                          // disabled={ !_.isEmpty(fn) && (fn?.selected == 0 || fn?.selected == 1 )? true : false }
-                          onClick={(evt)=>{
-                            if(_.isEmpty(user)){
-                              setDialogLogin(true)
-                            }else{
-                              onSelected(evt, key)
-                            }
-                          }}>{val.title}</button>
-                        </div>  
-              })
-            }
-            </div>  
-            {dialogLogin && (
-              <DialogLogin
-                {...props}
-                open={dialogLogin}
-                onComplete={async(data)=>{ setDialogLogin(false) }}
-                onClose={() => { setDialogLogin(false) }}
-              />
-            )}
-
-            {
-              dialogBuy && (
-                <DialogBuy 
+                  let cn = ""
+                  if(!_.isEmpty(fn)){
+                    cn = fn.selected == 0 ? "itm-green" : fn.selected == 1 ? "itm-gold" : ""
+                  }
+                  
+                  return  <div className={`itm  ${cn}`} key={key}> 
+                            <button 
+                            disabled={isDisabled(fn)}
+                            // disabled={ !_.isEmpty(fn) && (fn?.selected == 0 || fn?.selected == 1 )? true : false }
+                            onClick={(evt)=>{
+                              if(_.isEmpty(user)){
+                                setDialogLogin(true)
+                              }else{
+                                onSelected(evt, key)
+                              }
+                            }}>{val.title}</button>
+                          </div>  
+                })
+              }
+              </div>  
+              {dialogLogin && (
+                <DialogLogin
                   {...props}
-                  data={datasSupplierById} 
-                  onBuy={()=>{
-                    onBuy({ variables: { id } })
-                    setDialogBuy(false)
+                  open={dialogLogin}
+                  onComplete={async(data)=>{ setDialogLogin(false) }}
+                  onClose={() => { setDialogLogin(false) }}
+                />
+              )}
+
+              {
+                dialogBuy && (
+                  <DialogBuy 
+                    {...props}
+                    data={datasSupplierById} 
+                    onBuy={()=>{
+                      onBuy({ variables: { id } })
+                      setDialogBuy(false)
+                    }}
+                    onClose={()=>setDialogBuy(false)} />
+                )
+              }
+              {lightbox.isOpen && (
+                <Lightbox
+                  mainSrc={lightbox.images[lightbox.photoIndex].url}
+                  nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
+                  prevSrc={
+                    lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
+                  }
+                  onCloseRequest={() => {
+                    setLightbox({ ...lightbox, isOpen: false });
                   }}
-                  onClose={()=>setDialogBuy(false)} />
-              )
-            }
-            {lightbox.isOpen && (
-              <Lightbox
-                mainSrc={lightbox.images[lightbox.photoIndex].url}
-                nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
-                prevSrc={
-                  lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
-                }
-                onCloseRequest={() => {
-                  setLightbox({ ...lightbox, isOpen: false });
-                }}
-                onMovePrevRequest={() => {
-                  setLightbox({
-                    ...lightbox,
-                    photoIndex:
-                      (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
-                  });
-                }}
-                onMoveNextRequest={() => {
-                  setLightbox({
-                    ...lightbox,
-                    photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
-                  });
-                }}
-              />
-            )}
-          </div>);
+                  onMovePrevRequest={() => {
+                    setLightbox({
+                      ...lightbox,
+                      photoIndex:
+                        (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
+                    });
+                  }}
+                  onMoveNextRequest={() => {
+                    setLightbox({
+                      ...lightbox,
+                      photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
+                    });
+                  }}
+                />
+              )}
+            </div>
+  }
+
+  return mainView();
+
 }
 
 const mapStateToProps = (state, ownProps) => {
-
-  console.log("mapStateToProps : ", state.auth.user)
-  return {user: state.auth.user}
+  return {user: state.auth.user, ws: state.ws}
 };
 
 const mapDispatchToProps = { login, logout }

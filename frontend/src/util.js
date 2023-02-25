@@ -1,7 +1,5 @@
 import _ from "lodash"
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
 import i18n from './translations/i18n';
 import { AMDINISTRATOR, AUTHENTICATED, ANONYMOUS } from "./constants"
  

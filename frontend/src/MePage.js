@@ -1,19 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
-import { connect } from "react-redux";
-import { useTranslation } from "react-i18next";
-import 'react-toastify/dist/ReactToastify.css';
-import _ from "lodash"
-import { useQuery, useMutation, useSubscription } from "@apollo/client";
-import LinearProgress from '@mui/material/LinearProgress';
+import { useQuery } from "@apollo/client";
 import queryString from 'query-string';
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { connect } from "react-redux";
+import { createSearchParams, useLocation, useNavigate } from "react-router-dom";
 
-import { getHeaders, checkRole } from "./util"
-import { queryMe } from "./gqlQuery"
-import { login, logout } from "./redux/actions/auth"
-import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
+import { AMDINISTRATOR, AUTHENTICATED } from "./constants";
+import { queryMe } from "./gqlQuery";
+import { login, logout } from "./redux/actions/auth";
+import { checkRole, getHeaders } from "./util";
 
-import AutoGenerationContent from "./AutoGenerationContent"
+import AutoGenerationContent from "./AutoGenerationContent";
 
 const MePage = (props) => {
     const navigate = useNavigate();

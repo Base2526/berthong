@@ -736,9 +736,9 @@ export default gql`
   }
 
   type Subscription {
-    subscriptionMe(sessionId: ID!): JSON!
-    subscriptionSupplierById(supplierById: ID!): JSON!
-    subscriptionSuppliers(supplierIds: String): JSON!
+    subscriptionMe(sessionId: ID!): JSON
+    subscriptionSupplierById(supplierById: ID!): JSON
+    subscriptionSuppliers(supplierIds: String!): JSON
   }
 
   type PostSubscriptionPayload {

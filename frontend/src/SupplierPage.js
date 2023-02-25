@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
-import 'react-toastify/dist/ReactToastify.css';
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";

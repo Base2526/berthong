@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
 // query
-export const gqlPing        = gql`query Ping{ ping }`;
+export const gqlPing        = gql`query ping { ping }`;
 export const querySuppliers = gql`query suppliers { suppliers }`;
 export const querySupplierById= gql`query supplierById($id: ID!) { supplierById(_id: $id) }`;
 export const queryDeposits   = gql`query deposits { deposits }`;
@@ -40,4 +40,4 @@ export const mutationDateLottery = gql`mutation dateLottery($input: DateLotteryI
 // subscription 
 export const subscriptionMe            = gql`subscription subscriptionMe($sessionId: ID!){ subscriptionMe(sessionId: $sessionId) }`;
 export const subscriptionSupplierById  = gql`subscription subscriptionSupplierById( $supplierById: ID! ){ subscriptionSupplierById(supplierById: $supplierById) }`;
-export const subscriptionSuppliers     = gql`subscription subscriptionSuppliers( $supplierIds: String ) { subscriptionSuppliers(supplierIds: $supplierIds) }`;
+export const subscriptionSuppliers     = gql`subscription subscriptionSuppliers( $supplierIds: String! ) { subscriptionSuppliers(supplierIds: $supplierIds) }`;

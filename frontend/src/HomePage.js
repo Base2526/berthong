@@ -1,38 +1,41 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
-import { connect } from "react-redux";
-import CircularProgress from '@mui/material/CircularProgress';
-import { useQuery } from "@apollo/client";
-import _ from "lodash"
+import { NetworkStatus, useQuery } from "@apollo/client";
 import CardActionArea from "@material-ui/core/CardActionArea";
-import Avatar from "@mui/material/Avatar";
-import Lightbox from "react-image-lightbox";
-import "react-image-lightbox/style.css";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import Avatar from "@mui/material/Avatar";
+import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import { FacebookShareButton, TwitterShareButton } from "react-share";
-import { FacebookIcon, TwitterIcon } from "react-share";
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { querySuppliers, subscriptionSuppliers } from "./gqlQuery"
-import { getHeaders, checkRole, bookView, sellView } from "./util"
-import { AMDINISTRATOR, AUTHENTICATED, FORCE_LOGOUT, SUCCESS, ERROR } from "./constants"
-import { login, logout } from "./redux/actions/auth"
-import DialogLogin from "./DialogLogin"
-import ItemFollow from "./ItemFollow"
+import _ from "lodash";
+import React, { useEffect, useRef, useState } from "react";
+import Lightbox from "react-image-lightbox";
+import "react-image-lightbox/style.css";
+import { connect } from "react-redux";
+import { createSearchParams, useLocation, useNavigate } from "react-router-dom";
+import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
+import { toast } from 'react-toastify';
+
+import { AMDINISTRATOR, AUTHENTICATED, FORCE_LOGOUT, WS_CLOSED, WS_CONNECTED, WS_SHOULD_RETRY } from "./constants";
+import DialogLogin from "./DialogLogin";
+import { querySuppliers, subscriptionSuppliers } from "./gqlQuery";
+import ItemFollow from "./ItemFollow";
 import ItemShare from "./ItemShare";
+import { login, logout } from "./redux/actions/auth";
+import { bookView, checkRole, getHeaders, sellView } from "./util";
 
 let unsubscribeSuppliers = null;
 const HomePage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const toastIdRef = useRef(null)
   const [dialogLogin, setDialogLogin] = useState(false);
   const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
-
   let [openMenuSetting, setOpenMenuSetting] = useState(null);
   let [openMenuShare, setOpenMenuShare] = useState(null);
   let [datas, setDatas] = useState([]);
+
+  let { user, logout, ws } = props
 
   const { loading: loadingSuppliers, 
           data: dataSuppliers, 
@@ -40,13 +43,23 @@ const HomePage = (props) => {
           subscribeToMore, 
           networkStatus } = useQuery(querySuppliers, 
                                       { 
-                                      context: { headers: getHeaders(location) }, 
-                                      fetchPolicy: 'network-only', // Used for first execution
-                                      nextFetchPolicy: 'cache-first', // Used for subsequent executions
-                                      notifyOnNetworkStatusChange: true
-                                    });
-
-  let { user, login, logout } = props
+                                        context: { headers: getHeaders(location) }, 
+                                        fetchPolicy: 'network-only', // Used for first execution
+                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        notifyOnNetworkStatusChange: true
+                                      }
+                                    );
+  if(!_.isEmpty(errorSuppliers)){
+    _.map(errorSuppliers?.graphQLErrors, (e)=>{
+      switch(e?.extensions?.code){
+        case FORCE_LOGOUT:{
+          logout()
+          break;
+        }
+      }
+    })
+  }
+  
   useEffect(()=>{
     return () => {
       unsubscribeSuppliers && unsubscribeSuppliers()
@@ -55,70 +68,58 @@ const HomePage = (props) => {
   }, [])
 
   useEffect(() => {
-    if (dataSuppliers) {
-      if(dataSuppliers.suppliers != undefined){
+    if(!loadingSuppliers){
+      if(!_.isEmpty(dataSuppliers?.suppliers)){
         let { status, code, data } = dataSuppliers.suppliers
-        if(status){
-          setDatas(data)
-        }else{
-          switch(code){
-            case FORCE_LOGOUT:{
-              logout()
-              break
-            }
-
-            default:{
-              break;
-            }
-          }
-        }
+        if(status)setDatas(data)
       }
     }
   }, [dataSuppliers, loadingSuppliers])
 
-  if(loadingSuppliers){
-    return <CircularProgress />
-  }else{
+  useEffect(()=>{
+
     let supplierIds = JSON.stringify(_.map(datas, _.property("_id")));
-    if(_.isNull(unsubscribeSuppliers)){
-      unsubscribeSuppliers =  subscribeToMore({
-        document: subscriptionSuppliers,
-        variables: { supplierIds },
-        updateQuery: (prev, {subscriptionData}) => {        
-          try{
-            if (!subscriptionData.data) return prev;
-  
-            let { mutation, data } = subscriptionData.data.subscriptionSuppliers;
-  
-            console.log("mutation, data :", mutation, data)
-            switch(mutation){
-              case "BOOK":
-              case "UNBOOK":{
-                let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
-                let newPrev = {...prev.suppliers, data: newData}
 
-                setDatas(newData)
+    unsubscribeSuppliers && unsubscribeSuppliers()
+    unsubscribeSuppliers = null;
 
-                return {suppliers: newPrev}; 
-              }
-              case "AUTO_CLEAR_BOOK":{
-                let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
-                let newPrev = {...prev.suppliers, data: newData}
+    unsubscribeSuppliers =  subscribeToMore({
+      document: subscriptionSuppliers,
+      variables: { supplierIds },
+      updateQuery: (prev, {subscriptionData}) => {        
+        try{
+          if (!subscriptionData.data) return prev;
 
-                setDatas(newData)
+          let { mutation, data } = subscriptionData.data.subscriptionSuppliers;
 
-                return {suppliers: newPrev}; 
-              }
-              default:
-                return prev;
+          console.log("mutation, data :", mutation, data)
+          switch(mutation){
+            case "BOOK":
+            case "UNBOOK":{
+              let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
+              let newPrev = {...prev.suppliers, data: newData}
+
+              setDatas(newData)
+
+              return {suppliers: newPrev}; 
             }
-          }catch(err){
-            console.log("err :", err)
+            case "AUTO_CLEAR_BOOK":{
+              let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
+              let newPrev = {...prev.suppliers, data: newData}
+
+              setDatas(newData)
+
+              return {suppliers: newPrev}; 
+            }
+            default:
+              return prev;
           }
+        }catch(err){
+          console.log("err :", err)
         }
-      });
-    }
-  }
+      }
+    });
+  }, [datas])
 
   const managementView = () =>{
     switch(checkRole(user)){
@@ -236,111 +237,150 @@ const HomePage = (props) => {
     );
   }
 
-  return (<div style={{flex:1}}>
-            {managementView()}
+  const mainView = () =>{
+    switch(ws?.ws_status){
+      case WS_SHOULD_RETRY: 
+      case WS_CLOSED:{
+        if(_.isNull(toastIdRef.current)){
+          toastIdRef.current =  toast.promise(
+            new Promise(resolve => setTimeout(resolve, 300000)),
             {
-              _.map(datas, (val, k)=>{
-
-                // console.log(">> vale : ", val)
-                return  <div key={k} className="home-item" >
-                          <img width={25} height={25} src={"https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/1176.jpg"} />
-                          <div onClick={()=>{
-                            // history.push({pathname: "/profile", search: `?u=${val.ownerId}` })
-                            navigate({
-                              pathname: "/profile",
-                              search: `?${createSearchParams({ u: val.ownerId})}`
-                            })
-                          }}>Supplier : {val?.owner?.displayName}</div>
-                          {menuShareView(val, k)}
-                          {menuSettingView(val, k)}
-
-                          {imageView(val)}
-
-                          <div>ชื่อ :{val.title}, ราคา : {val.price}</div>
-                          <div>จอง :{bookView(val)}</div>
-                          <div>ขายไปแล้ว :{sellView(val)}</div>
-                          <button onClick={(evt)=>{
-                            // history.push({
-                            //   pathname: "/p",
-                            //   search: `?id=${val._id}`,
-                            //   // hash: "#react",
-                            //   state: { id: val._id }
-                            // });
-
-                            navigate({
-                              pathname: "/p",
-                              search: `?${createSearchParams({ id: val._id})}`,
-                              state: { id: val._id }
-                            })
-                          }}>ดูรายละเอียด</button>
-
-                          <div>
-                            <ItemFollow 
-                              {...props} 
-                              item={val} 
-                              onDialogLogin={(e)=>{
-                                setDialogLogin(true)
-                              }}/>
-                            <ItemShare 
-                              {...props}  
-                              onOpenMenuShare={(e)=>{
-                                setOpenMenuShare({ [k]: e.currentTarget });
-                              }}/>
-                            <IconButton  onClick={(e) => { setOpenMenuSetting({ [k]: e.currentTarget }); }}>
-                              <MoreVertIcon />
-                            </IconButton>
-                          </div>
-                        </div>
-              })
+              pending: 'Network not stable 🤯',
+              // success: 'Promise resolved 👌',
+              // error: 'Promise rejected 🤯'
             }
+          );
+        }
+        break;
+      }
 
-            {dialogLogin && (
-              <DialogLogin
-                {...props}
-                open={dialogLogin}
-                onComplete={async(data)=>{
-                  setDialogLogin(false);
+      case WS_CONNECTED:{
+        if(!_.isNull(toastIdRef.current)){
+          toast.dismiss()
+        }
+        break;
+      }
+    }
+    
+    switch(networkStatus){
+      case NetworkStatus.error:{
+        return <div>Network not stable 🤯</div>
+      }
 
-                  // window.location.reload(false)
-                }}
-                onClose={() => {
-                  setDialogLogin(false);
-                }}
-              />
-            )}
+      case NetworkStatus.refetch:{
+        break;
+      }
 
-            {lightbox.isOpen && (
-              <Lightbox
-                mainSrc={lightbox.images[lightbox.photoIndex].url}
-                nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
-                prevSrc={
-                  lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
+      case NetworkStatus.loading:{
+        break;
+      }
+
+      case NetworkStatus.poll:{
+        console.log("poll")
+        break;
+      }
+    }
+
+    return  loadingSuppliers
+            ? <CircularProgress />
+            : <div style={{flex:1}}>
+                {managementView()}
+                {
+                  _.map(datas, (val, k)=>{
+                    return  <div key={k} className="home-item" >
+                              <img width={25} height={25} src={"https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/1176.jpg"} />
+                              <div onClick={()=>{
+                                // history.push({pathname: "/profile", search: `?u=${val.ownerId}` })
+                                navigate({
+                                  pathname: "/profile",
+                                  search: `?${createSearchParams({ u: val.ownerId})}`
+                                })
+                              }}>Supplier : {val?.owner?.displayName}</div>
+                              {menuShareView(val, k)}
+                              {menuSettingView(val, k)}
+
+                              {imageView(val)}
+
+                              <div>ชื่อ :{val.title}, ราคา : {val.price}</div>
+                              <div>จอง :{bookView(val)}</div>
+                              <div>ขายไปแล้ว :{sellView(val)}</div>
+                              <button onClick={(evt)=>{
+                                navigate({
+                                  pathname: "/p",
+                                  search: `?${createSearchParams({ id: val._id})}`,
+                                  state: { id: val._id }
+                                })
+                              }}>ดูรายละเอียด</button>
+
+                              <div>
+                                <ItemFollow 
+                                  {...props} 
+                                  item={val} 
+                                  onDialogLogin={(e)=>{
+                                    setDialogLogin(true)
+                                  }}/>
+                                <ItemShare 
+                                  {...props}  
+                                  onOpenMenuShare={(e)=>{
+                                    setOpenMenuShare({ [k]: e.currentTarget });
+                                  }}/>
+                                <IconButton  onClick={(e) => { setOpenMenuSetting({ [k]: e.currentTarget }); }}>
+                                  <MoreVertIcon />
+                                </IconButton>
+                              </div>
+                            </div>
+                  })
                 }
-                onCloseRequest={() => {
-                  setLightbox({ ...lightbox, isOpen: false });
-                }}
-                onMovePrevRequest={() => {
-                  setLightbox({
-                    ...lightbox,
-                    photoIndex:
-                      (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
-                  });
-                }}
-                onMoveNextRequest={() => {
-                  setLightbox({
-                    ...lightbox,
-                    photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
-                  });
-                }}
-              />
-            )}
-          </div>);
+
+                {dialogLogin && (
+                  <DialogLogin
+                    {...props}
+                    open={dialogLogin}
+                    onComplete={async(data)=>{
+                      setDialogLogin(false);
+
+                      // window.location.reload(false)
+                    }}
+                    onClose={() => {
+                      setDialogLogin(false);
+                    }}
+                  />
+                )}
+
+                {lightbox.isOpen && (
+                  <Lightbox
+                    mainSrc={lightbox.images[lightbox.photoIndex].url}
+                    nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
+                    prevSrc={
+                      lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
+                    }
+                    onCloseRequest={() => {
+                      setLightbox({ ...lightbox, isOpen: false });
+                    }}
+                    onMovePrevRequest={() => {
+                      setLightbox({
+                        ...lightbox,
+                        photoIndex:
+                          (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
+                      });
+                    }}
+                    onMoveNextRequest={() => {
+                      setLightbox({
+                        ...lightbox,
+                        photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
+                      });
+                    }}
+                  />
+                )}
+              </div>
+  }
+
+  return mainView();
 }
 
 const mapStateToProps = (state, ownProps) => {
-  return { user:state.auth.user }
+  return { user:state.auth.user, ws: state.ws }
 };
 
 const mapDispatchToProps = { login, logout }
-
 export default connect( mapStateToProps, mapDispatchToProps )(HomePage);

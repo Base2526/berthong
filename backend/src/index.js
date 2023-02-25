@@ -167,13 +167,30 @@ async function startApolloServer(typeDefs, resolvers) {
                 requestDidStart(requestContext) {
                     return {
                       didResolveOperation(context) {
-                        // console.log("requestDidStart > didResolveOperation :", context)
+                        
+                        // console.log("requestDidStart > didResolveOperation #2:", requestContext)
                         let { operation, operationName } = context
                         const operationType = operation.operation;
                         console.log(`${operationType} recieved: ${operationName}`)
-                      }
+
+                       
+                        if (context?.context?.req?.headers && context?.context?.req?.headers?.authorization) {
+                            var auth    = context?.context?.req?.headers.authorization;
+                            var parts   = auth.split(" ");
+                            var bearer  = parts[0];
+                            var sessionId   = parts[1];
+                            console.log("requestDidStart > header :", auth, sessionId )
+
+                        }
+                      },
+                      willSendResponse(context) {
+                        // console.log('willSendResponse');
+                        // console.log('operationName: ', context?.request?.operationName);
+                        // console.log('operationName data: ', context?.request);
+                        // console.log(`${context.operation!.operation} name:`, Object.keys(context.response.data!)[0]);
+                      },
                     };
-                  }
+                }
             },
             ApolloServerPluginLandingPageLocalDefault({ embed: true }),
         ],

@@ -1,39 +1,39 @@
-import './App.css';
-import React, { useEffect, useRef, useCallback} from "react";
 import { useApolloClient, useQuery, useSubscription } from "@apollo/client";
 import moment from "moment";
-import { Routes, Route, useLocation, Navigate, Outlet, useNavigate } from "react-router-dom";
+import React, { useCallback, useEffect, useRef } from "react";
 import { connect } from "react-redux";
-import _ from "lodash"
+import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { ToastContainer } from 'react-toastify';
 
-import { getHeaders, checkRole } from "./util"
-import { gqlPing, subscriptionMe, querySuppliers, querySupplierById } from "./gqlQuery"
-import { editedUserBalace, editedUserBalaceBook } from "./redux/actions/auth"
-import LoginPage from "./LoginPage"
-import HomePage from "./HomePage";
+import BankPage from "./BankPage";
+import BanksPage from "./BanksPage";
+import BookBuysPage from "./BookBuysPage";
+import DateLotteryPage from "./DateLotteryPage";
+import DateLotterysPage from "./DateLotterysPage";
+import DepositPage from "./DepositPage";
+import DepositsPage from "./DepositsPage";
 import DetailPage from "./DetailPage";
-import SuppliersPage from "./SuppliersPage";
+import { gqlPing, subscriptionMe } from "./gqlQuery";
+import HistoryTransitionsPage from "./HistoryTransitionsPage";
+import HomePage from "./HomePage";
+import LoginPage from "./LoginPage";
+import MePage from "./MePage";
+import ProfileBankPage from "./ProfileBankPage";
+import { editedUserBalace, editedUserBalaceBook } from "./redux/actions/auth";
 import SupplierPage from "./SupplierPage";
 import SupplierProfilePage from "./SupplierProfilePage";
-import MePage from "./MePage"
-import DepositsPage from "./DepositsPage"
-import WithdrawsPage from "./WithdrawsPage"
-import DepositPage from "./DepositPage"
-import WithdrawPage from "./WithdrawPage"
-import BanksPage from "./BanksPage"
-import BankPage from "./BankPage"
-import ProfileBankPage from "./ProfileBankPage"
-import UsersPage from "./UsersPage"
-import UserPage from "./UserPage"
-import HistoryTransitionsPage from "./HistoryTransitionsPage"
-import BookBuysPage from "./BookBuysPage"
-import DateLotterysPage from "./DateLotterysPage"
-import DateLotteryPage from "./DateLotteryPage"
+import SuppliersPage from "./SuppliersPage";
+import UserPage from "./UserPage";
+import UsersPage from "./UsersPage";
+import { checkRole, getHeaders } from "./util";
+import WithdrawPage from "./WithdrawPage";
+import WithdrawsPage from "./WithdrawsPage";
 
-import Breadcs from "./components/breadcrumbs"
+import Breadcs from "./components/breadcrumbs";
 
-import {WS_CONNECTION, WS_CONNECTED, WS_CLOSED, WS_SHOULD_RETRY,
-        AMDINISTRATOR, AUTHENTICATED }  from "./constants"
+import {
+  AMDINISTRATOR, AUTHENTICATED, WS_CLOSED, WS_CONNECTED, WS_CONNECTION, WS_SHOULD_RETRY
+} from "./constants";
 
 const App =(props) =>{
   const client = useApolloClient();
@@ -84,7 +84,7 @@ const App =(props) =>{
 
     }, 60000 /*1 min*/);
     return ()=> clearInterval(intervalPing.current);
-  }, []);
+  }, [user]);
 
   const ProtectedAuthenticatedRoute = ({ user, redirectPath = '/' }) => {
     switch(checkRole(user)){
@@ -111,11 +111,10 @@ const App =(props) =>{
 
   const statusView = () =>{
     switch(ws?.ws_status){
-      case WS_CONNECTION :
       case WS_CONNECTED :{
         return <div />
       }
-
+      case WS_CONNECTION :
       case WS_SHOULD_RETRY: {
         return <div className="ws">server กำลังทำการเชื่อมต่อ <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
       }
@@ -128,6 +127,7 @@ const App =(props) =>{
 
   return (
       <div className="App">
+        <ToastContainer />
         {statusView()}
         <Breadcs />
         <div className="container">

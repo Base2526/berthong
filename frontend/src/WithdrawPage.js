@@ -1,24 +1,20 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback  } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { connect } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { ToastContainer, toast } from 'react-toastify';
-import CircularProgress from '@mui/material/CircularProgress';
-import LinearProgress from '@mui/material/LinearProgress';
-import 'react-toastify/dist/ReactToastify.css';
-import _ from "lodash"
-import { useQuery, useMutation, useApolloClient } from "@apollo/client";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
+import { useMutation, useQuery } from "@apollo/client";
 import Autocomplete from "@mui/material/Autocomplete";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import LinearProgress from '@mui/material/LinearProgress';
+import TextField from "@mui/material/TextField";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import _ from "lodash";
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { connect } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import { getHeaders, checkRole } from "./util"
-import { queryWithdrawById, mutationWithdraw, queryBanks, queryWithdraws} from "./gqlQuery"
-import { logout } from "./redux/actions/auth"
-import { AMDINISTRATOR } from "./constants"
+import { mutationWithdraw, queryBanks, queryWithdrawById, queryWithdraws } from "./gqlQuery";
+import { logout } from "./redux/actions/auth";
+import { getHeaders } from "./util";
 
 let initValues = { bank: null,  balance: "", status: "wait" }
 

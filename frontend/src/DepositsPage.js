@@ -2,9 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback  } from "react
 import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { ToastContainer, toast } from 'react-toastify';
 import CircularProgress from '@mui/material/CircularProgress';
-import 'react-toastify/dist/ReactToastify.css';
 import _ from "lodash";
 import deepdash from "deepdash";
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";

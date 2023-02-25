@@ -129,7 +129,7 @@ export default {
     async suppliers(parent, args, context, info){
       let start = Date.now()
       let { req } = context
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      let { status, code, pathname, current_user } = await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
       
       switch(pathname){
@@ -461,10 +461,11 @@ export default {
   },
   Upload: GraphQLUpload,
   Mutation: {
-
     async login(parent, args, context, info) {
       let start = Date.now()
       let {input} = args
+
+      // throw new AppError(USER_NOT_FOUND, 'User not found.')
 
       console.log("params login : ", input)
 

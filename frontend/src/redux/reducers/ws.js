@@ -1,5 +1,4 @@
 import { IS_CONNECTIING, WS_STATUS } from "../../constants"
-import _ from "lodash"
 
 const initialState = {
     is_connnecting: true,

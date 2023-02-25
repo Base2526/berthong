@@ -4,7 +4,6 @@ import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import CircularProgress from '@mui/material/CircularProgress';
 import moment from "moment";
-import 'react-toastify/dist/ReactToastify.css';
 import _ from "lodash";
 import deepdash from "deepdash";
 import { useQuery, useMutation } from "@apollo/client";

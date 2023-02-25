@@ -1,33 +1,28 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback  } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { connect } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { ToastContainer, toast } from 'react-toastify';
-import CircularProgress from '@mui/material/CircularProgress';
-import LinearProgress from '@mui/material/LinearProgress';
-import 'react-toastify/dist/ReactToastify.css';
-import _ from "lodash"
-import { useQuery, useMutation, useApolloClient } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 import Button from "@mui/material/Button";
+import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import Autocomplete from "@mui/material/Autocomplete";
-import TextField from "@mui/material/TextField";
+import LinearProgress from '@mui/material/LinearProgress';
+import _ from "lodash";
 import moment from "moment";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { connect } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import { getHeaders, checkRole } from "./util"
-import { queryWithdraws, queryBanks, mutationWithdraw } from "./gqlQuery"
-import { logout } from "./redux/actions/auth"
+import { mutationWithdraw, queryBanks, queryWithdraws } from "./gqlQuery";
+import { logout } from "./redux/actions/auth";
+import { checkRole, getHeaders } from "./util";
 
-import { AMDINISTRATOR } from "./constants"
+import { AMDINISTRATOR } from "./constants";
 
-import ReadMoreMaster from "./ReadMoreMaster"
-import Table from "./TableContainer"
+import Table from "./TableContainer";
 
 const WithdrawsPage = (props) => {
   const navigate = useNavigate();

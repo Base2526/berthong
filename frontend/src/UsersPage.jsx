@@ -1,27 +1,25 @@
-import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useQuery } from "@apollo/client";
+import { DeleteForever as DeleteForeverIcon, Edit as EditIcon, ExitToApp as ExitToAppIcon } from '@mui/icons-material';
+import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
+import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import Typography from "@mui/material/Typography";
-import CircularProgress from '@mui/material/CircularProgress';
-import Avatar from "@mui/material/Avatar";
-import _ from "lodash"
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
-import { useQuery, useMutation } from "@apollo/client";
-import LinearProgress from '@mui/material/LinearProgress';
-import {ExitToApp as ExitToAppIcon, Edit as EditIcon, DeleteForever as DeleteForeverIcon } from '@mui/icons-material';
-import { useTranslation } from "react-i18next";
-import styled from "styled-components";
+import _ from "lodash";
 import moment from "moment";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
+import styled from "styled-components";
 
-import { queryUsers } from "./gqlQuery"
-import Table from "./TableContainer"
-import { getHeaders } from "./util"
+import { queryUsers } from "./gqlQuery";
+import Table from "./TableContainer";
+import { getHeaders } from "./util";
 
 export const UserListContainer = styled.div`flex: 4;`;
 
