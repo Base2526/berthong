@@ -1,3 +1,4 @@
+import React, { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
@@ -11,17 +12,14 @@ import DialogTitle from "@mui/material/DialogTitle";
 import LinearProgress from '@mui/material/LinearProgress';
 import _ from "lodash";
 import moment from "moment";
-import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { mutationWithdraw, queryBanks, queryWithdraws } from "./gqlQuery";
+import { mutationWithdraw, queryWithdraws } from "./gqlQuery";
 import { logout } from "./redux/actions/auth";
-import { checkRole, getHeaders } from "./util";
-
-import { AMDINISTRATOR } from "./constants";
-
+import { checkRole, getHeaders, showToast } from "./util";
+import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants";
 import Table from "./TableContainer";
 
 const WithdrawsPage = (props) => {
@@ -36,18 +34,43 @@ const WithdrawsPage = (props) => {
   const [pageSize, setPageSize]       = useState(pageOptions[0])
   const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
+  const [datas, setDatas] = useState([])
 
+  const { loading: loadingWithdraws, 
+          data: dataWithdraws, 
+          error: errorWithdraws, 
+          subscribeToMore, 
+          networkStatus } = useQuery(queryWithdraws, 
+                                      { 
+                                        context: { headers: getHeaders(location) }, 
+                                        fetchPolicy: 'network-only', // Used for first execution
+                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        notifyOnNetworkStatusChange: true
+                                      }
+                                    );
 
-  const queryWithdrawsValue = useQuery(queryWithdraws, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
+  if(!_.isEmpty(errorWithdraws)){
+    _.map(errorWithdraws?.graphQLErrors, (e)=>{
+      switch(e?.extensions?.code){
+        case UNAUTHENTICATED:{
+          showToast("error", e?.message)
+          break;
+        }
+      }
+    })
+  }
 
-  console.log("queryWithdrawsValue :", queryWithdrawsValue)
+  useEffect(() => {
+    if(!loadingWithdraws){
+      if(!_.isEmpty(dataWithdraws?.withdraws)){
+        let { status, code, data } = dataWithdraws.withdraws
+        if(status)setDatas(data)
 
-  /*
-  mode: WithdrawModeType
-    _id: ID
-    bankId: ID!
-    balance: Int!
-  */
+        console.log("useEffect :", data)
+      }
+    }
+  }, [dataWithdraws, loadingWithdraws])
+
   /*
   ฝาก
   - จำนวนเงิน
@@ -90,7 +113,7 @@ const WithdrawsPage = (props) => {
       console.log("onError :")
     }
   });
-  console.log("resultMutationWithdraw :", resultMutationWithdraw)
+  // console.log("resultMutationWithdraw :", resultMutationWithdraw)
 
   const handleClose = () => {
     setOpenDialogDelete({ ...openDialogDelete, isOpen: false, description: "" });
@@ -109,31 +132,16 @@ const WithdrawsPage = (props) => {
         Header: 'Balance',
         accessor: 'balance',
         Cell: props =>{
-            let {balance} = props.row.values
-            return ( <div style={{ position: "relative" }}>{balance}</div> );
+          let {balance} = props.row.values
+          return ( <div style={{ position: "relative" }}>{balance}</div> );
         }
-      },
-      {
-        Header: 'Bank',
-        accessor: 'bank',
-        Cell: props =>{
-          let {bank} = props.row.values
-
-          let valueBanks = useQuery(queryBanks, { notifyOnNetworkStatusChange: true, });
-          if(valueBanks.loading){
-            return <LinearProgress /> 
-          }
-          let find = _.find(valueBanks.data.banks.data, (item)=>item._id.toString() == bank[0].bankId.toString() )            
-          return <div style={{ position: "relative" }}>{bank[0].bankNumber} : {find.name}</div>
-        }
-      },
+      }, 
       {
         Header: 'Status',
         accessor: 'status',
-        Cell: props => {
+        Cell: props =>{
           let {status} = props.row.values
- 
-          return <div>{status}</div>
+          return ( <div style={{ position: "relative" }}>{status}</div> );
         }
       },
       {
@@ -147,63 +155,43 @@ const WithdrawsPage = (props) => {
         }
       },
       {
-        Header: 'updated at',
-        accessor: 'updatedAt',
+        Header: 'Action',
         Cell: props => {
-            let {updatedAt} = props.row.values
+          let {_id, status, description} = props.row.original
+          switch(status){
+            case "wait":{
+              return  <div className="Btn--posts">
+                          <button onClick={(evt)=>{
+                            navigate("/deposit", {state: {from: "/", mode: "edit", id: _id }} )
+                          }}><EditIcon/>{t("edit")}</button>
+                          <button onClick={(e)=>{
+                            setOpenDialogDelete({ isOpen: true, id: _id, description });
+                          }}><DeleteForeverIcon/>{t("delete")}</button>
+                      </div>
+            }
+            case "approved":{
+              return  <div className="Btn--posts">
+                        <button onClick={(e)=>{
+                          setOpenDialogDelete({ isOpen: true, id: _id, description });
+                        }}><DeleteForeverIcon/>{t("delete")}</button>
+                    </div>
+            }
+            case "reject":{
+              return  <div className="Btn--posts">
+                        <button onClick={(evt)=>{
+                          navigate("/deposit", {state: {from: "/", mode: "edit", id: _id }} )
+                        }}><EditIcon/>{t("edit")}</button>
+                        <button onClick={(e)=>{
+                          setOpenDialogDelete({ isOpen: true, id: _id, description });
+                        }}><DeleteForeverIcon/>{t("delete")}</button>
+                      </div>
+            }
 
-            updatedAt = new Date(updatedAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-
-            return <div>{ (moment(updatedAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
+            default:{
+              return <div />
+            }
+          }             
         }
-      },
-      {
-      Header: 'Action',
-      Cell: props => {
-        let {_id, status, description} = props.row.original
-        switch(status){
-          case "wait":{
-            return  <div className="Btn--posts">
-                      <button onClick={(evt)=>{
-                        // history.push({ 
-                        //   pathname: "/withdraw", 
-                        //   state: {from: "/", mode: "edit", id: _id } 
-                        // });
-                        navigate("/withdraw", { state: {from: "/", mode: "edit", id: _id } })
-                      }}><EditIcon/>{t("edit")}</button>
-                      <button onClick={(e)=>{
-                        setOpenDialogDelete({ isOpen: true, id: _id, description });
-                      }}><DeleteForeverIcon/>{t("delete")}</button>
-                  </div>
-          }
-          case "approved":{
-            return  <div className="Btn--posts">
-                      <button onClick={(e)=>{
-                        setOpenDialogDelete({ isOpen: true, id: _id, description });
-                      }}><DeleteForeverIcon/>{t("delete")}</button>
-                  </div>
-          }
-          case "reject":{
-            return  <div className="Btn--posts">
-                      <button onClick={(evt)=>{
-                        // history.push({ 
-                        //   pathname: "/withdraw", 
-                        //   state: {from: "/", mode: "edit", id: _id } 
-                        // });
-
-                        navigate("/withdraw", {state: {from: "/", mode: "edit", id: _id }})
-                      }}><EditIcon/>{t("edit")}</button>
-                      <button onClick={(e)=>{
-                        setOpenDialogDelete({ isOpen: true, id: _id, description });
-                      }}><DeleteForeverIcon/>{t("delete")}</button>
-                  </div>
-          }
-
-          default:{
-            return <div />
-          }
-        }   
-      }
       },
     ],
     []
@@ -239,7 +227,7 @@ const WithdrawsPage = (props) => {
 
   return (<div style={{flex:1}}>
             {
-              queryWithdrawsValue.loading
+              loadingWithdraws
               ? <CircularProgress /> 
               : <div>
                   {
@@ -257,7 +245,7 @@ const WithdrawsPage = (props) => {
                   }
                   <Table
                     columns={columns}
-                    data={queryWithdrawsValue.data.withdraws.data}
+                    data={datas}
                     fetchData={fetchData}
                     rowsPerPage={pageOptions}
                     updateMyData={updateMyData}
@@ -283,7 +271,7 @@ const WithdrawsPage = (props) => {
                 <Button
                   variant="outlined"
                   onClick={() => {
-                    let newInput = _.find(queryWithdrawsValue.data.withdraws.data, (item)=>openDialogDelete.id == item._id.toString())
+                    let newInput = _.find(datas, (item)=>openDialogDelete.id == item._id.toString())
 
                     newInput = _.omitDeep(newInput, ['__v', 'createdAt', 'updatedAt', 'userIdRequest'])
                     newInput = {...newInput, mode:"DELETE",  balance: parseInt(newInput.balance), dateTranfer:new Date(newInput.dateTranfer)}

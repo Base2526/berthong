@@ -12,7 +12,7 @@ const index = ({ title }) => {
   const { t } = useTranslation();
 
   const BreadcrumbsView = () =>{
-    console.log("location :", location)
+    // console.log("location :", location)
 
     switch(location?.pathname){
       case "/":{
@@ -32,6 +32,42 @@ const index = ({ title }) => {
                   </Typography>
                 ]
       }
+
+      case "/withdraws":{
+        return [  
+          <MuiLink component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
+          <Typography key="3" color="text.primary">รายการฝากเงิน รออนุมัติ</Typography>
+        ]
+      }
+
+      case "/deposits":{
+        return [  
+          <MuiLink component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
+          <Typography key="3" color="text.primary">รายการถอดเงิน รออนุมัติ</Typography>
+        ]
+      }
+
+      case "/suppliers":{
+        return [  
+          <MuiLink component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
+          <Typography key="3" color="text.primary">Suppliers ทั้งหมด</Typography>
+        ]
+      }
+
+      case "/users":{
+        return [  
+          <MuiLink component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
+          <Typography key="3" color="text.primary">รายชื่อบุคคลทั้งหมด</Typography>
+        ]
+      }
+
+      case "/banks":{
+        return [  
+          <MuiLink component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
+          <Typography key="3" color="text.primary">รายชื่อธนาคารทั้งหมด</Typography>
+        ]
+      }
+      
       default: 
         return []
     }

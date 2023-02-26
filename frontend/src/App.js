@@ -1,21 +1,19 @@
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useApolloClient, useQuery, useSubscription } from "@apollo/client";
 import moment from "moment";
-import React, { useState, useCallback, useEffect, useRef } from "react";
 import { connect } from "react-redux";
 import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
-
 import { CDBSidebar } from "cdbreact";
 import clsx from "clsx";
-import { makeStyles, useTheme } from "@material-ui/core/styles";
+import { makeStyles, useTheme, withStyles } from "@material-ui/core/styles";
 import {
   ListItemText,
   ListItemIcon,
-  ListItem,
+  ListItem as MuiListItem,
   List,
   Divider,
   Typography,
-  // IconButton,
   Toolbar,
   AppBar,
   CssBaseline,
@@ -37,7 +35,11 @@ import {
   AllOut as AllOutIcon,
   Assistant as AssistantIcon
 } from '@mui/icons-material';
-import IconButton from "@mui/material/IconButton";
+import {
+  IconButton,
+  ClickAwayListener
+} from "@mui/material";
+
 import _ from "lodash"
 
 import BankPage from "./BankPage";
@@ -63,8 +65,8 @@ import UsersPage from "./UsersPage";
 import { checkRole, getHeaders } from "./util";
 import WithdrawPage from "./WithdrawPage";
 import WithdrawsPage from "./WithdrawsPage";
-
 import Breadcs from "./components/breadcrumbs";
+import DialogLogout from "./DialogLogout";
 
 import {
   AMDINISTRATOR, AUTHENTICATED, WS_CLOSED, WS_CONNECTED, WS_CONNECTION, WS_SHOULD_RETRY
@@ -128,6 +130,33 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
+const ListItem = withStyles({
+  root: {
+    "&$selected": {
+      backgroundColor: "red",
+      color: "black",
+      "& .MuiListItemIcon-root": {
+        color: "blue"
+      }
+    },
+    "&$selected:hover": {
+      backgroundColor: "purple",
+      color: "black",
+      "& .MuiListItemIcon-root": {
+        color: "white"
+      }
+    },
+    "&:hover": {
+      backgroundColor: "blue",
+      color: "black",
+      "& .MuiListItemIcon-root": {
+        color: "white"
+      }
+    }
+  },
+  selected: {}
+})(MuiListItem);
+
 const App =(props) =>{
   const client = useApolloClient();
   const location = useLocation();
@@ -137,10 +166,11 @@ const App =(props) =>{
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = useState(false);
+  const [openDialogLogout, setOpenDialogLogout] = useState(false);
 
   let { ws, user, editedUserBalace, editedUserBalaceBook } = props
 
-  console.log("ws :", location)
+  // console.log("ws :", location)
 
   /////////////////////// ping ///////////////////////////////////
   const pingValues =useQuery(gqlPing, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true});
@@ -207,9 +237,9 @@ const App =(props) =>{
 
   const statusView = () =>{
     switch(ws?.ws_status){
-      case WS_CONNECTED :{
-        return <div />
-      }
+      // case WS_CONNECTED :{
+      //   return <div />
+      // }
       case WS_CONNECTION :
       case WS_SHOULD_RETRY: {
         return <div className="ws">server กำลังทำการเชื่อมต่อ <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
@@ -217,6 +247,10 @@ const App =(props) =>{
 
       case WS_CLOSED:{
         return <div className="ws">server มีปัญหา <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
+      }
+
+      default:{
+        return <div /> 
       }
     }
   }
@@ -277,11 +311,11 @@ const App =(props) =>{
                 {id: 1, title:"รายการถอดเงิน รออนุมัติ", icon: <AccountTreeIcon />, path: "/withdraws"},
                 {id: 2, title:"รายการฝากเงิน รออนุมัติ", icon: <AddRoadIcon />, path: "/deposits"},
                 {id: 3, title:"จัดการ Suppliers ทั้งหมด", icon: <AdjustIcon />, path: "/suppliers"},
-                {id: 4, title:"จัดการ รายชือบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
-                {id: 5, title:"จัดการ รายชือธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/banks"},
-                {id: 6, title:"จัดการ วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/date-lotterys"},
+                {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
+                {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/banks"},
+                {id: 6, title:"วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/date-lotterys"},
                 {id: 7, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+bank"},
-                {id: 8, title:"Logout", icon: <LogoutIcon />, path: "/"}]
+                {id: 8, title:"Logout", icon: <LogoutIcon />, path: "/logout"}]
       }
       case AUTHENTICATED:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon />, path: "/"},
@@ -291,7 +325,7 @@ const App =(props) =>{
                 {id: 4, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+bank"},
                 {id: 5, title:"Supplier list", icon: <AssistantIcon />, path: "/suppliers"},
                 {id: 6, title:"History-Transitions", icon: <AddRoadIcon />, path: "/history-transitions"},
-                {id: 7, title:"Logout", icon: <LogoutIcon />, path: "/"}]
+                {id: 7, title:"Logout", icon: <LogoutIcon />, path: "/logout"}]
       }
       default:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon />, path: "/"}]
@@ -302,6 +336,9 @@ const App =(props) =>{
   return (
     <div className="App">
       <ToastContainer />
+      {
+        openDialogLogout && <DialogLogout open={openDialogLogout} onClose={()=>setOpenDialogLogout(false)}/>
+      }
       {statusView()}
       <div class="container-fluid">
         <div className={classes.root}>
@@ -319,54 +356,67 @@ const App =(props) =>{
                 onClick={handleDrawerOpen}
                 edge="start"
                 className={clsx(classes.menuButton, open && classes.hide)}
-              >
-                <MenuIcon />
-              </IconButton>
-              <Typography variant="h6" noWrap>
-                BERTHONG
-              </Typography>
+              ><MenuIcon /></IconButton>
+              <Typography variant="h6" noWrap>BERTHONG</Typography>
               <Typography variant="h6" noWrap>
                 {!_.isEmpty(user)? "[  Name :" + user?.displayName +", Email :"+ user?.email + " ]" : ""}
               </Typography>
             </Toolbar>
           </AppBar>
-          <Drawer
-            className={classes.drawer}
-            variant="persistent"
-            anchor="left"
-            open={open}
-            classes={{
-              paper: classes.drawerPaper
-            }}
-          >
-            <div className={classes.drawerHeader}>
-              <IconButton onClick={handleDrawerClose}>
-                {theme.direction === "ltr" ? (
-                  <ChevronLeftIcon />
-                ) : (
-                  <ChevronRightIcon />
+          <ClickAwayListener
+            mouseEvent="onMouseDown"
+            touchEvent="onTouchStart"
+            onClickAway={()=> open && setOpen(false) }>
+            <Drawer
+              className={classes.drawer}
+              variant="persistent"
+              anchor="left"
+              open={open}
+              classes={{
+                paper: classes.drawerPaper
+              }}>
+              <div className={classes.drawerHeader}>
+                <IconButton onClick={handleDrawerClose}>
+                  {theme.direction === "ltr" ? (
+                    <ChevronLeftIcon />
+                  ) : (
+                    <ChevronRightIcon />
+                  )}
+                </IconButton>
+              </div>
+              <Divider />
+              <List>
+                {menuList().map((item, index) => {
+                  return  <ListItem
+                            // button
+                            selected={location?.pathname == item.path ? true : false}
+                            key={index}
+                            onClick={() => {
+                              switch(item.path){
+                                case "/logout":{
+                                  handleDrawerClose();
+                                  setOpenDialogLogout(true)
+                                  break;
+                                }
+
+                                default:{
+                                  navigate(item.path)
+                                }
+                              }
+                            }}>
+                            <ListItemIcon>{item.icon}</ListItemIcon>
+                            <ListItemText 
+                              primary={item.title} 
+                              primaryTypographyProps={{ style: { whiteSpace: "normal" } }} />
+                          </ListItem>
+                }
+                  
                 )}
-              </IconButton>
-            </div>
-            <Divider />
-            <List>
-              {menuList().map((item, index) => (
-                <ListItem
-                  // button
-                  key={index}
-                  onClick={() => {
-                    // Click(text);
-                    // console.log("> ", item.title)
-                    navigate(item.path)
-                  }}>
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.title} />
-                </ListItem>
-              ))}
-            </List>
-            <Divider />
-            <Typography variant="caption" display="block" gutterBottom>© 2023 BERTHONG LLC</Typography>
-          </Drawer>
+              </List>
+              <Divider />
+              <Typography variant="caption" display="block" gutterBottom>© 2023 BERTHONG LLC</Typography>
+            </Drawer>
+          </ClickAwayListener>
           <main
             className={clsx(classes.content, {
               [classes.contentShift]: open

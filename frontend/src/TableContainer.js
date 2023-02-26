@@ -1,5 +1,4 @@
 import React, {useEffect} from "react";
-import styled from 'styled-components'
 import {
   useTable,
   usePagination,
@@ -208,8 +207,11 @@ const Table = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipReset,
               </tr>
             ))}
           </thead>
-          <tbody {...getTableBodyProps()}>
-            {page.map(row => {
+          <tbody {...getTableBodyProps()}> 
+            {
+            page.length == 0
+            ? <div>Empty data</div>
+            : page.map(row => {
               prepareRow(row)
               return (
                 <tr {...row.getRowProps()}>

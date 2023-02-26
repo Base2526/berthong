@@ -238,30 +238,39 @@ export default {
     async withdraws(parent, args, context, info){
       let start = Date.now()
       let { req } = context
+      try{
+        let { status, code, pathname, current_user } =  await checkAuthorization(req);
+        if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
-      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+        if( checkRole(current_user) != AMDINISTRATOR && 
+            checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Admin or Authenticated only!')
 
-      if( checkRole(current_user) != AMDINISTRATOR || 
-          checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Admin or Authenticated only!')
+        if( checkRole(current_user) == AMDINISTRATOR ){
+          let withdraws = await Withdraw.find({status: "wait"})
 
-      if( checkRole(current_user) == AMDINISTRATOR ){
-        let withdraws = await Withdraw.find({status: "wait"})
+          withdraws = await Promise.all(_.map(withdraws, async(i)=>{
+                                                let user = await User.findById(i.userIdRequest)
+                                                return _.isEmpty(user) ? null : {...i._doc, userNameRequest: user?.displayName}
+                                              }).filter(i=>!_.isNull(i)))
+          return {  status: true,
+                    data: _.orderBy(withdraws, i => i.updatedAt, 'desc'),
+                    executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+        }
+
+        let withdraws = await Withdraw.find({userIdRequest: current_user?._id})
+        withdraws = await Promise.all(_.map(withdraws, async(item)=>{
+                                              let user = await User.findById(item.userIdApprove)
+                                              return {...item._doc, userNameApprove: user?.displayName}
+                                            }))
 
         return {  status: true,
                   data: _.orderBy(withdraws, i => i.updatedAt, 'desc'),
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }catch(error){
+        return {  status: false,
+          data: error.toString(),
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
       }
-
-      let withdraws = await Withdraw.find({userIdRequest: current_user?._id})
-      withdraws = await Promise.all(_.map(withdraws, async(item)=>{
-                                            let user = await User.findById(item.userIdApprove)
-                                            return {...item._doc, userNameApprove: user?.displayName}
-                                          }))
-
-      return {  status: true,
-                data: _.orderBy(withdraws, i => i.updatedAt, 'desc'),
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
     async withdrawById(parent, args, context, info){

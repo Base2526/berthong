@@ -38,7 +38,6 @@ import { lightGreen, blueGrey } from "@material-ui/core/colors";
 import Box from "@mui/joy/Box";
 import Checkbox, { checkboxClasses } from "@mui/joy/Checkbox";
 
-
 import { AMDINISTRATOR, AUTHENTICATED, FORCE_LOGOUT, WS_CLOSED, WS_CONNECTED, WS_SHOULD_RETRY } from "./constants";
 import DialogLogin from "./DialogLogin";
 import { querySuppliers, subscriptionSuppliers } from "./gqlQuery";
@@ -47,7 +46,8 @@ import ItemShare from "./ItemShare";
 import { login, logout } from "./redux/actions/auth";
 import { bookView, checkRole, getHeaders, sellView } from "./util";
 
-import PostPage from "./PostPage"
+import HomeItemPage from "./HomeItemPage"
+import HomeSearchPage from "./HomeSearchPage"
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -417,30 +417,30 @@ const HomePage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const toastIdRef = useRef(null)
+  const classes = useStyles();
   const [dialogLogin, setDialogLogin] = useState(false);
   const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
   let [openMenuSetting, setOpenMenuSetting] = useState(null);
   let [openMenuShare, setOpenMenuShare] = useState(null);
   let [datas, setDatas] = useState([]);
 
-  const classes = useStyles();
-  const [number, setNumber] = useState();
-  const [title, setTitle] = useState();
-  const [detail, setDetail] = useState();
-  const [price, setPrice] = useState(500);
-  const [chkBon, setChkBon] = useState(true);
-  const [chkLang, setChkLang] = useState(true);
-  const [chkMoney, setChkMoney] = useState(true);
-  const [chkGold, setChkGold] = useState(true);
-  const [filteredList, setFilteredList] = useState([]);
-  const [noDataList, setNoDataList] = useState(null);
-  const searchForm = useRef(null);
-  const [totalSearch, setTotalSearch] = useState("");
   const [slice, setSlice] = useState(8);
-  const [more, setMore] = useState(true);
-  const incr = 8;
-  const len = dataList.length;
+  const [hasMore, setHasMore] = useState(true);
+  const increment = 8;
 
+  // const [number, setNumber] = useState();
+  // const [title, setTitle] = useState();
+  // const [detail, setDetail] = useState();
+  // const [price, setPrice] = useState(500);
+  // const [chkBon, setChkBon] = useState(true);
+  // const [chkLang, setChkLang] = useState(true);
+  // const [chkMoney, setChkMoney] = useState(true);
+  // const [chkGold, setChkGold] = useState(true);
+  // const [filteredList, setFilteredList] = useState([]);
+  // const [noDataList, setNoDataList] = useState(null);
+  // const searchForm = useRef(null);
+  // const [totalSearch, setTotalSearch] = useState("");
+  // const len = dataList.length;
 
   let { user, logout, ws } = props
 
@@ -783,92 +783,93 @@ const HomePage = (props) => {
   }
 
   /////////////////////////
-  const handleSearch = () => {
-    const oldList = [...dataList];
+  // const handleSearch = (v) => {
+  //   const oldList = [...dataList];
+  //   const filteredAll = oldList.filter((data) => {
+  //     if (title !== "" && title !== undefined) {
+  //       if (!data.title.includes(title)) return false;
+  //     }
+  //     if (detail !== "" && detail !== undefined) {
+  //       if (!data.detail.includes(detail)) return false;
+  //     }
+  //     if (Number(price) > 0) {
+  //       if (Number(data.price) > Number(price)) return false;
+  //     }
+  //     if (!(chkBon === true && chkLang === true)) {
+  //       if (chkLang) {
+  //         if (!"lang".includes(data.type)) return false;
+  //       }
+  //       if (chkBon) {
+  //         if (!"bon".includes(data.type)) return false;
+  //       }
+  //     }
+  //     if (!(chkMoney === true && chkGold === true)) {
+  //       if (chkMoney) {
+  //         if (!"money".includes(data.category)) return false;
+  //       }
+  //       if (chkGold) {
+  //         if (!"gold".includes(data.category)) return false;
+  //       }
+  //     }
+  //     return true;
+  //   });
 
-    const filteredAll = oldList.filter((data) => {
-      if (title !== "" && title !== undefined) {
-        if (!data.title.includes(title)) return false;
-      }
-      if (detail !== "" && detail !== undefined) {
-        if (!data.detail.includes(detail)) return false;
-      }
-      if (Number(price) > 0) {
-        if (Number(data.price) > Number(price)) return false;
-      }
-      if (!(chkBon === true && chkLang === true)) {
-        if (chkLang) {
-          if (!"lang".includes(data.type)) return false;
-        }
-        if (chkBon) {
-          if (!"bon".includes(data.type)) return false;
-        }
-      }
-      if (!(chkMoney === true && chkGold === true)) {
-        if (chkMoney) {
-          if (!"money".includes(data.category)) return false;
-        }
-        if (chkGold) {
-          if (!"gold".includes(data.category)) return false;
-        }
-      }
-      return true;
-    });
+  //   if (filteredAll[0] === undefined || filteredAll[0] === null) {
+  //     setNoDataList([{ text: "no data" }]);
+  //     setTotalSearch(0);
+  //   } else {
+  //     setFilteredList(filteredAll);
+  //     setNoDataList(null);
+  //     setTotalSearch(filteredAll.length);
+  //   }
+    
+  // };
 
-    if (filteredAll[0] === undefined || filteredAll[0] === null) {
-      setNoDataList([{ text: "no data" }]);
-      setTotalSearch(0);
-    } else {
-      setFilteredList(filteredAll);
-      setNoDataList(null);
-      setTotalSearch(filteredAll.length);
-    }
-  };
-
-  const handleClick = () => {
-    if (slice === len) {
-      setMore(false);
+  const handleNext = () => {
+    if (slice === dataList.length) {
+      setHasMore(false);
       return;
-    } else if (slice + incr > len) {
-      setSlice(len);
+    } else if (slice + increment > dataList.length) {
+      setSlice(dataList.length);
       return;
     }
     setTimeout(() => {
-      setSlice(slice + incr);
+      setSlice(slice + increment);
     }, 2000);
   };
 
-  const res = (filteredList[0] !== undefined ? filteredList : dataList)
-    .slice(0, slice)
-    .map((post, index) => <PostPage key={index} post={post} />);
+  // const handleSliderChange = (event, newValue) => {
+  //   setPrice(newValue);
+  // };
+  // const handleInputChange = (event) => {
+  //   setPrice(event.target.value === "" ? "" : Number(event.target.value));
+  // };
+  // const [expanded, setExpanded] = useState(false);
 
-  
-  const handleSliderChange = (event, newValue) => {
-    setPrice(newValue);
-  };
-  const handleInputChange = (event) => {
-    setPrice(event.target.value === "" ? "" : Number(event.target.value));
-  };
-  const [expanded, setExpanded] = useState(false);
+  // const handleChange = (panel) => (event, isExpanded) => {
+  //   console.log(panel);
+  //   console.log(isExpanded);
+  //   setExpanded(isExpanded ? panel : false);
+  // };
 
-  const handleChange = (panel) => (event, isExpanded) => {
-    console.log(panel);
-    console.log(isExpanded);
-    setExpanded(isExpanded ? panel : false);
-  };
+  // const handleChk = (event) => {
+  //   if (event.target.name === "chkBon") {
+  //     console.log(event.target.checked);
+  //     setChkBon(event.target.checked);
+  //   } else if (event.target.name === "chkLang") {
+  //     setChkLang(event.target.checked);
+  //   } else if (event.target.name === "chkMoney") {
+  //     setChkMoney(event.target.checked);
+  //   } else if (event.target.name === "chkGold") {
+  //     setChkGold(event.target.checked);
+  //   }
+  // };
 
-  const handleChk = (event) => {
-    if (event.target.name === "chkBon") {
-      console.log(event.target.checked);
-      setChkBon(event.target.checked);
-    } else if (event.target.name === "chkLang") {
-      setChkLang(event.target.checked);
-    } else if (event.target.name === "chkMoney") {
-      setChkMoney(event.target.checked);
-    } else if (event.target.name === "chkGold") {
-      setChkGold(event.target.checked);
-    }
-  };
+  // const itemViewUI = () =>{
+  //   // return  (filteredList[0] !== undefined ? filteredList : dataList)
+  //   // .slice(0, slice)
+  //   // .map((post, index) => <HomeItemPage key={index} post={post} />);
+  // }
 
   const mainViewUI = () =>{
     switch(ws?.ws_status){
@@ -916,365 +917,152 @@ const HomePage = (props) => {
 
     return  <div className="contrainer">
               <div style={{ paddingBottom: "1rem" }}>
-                <div className={classes.root}>
-                  <div>
-                    <form ref={searchForm}>
-                      <Accordion>
-                        <AccordionSummary
-                          expandIcon={<ExpandMoreIcon />}
-                          aria-controls="panel1a-content"
-                          id="panel1a-header"
-                        >
-                          <Typography>
-                            {" "}
-                            <i class="icon icon-search far fas fa-search"></i> advance
-                            search
-                          </Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                          <Typography>
-                            <div className="row m-1">
-                              <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
-                                <TextField
-                                  id="standard-basic"
-                                  label="ตัวเลข"
-                                  variant="filled"
-                                  name={"number"}
-                                  onChange={(evt) => {
-                                    setNumber(evt.target.value);
-                                  }}
-                                />
-                              </div>
-                              <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
-                                <TextField
-                                  id="standard-basic"
-                                  label="ชื่อ"
-                                  variant="filled"
-                                  onChange={(evt) => {
-                                    setTitle(evt.target.value);
-                                  }}
-                                />
-                              </div>
-                              <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
-                                <TextField
-                                  id="standard-basic"
-                                  label="รายละเอียด"
-                                  variant="filled"
-                                  onChange={(evt) => {
-                                    setDetail(evt.target.value);
-                                  }}
-                                />
-                              </div>
-                              <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
-                                <div>
-                                  <Slider
-                                    sx={{ width: "100%" }}
-                                    // value={typeof price === "number" ? price : 0}
-                                    value={price}
-                                    onChange={handleSliderChange}
-                                    aria-labelledby="input-slider"
-                                    min={10}
-                                    max={1000}
-                                  />
-                                  ราคาไม่เกิน
-                                  <Input
-                                    className={classes.input}
-                                    value={price}
-                                    margin="dense"
-                                    onChange={handleInputChange}
-                                    inputProps={{
-                                      step: 10,
-                                      min: 0,
-                                      max: 100,
-                                      type: "number",
-                                      "aria-labelledby": "input-slider",
-                                      style: { textAlign: "center" }
-                                    }}
-                                  />
-                                  บาท
-                                </div>
-                              </div>
-                              <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1 m-1">
-                                <Box sx={{ display: "flex", gap: 2 }}>
-                                  <Checkbox
-                                    name="chkBon"
-                                    label="บน"
-                                    defaultChecked
-                                    onChange={handleChk}
-                                    sx={{
-                                      [`& > .${checkboxClasses.checkbox}`]: {}
-                                    }}
-                                    // to demonstrate the focus outline
-                                    slotProps={{
-                                      action: {
-                                        className: checkboxClasses.focusVisible
-                                      }
-                                    }}
-                                  />
-                                  <Checkbox
-                                    name="chkLang"
-                                    label="ล่าง"
-                                    defaultChecked
-                                    onChange={handleChk}
-                                    sx={{
-                                      [`& > .${checkboxClasses.checkbox}`]: {}
-                                    }}
-                                    // to demonstrate the focus outline
-                                    slotProps={{
-                                      action: {
-                                        className: checkboxClasses.focusVisible
-                                      }
-                                    }}
-                                  />
-                                  <Checkbox
-                                    name="chkMoney"
-                                    label="เงิน"
-                                    defaultChecked
-                                    onChange={handleChk}
-                                    color="warning"
-                                    sx={{
-                                      [`& > .${checkboxClasses.checkbox}`]: {}
-                                    }}
-                                    // to demonstrate the focus outline
-                                    slotProps={{
-                                      action: {
-                                        className: checkboxClasses.focusVisible
-                                      }
-                                    }}
-                                  />
-                                  <Checkbox
-                                    name="chkGold"
-                                    label="ทอง"
-                                    defaultChecked
-                                    onChange={handleChk}
-                                    color="warning"
-                                    sx={{
-                                      [`& > .${checkboxClasses.checkbox}`]: {}
-                                    }}
-                                    // to demonstrate the focus outline
-                                    slotProps={{
-                                      action: {
-                                        className: checkboxClasses.focusVisible
-                                      }
-                                    }}
-                                  />
-
-                                  {/* <Box role="group" aria-labelledby="topping">
-                                  <List
-                                    orientation="horizontal"
-                                    wrap
-                                    sx={{
-                                      "--List-gap": "8px",
-                                      "--List-item-radius": "15px"
-                                    }}
-                                  > */}
-                                  {/* {["บน", "ล่าง"].map((item, index) => (
-                                      <ListItem key={item}>
-                                        <Checkbox
-                                          overlay
-                                          disableIcon
-                                          variant="soft"
-                                          label={item}
-                                        />
-                                      </ListItem>
-                                    ))}
-                                    {["เงิน", "ทอง"].map((item, index) => (
-                                      <ListItem key={item}>
-                                        <Checkbox
-                                          overlay
-                                          disableIcon
-                                          variant="soft"
-                                          label={item}
-                                        />
-                                      </ListItem>
-                                    ))} */}
-                                  {/* </List>
-                                </Box> */}
-                                </Box>
-                              </div>
-                            </div>
-                          </Typography>
-                        </AccordionDetails>
-                        <AccordionActions className={classes.details}>
-                          <div style={{ justifyContent: "flex-start" }}>
-                            ผลการค้นหา {totalSearch}
-                          </div>
-                          <Button
-                            className={classes.containedBlueGrey}
-                            size="small"
-                            onClick={() => {
-                              setNumber("");
-                              setTitle("");
-                              setDetail("");
-                              setPrice(0);
-                              setChkBon(true);
-                              setChkLang(true);
-                              setChkMoney(true);
-                              setChkGold(true);
-                            }}
-                          >
-                            RESET
-                          </Button>
-                          <Button
-                            size="small"
-                            onClick={handleSearch}
-                            className={classes.containedLightGreen}
-                          >
-                            SEARCH
-                          </Button>
-                        </AccordionActions>
-                        {/* </form> */}
-                      </Accordion>
-                    </form>
-                  </div>
-                </div>
+                <HomeSearchPage
+                  classes={classes}
+                  onSearch={(v)=>console.log("v :", v)} />
               </div>
 
               <div className="row">
                 <div className="col-12 pb-2">
-                  {noDataList !== null ? (
-                    <div className="noData p-2 m-1">
-                      {" "}
-                      <ErrorOutlineIcon /> ไม่พบข้อมูลที่ค้นหา
-                    </div>
-                  ) : (
-                    <div>
-                      <InfiniteScroll
-                        dataLength={slice}
-                        next={handleClick}
-                        hasMore={more}
-                        loader={
-                          <div className="row">
-                            <div class="col-md-6 col-lg-3">
-                              <div
-                                key={1}
-                                className="skeleton card-custom card"
-                                style={{ width: "100%" }}
-                              >
-                                <p className="image"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                              </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3">
-                              <div
-                                key={2}
-                                className="skeleton card-custom card"
-                                style={{ width: "100%" }}
-                              >
-                                <p className="image"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                              </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3 pb-3">
-                              <div
-                                key={3}
-                                className="skeleton card-custom card"
-                                style={{ width: "100%" }}
-                              >
-                                <p className="image"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                              </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3 pb-3">
-                              <div
-                                key={4}
-                                className="skeleton card-custom card"
-                                style={{ width: "100%" }}
-                              >
-                                <p className="image"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                              </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3 pb-3">
-                              <div
-                                key={5}
-                                className="skeleton card-custom card"
-                                style={{ width: "100%" }}
-                              >
-                                <p className="image"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                              </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3 pb-3">
-                              <div
-                                key={6}
-                                className="skeleton card-custom card"
-                                style={{ width: "100%" }}
-                              >
-                                <p className="image"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                              </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3 pb-3">
-                              <div
-                                key={7}
-                                className="skeleton card-custom card"
-                                style={{ width: "100%" }}
-                              >
-                                <p className="image"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                              </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3 pb-3">
-                              <div
-                                key={8}
-                                className="skeleton card-custom card"
-                                style={{ width: "100%" }}
-                              >
-                                <p className="image"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                                <p className="line"></p>
-                              </div>
+                {
+                  _.isEmpty(dataList)
+                  ? <div className="noData p-2 m-1"><ErrorOutlineIcon /> ไม่พบข้อมูลที่ค้นหา </div>
+                  : <InfiniteScroll
+                      dataLength={slice}
+                      next={handleNext}
+                      hasMore={hasMore}
+                      loader={
+                        <div className="row">
+                          <div class="col-md-6 col-lg-3">
+                            <div
+                              key={1}
+                              className="skeleton card-custom card"
+                              style={{ width: "100%" }}
+                            >
+                              <p className="image"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
                             </div>
                           </div>
-                        }
-                        scrollThreshold={0.5}
-                        scrollableTarget="scrollableDiv"
-                        endMessage={<h2>You have reached the end</h2>}
-                      >
-                        <div className="row">{res}</div>
-                      </InfiniteScroll>
-                    </div>
-                  )}
+                          <div class="col-md-6 col-lg-3">
+                            <div
+                              key={2}
+                              className="skeleton card-custom card"
+                              style={{ width: "100%" }}
+                            >
+                              <p className="image"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                            </div>
+                          </div>
+                          <div class="col-md-6 col-lg-3 pb-3">
+                            <div
+                              key={3}
+                              className="skeleton card-custom card"
+                              style={{ width: "100%" }}
+                            >
+                              <p className="image"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                            </div>
+                          </div>
+                          <div class="col-md-6 col-lg-3 pb-3">
+                            <div
+                              key={4}
+                              className="skeleton card-custom card"
+                              style={{ width: "100%" }}
+                            >
+                              <p className="image"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                            </div>
+                          </div>
+                          <div class="col-md-6 col-lg-3 pb-3">
+                            <div
+                              key={5}
+                              className="skeleton card-custom card"
+                              style={{ width: "100%" }}
+                            >
+                              <p className="image"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                            </div>
+                          </div>
+                          <div class="col-md-6 col-lg-3 pb-3">
+                            <div
+                              key={6}
+                              className="skeleton card-custom card"
+                              style={{ width: "100%" }}
+                            >
+                              <p className="image"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                            </div>
+                          </div>
+                          <div class="col-md-6 col-lg-3 pb-3">
+                            <div
+                              key={7}
+                              className="skeleton card-custom card"
+                              style={{ width: "100%" }}
+                            >
+                              <p className="image"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                            </div>
+                          </div>
+                          <div class="col-md-6 col-lg-3 pb-3">
+                            <div
+                              key={8}
+                              className="skeleton card-custom card"
+                              style={{ width: "100%" }}
+                            >
+                              <p className="image"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                              <p className="line"></p>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                      scrollThreshold={0.5}
+                      scrollableTarget="scrollableDiv"
+                      endMessage={<h2>You have reached the end</h2>}>
+                      <div className="row">
+                        {_.map(dataList, (item, index) =>{
+                          return <HomeItemPage {...props} key={index} item={item} />
+                        } )}
+                      </div>
+                    </InfiniteScroll>
+                  }
                 </div>
               </div>
             </div>
   }
 
   /////////////////////////
-
-  // return mainView();
 
   return mainViewUI()
 }
