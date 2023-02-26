@@ -12,50 +12,50 @@ const HomeItemPage = (props) => {
   let { item, displayDelete, type } = props;
 
   return (
-    <div class="col-md-6 col-lg-3 pb-3">
-      <div class="card card-custom bg-white border-white border-0">
-        <span class={item.type === "bon" ? "bon" : "lang"}>
-          <b>{item.type === "bon" ? "บน" : "ล่าง"}</b>
+    <div className="col-md-6 col-lg-3 pb-3">
+      <div className="card card-custom bg-white border-white border-0">
+        <span className={item?.type === "bon" ? "bon" : "lang"}>
+          <b>{item?.type === "bon" ? "บน" : "ล่าง"}</b>
         </span>
-        <span class="price">
-          <b>{item.price} บาท</b>
+        <span className="price">
+          <b>{item?.price} บาท</b>
         </span>
         <div
-          class="card-custom-img"
+          className="card-custom-img"
           style={{
             backgroundImage: `url(${
-              item.picture
-                ? item.picture
+              item?.picture
+                ? item?.picture
                 : "https://images.rawpixel.com/image_600/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcm0yMS1iYWNrZ3JvdW5kLXRvbmctMDU4LmpwZw.jpg"
             })`
           }}
         ></div>
-        <div class="card-custom-avatar">
+        <div className="card-custom-avatar">
           <img
-            class="img-fluid"
+            className="img-fluid"
             src={
-              item.avatar
-                ? item.avatar
+              item?.avatar
+                ? item?.avatar
                 : "https://img.myloview.com/stickers/default-avatar-profile-icon-vector-social-media-user-image-700-205124837.jpg"
             }
             alt="Avatar"
           />
         </div>
-        <div class="card-body" style={{ overflowY: "auto" }}>
+        <div className="card-body" style={{ overflowY: "auto" }}>
           {/* <h4 class="card-title">{post.title}</h4> */}
           <div className="row">
             <div className="col-12 p-2">
               <span class="card-title" style={{ float: "left" }}>
-                <b>{item.title} - {item.id}</b>
+                <b>{item?.title}</b>
               </span>
-              <h4 class="card-title" style={{ float: "right" }}>
+              <h4 className="card-title" style={{ float: "right" }}>
                 <IconButton><BookmarkIcon /></IconButton>
                 <IconButton><MoreVertIcon /></IconButton>
               </h4>
             </div>
           </div>
           <div>
-            <p class="card-text">{item.detail}</p>
+            <p className="card-text">{item?.description}</p>
           </div>
         </div>
         {/* <div>

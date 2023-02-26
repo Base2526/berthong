@@ -31,7 +31,10 @@ let initValues = {
   priceUnit: "",
   description: "",
   dateLottery: null,
-  attackFiles: [] 
+  attackFiles: [],
+  limit: "",           // 1-100
+  category: "",        // money, gold, things, etc
+  type: "",            // bon, lang
 }
 
 const SupplierPage = (props) => {
@@ -211,18 +214,6 @@ const SupplierPage = (props) => {
         return <LocalizationProvider dateAdapter={AdapterDateFns} >
                 <Box component="form" sx={{"& .MuiTextField-root": { m: 1, width: "50ch" } }} onSubmit={submitForm}>
                   <div >
-                    {/* <TextField
-                      id="title"
-                      name="title"
-                      label={"ชื่อ"}
-                      variant="filled"
-                      required
-                      value={input.title}
-                      onChange={onInputChange}
-                      onBlur={validateInput}
-                      helperText={error.title}
-                      error={_.isEmpty(error.title) ? false : true}/> */}
-
                     <div>
                       <label>ชื่อ :</label>
                       <input 
@@ -233,19 +224,6 @@ const SupplierPage = (props) => {
                         onBlur={validateInput}
                         />
                     </div>
-
-                    {/* <TextField
-                      id="price"
-                      name="price"
-                      label={"ราคาสินค้า"}
-                      variant="filled"
-                      type="number"
-                      required
-                      value={ _.isEmpty(input.price) ? "" : input.price}
-                      onChange={onInputChange}
-                      onBlur={validateInput}
-                      helperText={ _.isEmpty(error.price) ? "" : error.price }
-                      error={_.isEmpty(error.price) ? false : true}/> */}
                     <div>
                       <label>ราคาสินค้า :</label>
                       <input 
@@ -254,21 +232,8 @@ const SupplierPage = (props) => {
                         value={ _.isEmpty(input.price) ? "" : input.price}
                         onChange={onInputChange}
                         onBlur={validateInput}
-                        />
+                      />
                     </div>
-                     {/* 
-                     <TextField
-                      id="price-unit"
-                      name="priceUnit"
-                      label={"ขายเบอละ"}
-                      variant="filled"
-                      type="number"
-                      required
-                      value={_.isEmpty(input.priceUnit) ? "" : input.priceUnit }
-                      onChange={onInputChange}
-                      onBlur={validateInput}
-                      helperText={_.isEmpty(error.priceUnit) ? "" : error.priceUnit}
-                      error={_.isEmpty(error.priceUnit) ? false : true}/> */}
                     <div>
                       <label>ขายเบอละ :</label>
                       <input 
@@ -277,19 +242,20 @@ const SupplierPage = (props) => {
                         value={_.isEmpty(input.priceUnit) ? "" : input.priceUnit }
                         onChange={onInputChange}
                         onBlur={validateInput}
-                        />
+                      />
                     </div>
-
                     <div>
                       <label>งวดที่ออกรางวัล :</label>
                       {
                         _.isEmpty(dateLotterysValues) 
                         ? <LinearProgress />
-                        : <select name="cars" id="cars" onChange={(event)=>{
-                            console.log("selectObject :", event.target.value)
-
-                            setInput({...input, dateLottery:  event.target.value})
-                          }}>
+                        : <select 
+                            name="dateLottery" 
+                            id="dateLottery" 
+                            onChange={(event)=>{
+                              setInput({...input, dateLottery:  event.target.value})
+                            }
+                          }>
                             <option value={""}>ไม่เลือก</option>
                             {_.map(dateLotterysValues, (dateLotterysValue)=>{
                               return <option value={dateLotterysValue._id}>{dateLotterysValue.title}</option>
@@ -297,44 +263,43 @@ const SupplierPage = (props) => {
                           </select>
                       }
                     </div>
-
                     <div>
-                      <label>ต้องขายได้ไม่น้อยกว่ากี่เบอถึงจะสมบูรณ์</label>
-                      <select name="cars" id="cars" onChange={(event)=>{
-                        console.log("selectObject :", event.target.value)
-
-                        // setInput({...input, dateLottery:  event.target.value})
-                      }}>
+                      <label>ต้องขายได้ไม่น้อยกว่ากี่เบอถึงจะสมบูรณ์ *</label>
+                      <select 
+                        name="limit" 
+                        id="limit" 
+                        onChange={(event)=>{
+                          setInput({...input, limit: event.target.value})
+                        }
+                      }>
                         <option value={""}>ไม่เลือก</option>
                         {_.map([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], (value)=>{
                           return <option value={value}>{value}</option>
                         })}
                       </select>    
                     </div>
-
                     <div>
-                      <label>บน/ล่าง</label>
-                      <select name="cars" id="cars" onChange={(event)=>{
-                        console.log("selectObject :", event.target.value)
-
-                        // setInput({...input, dateLottery:  event.target.value})
-                      }}>
+                      <label>บน/ล่าง *</label>
+                      <select 
+                        name="type" 
+                        id="type" 
+                        onChange={(event)=>{
+                          setInput({...input, type: event.target.value})
+                        }}>
                       <option value={""}>ไม่เลือก</option>
-                        {_.map(["บน", "ล่าง"], (value)=>{
-                          return <option value={value}>{value}</option>
-                        })}
+                      {_.map(["bon", "lang"], (value)=><option value={value}>{value}</option> )}
                       </select>    
                     </div> 
-
                     <div>
-                      <label>หมวดหมู่</label>
-                      <select name="cars" id="cars" onChange={(event)=>{
-                        console.log("selectObject :", event.target.value)
-
-                        // setInput({...input, dateLottery:  event.target.value})
-                      }}>
+                      <label>หมวดหมู่ *</label>
+                      <select 
+                        name="category" 
+                        id="category" 
+                        onChange={(event)=>{
+                          setInput({...input, category: event.target.value})
+                        }}>
                       <option value={""}>ไม่เลือก</option>
-                        {_.map(["เงิน", "ทอง", "สิ่งของ", "อื่นๆ"], (value)=>{
+                        {_.map(["money", "gold", "things", "etc"], (value)=>{
                           return <option value={value}>{value}</option>
                         })}
                       </select> 
@@ -357,11 +322,8 @@ const SupplierPage = (props) => {
                       onSnackbar={(data) => {
                           setSnackbar(data);
                       }}/>
-
                   </div>
-                  <button type="submit" variant="contained" color="primary">
-                      {t("create")}
-                  </button>
+                  <button type="submit" variant="contained" color="primary"> {t("create")}</button>
                 </Box>
                </LocalizationProvider>
     }

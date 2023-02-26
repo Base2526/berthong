@@ -29,17 +29,17 @@ const DialogLogin = (props) => {
   const navigate = useNavigate();
   const deviceData = useDeviceData();
 
-  let { login, onComplete, onClose, open } = props;
+  let { onComplete, onClose, open } = props;
 
   let [input, setInput]   = useState({ username: "",  password: ""});
   
   const [onLogin, resultLogin] = useMutation(mutationLogin, {
-    update: (cache, {result}) => {
-      let {status, data, sessionId} = result.login
+    update: (cache, {data:{login}}) => {
+      let {status, data, sessionId} = login
       if(status){
         localStorage.setItem('token', sessionId)
 
-        login(data)
+        props.login(data)
         onComplete()
       }
     },
@@ -119,7 +119,7 @@ const DialogLogin = (props) => {
 
   const handleSubmit = (event, type) =>{
     event.preventDefault();
-    onLogin({ variables: { input: { username: input.username,  password: input.password, deviceAgent: JSON.stringify(deviceData) }} })
+    onLogin({ variables: { input: { username: _.trim(input.username),  password: _.trim(input.password), deviceAgent: JSON.stringify(deviceData) }} })
   }
 
   const onInputChange = (e) => {

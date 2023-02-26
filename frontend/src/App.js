@@ -33,7 +33,8 @@ import {
   Adjust as AdjustIcon,
   AlternateEmail as AlternateEmailIcon,
   AllOut as AllOutIcon,
-  Assistant as AssistantIcon
+  Assistant as AssistantIcon,
+  Login as LoginIcon
 } from '@mui/icons-material';
 import {
   IconButton,
@@ -66,11 +67,13 @@ import { checkRole, getHeaders } from "./util";
 import WithdrawPage from "./WithdrawPage";
 import WithdrawsPage from "./WithdrawsPage";
 import Breadcs from "./components/breadcrumbs";
+import DialogLogin from "./DialogLogin";
 import DialogLogout from "./DialogLogout";
 
 import {
   AMDINISTRATOR, AUTHENTICATED, WS_CLOSED, WS_CONNECTED, WS_CONNECTION, WS_SHOULD_RETRY
 } from "./constants";
+import { login, logout } from "./redux/actions/auth";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme) => ({
@@ -167,6 +170,7 @@ const App =(props) =>{
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [openDialogLogout, setOpenDialogLogout] = useState(false);
+  const [dialogLogin, setDialogLogin] = useState(false);
 
   let { ws, user, editedUserBalace, editedUserBalaceBook } = props
 
@@ -328,7 +332,8 @@ const App =(props) =>{
                 {id: 7, title:"Logout", icon: <LogoutIcon />, path: "/logout"}]
       }
       default:{
-        return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon />, path: "/"}]
+        return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon />, path: "/"},
+                {id: 7, title:"Login", icon: <LoginIcon />, path: "/login"}]
       }
     }
   }
@@ -393,6 +398,10 @@ const App =(props) =>{
                             key={index}
                             onClick={() => {
                               switch(item.path){
+                                case "/login":{
+                                  setDialogLogin(true)
+                                  break;
+                                }
                                 case "/logout":{
                                   handleDrawerClose();
                                   setOpenDialogLogout(true)
@@ -455,6 +464,19 @@ const App =(props) =>{
             <Route path="*" element={<p>There's nothing here: 404!</p>} />
           </Routes>
         </div>
+
+        {dialogLogin && (
+                  <DialogLogin
+                    {...props}
+                    open={dialogLogin}
+                    onComplete={async(data)=>{
+                      setDialogLogin(false);
+                    }}
+                    onClose={() => {
+                      setDialogLogin(false);
+                    }}
+                  />
+                )}
       </div>
     </div>
   );
@@ -466,6 +488,7 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = {
   editedUserBalace,
-  editedUserBalaceBook
+  editedUserBalaceBook,
+  login
 }
 export default connect( mapStateToProps, mapDispatchToProps )(App);
