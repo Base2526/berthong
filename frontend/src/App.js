@@ -1,9 +1,44 @@
 import { useApolloClient, useQuery, useSubscription } from "@apollo/client";
 import moment from "moment";
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { connect } from "react-redux";
 import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
+
+import { CDBSidebar } from "cdbreact";
+import clsx from "clsx";
+import { makeStyles, useTheme } from "@material-ui/core/styles";
+import {
+  ListItemText,
+  ListItemIcon,
+  ListItem,
+  List,
+  Divider,
+  Typography,
+  // IconButton,
+  Toolbar,
+  AppBar,
+  CssBaseline,
+  Drawer
+} from "@material-ui/core";
+import {
+  Home as HomeIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+  Menu as MenuIcon
+} from "@material-ui/icons";
+import {
+  Logout as LogoutIcon,
+  AccountBalanceWallet as AccountBalanceWalletIcon,
+  AccountTree as AccountTreeIcon,
+  AddRoad as AddRoadIcon,
+  Adjust as AdjustIcon,
+  AlternateEmail as AlternateEmailIcon,
+  AllOut as AllOutIcon,
+  Assistant as AssistantIcon
+} from '@mui/icons-material';
+import IconButton from "@mui/material/IconButton";
+import _ from "lodash"
 
 import BankPage from "./BankPage";
 import BanksPage from "./BanksPage";
@@ -35,11 +70,73 @@ import {
   AMDINISTRATOR, AUTHENTICATED, WS_CLOSED, WS_CONNECTED, WS_CONNECTION, WS_SHOULD_RETRY
 } from "./constants";
 
+const drawerWidth = 240;
+const useStyles = makeStyles((theme) => ({
+  root: {
+    display: "flex"
+  },
+  appBar: {
+    transition: theme.transitions.create(["margin", "width"], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen
+    })
+  },
+  appBarShift: {
+    width: `calc(100% - ${drawerWidth}px)`,
+    marginLeft: drawerWidth,
+    transition: theme.transitions.create(["margin", "width"], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen
+    })
+  },
+  menuButton: {
+    marginRight: theme.spacing(2)
+  },
+  hide: {
+    display: "none"
+  },
+  drawer: {
+    width: drawerWidth,
+    flexShrink: 0
+  },
+  drawerPaper: {
+    width: drawerWidth
+  },
+  drawerHeader: {
+    display: "flex",
+    alignItems: "center",
+    padding: theme.spacing(0, 1),
+    // necessary for content to be below app bar
+    ...theme.mixins.toolbar,
+    justifyContent: "flex-end"
+  },
+  content: {
+    flexGrow: 1,
+    padding: theme.spacing(2),
+    transition: theme.transitions.create("margin", {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen
+    }),
+    marginLeft: -drawerWidth
+  },
+  contentShift: {
+    transition: theme.transitions.create("margin", {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen
+    }),
+    marginLeft: 0
+  }
+}));
+
 const App =(props) =>{
   const client = useApolloClient();
   const location = useLocation();
   const navigate = useNavigate();
   let intervalPing = useRef(null);
+
+  const classes = useStyles();
+  const theme = useTheme();
+  const [open, setOpen] = useState(false);
 
   let { ws, user, editedUserBalace, editedUserBalaceBook } = props
 
@@ -47,7 +144,6 @@ const App =(props) =>{
 
   /////////////////////// ping ///////////////////////////////////
   const pingValues =useQuery(gqlPing, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true});
-
 
   useSubscription(subscriptionMe, {
     onSubscriptionData: useCallback((res) => {
@@ -125,7 +221,16 @@ const App =(props) =>{
     }
   }
 
-  return (
+  const handleDrawerOpen = () => {
+    setOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    setOpen(false);
+  };
+
+  /*
+  return2 (
       <div className="App">
         <ToastContainer />
         {statusView()}
@@ -162,6 +267,146 @@ const App =(props) =>{
           </div>
         </div>
       </div>
+  );
+  */
+
+  const menuList = () =>{
+    switch(checkRole(user)){
+      case AMDINISTRATOR:{
+        return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon />, path: "/"},
+                {id: 1, title:"รายการถอดเงิน รออนุมัติ", icon: <AccountTreeIcon />, path: "/withdraws"},
+                {id: 2, title:"รายการฝากเงิน รออนุมัติ", icon: <AddRoadIcon />, path: "/deposits"},
+                {id: 3, title:"จัดการ Suppliers ทั้งหมด", icon: <AdjustIcon />, path: "/suppliers"},
+                {id: 4, title:"จัดการ รายชือบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
+                {id: 5, title:"จัดการ รายชือธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/banks"},
+                {id: 6, title:"จัดการ วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/date-lotterys"},
+                {id: 7, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+bank"},
+                {id: 8, title:"Logout", icon: <LogoutIcon />, path: "/"}]
+      }
+      case AUTHENTICATED:{
+        return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon />, path: "/"},
+                {id: 1, title:"รายการ จอง-ซื้อ", icon: <AccountTreeIcon />, path: "/book+buys"},
+                {id: 2, title:"รายการ แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
+                {id: 3, title:"รายการ แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
+                {id: 4, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+bank"},
+                {id: 5, title:"Supplier list", icon: <AssistantIcon />, path: "/suppliers"},
+                {id: 6, title:"History-Transitions", icon: <AddRoadIcon />, path: "/history-transitions"},
+                {id: 7, title:"Logout", icon: <LogoutIcon />, path: "/"}]
+      }
+      default:{
+        return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon />, path: "/"}]
+      }
+    }
+  }
+
+  return (
+    <div className="App">
+      <ToastContainer />
+      {statusView()}
+      <div class="container-fluid">
+        <div className={classes.root}>
+          <CssBaseline />
+          <AppBar
+            position="fixed"
+            className={clsx(classes.appBar, {
+              [classes.appBarShift]: open
+            })}
+          >
+            <Toolbar>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                onClick={handleDrawerOpen}
+                edge="start"
+                className={clsx(classes.menuButton, open && classes.hide)}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="h6" noWrap>
+                BERTHONG
+              </Typography>
+              <Typography variant="h6" noWrap>
+                {!_.isEmpty(user)? "[  Name :" + user?.displayName +", Email :"+ user?.email + " ]" : ""}
+              </Typography>
+            </Toolbar>
+          </AppBar>
+          <Drawer
+            className={classes.drawer}
+            variant="persistent"
+            anchor="left"
+            open={open}
+            classes={{
+              paper: classes.drawerPaper
+            }}
+          >
+            <div className={classes.drawerHeader}>
+              <IconButton onClick={handleDrawerClose}>
+                {theme.direction === "ltr" ? (
+                  <ChevronLeftIcon />
+                ) : (
+                  <ChevronRightIcon />
+                )}
+              </IconButton>
+            </div>
+            <Divider />
+            <List>
+              {menuList().map((item, index) => (
+                <ListItem
+                  // button
+                  key={index}
+                  onClick={() => {
+                    // Click(text);
+                    // console.log("> ", item.title)
+                    navigate(item.path)
+                  }}>
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.title} />
+                </ListItem>
+              ))}
+            </List>
+            <Divider />
+            <Typography variant="caption" display="block" gutterBottom>© 2023 BERTHONG LLC</Typography>
+          </Drawer>
+          <main
+            className={clsx(classes.content, {
+              [classes.contentShift]: open
+            })}
+          >
+            {<div className={classes.drawerHeader} />}
+          </main>
+        </div>
+        <div className="container">
+          <Breadcs />
+          <Routes>
+            <Route path="/" exact element={<HomePage />} />
+            <Route path="/p" element={<DetailPage />} />
+            <Route path="/user/login" element={<LoginPage />} />
+            <Route path="/suppliers" element={<SuppliersPage />} />
+            <Route path="/supplier" element={<SupplierPage />} />
+            <Route path="/profile" element={<SupplierProfilePage />}/>
+            <Route element={<ProtectedAuthenticatedRoute user={user} />}>
+              <Route path="/me" element={<MePage />} />
+              <Route path="/deposit" element={<DepositPage />} />
+              <Route path="/withdraw" element={<WithdrawPage />} />
+              <Route path="/history-transitions" element={<HistoryTransitionsPage />} />
+              <Route path="/me+bank" element={<ProfileBankPage />} />
+              <Route path="/book+buys" element={<BookBuysPage />} />
+            </Route>
+            <Route element={<ProtectedAdministratorRoute user={user} />}>
+              <Route path="/deposits" element={<DepositsPage />} />
+              <Route path="/withdraws" element={<WithdrawsPage />} />
+              <Route path="/date-lotterys" element={<DateLotterysPage />} />
+              <Route path="/date-lottery" element={<DateLotteryPage />} />
+              <Route path="/users" element={<UsersPage />} />
+              <Route path="/user" element={<UserPage />} />
+              <Route path="/banks" element={<BanksPage />} />
+              <Route path="/bank" element={<BankPage />} />
+            </Route>
+            <Route path="*" element={<p>There's nothing here: 404!</p>} />
+          </Routes>
+        </div>
+      </div>
+    </div>
   );
 }
 

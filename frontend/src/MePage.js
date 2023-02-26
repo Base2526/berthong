@@ -45,45 +45,38 @@ const MePage = (props) => {
                                 <div>Management</div>
                                 <div>
                                     <button onClick={()=>{ 
-                                        // history.push("/withdraws");
                                         navigate("/withdraws");
                                     }}>รายการถอดเงิน รออนุมัติ</button>
                                 </div>
                                 <div>
                                     <button onClick={()=>{ 
-                                        // history.push("/deposits"); 
                                         navigate("/deposits");
                                     }}>รายการฝากเงิน รออนุมัติ</button>
                                 </div>
                                 <div>
                                     <button onClick={()=>{ 
-                                        // history.push("/suppliers"); 
                                         navigate("/suppliers");
                                     }}>จัดการ Suppliers ทั้งหมด</button>
                                 </div>
 
                                 <div>
                                     <button onClick={()=>{ 
-                                        // history.push("/users"); 
                                         navigate("/users");
                                     }}>จัดการ รายชือบุคคลทั้งหมด</button>
                                 </div>
                                 <div>
                                     <button onClick={()=>{ 
-                                        // history.push("/banks"); 
                                         navigate("/banks");
                                     }}>จัดการ รายชือธนาคารทั้งหมด</button>
                                 </div>
                                 <div>
-                                    <button onClick={()=>{ 
-                                        // history.push("/date-lotterys"); 
+                                    <button onClick={()=>{
                                         navigate("/date-lotterys");
                                     }}>จัดการ วันออกหวยทั้งหมด</button>
                                 </div>
 
                                 <div>
                                     <button onClick={()=>{ 
-                                        // history.push("/me+bank"); 
                                         navigate("/me+bank");
                                     }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
                                 </div>
@@ -95,40 +88,32 @@ const MePage = (props) => {
                 return  <div>
                             <div>
                                 <button onClick={()=>{ 
-                                    // history.push("/book+buys"); 
                                     navigate("/book+buys");
                                 }}>รายการ จอง-ซื้อ</button>
                             </div>
                             <div>
                                 <button onClick={()=>{ 
-                                    // history.push("/deposits"); 
-                                    // navigate("/deposits");
                                     navigate("/deposit", {state: {from: "/", mode: "new"}} )
                                 }}>รายการ แจ้งฝากเงิน</button>
                             </div>
                             <div>
                                 <button onClick={()=>{ 
-                                    // history.push("/withdraws"); 
-                                    // navigate("/withdraws");
                                     navigate("/withdraw", {state: {from: "/", mode: "new"}} )
                                 }}>รายการ แจ้งถอนเงิน</button>
                             </div>
                             <div>
                                 <button onClick={()=>{ 
-                                    // history.push("/me+bank"); 
                                     navigate("/me+bank"); 
                                 }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
                             </div>
                             <div>
                                 <button onClick={()=>{
-                                    // history.push("/suppliers"); 
                                     navigate("/suppliers"); 
                                 }}>Supplier list</button>
                             </div>
 
                             <div>
                                 <button onClick={()=>{
-                                    // history.push("/history-transitions"); 
                                     navigate("/history-transitions"); 
                                 }}>History-Transitions</button>
                             </div>
