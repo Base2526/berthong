@@ -362,7 +362,7 @@ const App =(props) =>{
                 edge="start"
                 className={clsx(classes.menuButton, open && classes.hide)}
               ><MenuIcon /></IconButton>
-              <Typography variant="h6" noWrap>BERTHONG</Typography>
+              <Typography variant="h6" noWrap onClick={()=>navigate("/")}>BERTHONG</Typography>
               <Typography variant="h6" noWrap>
                 {!_.isEmpty(user)? "[  Name :" + user?.displayName +", Email :"+ user?.email + " ]" : ""}
               </Typography>

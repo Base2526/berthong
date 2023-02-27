@@ -20,7 +20,7 @@ export const TRANSLATIONS_EN = {
 
     login: "LOGIN",
 
-    attack_file: "Attack file",
+    attack_file: "Attack file *",
 
     posts: "Posts",
     new_post: "New post",

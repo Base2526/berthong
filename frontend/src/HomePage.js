@@ -1,16 +1,19 @@
+import React, { useEffect, useRef, useState } from "react";
 import { NetworkStatus, useQuery } from "@apollo/client";
 import CardActionArea from "@material-ui/core/CardActionArea";
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import Avatar from "@mui/material/Avatar";
-import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from "@mui/material/IconButton";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
+import {
+  ContentCopy as ContentCopyIcon,
+  MoreVert as MoreVertIcon
+} from "@mui/icons-material"
+import {
+  Avatar,
+  CircularProgress,
+  IconButton,
+  Menu,
+  MenuItem
+} from "@mui/material";
 import _ from "lodash";
-import React, { useEffect, useRef, useState } from "react";
 import Lightbox from "react-image-lightbox";
-import "react-image-lightbox/style.css";
 import { connect } from "react-redux";
 import { createSearchParams, useLocation, useNavigate } from "react-router-dom";
 import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
@@ -30,7 +33,6 @@ import ItemFollow from "./ItemFollow";
 import ItemShare from "./ItemShare";
 import { login, logout } from "./redux/actions/auth";
 import { bookView, checkRole, getHeaders, sellView } from "./util";
-
 import HomeItemPage from "./HomeItemPage"
 import HomeSearchPage from "./HomeSearchPage"
 
@@ -90,312 +92,6 @@ const useStyles = makeStyles((theme) => ({
     }
   }
 }));
-
-const dataList = [
-  {
-    _id: 1,
-    title: "ทองคำมูลค่า 1 สลึง",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "gold",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "12-Jan-2023",
-    link: "",
-    picture:
-      "https://www.dailynews.co.th/wp-content/uploads/2022/04/%E0%B8%97%E0%B8%B3%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%A3%E0%B8%B9%E0%B9%89%E0%B8%88%E0%B8%B1%E0%B8%81-%E0%B8%97%E0%B8%AD%E0%B8%87%E0%B8%84%E0%B8%B3-99.99_-%E0%B8%84%E0%B8%B7%E0%B8%AD%E0%B8%AD%E0%B8%B0%E0%B9%84%E0%B8%A3-%E0%B8%AA%E0%B8%B2%E0%B8%A1%E0%B8%B2%E0%B8%A3%E0%B8%96%E0%B8%97%E0%B8%B3%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%82.jpg",
-    avatar:
-      "data:image/png;base64,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"
-  },
-  {
-    _id: 2,
-    title: "เงินจำนวน 5000 บาท",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "lang",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "10-Jan-2023",
-    link: "",
-    picture:
-      "https://www.finnomena.com/wp-content/uploads/2019/09/closeup-thai-baht-american-us-dollar-57609684.jpg",
-    avatar: ""
-  },
-  {
-    _id: 3,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "lang",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 4,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 5,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 6,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 7,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "lang",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 8,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 9,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 10,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 11,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 12,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 13,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 14,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 15,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 16,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 17,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 18,
-    title: "dddd",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 19,
-    title: "cccc",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  },
-  {
-    _id: 20,
-    title: "Title",
-    description:
-      "Card has minimum height set but will expand if more space is needed for card body content.",
-    type: "bon",
-    category: "money",
-    price: 100,
-    view: 1000,
-    createBy: "admin",
-    createDate: "",
-    link: "",
-    picture: "",
-    avatar: ""
-  }
-];
 
 let unsubscribeSuppliers = null;
 const HomePage = (props) => {
@@ -912,7 +608,7 @@ const HomePage = (props) => {
               <div className="row">
                 <div className="col-12 pb-2">
                 {
-                  _.isEmpty(dataList)
+                  _.isEmpty(datas)
                   ? <div className="noData p-2 m-1"><ErrorOutlineIcon /> ไม่พบข้อมูลที่ค้นหา </div>
                   : <InfiniteScroll
                       dataLength={slice}
@@ -1040,7 +736,14 @@ const HomePage = (props) => {
                       endMessage={<h2>You have reached the end</h2>}>
                       <div className="row">
                         {_.map(datas, (item, index) =>{
-                          return <HomeItemPage {...props} key={index} item={item} />
+                          return <HomeItemPage 
+                                  {...props} 
+                                  key={index} 
+                                  index={index}
+                                  item={item}
+                                  onDialogLogin={()=>{
+                                    setDialogLogin(true)
+                                  }} />
                         } )}
                       </div>
                     </InfiniteScroll>

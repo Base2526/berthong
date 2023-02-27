@@ -34,6 +34,17 @@ const SupplierSchema = new Schema({
     description: { type: String },
     dateLottery: { type: Schema.Types.ObjectId, required:[true, "Date-Lottery is a required field"] },
     files: [File],
+    condition: { type: Number, required:[true, "Price-Unit is a required field"] },       // 11-100
+    category:{
+        type: Number,
+        enum : [0, 1, 2, 3], // 0: money, 1: gold, 2 : things, 3 : etc
+        default: 0
+    },   
+    type:{
+        type: Number,
+        enum : [0, 1], // 0: bon, 1 : lang
+        default: 0
+    },         
     buys: [BuyInput],
     publish: { type: Boolean, default: false },
     ownerId: { type: Schema.Types.ObjectId, required:[true, "OwnerId is a required field"] },

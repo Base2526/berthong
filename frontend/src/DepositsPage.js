@@ -19,7 +19,6 @@ import DialogTitle from "@mui/material/DialogTitle";
 import moment from "moment";
 import LinearProgress from '@mui/material/LinearProgress';
 import Lightbox from "react-image-lightbox";
-import "react-image-lightbox/style.css";
 
 import { getHeaders, checkRole } from "./util"
 import { queryDeposits, mutationDeposit, queryBanks } from "./gqlQuery"

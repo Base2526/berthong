@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
 import { getHeaders } from "./util"
-import { gqlSupplier, queryDateLotterys } from "./gqlQuery"
+import { mutationSupplier, queryDateLotterys } from "./gqlQuery"
 
 const { faker } = require("@faker-js/faker");
 
@@ -16,7 +16,7 @@ const AutoGenerationContent = (props) => {
 
     console.log("dateLotterysValue :", dateLotterysValue)
 
-    const [onSupplier, resultSupplier] = useMutation(gqlSupplier, {
+    const [onSupplier, resultSupplier] = useMutation(mutationSupplier, {
         context: { headers: getHeaders(location) },
         update: (cache, {data: {supplier}}) => {
     
@@ -88,6 +88,11 @@ const AutoGenerationContent = (props) => {
         return result;
     }
 
+    const randomNumberInRange = (min, max) => {
+        // 👇️ get number between min (inclusive) and max (inclusive)
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
     return(<div className="div-management">
                 <div>Auto-Generation</div>
                 <div>
@@ -102,6 +107,9 @@ const AutoGenerationContent = (props) => {
                                 description: faker.lorem.paragraph(),
                                 dateLottery: data[i % 2]?._id,
                                 files: makeFile(5),
+                                condition: randomNumberInRange(11, 100),    // 11-100
+                                category: randomNumberInRange(0, 3),        // money, gold, things, etc
+                                type: randomNumberInRange(0, 1),            // bon, lang
                                 auto: true
                             }
                             onSupplier({ variables: { input: newInput } });

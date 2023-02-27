@@ -13,12 +13,10 @@ import _ from "lodash"
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import Lightbox from "react-image-lightbox";
-import "react-image-lightbox/style.css";
 import { connect } from "react-redux";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 import { useTranslation } from "react-i18next";
-import "react-image-lightbox/style.css";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import Avatar from "@mui/material/Avatar";
 import moment from "moment";
@@ -358,6 +356,30 @@ const SuppliersPage = (props) => {
                           ellipsis="...">{props.value}
                         </ReadMoreMaster>
                       </Box>
+              }
+            },
+            {
+              Header: 'บน/ล่าง',
+              accessor: 'type',
+              Cell: props => {
+                let {type} = props.row.original    
+                return <div>{type}</div>
+              }
+            },
+            {
+              Header: 'หมวดหมู่',
+              accessor: 'category',
+              Cell: props => {
+                let {category} = props.row.original    
+                return <div>{category}</div>
+              }
+            },
+            {
+              Header: 'ขั้นตอนการขาย',
+              accessor: 'condition',
+              Cell: props => {
+                let {condition} = props.row.original    
+                return <div>{condition}</div>
               }
             },
             {

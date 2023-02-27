@@ -652,6 +652,9 @@ export default gql`
     description: String
     dateLottery: ID!
     files: [JSON]
+    condition: Int!
+    category: Int!
+    type: Int!
     buys: [JSON]
     publish: Boolean = false
     auto: Boolean = false
@@ -731,7 +734,7 @@ export default gql`
     deposit(input: DepositInput): JSON 
     withdraw(input: WithdrawInput): JSON 
     bank(input: BankInput): JSON 
-    follow(_id: ID): JSON 
+    follow(_id: ID!): JSON 
     dateLottery(input: DateLotteryInput): JSON 
   }
 

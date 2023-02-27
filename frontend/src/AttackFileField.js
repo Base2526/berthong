@@ -18,27 +18,29 @@ const Input = styled("input")({
   display: "none"
 });
 
-const AttackFileField = ({ label, values, onChange, onSnackbar }) => {
-  const [inputList, setInputList] = useState(values);
+const AttackFileField = (props) => {
 
-  useEffect(() => {
-    console.log("inputList > : ", inputList);
+  let { label, values, onChange, onSnackbar } = props
 
-    onChange(inputList)
-  }, [inputList]);
+  console.log("inputList > #1: ", values);
+
+  // let [inputList, setInputList] = useState(values);
+
+  // useEffect(() => {
+  //   console.log("inputList > #2: ", inputList);
+
+  //   onChange(inputList)
+  // }, [inputList]);
 
   const onFileChange = (e) => {
-    let newInputList = [...inputList];
+    let newInputList = [...values];
     for (var i = 0; i < e.target.files.length; i++) {
       let file = e.target.files[i];
       if (file.type) {
         newInputList = [...newInputList, file];
       }
     }
-    // src: URL.createObjectURL(event.target.files[0]),
-
-    // console.log("onFileChange :", newInputList)
-    setInputList(newInputList);
+    onChange(newInputList);
   };
 
   return (
@@ -69,7 +71,7 @@ const AttackFileField = ({ label, values, onChange, onSnackbar }) => {
       </div>
       <Stack direction="row" spacing={2}>
         {_.map(
-          _.filter(inputList, (v, key) => !v.delete),
+          _.filter(values, (v, key) => !v.delete),
           (file, index) => {
             console.log("Stack :", !file.url, file.url);
 
@@ -100,11 +102,12 @@ const AttackFileField = ({ label, values, onChange, onSnackbar }) => {
                       component="span"
                       onClick={() => {
                         let newInputList = [
-                          ...inputList.slice(0, index),
-                          ...inputList.slice(index + 1, inputList.length)
+                          ...values.slice(0, index),
+                          ...values.slice(index + 1, values.length)
                         ];
   
-                        setInputList(newInputList);
+                        // setInputList(newInputList);
+                        onChange(newInputList);
                         onSnackbar({open:true, message:"Delete image"});
                       }}
                     >
@@ -142,9 +145,9 @@ const AttackFileField = ({ label, values, onChange, onSnackbar }) => {
                     aria-label="upload picture"
                     component="span"
                     onClick={() => {
-                      let newInputList = [...inputList];
+                      let newInputList = [...values];
                       
-                      console.log("Delete image : ", inputList, file._id)
+                      // console.log("Delete image : ", inputList, file._id)
 
                       let i = _.findIndex(newInputList, (v)=>v._id == file._id)
                       newInputList[i] = {
@@ -152,7 +155,10 @@ const AttackFileField = ({ label, values, onChange, onSnackbar }) => {
                         delete: true
                       };
 
-                      setInputList(newInputList);
+                      // setInputList(newInputList);
+
+                      onChange(newInputList);
+
                       onSnackbar({open:true, message:"Delete image"});
                     }}
                   >
@@ -164,8 +170,6 @@ const AttackFileField = ({ label, values, onChange, onSnackbar }) => {
           }
         )}
       </Stack>
-     
-      {/* <div style={{ marginTop: 20 }}>{JSON.stringify(inputList)}</div> */}
     </Box>
   );
 };

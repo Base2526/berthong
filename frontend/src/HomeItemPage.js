@@ -1,21 +1,88 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   MoreVert as MoreVertIcon,
-  Bookmark as BookmarkIcon
 } from "@material-ui/icons";
-
 import {
-  IconButton
+  IconButton,
+  Menu,
+  MenuItem
 } from "@mui/material";
+import {
+  ContentCopy as ContentCopyIcon,
+  BugReport as BugReportIcon
+} from "@mui/icons-material"
+import _ from "lodash"
+import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
+
+import ItemFollow from "./ItemFollow"
+const ITEM_HEIGHT = 48;
 
 const HomeItemPage = (props) => {
-  let { item, displayDelete, type } = props;
+  let { index, item, onDialogLogin } = props;
+  let { owner, files } = item
+  let [openMenu, setOpenMenu] = useState(null);
+
+  const menuView = (item, index) =>{
+    return  <Menu
+              anchorEl={openMenu && openMenu[index]}
+              keepMounted
+              open={openMenu && Boolean(openMenu[index])}
+              onClose={()=>{ setOpenMenu(null) }}
+              getContentAnchorEl={null}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "center"
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "center"
+              }}
+              MenuListProps={{
+                "aria-labelledby": "lock-button",
+                role: "listbox"
+              }}
+            >
+              <MenuItem onClose={(e)=>setOpenMenu(null)}>
+                <FacebookShareButton
+                  url={ window.location.href + "detail/"}
+                  quote={item?.title}
+                  // hashtag={"#hashtag"}
+                  description={item?.description}
+                  className="Demo__some-network__share-button"
+                  onClick={(e)=>setOpenMenu(null)} >
+                  <FacebookIcon size={32} round /> Facebook
+                </FacebookShareButton>
+              </MenuItem>
+              <MenuItem onClose={(e)=>setOpenMenu(null)}>
+                <TwitterShareButton
+                  title={item?.title}
+                  url={ window.location.origin + "/detail/"  }
+                  // hashtags={["hashtag1", "hashtag2"]}
+                  onClick={(e)=>setOpenMenu(null)} >
+                  <TwitterIcon size={32} round />
+                  Twitter
+                </TwitterShareButton>
+              </MenuItem>
+              <MenuItem 
+                onClick={async(e)=>{
+                  let text = window.location.href + "p/?id=" + item._id
+                  if ('clipboard' in navigator) {
+                    await navigator.clipboard.writeText(text);
+                  } else {
+                    document.execCommand('copy', true, text);
+                  }
+                  setOpenMenu(null)
+                }}><ContentCopyIcon size={20} round /> Copy link</MenuItem>
+              <MenuItem onClick={(e)=>{setOpenMenu(null)}}><BugReportIcon size={20} round />Report</MenuItem>
+            </Menu>
+  }
 
   return (
     <div className="col-md-6 col-lg-3 pb-3">
+      {menuView(item, index)}
       <div className="card card-custom bg-white border-white border-0">
         <span className={item?.type === "bon" ? "bon" : "lang"}>
-          <b>{item?.type === "bon" ? "บน" : "ล่าง"}</b>
+          <b>{item?.type === 0 ? "บน" : "ล่าง"}</b>
         </span>
         <span className="price">
           <b>{item?.price} บาท</b>
@@ -24,8 +91,8 @@ const HomeItemPage = (props) => {
           className="card-custom-img"
           style={{
             backgroundImage: `url(${
-              item?.picture
-                ? item?.picture
+              !_.isEmpty(files)
+                ? files[0].url
                 : "https://images.rawpixel.com/image_600/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcm0yMS1iYWNrZ3JvdW5kLXRvbmctMDU4LmpwZw.jpg"
             })`
           }}
@@ -34,8 +101,8 @@ const HomeItemPage = (props) => {
           <img
             className="img-fluid"
             src={
-              item?.avatar
-                ? item?.avatar
+              !_.isEmpty(owner?.image)
+                ? owner?.image[0].url
                 : "https://img.myloview.com/stickers/default-avatar-profile-icon-vector-social-media-user-image-700-205124837.jpg"
             }
             alt="Avatar"
@@ -49,8 +116,14 @@ const HomeItemPage = (props) => {
                 <b>{item?.title}</b>
               </span>
               <h4 className="card-title" style={{ float: "right" }}>
-                <IconButton><BookmarkIcon /></IconButton>
-                <IconButton><MoreVertIcon /></IconButton>
+                {/* <IconButton><BookmarkIcon /></IconButton> */}
+                <ItemFollow 
+                  {...props} 
+                  item={item} 
+                  onDialogLogin={(e)=>{
+                    onDialogLogin(true)
+                  }}/>
+                <IconButton onClick={(e) => { setOpenMenu({ [index]: e.currentTarget }); }}><MoreVertIcon /></IconButton>
               </h4>
             </div>
           </div>

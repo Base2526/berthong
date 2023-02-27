@@ -95,7 +95,7 @@ const DetailPage = (props) => {
           case DATA_NOT_FOUND:
           case UNAUTHENTICATED:
           case ERROR:{
-            showToast("error", error?.message)
+            showToast("error", e?.message)
             break;
           }
         }

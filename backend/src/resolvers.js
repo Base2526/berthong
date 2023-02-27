@@ -1065,12 +1065,10 @@ export default {
 
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-      if( checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
+      if( checkRole(current_user) != AMDINISTRATOR && checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated and Authenticated only!')
 
       switch(input.mode.toLowerCase()){
         case "new":{
-          console.log("createSupplier : ", input, current_user, current_user?._id )
-
           let newFiles = [];
           if(!input.auto){
             if(!_.isEmpty(input.files)){
@@ -1119,10 +1117,6 @@ export default {
               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
             }
           }
-          
-          
-          
-          
         }
 
         case "edit":{
@@ -1545,29 +1539,29 @@ export default {
 
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
 
-      let suppliers = await Supplier.findOne({_id})
-      if(_.isNull(suppliers)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
+      let supplier = await Supplier.findOne({_id})
+      if(_.isNull(supplier)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
-      if(suppliers){
-        let {follows} = suppliers  
-        if(!_.isEmpty(follows)){
-          let isFollow = _.find(follows, (follow)=>follow.userId == current_user?._id.toString())
-          if(_.isEmpty(isFollow)){
-            follows = [...follows, {userId: current_user?._id}]
-          }else{
-            follows = _.filter(follows, (follow)=>follow.userId != current_user?._id.toString())
-          }
+      let {follows} = supplier  
+      if(!_.isEmpty(follows)){
+        let isFollow = _.find(follows, (follow)=>_.isEqual(follow.userId, current_user?._id))
+        if(_.isEmpty(isFollow)){
+          follows = [...follows, {userId: current_user?._id}]
         }else{
-          follows = [{userId: current_user?._id}]
+          follows = _.filter(follows, (follow)=>!_.isEqual(follow.userId, current_user?._id))
         }
+      }else{
+        follows = [{userId: current_user?._id}]
+      }
 
-        await Supplier.updateOne( { _id }, { follows } );
-        return {
-          status: true,
-          data: {...suppliers._doc, ownerName: (await User.findById(suppliers.ownerId))?.displayName },
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-        }
+      await Supplier.updateOne( { _id }, { follows } );
+      supplier = await Supplier.findOne({_id})
+      return {
+        status: true,
+        data: {...supplier._doc, ownerName: (await User.findById(supplier.ownerId))?.displayName },
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
 

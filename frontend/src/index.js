@@ -1,7 +1,8 @@
 import './App.css';
 import "./skeleton.scss";
 // import './index.css';
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
+import "react-image-lightbox/style.css";
 
 import { ApolloProvider } from "@apollo/client";
 import { StrictMode } from "react";
