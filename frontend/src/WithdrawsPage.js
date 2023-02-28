@@ -162,7 +162,7 @@ const WithdrawsPage = (props) => {
             case "wait":{
               return  <div className="Btn--posts">
                           <button onClick={(evt)=>{
-                            navigate("/deposit", {state: {from: "/", mode: "edit", id: _id }} )
+                            navigate("/withdraw", {state: {from: "/", mode: "edit", id: _id }} )
                           }}><EditIcon/>{t("edit")}</button>
                           <button onClick={(e)=>{
                             setOpenDialogDelete({ isOpen: true, id: _id, description });
@@ -179,7 +179,7 @@ const WithdrawsPage = (props) => {
             case "reject":{
               return  <div className="Btn--posts">
                         <button onClick={(evt)=>{
-                          navigate("/deposit", {state: {from: "/", mode: "edit", id: _id }} )
+                          navigate("/withdraw", {state: {from: "/", mode: "edit", id: _id }} )
                         }}><EditIcon/>{t("edit")}</button>
                         <button onClick={(e)=>{
                           setOpenDialogDelete({ isOpen: true, id: _id, description });

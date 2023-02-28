@@ -20,10 +20,10 @@ import moment from "moment";
 import LinearProgress from '@mui/material/LinearProgress';
 import Lightbox from "react-image-lightbox";
 
-import { getHeaders, checkRole } from "./util"
+import { getHeaders, checkRole, showToast } from "./util"
 import { queryDeposits, mutationDeposit, queryBanks } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
-import { AMDINISTRATOR } from "./constants"
+import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants"
 import Table from "./TableContainer"
 
 deepdash(_);
@@ -39,13 +39,31 @@ const DepositsPage = (props) => {
   const [pageIndex, setPageIndex]     = useState(0);  
   const [pageSize, setPageSize]       = useState(pageOptions[0])
   const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
-  const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
+  const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" }); 
+  const [datas, setDatas]             = useState([]);  
 
-  console.log("user :", user)
+  const { loading: loadingDeposits, 
+          data: dataDeposits, 
+          error: errorDeposits,
+          networkStatus } = useQuery(queryDeposits, 
+                                      { 
+                                        context: { headers: getHeaders(location) }, 
+                                        fetchPolicy: 'network-only', // Used for first execution
+                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        notifyOnNetworkStatusChange: true
+                                      }
+                                    );
 
-  const depositsValue = useQuery(queryDeposits, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
-
-  console.log("depositsValue :", depositsValue)
+  if(!_.isEmpty(errorDeposits)){
+    _.map(errorDeposits?.graphQLErrors, (e)=>{
+      switch(e?.extensions?.code){
+        case UNAUTHENTICATED:{
+          showToast("error", e?.message)
+          break;
+        }
+      }
+    })
+  }
 
   const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
     context: { headers: getHeaders(location) },
@@ -76,22 +94,15 @@ const DepositsPage = (props) => {
       console.log("onError :")
     }
   });
-  console.log("resultMutationDeposit :", resultMutationDeposit)
-
-  // 
-
-  /*
-  ฝาก
-  - จำนวนเงิน
-  - วันที่โอนเงิน ชม/นาที
-  - สลิปการโอน
-  */
-
-  /*
-  ถอน 
-  - ชือบัญชี
-  - ยอดเงิน
-  */
+  
+  useEffect(() => {
+    if(!loadingDeposits){
+      if(!_.isEmpty(dataDeposits?.deposits)){
+        let { status, code, data } = dataDeposits.deposits
+        if(status)setDatas(data)
+      }
+    }
+  }, [dataDeposits, loadingDeposits])
 
   const handleClose = () => {
     setOpenDialogDelete({ ...openDialogDelete, isOpen: false, description: "" });
@@ -159,19 +170,7 @@ const DepositsPage = (props) => {
             accessor: 'bank',
             Cell: props =>{
                 let {bank} = props.row.values
-    
-                console.log("bank :", bank)
-
-                if(_.isEmpty(bank)){
-                  return <div>Not set</div>
-                }
-
-                let valueBanks = useQuery(queryBanks, { notifyOnNetworkStatusChange: true, });
-                if(valueBanks.loading){
-                  return <LinearProgress /> 
-                }
-                let find = _.find(valueBanks.data.banks.data, (item)=>item._id.toString() == bank[0].bankId.toString() )            
-                return <div style={{ position: "relative" }}>{bank[0].bankId} : {find.name}</div>
+                return <div>{bank.bankNumber} - {bank.bankName}</div>
             }
           },
           {
@@ -179,10 +178,7 @@ const DepositsPage = (props) => {
             accessor: 'dateTranfer',
             Cell: props => {
                 let {dateTranfer} = props.row.values
-                // return <div>{dateTranfer}</div>
-
                 dateTranfer = new Date(dateTranfer).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-
                 return <div>{ (moment(dateTranfer, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
             }
           },
@@ -307,7 +303,7 @@ const DepositsPage = (props) => {
 
   return (<div style={{flex:1}}>
          {
-            depositsValue.loading
+            loadingDeposits
             ? <CircularProgress /> 
             : <div>
                 {
@@ -320,7 +316,7 @@ const DepositsPage = (props) => {
                   }
                 <Table
                   columns={columns}
-                  data={depositsValue.data.deposits.data}
+                  data={datas}
                   fetchData={fetchData}
                   rowsPerPage={pageOptions}
                   updateMyData={updateMyData}
@@ -345,7 +341,7 @@ const DepositsPage = (props) => {
                 <Button
                   variant="outlined"
                   onClick={() => {
-                    let newInput = _.find(depositsValue.data.deposits.data, (item)=>openDialogDelete.id == item._id.toString())
+                    let newInput = _.find(datas, (item)=>openDialogDelete.id == item._id.toString())
 
                     newInput = _.omitDeep(newInput, ['__v', 'createdAt', 'updatedAt', 'userIdRequest'])
                     newInput = {...newInput, mode:"DELETE",  balance: parseInt(newInput.balance), dateTranfer:new Date(newInput.dateTranfer)}
@@ -391,5 +387,4 @@ const mapStateToProps = (state, ownProps) => {
 };
 
 const mapDispatchToProps = { logout }
-
 export default connect( mapStateToProps, mapDispatchToProps )(DepositsPage);

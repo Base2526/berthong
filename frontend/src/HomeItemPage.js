@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createSearchParams, useNavigate } from "react-router-dom";
 import {
   MoreVert as MoreVertIcon,
 } from "@material-ui/icons";
@@ -18,6 +19,7 @@ import ItemFollow from "./ItemFollow"
 const ITEM_HEIGHT = 48;
 
 const HomeItemPage = (props) => {
+  const navigate = useNavigate();
   let { index, item, onDialogLogin } = props;
   let { owner, files } = item
   let [openMenu, setOpenMenu] = useState(null);
@@ -128,7 +130,14 @@ const HomeItemPage = (props) => {
             </div>
           </div>
           <div>
-            <p className="card-text">{item?.description}</p>
+            <p className="card-text"
+              onClick={()=>{
+                navigate({
+                pathname: "/p",
+                search: `?${createSearchParams({ id: item._id})}`,
+                state: { id: item._id }
+              })
+            }}>{item?.description}</p>
           </div>
         </div>
         {/* <div>

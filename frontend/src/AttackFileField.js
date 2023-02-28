@@ -19,19 +19,7 @@ const Input = styled("input")({
 });
 
 const AttackFileField = (props) => {
-
   let { label, values, onChange, onSnackbar } = props
-
-  console.log("inputList > #1: ", values);
-
-  // let [inputList, setInputList] = useState(values);
-
-  // useEffect(() => {
-  //   console.log("inputList > #2: ", inputList);
-
-  //   onChange(inputList)
-  // }, [inputList]);
-
   const onFileChange = (e) => {
     let newInputList = [...values];
     for (var i = 0; i < e.target.files.length; i++) {

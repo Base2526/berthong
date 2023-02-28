@@ -75,7 +75,7 @@ import {
 } from "./constants";
 import { login, logout } from "./redux/actions/auth";
 
-const drawerWidth = 240;
+const drawerWidth = 300;
 const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex"
@@ -324,8 +324,8 @@ const App =(props) =>{
       case AUTHENTICATED:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon />, path: "/"},
                 {id: 1, title:"รายการ จอง-ซื้อ", icon: <AccountTreeIcon />, path: "/book+buys"},
-                {id: 2, title:"รายการ แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
-                {id: 3, title:"รายการ แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
+                {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
+                {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
                 {id: 4, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+bank"},
                 {id: 5, title:"Supplier list", icon: <AssistantIcon />, path: "/suppliers"},
                 {id: 6, title:"History-Transitions", icon: <AddRoadIcon />, path: "/history-transitions"},
@@ -366,6 +366,7 @@ const App =(props) =>{
               <Typography variant="h6" noWrap>
                 {!_.isEmpty(user)? "[  Name :" + user?.displayName +", Email :"+ user?.email + " ]" : ""}
               </Typography>
+              <div>Balance : {user?.balance} [-{user?.balanceBook}]</div>
             </Toolbar>
           </AppBar>
           <ClickAwayListener
@@ -408,6 +409,14 @@ const App =(props) =>{
                                   break;
                                 }
 
+                                //  navigate("/deposit", {state: {from: "/", mode: "edit", id: _id }} )
+
+                                case "/withdraw":
+                                case "/deposit":{
+                                  navigate(item.path, {state: {from: "/", mode: "new" }})
+                                  break;
+                                }
+
                                 default:{
                                   navigate(item.path)
                                 }
@@ -415,10 +424,18 @@ const App =(props) =>{
                             }}>
                             <ListItemIcon>{item.icon}</ListItemIcon>
                             <ListItemText 
-                              primary={item.title} 
-                              primaryTypographyProps={{ style: { whiteSpace: "normal" } }} />
+                              primary={item.title} />
                           </ListItem>
                 }
+
+                /*
+                 <ListItem button key="1" component={Link} to={"/dash"}>
+              <ListItemIcon>
+                <PaletteIcon />
+              </ListItemIcon>
+              <ListItemText primary="Dash" />
+            </ListItem>
+                */
                   
                 )}
               </List>
@@ -435,7 +452,7 @@ const App =(props) =>{
           </main>
         </div>
         <div className="container">
-          <Breadcs />
+          <Breadcs {...props}/>
           <Routes>
             <Route path="/" exact element={<HomePage />} />
             <Route path="/p" element={<DetailPage />} />

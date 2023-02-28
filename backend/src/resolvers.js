@@ -11,7 +11,7 @@ import { User, Supplier, Bank, Role, Deposit, Withdraw, DateLottery, Transition 
 import pubsub from './pubsub'
 import { emailValidate, checkBalance, checkBalanceBook, fileRenamer, 
         checkAuthorization, checkAuthorizationWithSessionId, getSessionId, checkRole} from "./utils"
-import { SUCCESS, ERROR, FORCE_LOGOUT, DATA_NOT_FOUND, USER_NOT_FOUND, UNAUTHENTICATED, AMDINISTRATOR, AUTHENTICATED } from "./constants"
+import { BAD_USER_INPUT, ERROR, FORCE_LOGOUT, DATA_NOT_FOUND, USER_NOT_FOUND, UNAUTHENTICATED, AMDINISTRATOR, AUTHENTICATED } from "./constants"
 import AppError from "./utils/AppError"
 import fetch from "node-fetch";
 import { GraphQLUpload } from 'graphql-upload';
@@ -135,7 +135,7 @@ export default {
       switch(pathname){
         case undefined:
         case "/":{
-          let suppliers = await Supplier.find({}).limit(20);
+          let suppliers = await Supplier.find({});// .limit(20);
           suppliers = await Promise.all(_.map(suppliers, async(item)=>{
             let user = await User.findById(item.ownerId);
             if(_.isNull(user)) return null;
@@ -204,13 +204,17 @@ export default {
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
       if( checkRole(current_user) == AMDINISTRATOR ){
-
         let deposits = await Deposit.find({status: "wait"})
-        deposits = _.orderBy(deposits, i => i.updatedAt, 'desc');
+
+        deposits  =await Promise.all(_.map(deposits, async(deposit)=>{
+                                      let f = await Bank.findById(deposit.bank.bankId)
+                                      if(_.isNull(f)) return null
+                                      return {...deposit._doc, bank: {...deposit.bank, bankName: f?.name}}
+                                    }))
 
         return {  status: true,
-                  data: deposits,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+                  data: _.orderBy(deposits, i => i.updatedAt, 'desc'),
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }       
       }
 
       let deposits = await Deposit.find({userIdRequest: current_user?._id})
@@ -277,34 +281,50 @@ export default {
       let start = Date.now()
       let { _id } = args
       let { req } = context
-
+      
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
       let withdraw = await Withdraw.findById(_id)
       if(_.isNull(withdraw)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
-      let bank = withdraw.bank[0];
-      let bankValue = await Bank.findById(bank.bankId)
-      if(_.isNull(bankValue)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
+      // let bankValue = await Bank.findById(withdraw.bank)
+      // if(_.isNull(bankValue)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
-      bank = {...bank._doc, bankName: bankValue.name}
+      // bank = {...bank._doc, bankName: bankValue.name}
 
       return {  status:true,
-                  data: {...withdraw._doc, bank: [bank]},
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+                data: withdraw,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
     async banks(parent, args, context, info){
       let start = Date.now()
       let { req } = context
 
+      let { isAdmin } = args
+
+      if(!_.isBoolean( isAdmin )) throw new AppError(BAD_USER_INPUT, 'Is-admin true or false only!')
+
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
+      if(isAdmin){
+        let user  = await User.findById(mongoose.Types.ObjectId("62a2c0cecf7946010d3c743f"))
+        if(_.isNull(user)) throw new AppError(DATA_NOT_FOUND, 'User not found.')
+  
+        let banks =_.filter(await Promise.all(_.map(user?.banks, async(item)=>{
+                          let bank = await Bank.findById(item.bankId)
+                          return _.isNull(bank) ? null : {...item._doc, bankName:bank?.name}
+                        })), item=>!_.isNull(item) ) 
+
+        return {  status: true,
+                  data: banks,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+
       let banks = await Bank.find({})
       if(_.isNull(banks)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
-
       return {  status: true,
                 data: banks,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
@@ -326,25 +346,25 @@ export default {
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
-    async bankAdmin(parent, args, context, info){
-      let start = Date.now()
-      let { req } = context
+    // async bankAdmin(parent, args, context, info){
+    //   let start = Date.now()
+    //   let { req } = context
 
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
-      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+    //   let { status, code, pathname, current_user } =  await checkAuthorization(req);
+    //   if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      let userAdmin  = await User.findById(mongoose.Types.ObjectId("62a2c0cecf7946010d3c743f"))
-      if(_.isNull(userAdmin)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
+    //   let userAdmin  = await User.findById(mongoose.Types.ObjectId("62a2c0cecf7946010d3c743f"))
+    //   if(_.isNull(userAdmin)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
-      let banks = await Bank.find({})
-      if(_.isNull(banks)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
+    //   let banks = await Bank.find({})
+    //   if(_.isNull(banks)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
-      return {  status: true,
-                admin_banks: userAdmin?.banks,
-                banks: banks,
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    //   return {  status: true,
+    //             admin_banks: userAdmin?.banks,
+    //             banks: banks,
+    //             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
-    },
+    // },
 
     async bookBuyTransitions(parent, args, context, info){
       let start = Date.now()
@@ -1201,6 +1221,8 @@ export default {
 
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AMDINISTRATOR && 
+          checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Admin or Authenticated only!')
 
       switch(input.mode.toLowerCase()){
         case "new":{
@@ -1235,25 +1257,11 @@ export default {
               newFiles.push({ url: urlForArray, filename, encoding, mimetype });
             }
           }
-          let deposit = await Deposit.create({ ...input, files:newFiles, userIdRequest: current_user?._id });
-          
-          /*
-          balance: { type: Number, default: 0 },
-          dateTranfer : { type : Date, default: Date.now },
-          userIdRequest: { type: Schema.Types.ObjectId, required:[true, "User-Id Request is a required field"] },
-          userIdApprove: { type: Schema.Types.ObjectId },
-          files: [File],
-          status:{
-              type: String,
-              enum : ['wait','approved', 'reject'],
-              default: 'wait'
-          }, 
-          */
 
           return {
             status: true,
             mode: input.mode.toLowerCase(),
-            data: deposit,
+            data: await Deposit.create({ ...input, files:newFiles, status: "wait", userIdRequest: current_user?._id }),
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }
@@ -1401,7 +1409,7 @@ export default {
         case "new":{
           console.log("new withdraw : ", input )
 
-          let withdraw = await Withdraw.create({ ...input, userIdRequest: current_user?._id });
+          let withdraw = await Withdraw.create({ ...input, status: "wait", userIdRequest: current_user?._id });
           return {
             status: true,
             mode: input.mode.toLowerCase(),

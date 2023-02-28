@@ -105,13 +105,15 @@ const AutoGenerationContent = (props) => {
                                 price: parseInt(makeNumber(3)),
                                 priceUnit: parseInt(makeNumber(2)),
                                 description: faker.lorem.paragraph(),
-                                dateLottery: data[i % 2]?._id,
+                                dateLottery: data[0]?._id,
                                 files: makeFile(5),
-                                condition: randomNumberInRange(11, 100),    // 11-100
-                                category: randomNumberInRange(0, 3),        // money, gold, things, etc
-                                type: randomNumberInRange(0, 1),            // bon, lang
+                                condition: parseInt(randomNumberInRange(11, 100)),    // 11-100
+                                category: parseInt(randomNumberInRange(0, 3)),        // money, gold, things, etc
+                                type: parseInt(randomNumberInRange(0, 1)),            // bon, lang
                                 auto: true
                             }
+
+                            // console.log("dateLottery : ", newInput, data)
                             onSupplier({ variables: { input: newInput } });
                         }
                     }}>สร้าง สินค้า</button>

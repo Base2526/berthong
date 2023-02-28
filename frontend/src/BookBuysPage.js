@@ -125,8 +125,8 @@ const BookBuysPage = (props) => {
           Cell: props => {
             let {buys} = props.row.original
 
-            let book  = _.filter(buys, buy=>buy.userId == user._id  && buy.selected == 0)
-            let buy  = _.filter(buys, buy=>buy.userId == user._id  && buy.selected == 1)
+            let book  = _.filter(buys, buy=> _.isEqual(buy.userId, user._id)  && buy.selected == 0)
+            let buy  = _.filter(buys, buy=> _.isEqual(buy.userId, user._id)  && buy.selected == 1)
             return (
               <div>Book : {book.length}, Buy : {buy.length}</div>
             );

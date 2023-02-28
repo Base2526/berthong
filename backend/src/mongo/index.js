@@ -273,13 +273,27 @@ const modelExists =()=>{
     }
   });
 
+  /*
+   bank:{
+        bankId: { type: Schema.Types.ObjectId, required:[true, "Bank-id Request is a required field"] },
+        bankNumber:  { type: String, required:[true, "Bank account number Request is a required field"] }
+    }
+  */
+
   Deposit.find({}, async(err, result)=> {
     try{
       if (result.length > 0) {
         // console.log('Found BasicContent');
       } else {
         // console.log('Not found BasicContent, creating');
-        let newDeposit = new Deposit({ accountNumber: "test", userIdRequest: new mongoose.Types.ObjectId(), userIdApprove: new mongoose.Types.ObjectId() });
+        let newDeposit = new Deposit({ accountNumber: "test", 
+                                       userIdRequest: new mongoose.Types.ObjectId(), 
+                                       userIdApprove: new mongoose.Types.ObjectId(),
+                                       bank: {
+                                        _id: new mongoose.Types.ObjectId(),
+                                        bankId: new mongoose.Types.ObjectId(),
+                                        bankNumber: "xx"
+                                       } });
         await newDeposit.save();
         await Deposit.deleteMany({})
       }
@@ -290,10 +304,13 @@ const modelExists =()=>{
 
   Withdraw.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found BasicContent');
     } else {
-      // console.log('Not found BasicContent, creating');
-      let newWithdraw = new Withdraw({ bankId: "test", userIdRequest: new mongoose.Types.ObjectId() });
+      let newWithdraw = new Withdraw({  bank: {
+                                          _id: new mongoose.Types.ObjectId(),
+                                          bankId: new mongoose.Types.ObjectId(),
+                                          bankNumber: "xx"
+                                        }, 
+                                        userIdRequest: new mongoose.Types.ObjectId() });
       await newWithdraw.save();
       await Withdraw.deleteMany({})
     }

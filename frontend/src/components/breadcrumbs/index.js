@@ -2,14 +2,16 @@ import MuiLink from "@material-ui/core/Link";
 import HomeIcon from '@mui/icons-material/Home';
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import { Link, useLocation } from "react-router-dom";
-
 import Typography from '@mui/material/Typography';
-
 import { useTranslation } from "react-i18next";
 
-const index = ({ title }) => {
+import { AMDINISTRATOR, AUTHENTICATED } from "../../constants";
+import { checkRole } from "../../util"
+
+const index = (props) => {
   const location = useLocation();
   const { t } = useTranslation();
+  const { user } = props
 
   const BreadcrumbsView = () =>{
     console.log("location :", location)
@@ -17,9 +19,6 @@ const index = ({ title }) => {
     switch(location?.pathname){
       case "/":{
         return [  
-                  // <MuiLink component={Link} to="/">
-                  //   <HomeIcon /> {t("home")} 
-                  // </MuiLink>
                   <Typography key="3" color="text.primary">
                    <HomeIcon /> {t("home")} 
                   </Typography>
@@ -39,7 +38,7 @@ const index = ({ title }) => {
       case "/withdraws":{
         return [  
           <MuiLink component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
-          <Typography key="3" color="text.primary">รายการฝากเงิน รออนุมัติ</Typography>
+          <Typography key="3" color="text.primary">รายการ ถอดเงิน รออนุมัติ</Typography>
         ]
       }
 
@@ -105,7 +104,43 @@ const index = ({ title }) => {
           <Typography key="3" color="text.primary">รายการ จอง-ซื้อ</Typography>
         ]
       }
-      
+
+      case "/deposit":{
+        switch(checkRole(user)){
+          case AMDINISTRATOR:{
+            return [  
+              <MuiLink component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
+              <MuiLink component={Link} to="/deposits">{t("รายการ แจ้งฝากเงิน")}</MuiLink>,
+              <Typography key="3" color="text.primary">แจ้งฝากเงิน</Typography>
+            ]
+          }
+          case AUTHENTICATED:{
+            return [  
+              <MuiLink component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
+              <Typography key="3" color="text.primary">แจ้งฝากเงิน</Typography>
+            ]
+          }
+        }
+      }
+
+      case "/withdraw":{
+        switch(checkRole(user)){
+          case AMDINISTRATOR:{
+            return [  
+              <MuiLink component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
+              <MuiLink component={Link} to="/withdraws">{t("รายการ แจ้งถอดเงิน")}</MuiLink>,
+              <Typography key="3" color="text.primary">แจ้งถอดเงิน</Typography>
+            ]
+          }
+          case AUTHENTICATED:{
+            return [  
+              <MuiLink component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
+              <Typography key="3" color="text.primary">แจ้งถอดเงิน</Typography>
+            ]
+          }
+        }
+      }
+   
       default: 
         return []
     }

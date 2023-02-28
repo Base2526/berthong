@@ -10,3 +10,4 @@ export const FORCE_LOGOUT   = "FORCE_LOGOUT";
 export const DATA_NOT_FOUND = "DATA_NOT_FOUND";
 export const USER_NOT_FOUND = "USER_NOT_FOUND";
 export const UNAUTHENTICATED= "UNAUTHENTICATED";
+export const BAD_USER_INPUT = "BAD_USER_INPUT";

@@ -453,10 +453,9 @@ export default gql`
     withdraws: JSON
     withdrawById(_id: ID!): JSON
 
-    banks: JSON
+    banks(isAdmin: Boolean = false): JSON
     bankById(_id: ID!): JSON
 
-    bankAdmin: JSON
 
     bookBuyTransitions: JSON
 
@@ -667,9 +666,8 @@ export default gql`
   }
 
   input WithdrawInput{
-    mode: WithdrawModeType
+    mode: WithdrawModeType!
     _id: ID
-    dateTranfer: DATETIME
     bank: JSON!
     balance: Int!
     status: String
@@ -684,8 +682,8 @@ export default gql`
   input DepositInput{
     mode: DepositModeType
     _id: ID
-    balance: Int
-    dateTranfer: DATETIME
+    balance: Int!
+    dateTranfer: DATETIME!
     bank: JSON!
     files: [JSON]
     status: String
