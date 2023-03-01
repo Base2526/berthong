@@ -1,42 +1,68 @@
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import { DeleteForever as DeleteForeverIcon, Edit as EditIcon, ExitToApp as ExitToAppIcon } from '@mui/icons-material';
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import SpeedDial from '@mui/material/SpeedDial';
-import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import {
+  Avatar,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  SpeedDial,
+  SpeedDialIcon
+} from '@mui/material'
 import _ from "lodash";
 import moment from "moment";
-import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import styled from "styled-components";
-
 import { queryUsers } from "./gqlQuery";
 import Table from "./TableContainer";
-import { getHeaders } from "./util";
-
-export const UserListContainer = styled.div`flex: 4;`;
+import { getHeaders, showToast } from "./util";
+import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants";
 
 const UsersPage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
   const [pageIndex, setPageIndex] = useState(0);  
   const [pageSize, setPageSize] = useState(pageOptions[0])
-
+  const [datas, setDatas] = useState([])
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
-  const usersValue = useQuery(queryUsers, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
+  const { loading: loadingUsers, 
+          data: dataUsers, 
+          error: errorUsers, 
+          networkStatus } = useQuery(queryUsers, 
+                                      { 
+                                        context: { headers: getHeaders(location) }, 
+                                        fetchPolicy: 'network-only', // Used for first execution
+                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        notifyOnNetworkStatusChange: true
+                                      }
+                                    );
 
-  console.log("usersValue :", usersValue)
+  if(!_.isEmpty(errorUsers)){
+    _.map(errorUsers?.graphQLErrors, (e)=>{
+      switch(e?.extensions?.code){
+        case UNAUTHENTICATED:{
+          showToast("error", e?.message)
+          break;
+        }
+      }
+    })
+  }
+
+  useEffect(() => {
+    if(!loadingUsers){
+      if(!_.isEmpty(dataUsers?.users)){
+        let { status, data } = dataUsers.users
+        if(status)setDatas(data)
+      }
+    }
+  }, [dataUsers, loadingUsers])
 
   // const [onDeleteUser, resultDeleteUser] = useMutation(gqlDeleteUser, 
   //   {
@@ -63,152 +89,97 @@ const UsersPage = (props) => {
   // );
   // console.log("resultDeleteUser :", resultDeleteUser)
 
-  ///////////////
-  const fetchData = useCallback(
-    ({ pageSize, pageIndex }) => {
-    console.log("fetchData is being called #1")
-
+  const fetchData = useCallback(({ pageSize, pageIndex }) => {
     setPageSize(pageSize)
-    setPageIndex(pageIndex)
-  })
-  ///////////////
+    setPageIndex(pageIndex) })
 
   const handleDelete = (id) => {
-    // setUserData(userData.filter((user) => user._id !== id));
-
-    // onDeleteUser({ variables: { id } });
   };
 
   const handleClose = () => {
-    // setOpen(false);
     setOpenDialogDelete({ ...openDialogDelete, isOpen: false, description: "" });
   };
 
-  ///////////////////////
   const columns = useMemo(
-    () => [
-      {
-        Header: 'Image',
-        accessor: 'image',
-        Cell: props =>{
-          if(props.row.original.image.length < 1){
-            return <Avatar
-                    sx={{
-                      height: 100,
-                      width: 100
-                    }}>A</Avatar>
-          }
+                          () => [
+                            {
+                              Header: 'Avatar',
+                              accessor: 'avatar',
+                              Cell: props =>{
+                                let { avatar } = props.row.original
+                                return (<Avatar sx={{ height: 100, width: 100 }} variant="rounded" src={ avatar?.url } />);
+                              }
+                            },
+                            {
+                              Header: 'Display name',
+                              accessor: 'displayName',
+                              Cell: props => {
+                                let {_id, displayName} = props.row.original
+                                return  <div onClick={()=>{
+                                            navigate({
+                                              pathname: "/user",
+                                              state: {from: "/", mode: "edit", id: _id } 
+                                            })
+                                          }}>{displayName}</div>
+                              }
+                            },
+                            {
+                              Header: 'Username',
+                              accessor: 'username',
+                              Cell: props => {
+                                let {_id, username} = props.row.original
+                                return  <div onClick={()=>{
+                                            navigate({
+                                              pathname: "/user",
+                                              state: {from: "/", mode: "edit", id: _id } 
+                                            })
+                                          }}>{username}</div>
+                              }
+                            },
+                           
+                            {
+                              Header: 'Email',
+                              accessor: 'email',
+                            },
+                            {
+                              Header: 'Roles',
+                              accessor: 'roles',
+                              Cell: props => {
+                                let {roles} = props.row.values
+                                return <div>{roles.join(',')}</div>
+                              }
+                            },
+                            {
+                              Header: 'Last access',
+                              accessor: 'lastAccess',
+                              Cell: props =>{
+                                let {lastAccess} = props.row.values 
+                                return <div>{ (moment(lastAccess, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</div>
+                              }
+                            },
+                            {
+                              Header: 'Action',
+                              Cell: props => {
+                                let {_id, displayName} = props.row.original
+                                return  <div className="Btn--posts">
+                                          <button onClick={(e)=>{
+                                            console.log("Force logout")
+                                          }}><ExitToAppIcon />Force logout</button>
+                                          <button onClick={()=>{
+                                            navigate("/user", {state: {from: "/", mode: "edit", id: _id } } )
+                                            // navigate("/supplier", {state: {from: "/", mode: "edit", id: _id} })
+                                          }}><EditIcon/>{t("edit")}</button>
+                                          <button onClick={(e)=>{
+                                            setOpenDialogDelete({ isOpen: true, id: _id, description: displayName });
+                                          }}><DeleteForeverIcon/>{t("delete")}</button>
+                                        </div>
+                              }
+                            },
+                          ],
+                          []
+                        )
 
-          return (
-            <div style={{ position: "relative" }}>
-              <Avatar
-                sx={{
-                  height: 100,
-                  width: 100
-                }}
-                variant="rounded"
-                alt="Example Alt"
-                src={ _.isEmpty(props.row.original.image[0].url) ? props.row.original.image[0].base64 : props.row.original.image[0].url }
-              />
-            </div>
-          );
-        }
-      },
-      {
-        Header: 'Display name',
-        accessor: 'displayName',
-        Cell: props => {
-          let {_id, displayName} = props.row.original
-          return  <div onClick={()=>{
-                      // history.push({ 
-                      //   pathname: "/user", 
-                      //   state: {from: "/", mode: "edit", id: _id } 
-                      // });
-
-                      navigate({
-                        pathname: "/user",
-                        state: {from: "/", mode: "edit", id: _id } 
-                      })
-                    }}>{displayName}</div>
-        }
-      },
-      {
-        Header: 'Email',
-        accessor: 'email',
-      },
-      {
-        Header: 'Roles',
-        accessor: 'roles',
-        Cell: props => {
-          let {roles} = props.row.values
-          return <div>{roles.join(',')}</div>
-        }
-      },
-      {
-        Header: 'Balance',
-        accessor: 'balance',
-        Cell: props => {
-          // let {_id, balance} = props.row.original
-          // const balanceByIdValue = useQuery(queryBalanceById, 
-          //                                 { 
-          //                                   context: { headers: getHeaders(location) },
-          //                                   variables: {id: _id},
-          //                                   notifyOnNetworkStatusChange: true 
-          //                                 });
-          // return  balanceByIdValue.loading 
-          //         ? <LinearProgress sx={{width:"100px"}} />
-          //         : <div>{balanceByIdValue.data.balanceById.data}</div>
-
-          return <div>balance</div>
-        } 
-      },
-      {
-        Header: 'Last access',
-        accessor: 'lastAccess',
-        Cell: props =>{
-          let {lastAccess} = props.row.values 
-          return <div>{ (moment(lastAccess, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</div>
-        }
-      },
-      {
-        Header: 'Action',
-        Cell: props => {
-          let {_id, displayName} = props.row.original
-          return  <div className="Btn--posts">
-                    <button onClick={(e)=>{
-                      console.log("Force logout")
-                    }}><ExitToAppIcon />Force logout</button>
-                    <button onClick={()=>{
-                      // history.push({ 
-                      //   pathname: "/user", 
-                      //   state: {from: "/", mode: "edit", id: _id } 
-                      // });
-
-                      navigate({
-                        pathname: "/user",
-                        state: {from: "/", mode: "edit", id: _id } 
-                      })
-                    }}><EditIcon/>{t("edit")}</button>
-                    <button onClick={(e)=>{
-                      setOpenDialogDelete({ isOpen: true, id: _id, description: displayName });
-                    }}><DeleteForeverIcon/>{t("delete")}</button>
-                  </div>
-        }
-      },
-    ],
-    []
-  )
-
-  // const [data, setData] = useState(() => makeData(10000))
-  // const [originalData] = useState(data)
-
-  // We need to keep the table from resetting the pageIndex when we
-  // Update data. So we can keep track of that flag with a ref.
   const skipResetRef = useRef(false)
-
-  // When our cell renderer calls updateMyData, we'll use
-  // the rowIndex, columnId and new value to update the
-  // original data
   const updateMyData = (rowIndex, columnId, value) => {
     console.log("updateMyData")
     // We also turn on the flag to not reset the page
@@ -226,26 +197,14 @@ const UsersPage = (props) => {
     // )
   }
 
-  // After data changes, we turn the flag back off
-  // so that if data actually changes when we're not
-  // editing it, the page is reset
-  // useEffect(() => {
-  //   skipResetRef.current = false
-
-  //   console.log("data :", data)
-  // }, [data])
-
-  //////////////////////
-
   return (
     <div className="pl-2 pr-2">
-      <UserListContainer className="table-responsive MuiBox-root">
         {
-          usersValue.loading
+          loadingUsers
           ? <div><CircularProgress /></div> 
           : <Table
               columns={columns}
-              data={usersValue.data.users.data}
+              data={datas}
               fetchData={fetchData}
               rowsPerPage={pageOptions}
               updateMyData={updateMyData}
@@ -294,7 +253,6 @@ const UsersPage = (props) => {
               state: {from: "/", mode: "new" } 
             })
           }}/>
-      </UserListContainer>
     </div>
   );
 };

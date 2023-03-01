@@ -63,6 +63,24 @@ const index = (props) => {
         ]
       }
 
+      case "/user":{
+        switch(checkRole(user)){
+          case AMDINISTRATOR:{
+            return [  
+              <MuiLink component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
+              <MuiLink component={Link} to="/users">{t("รายชื่อบุคคลทั้งหมด")}</MuiLink>,
+              <Typography key="3" color="text.primary">Profile</Typography>
+            ]
+          }
+          case AUTHENTICATED:{
+            return [  
+              <MuiLink component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
+              <Typography key="3" color="text.primary">Profile</Typography>
+            ]
+          }
+        }
+      }
+
       case "/banks":{
         return [  
           <MuiLink component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,

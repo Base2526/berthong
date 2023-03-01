@@ -243,7 +243,7 @@ const SupplierPage = (props) => {
     });
   };
 
-  return  <Box component="form" sx={{"& .MuiTextField-root": { m: 1, width: "50ch" } }} onSubmit={submitForm}>
+  return  <form onSubmit={submitForm}>
             <div>
               <label>ชื่อ * :</label>
               <input 
@@ -349,7 +349,7 @@ const SupplierPage = (props) => {
                 onSnackbar={(data) => console.log(data) }/>
             </div>
             <button type="submit" variant="contained" color="primary"> { mode == "edit" ? t("update") : t("create")}</button>
-          </Box>
+          </form>
 }
 
 const mapStateToProps = (state, ownProps) => {

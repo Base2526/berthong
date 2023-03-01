@@ -73,15 +73,16 @@ export default {
       if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
 
       let users = await User.find({})
+      users = _.filter( await Promise.all(_.map(users, async(user)=>{
+                if(_.isEqual(user._id, current_user?._id)) return null
 
-      users = await Promise.all(_.map(users, async(user)=>{
                 let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
                   return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
                 }))            
                 
                 let newUser = {...user._doc, roles: _.filter(roles, (role)=>role!=undefined)};
                 return _.omit(newUser, ['password']);
-              }))
+              })), i => !_.isEmpty(i))
 
       return { 
               status:true,
@@ -140,7 +141,7 @@ export default {
             let user = await User.findById(item.ownerId);
             if(_.isNull(user)) return null;
             return {...item._doc,  owner: user?._doc }
-          }).filter(i=>!_.isNull(i)))
+          }).filter(i=>!_.isEmpty(i)))
 
           return {  
             status: true,
@@ -156,7 +157,7 @@ export default {
                           let user = await User.findById(item.ownerId);
                           if(_.isNull(user)) return null;
                           return {...item._doc,  owner: user?._doc }
-                        }).filter(i=>!_.isNull(i)))
+                        }).filter(i=>!_.isEmpty(i)))
 
             return {  status: true,
                       data: suppliers,
@@ -168,7 +169,7 @@ export default {
                         let user = await User.findById(item.ownerId);
                         if(_.isNull(user)) return null;
                         return {...item._doc,  owner: user?._doc }
-                      }).filter(i=>!_.isNull(i)))
+                      }).filter(i=>!_.isEmpty(i)))
 
           return {  
             status: true,
@@ -876,6 +877,30 @@ export default {
       } catch(err) {
         logger.error(err.toString());
         return;
+      }
+    },
+
+    async register(parent, args, context, info) {
+      let start = Date.now()
+      let {input} = args
+
+      console.log("params register : ", input)
+
+      let user = await User.findOne({email: input.email})
+      if(!_.isNull(user)) throw new AppError(ERROR, 'Exiting email.')
+
+      let newInput =  {...input,  password: cryptojs.AES.encrypt( input.password, process.env.JWT_SECRET).toString(),
+                                  displayName: _.isEmpty(input.displayName) ? input.username : input.displayName ,
+                                  roles: [AUTHENTICATED], 
+                                  isActive: 'active', 
+                                  lastAccess: Date.now(), 
+                                  isOnline: true}
+              
+      await User.create(newInput);
+      // console.log("register : ", newInput)
+      return {
+        status: true,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
 

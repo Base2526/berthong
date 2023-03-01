@@ -1,9 +1,8 @@
-export const AMDINISTRATOR = "AMDINISTRATOR";
-export const AUTHENTICATED = "AUTHENTICATED";
-export const ANONYMOUS     = "ANONYMOUS";
+export const AMDINISTRATOR = "62a2ccfbcf7946010d3c74a2";
+export const AUTHENTICATED = "62a2ccfbcf7946010d3c74a6";
+export const ANONYMOUS     = "62a2ccfbcf7946010d3c74a4";
 
 
-// SUCCESS, ERROR, FORCE_LOGOUT, DATA_NOT_FOUND
 export const SUCCESS        = "SUCCESS";
 export const ERROR          = "ERROR";
 export const FORCE_LOGOUT   = "FORCE_LOGOUT";

@@ -65,8 +65,6 @@ const WithdrawsPage = (props) => {
       if(!_.isEmpty(dataWithdraws?.withdraws)){
         let { status, code, data } = dataWithdraws.withdraws
         if(status)setDatas(data)
-
-        console.log("useEffect :", data)
       }
     }
   }, [dataWithdraws, loadingWithdraws])

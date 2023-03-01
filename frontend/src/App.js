@@ -51,7 +51,7 @@ import DateLotterysPage from "./DateLotterysPage";
 import DepositPage from "./DepositPage";
 import DepositsPage from "./DepositsPage";
 import DetailPage from "./DetailPage";
-import { gqlPing, subscriptionMe } from "./gqlQuery";
+import { queryPing, subscriptionMe } from "./gqlQuery";
 import HistoryTransitionsPage from "./HistoryTransitionsPage";
 import HomePage from "./HomePage";
 import LoginPage from "./LoginPage";
@@ -177,7 +177,7 @@ const App =(props) =>{
   // console.log("ws :", location)
 
   /////////////////////// ping ///////////////////////////////////
-  const pingValues =useQuery(gqlPing, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true});
+  const pingValues =useQuery(queryPing, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true});
 
   useSubscription(subscriptionMe, {
     onSubscriptionData: useCallback((res) => {

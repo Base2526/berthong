@@ -81,12 +81,14 @@ const modelExists =()=>{
 
   User.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found User');
     } else {
-      // console.log('Not found User, creating');
-      let newUser = new User({});
+      let newUser = new User({
+                              username: "username",
+                              password: "password",
+                              email: "email@banlist.info",
+                              displayName: "displayName",
+                            });
       await newUser.save();
-
       await User.deleteMany({})
     }
   });
@@ -272,13 +274,6 @@ const modelExists =()=>{
       await Supplier.deleteMany({})
     }
   });
-
-  /*
-   bank:{
-        bankId: { type: Schema.Types.ObjectId, required:[true, "Bank-id Request is a required field"] },
-        bankNumber:  { type: String, required:[true, "Bank account number Request is a required field"] }
-    }
-  */
 
   Deposit.find({}, async(err, result)=> {
     try{

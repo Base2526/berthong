@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
 import { getHeaders } from "./util"
-import { mutationSupplier, queryDateLotterys } from "./gqlQuery"
+import { mutationSupplier, queryDateLotterys, mutationRegister } from "./gqlQuery"
 
 const { faker } = require("@faker-js/faker");
 
@@ -14,41 +14,9 @@ const AutoGenerationContent = (props) => {
 
     let dateLotterysValue = useQuery(queryDateLotterys, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
 
-    console.log("dateLotterysValue :", dateLotterysValue)
-
     const [onSupplier, resultSupplier] = useMutation(mutationSupplier, {
         context: { headers: getHeaders(location) },
-        update: (cache, {data: {supplier}}) => {
-    
-        //   let { data, mode, status } = supplier
-    
-        //   if(status){
-        //     switch(mode){
-        //       case "new":{
-        //         const querySuppliersValue = cache.readQuery({ query: querySuppliers });
-        //         let newData = [...querySuppliersValue.suppliers.data, supplier.data];
-    
-        //         cache.writeQuery({
-        //           query: querySuppliers,
-        //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-        //         });
-        //         break;
-        //       }
-    
-        //       case "edit":{
-        //         const querySuppliersValue = cache.readQuery({ query: querySuppliers });
-        //         let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
-    
-        //         cache.writeQuery({
-        //           query: querySuppliers,
-        //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-        //         });
-                
-        //         break;
-        //       }
-        //     }
-        //   }
-        },
+        update: (cache, {data: {supplier}}) => { },
         onCompleted({ data }) {
         //   history.goBack()
         },
@@ -56,7 +24,18 @@ const AutoGenerationContent = (props) => {
           console.log("onError :")
         }
     });
-    console.log("resultSupplier :", resultSupplier)
+
+    // 
+    const [onRegister, resultRegister] = useMutation(mutationRegister, {
+        context: { headers: getHeaders(location) },
+        update: (cache, {data: {register}}) => { },
+        onCompleted({ data }) {
+        //   history.goBack()
+        },
+        onError(error){
+          console.log("onRegister onError :", error)
+        }
+    });
 
     const makeFile = (length) =>{
         let files = []
@@ -69,13 +48,6 @@ const AutoGenerationContent = (props) => {
                         })
         }
         return files
-
-        /*
-            url: { type: String },
-    filename: { type: String },
-    mimetype: { type: String },
-    encoding: { type: String },
-        */
     }
 
     const makeNumber = (length)=> {
@@ -89,7 +61,6 @@ const AutoGenerationContent = (props) => {
     }
 
     const randomNumberInRange = (min, max) => {
-        // 👇️ get number between min (inclusive) and max (inclusive)
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
@@ -116,7 +87,29 @@ const AutoGenerationContent = (props) => {
                             // console.log("dateLottery : ", newInput, data)
                             onSupplier({ variables: { input: newInput } });
                         }
-                    }}>สร้าง สินค้า</button>
+                    }}>Auto สร้าง สินค้า</button>
+                </div>
+
+                <div>
+                    <button onClick={()=>{
+                        for ( var i = 0; i < 100; i++ ) {
+                            let newInput =  {
+                                username: faker.name.firstName(),
+                                password: faker.name.firstName(),
+                                email: faker.internet.email(),
+                                displayName: faker.name.firstName(),
+                                avatar: {
+                                    url: faker.image.avatar(),
+                                    filename: faker.name.firstName(),
+                                    encoding: '7bit',
+                                    mimetype: 'image/png'
+                                }
+                            }
+
+                            console.log("newInput :", newInput)
+                            onRegister({ variables: { input: newInput } });
+                        }
+                    }}>Auto สร้าง USER</button>
                 </div>
             </div>)
 }

@@ -2,26 +2,28 @@ import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema
 
+import { AMDINISTRATOR, AUTHENTICATED } from "../constants"
+
 const userSchema = new Schema({
-  username: { type: String },
-  password: { type: String },
-  email: { type: String },
-  displayName: { type: String },
+  username: { type: String, required:[true, "Username Request is a required field"] },
+  password: { type: String, required:[true, "Password Request is a required field"] },
+  email: { type: String, unique: true, required:[true, "Email Request is a required field"] },
+  displayName: { type: String, required:[true, "Email Request is a required field"]},
   banks: [{ 
             bankId: { type: String, required:[true, "Bank-Id Request is a required field"] },
             bankNumber: { type: String, required:[true, "Bank-Number Request is a required field"] } 
           }],
-  // balance: { type: Number, default: 0 },
   roles: [{ type: String,
-            enum : ['62a2ccfbcf7946010d3c74a6', '62a2ccfbcf7946010d3c74a2'],
-            default: '62a2ccfbcf7946010d3c74a6' }],
+            enum : [AUTHENTICATED, AMDINISTRATOR],
+            default: AUTHENTICATED
+          }],
   isActive: { type: String },
-  image :[{
+  avatar :{
     url: { type: String },
     filename: { type: String },
     mimetype: { type: String },
     encoding: { type: String },
-  }],
+  },
   lastAccess : { type : Date, default: Date.now },
   isOnline: {type: Boolean, default: false},
   socialType:{
@@ -35,7 +37,6 @@ const userSchema = new Schema({
 {
     timestamps: true
 })
-
 
 const User = mongoose.model('user', userSchema,'user')
 export default User

@@ -65,6 +65,14 @@ export default gql`
     deviceAgent: String
   }
 
+  input RegisterInput {
+    username: String!
+    password: String!
+    email: String!
+    displayName: String
+    avatar: FileInput
+  }
+
   enum AuthType {
     GOOGLE
     GITHUB
@@ -589,11 +597,10 @@ export default gql`
   }
 
   input FileInput {
-    base64: String
-    fileName: String
-    lastModified: DATETIME
-    size: Int
-    type: String
+    url: String
+    filename: String,
+    mimetype: String,
+    encoding: String,
   }
 
   input CommentInput {
@@ -724,7 +731,8 @@ export default gql`
   type Mutation {
     login(input: LoginInput): JSON
     loginWithSocial(input: LoginWithSocialInput): JSON
-    loginWithGithub(code: String!):JSON
+    loginWithGithub(code: String!): JSON
+    register(input: RegisterInput): JSON
     me(input: MeInput): JSON
     book(input: BookInput): JSON
     buy(_id: ID!): JSON

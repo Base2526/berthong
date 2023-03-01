@@ -205,12 +205,12 @@ export const checkBalanceBook = async(userId) =>{
 
 export const checkRole = (user) =>{
     if(user?.roles){
-        if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a2")){
+        if(_.includes( user?.roles, AMDINISTRATOR)){
             return AMDINISTRATOR;
         }
-        // else if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a6")){
-        return AUTHENTICATED;
-        // }
+        else if(_.includes( user?.roles, AUTHENTICATED)){
+            return AUTHENTICATED;
+        }
     }
     return ANONYMOUS;
 }

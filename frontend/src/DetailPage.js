@@ -4,24 +4,27 @@ import { useLocation } from "react-router-dom";
 import { toast } from 'react-toastify';
 import { useMutation, useQuery, NetworkStatus } from "@apollo/client";
 import CardActionArea from "@material-ui/core/CardActionArea";
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import Avatar from "@mui/material/Avatar";
-import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from "@mui/material/IconButton";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
+import { 
+  MoreVert as MoreVertIcon, 
+  ContentCopy as ContentCopyIcon
+} from "@mui/icons-material";
+import {
+  Avatar,
+  CircularProgress,
+  IconButton,
+  Menu,
+  MenuItem
+} from "@mui/material";
 import _ from "lodash";
 import queryString from 'query-string';
 import Lightbox from "react-image-lightbox";
-import "react-image-lightbox/style.css";
 import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
 
 import { DATA_NOT_FOUND, ERROR, FORCE_LOGOUT, UNAUTHENTICATED, 
          WS_CLOSED, WS_CONNECTED, WS_SHOULD_RETRY } from "./constants";
 import DialogBuy from "./DialogBuy";
 import DialogLogin from "./DialogLogin";
-import { gqlBook, gqlBuy, querySupplierById, querySuppliers, subscriptionSupplierById } from "./gqlQuery";
+import { mutationBook, mutationBuy, querySupplierById, querySuppliers, subscriptionSupplierById } from "./gqlQuery";
 import ItemFollow from "./ItemFollow";
 import ItemShare from "./ItemShare";
 import { login, logout } from "./redux/actions/auth";
@@ -45,7 +48,7 @@ const DetailPage = (props) => {
 
   let [datasSupplierById, setDatasSupplierById] = useState([]);
 
-  const [onBook, resultBookValues] = useMutation(gqlBook,{
+  const [onBook, resultBookValues] = useMutation(mutationBook,{
     context: { headers: getHeaders(location) },
     update: (cache, {data: {book}}) => {
       let { status, action, data } = book
@@ -103,7 +106,7 @@ const DetailPage = (props) => {
     }
   });
 
-  const [onBuy, resultBuyValues] = useMutation(gqlBuy,{
+  const [onBuy, resultBuyValues] = useMutation(mutationBuy,{
     context: { headers: getHeaders(location) },
     update: (cache, {data: {buy}}) => {
       let { status, data } = buy
