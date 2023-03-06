@@ -28,9 +28,9 @@ const initSearch = {
 }
 
 const HomeSearchPage = (props) => {
-  const [search, setSearch] = useState(initSearch)
+  const { classes, onSearch } = props
 
-  let { classes, onSearch } = props
+  const [search, setSearch] = useState(initSearch)
 
   const handleSliderChange = (event, newValue) => {
     setSearch({...search, price: newValue})

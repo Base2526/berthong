@@ -20,13 +20,12 @@ import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } fr
 import { toast } from 'react-toastify';
 import InfiniteScroll from "react-infinite-scroll-component";
 import { makeStyles } from "@material-ui/core/styles";
-import {
-  ErrorOutline as ErrorOutlineIcon,
-} from "@material-ui/icons";
+import { ErrorOutline as ErrorOutlineIcon } from "@material-ui/icons";
 // color
 import { lightGreen, blueGrey } from "@material-ui/core/colors";
 
-import { AMDINISTRATOR, AUTHENTICATED, FORCE_LOGOUT, WS_CLOSED, WS_CONNECTED, WS_SHOULD_RETRY } from "./constants";
+import { AMDINISTRATOR, AUTHENTICATED, FORCE_LOGOUT, 
+         WS_CLOSED, WS_CONNECTED, WS_SHOULD_RETRY } from "./constants";
 import DialogLogin from "./DialogLogin";
 import { querySuppliers, subscriptionSuppliers } from "./gqlQuery";
 import ItemFollow from "./ItemFollow";
@@ -93,6 +92,19 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
+const initSearch = {
+  offset: 0,
+  limit: 10,
+  number: "",
+  title: "",
+  detail: "",
+  price: 500,
+  chkBon: false,
+  chkLang: false,
+  chkMoney: false,
+  chkGold: false
+}
+
 let unsubscribeSuppliers = null;
 const HomePage = (props) => {
   const navigate = useNavigate();
@@ -105,7 +117,12 @@ const HomePage = (props) => {
   let [openMenuShare, setOpenMenuShare] = useState(null);
   let [datas, setDatas] = useState([]);
 
-  const [slice, setSlice] = useState(8);
+
+  const [loading, setLoading] = useState(true);
+
+  let [search, setSearch] = useState(initSearch)
+
+  const [slice, setSlice] = useState(10);
   const [hasMore, setHasMore] = useState(true);
   const increment = 8;
 
@@ -128,15 +145,20 @@ const HomePage = (props) => {
   const { loading: loadingSuppliers, 
           data: dataSuppliers, 
           error: errorSuppliers, 
+          refetch: refetchSuppliers,
           subscribeToMore, 
+          fetchMore,
           networkStatus } = useQuery(querySuppliers, 
                                       { 
                                         context: { headers: getHeaders(location) }, 
+                                        variables: {input: search},
                                         fetchPolicy: 'network-only', // Used for first execution
                                         nextFetchPolicy: 'cache-first', // Used for subsequent executions
                                         notifyOnNetworkStatusChange: true
                                       }
                                     );
+
+  console.log("loadingSuppliers : ", loadingSuppliers)
   if(!_.isEmpty(errorSuppliers)){
     _.map(errorSuppliers?.graphQLErrors, (e)=>{
       switch(e?.extensions?.code){
@@ -160,6 +182,8 @@ const HomePage = (props) => {
       if(!_.isEmpty(dataSuppliers?.suppliers)){
         let { status, code, data } = dataSuppliers.suppliers
         if(status)setDatas(data)
+
+        setLoading(false)
       }
     }
   }, [dataSuppliers, loadingSuppliers])
@@ -208,6 +232,11 @@ const HomePage = (props) => {
       }
     });
   }, [datas])
+
+  // useEffect(()=>{
+  //   refetchSuppliers({input: search});
+  //   console.log("search :", search)
+  // }, [search])
 
   const managementView = () =>{
     switch(checkRole(user)){
@@ -494,7 +523,6 @@ const HomePage = (props) => {
   //     }
   //     return true;
   //   });
-
   //   if (filteredAll[0] === undefined || filteredAll[0] === null) {
   //     setNoDataList([{ text: "no data" }]);
   //     setTotalSearch(0);
@@ -503,20 +531,32 @@ const HomePage = (props) => {
   //     setNoDataList(null);
   //     setTotalSearch(filteredAll.length);
   //   }
-    
   // };
 
-  const handleNext = () => {
-    if (slice === datas.length) {
-      setHasMore(false);
-      return;
-    } else if (slice + increment > datas.length) {
-      setSlice(datas.length);
-      return;
-    }
+  const handleNext = async() => {
+
+    let mores =  await fetchMore({ variables: { input: {...search, offset:search.offset + 1} } })
+    let {status, data} =  mores.data.suppliers
+    console.log("status, data :", status, data)
+
+
+    setDatas([...datas, ...data])
+    // setHasMore(true);
+
+    setSlice(100);
+
+
+    // if (slice === datas.length) {
+    //   setHasMore(false);
+    //   return;
+    // } else if (slice + increment > datas.length) {
+    //   setSlice(datas.length);
+    //   return;
+    // }
     // setTimeout(() => {
     //   setSlice(slice + increment);
     // }, 2000);
+    
   };
 
   // const handleSliderChange = (event, newValue) => {
@@ -596,15 +636,16 @@ const HomePage = (props) => {
       }
     }
 
-    return   loadingSuppliers
+    return   loading
             ? <CircularProgress />
             : <div className="contrainer">
                 <div style={{ paddingBottom: "1rem" }}>
                   <HomeSearchPage
+                    {...props}
                     classes={classes}
-                    onSearch={(v)=>console.log("v :", v)} />
+                    // initSearch={search}
+                    onSearch={(search)=>setSearch(search)} />
                 </div>
-
                 <div className="row">
                   <div className="col-12 pb-2">
                   {
@@ -765,8 +806,6 @@ const HomePage = (props) => {
                 )}
               </div>
   }
-
-  /////////////////////////
 
   return mainViewUI()
 }

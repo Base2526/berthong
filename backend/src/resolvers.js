@@ -132,11 +132,43 @@ export default {
       let { req } = context
       let { status, code, pathname, current_user } = await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+
+      console.log("suppliers args :", args)
       
       switch(pathname){
         case undefined:
         case "/":{
-          let suppliers = await Supplier.find({});// .limit(20);
+
+          let {
+            offset,
+            limit,
+            number,
+            title,
+            detail,
+            price,
+            chkBon,
+            chkLang,
+            chkMoney,
+            chkGold
+          } = args?.input
+
+          console.log("?????: ", offset,
+          limit,
+          number,
+          title,
+          detail,
+          price,
+          chkBon,
+          chkLang,
+          chkMoney,
+          chkGold)
+
+          /*
+           let data = await  User.find({}).limit(perPage).skip(page); 
+        let total = (await User.find({})).length;
+          */
+
+          let suppliers = await Supplier.find({}).limit(limit).skip(offset); 
           suppliers = await Promise.all(_.map(suppliers, async(item)=>{
             let user = await User.findById(item.ownerId);
             if(_.isNull(user)) return null;

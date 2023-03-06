@@ -1,13 +1,17 @@
 import { useMutation } from "@apollo/client";
 import AccountCircle from "@material-ui/icons/AccountCircle";
-import FacebookIcon from '@mui/icons-material/Facebook';
-import GoogleIcon from '@mui/icons-material/Google';
-import LockIcon from '@mui/icons-material/Lock';
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import Typography from "@mui/material/Typography";
+import { 
+  Lock as LockIcon,
+  Google as GoogleIcon,
+  Facebook as FacebookIcon
+}from '@mui/icons-material';
+import {
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogTitle, 
+  Typography
+} from "@mui/material";
 import { gapi } from "gapi-script";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
@@ -18,7 +22,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { mutationLogin, mutationLoginWithSocial } from "./gqlQuery";
-
 import { USER_NOT_FOUND } from "./constants";
 import { showToast } from "./util";
 

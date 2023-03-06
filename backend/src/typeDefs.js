@@ -55,8 +55,16 @@ export default gql`
   }
 
   input SearchInput{
-    type: String!
-    q: String!
+    offset: Int
+    limit: Int
+    number: String
+    title: String
+    detail: String
+    price: Int
+    chkBon: Boolean
+    chkLang: Boolean
+    chkMoney: Boolean
+    chkGold: Boolean
   }
 
   input LoginInput {
@@ -452,7 +460,7 @@ export default gql`
 
     homes: JSON
 
-    suppliers: JSON
+    suppliers(input: SearchInput): JSON
     supplierById(_id: ID): JSON
 
     deposits: JSON

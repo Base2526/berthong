@@ -19,6 +19,9 @@ import DatePicker from "react-multi-date-picker"
 import DatePanel from "react-multi-date-picker/plugins/date_panel"
 import DateObject from "react-date-object";
 
+import { DeleteForever as DeleteForeverIcon, 
+        Edit as EditIcon} from '@mui/icons-material';
+
 import { queryDateLotterys, mutationDatesLottery } from "./gqlQuery"
 import Table from "./TableContainer"
 import { getHeaders, checkRole, showToast } from "./util"
@@ -197,10 +200,10 @@ const DateLotterysPage = (props) => {
             return  <div>
                       <button onClick={()=>{
                         navigate("/date-lottery", { state: {from: "/", mode: "edit", _id} })
-                      }}>{t("edit")}</button>
+                      }}><EditIcon/>{t("edit")}</button>
                       <button onClick={(e)=>{
                         // setOpenDialogDelete({ isOpen: true, id: _id, description: name })
-                      }}>{t("delete")}</button>
+                      }}><DeleteForeverIcon/>{t("delete")}</button>
                     </div>
           }
         },
