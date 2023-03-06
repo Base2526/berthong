@@ -1,39 +1,115 @@
-import { Link } from "react-router-dom";
-import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import CircularProgress from '@mui/material/CircularProgress';
-import Avatar from "@mui/material/Avatar";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useNavigate, useLocation} from "react-router-dom";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Typography,
+  CircularProgress,
+  SpeedDial,
+  SpeedDialIcon
+} from '@mui/material';
 import _ from "lodash"
-import SpeedDial from '@mui/material/SpeedDial';
-import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { useQuery, useMutation } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 import moment from "moment";
+import DatePicker from "react-multi-date-picker"
+import DatePanel from "react-multi-date-picker/plugins/date_panel"
+import DateObject from "react-date-object";
 
-import { queryDateLotterys } from "./gqlQuery"
+import { queryDateLotterys, mutationDatesLottery } from "./gqlQuery"
 import Table from "./TableContainer"
+import { getHeaders, checkRole, showToast } from "./util"
 
 const DateLotterysPage = (props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const location = useLocation();
 
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
   const [pageIndex, setPageIndex] = useState(0);  
   const [pageSize, setPageSize] = useState(pageOptions[0])
-
+  const [dates, setDates] = useState([])
+  const [dateLotterys, setDateLotterys] = useState([])
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
-  const dateLotterysValues = useQuery(queryDateLotterys, { notifyOnNetworkStatusChange: true });
+  const { loading: loadingDateLotterys, 
+          data: dataDateLotterys, 
+          error: errorDateLotterys       } =  useQuery(queryDateLotterys, {
+                                                context: { headers: getHeaders(location) },
+                                                fetchPolicy: 'network-only', // Used for first execution
+                                                nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                                notifyOnNetworkStatusChange: false,
+                                              });
 
-  console.log("dateLotterysValues :", dateLotterysValues)
+  const [onMutationDatesLottery, resultMutationDatesLotteryValues] = useMutation(mutationDatesLottery
+    , {
+        update: (cache, {data: {datesLottery}}) => {
+
+          console.log("datesLottery :", datesLottery)
+          
+          // ////////// udpate cache Banks ///////////
+          // let queryDateLotterysValue = cache.readQuery({ query: queryDateLotterys });
+          // let { status, mode, data } = dateLottery
+          // if(status && queryDateLotterysValue){
+          //   switch(mode){
+          //     case "new":{
+          //       cache.writeQuery({
+          //         query: queryDateLotterys,
+          //         data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: [...queryDateLotterysValue.dateLotterys.data, data]} },
+          //       });
+          //       break;
+          //     }
+
+          //     case "edit":{
+          //       let newData = _.map(queryDateLotterysValue.dateLotterys.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
+          //       cache.writeQuery({
+          //         query: queryDateLotterys,
+          //         data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: newData} },
+          //       });
+          //       break;
+          //     }
+          //   }
+          // }
+          // ////////// udpate cache Banks ///////////
+        
+
+          // ////////// update cache queryDateLotteryById ///////////
+          // let dateLotteryByIdValue = cache.readQuery({ query: queryDateLotteryById, variables: {id: data._id}});
+          // if(status && dateLotteryByIdValue){
+          //   cache.writeQuery({
+          //     query: queryDateLotteryById,
+          //     data: { dateLotteryById: {...dateLotteryByIdValue.dateLotteryById, data} },
+          //     variables: {id: data._id}
+          //   });
+          // }
+          // ////////// update cache queryDateLotteryById ///////////
+
+        },
+        onCompleted({ data }) {
+          // history.goBack();
+          // navigate(-1);
+        },
+        onError(error){
+          console.log("error :", error)
+        }
+      }
+  );
+
+  useEffect(() => {
+    if(!loadingDateLotterys){
+      if(!_.isEmpty(dataDateLotterys?.dateLotterys)){
+        let { status, data } = dataDateLotterys.dateLotterys
+
+        if(status){
+          setDateLotterys(data)
+          setDates( _.map(data, (i)=>i.date) )
+        }
+      }
+    }
+  }, [dataDateLotterys, loadingDateLotterys])
 
   // const [onDeleteBank, resultDeleteBank] = useMutation(gqlDeleteBank, 
   //   {
@@ -76,21 +152,23 @@ const DateLotterysPage = (props) => {
   ///////////////////////
   const columns = useMemo(
     () => [
-        {
-          Header: 'Title',
-          accessor: 'title',
-        },
+        
         {
           Header: 'Date',
           accessor: 'date',
           Cell: props =>{
-            let {date} = props.row.values 
-            // return <div>{ (moment(startDate, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
-
+            let {date} = props.row.original 
             date = new Date(date).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-
-            // console.log("startDate :", startDate)
-            return <div>{ (moment(date, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
+            return <div>งวดวันที่ { (moment(date, 'MM/DD/YYYY')).format('DD MMM, YYYY')}</div>
+          }
+        },
+        {
+          Header: 'จำนวน Suppliers',
+          accessor: "suppliers",
+          Cell: props =>{
+            let {suppliers} = props.row.values 
+            let ids = _.map(suppliers, (s)=>s?._id)
+            return <div>{ids.join(", ")} - ( {suppliers.length} )</div>
           }
         },
         {
@@ -98,14 +176,7 @@ const DateLotterysPage = (props) => {
           accessor: 'description',
           Cell: props => {
             return (
-              <Box
-                sx={{
-                  maxHeight: "inherit",
-                  width: "100%",
-                  whiteSpace: "initial",
-                  lineHeight: "16px"
-                }}
-              >
+              <div>
                 <Typography
                   variant="body1"
                   gutterBottom
@@ -113,7 +184,7 @@ const DateLotterysPage = (props) => {
                     __html: props.row.original.description
                   }}
                 />
-              </Box>
+              </div>
             );
           }
         },
@@ -125,10 +196,6 @@ const DateLotterysPage = (props) => {
             let {_id, name} = props.row.original
             return  <div>
                       <button onClick={()=>{
-                        // history.push({ 
-                        //   pathname: "/date-lottery", 
-                        //   state: {from: "/", mode: "edit", _id} 
-                        // });
                         navigate("/date-lottery", { state: {from: "/", mode: "edit", _id} })
                       }}>{t("edit")}</button>
                       <button onClick={(e)=>{
@@ -159,17 +226,30 @@ const DateLotterysPage = (props) => {
   return (
     <div className="user-list-container">
       {
-         dateLotterysValues.loading
-         ?  <div><CircularProgress /></div> 
-         :  <Table
-              columns={columns}
-              data={dateLotterysValues.data.dateLotterys.data}
-              fetchData={fetchData}
-              rowsPerPage={pageOptions}
-              updateMyData={updateMyData}
-              skipReset={skipResetRef.current}
-              isDebug={false}
-            />
+        loadingDateLotterys
+        ?  <div><CircularProgress /></div> 
+        :  <div>
+              <DatePicker
+                value={dates}
+                onChange={setDates}
+                format="MMMM DD YYYY"
+                sort
+                plugins={[
+                  <DatePanel />
+                ]}/>
+              <button disabled={_.isEmpty(dates) ? true : false} onClick={()=>{
+                let newInput =  _.map(dates, (date)=> (date instanceof DateObject) ?  date.toDate() : date)
+                onMutationDatesLottery({ variables: { input: newInput } })
+              }}>Update</button>
+              <Table
+                columns={columns}
+                data={dateLotterys}
+                fetchData={fetchData}
+                rowsPerPage={pageOptions}
+                updateMyData={updateMyData}
+                skipReset={skipResetRef.current}
+                isDebug={false}/>
+            </div>
       }
 
       {openDialogDelete.isOpen && (
@@ -184,15 +264,15 @@ const DateLotterysPage = (props) => {
             <DialogContentText id="alert-dialog-description">{openDialogDelete.description}</DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button
+            <button
               variant="outlined"
               onClick={() => {
                 handleDelete(openDialogDelete.id);
 
                 setOpenDialogDelete({ isOpen: false, id: "", description: "" });
               }}
-            >{t("delete")}</Button>
-            <Button variant="contained" onClick={handleClose} autoFocus>{t("close")}</Button>
+            >{t("delete")}</button>
+            <button variant="contained" onClick={handleClose} autoFocus>{t("close")}</button>
           </DialogActions>
         </Dialog>
       )}

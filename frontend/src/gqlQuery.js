@@ -33,7 +33,8 @@ export const mutationDeposit    = gql`mutation deposit($input: DepositInput){ de
 export const mutationWithdraw   = gql`mutation withdraw($input: WithdrawInput){ withdraw(input: $input) }`;
 export const mutationBank       = gql`mutation bank($input: BankInput){ bank(input: $input) }`;
 export const mutationFollow     = gql`mutation follow($id: ID!) { follow(_id: $id) }`;
-export const mutationDateLottery = gql`mutation dateLottery($input: DateLotteryInput){ dateLottery(input: $input) }`;
+export const mutationDatesLottery = gql`mutation datesLottery($input: [Date]){ datesLottery(input: $input) }`;
+// export const mutationDateLotteryDetail = gql`mutation dateLotteryDetail($input: DateLotteryDetailInput){ dateLotteryDetail(input: $input) }`;
 
 // subscription 
 export const subscriptionMe            = gql`subscription subscriptionMe($sessionId: ID!){ subscriptionMe(sessionId: $sessionId) }`;

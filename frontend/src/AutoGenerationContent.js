@@ -5,14 +5,34 @@ import { useTranslation } from "react-i18next";
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
 import { getHeaders } from "./util"
-import { mutationSupplier, queryDateLotterys, mutationRegister } from "./gqlQuery"
+import { mutationSupplier, queryDateLotterys, mutationRegister, queryUsers } from "./gqlQuery"
 
 const { faker } = require("@faker-js/faker");
 
 const AutoGenerationContent = (props) => {
-    let location = useLocation();
+    const location              = useLocation();
+    const [users, setUsers]     = useState([]); 
+    const [dateLotterys, setDateLotterys] = useState([]); 
+ 
+    const { loading: loadingUsers, 
+            data: dataUsers, 
+            error: errorUsers,
+            networkStatus } = useQuery(queryUsers, 
+                                        { 
+                                        context: { headers: getHeaders(location) }, 
+                                        fetchPolicy: 'network-only', // Used for first execution
+                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        notifyOnNetworkStatusChange: true
+                                        }
+                                    );
 
-    let dateLotterysValue = useQuery(queryDateLotterys, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
+    const { loading: loadingDateLotterys, 
+            data: dataDateLotterys, 
+            error: errorDateLotterys,
+            networkStatus: networkStatusDateLotterys } = useQuery(queryDateLotterys, { 
+                                                                        context: { headers: getHeaders(location) }, 
+                                                                        notifyOnNetworkStatusChange: true }
+                                                                    );
 
     const [onSupplier, resultSupplier] = useMutation(mutationSupplier, {
         context: { headers: getHeaders(location) },
@@ -36,6 +56,24 @@ const AutoGenerationContent = (props) => {
           console.log("onRegister onError :", error)
         }
     });
+
+    useEffect(() => {
+        if(!loadingDateLotterys){
+          if(!_.isEmpty(dataUsers?.users)){
+            let { status, data } = dataUsers?.users
+            if(status)setUsers(data)
+          }
+        }
+    }, [dataUsers, loadingDateLotterys])
+
+    useEffect(() => {
+        if(!loadingUsers){
+          if(!_.isEmpty(dataDateLotterys?.dateLotterys)){
+            let { status, data } = dataDateLotterys?.dateLotterys
+            if(status)setDateLotterys(data)
+          }
+        }
+    }, [dataDateLotterys, loadingUsers])
 
     const makeFile = (length) =>{
         let files = []
@@ -68,25 +106,27 @@ const AutoGenerationContent = (props) => {
                 <div>Auto-Generation</div>
                 <div>
                     <button onClick={()=>{
-                        let { data } = dateLotterysValue.data.dateLotterys
-                        for ( var i = 0; i < 20; i++ ) {
+                        // let { data } = dateLotterysValue.data.dateLotterys
+                        for ( var i = 0; i < 95; i++ ) {
                             let newInput =  {
                                 mode: "NEW",
                                 title: faker.lorem.lines(1),
                                 price: parseInt(makeNumber(3)),
                                 priceUnit: parseInt(makeNumber(2)),
                                 description: faker.lorem.paragraph(),
-                                dateLottery: data[0]?._id,
+                                dateLottery: dateLotterys[randomNumberInRange(0, dateLotterys.length - 1)]?._id,
                                 files: makeFile(5),
                                 condition: parseInt(randomNumberInRange(11, 100)),    // 11-100
                                 category: parseInt(randomNumberInRange(0, 3)),        // money, gold, things, etc
                                 type: parseInt(randomNumberInRange(0, 1)),            // bon, lang
-                                auto: true
+                                ownerId: users[randomNumberInRange(0, users.length - 1)]?._id,
+                                test: true,
                             }
-
-                            // console.log("dateLottery : ", newInput, data)
+                            // console.log("newInput : ", newInput)
                             onSupplier({ variables: { input: newInput } });
                         }
+
+                        // console.log("users :", users[randomNumberInRange(0, users.length - 1)]?._id, users.length)
                     }}>Auto สร้าง สินค้า</button>
                 </div>
 

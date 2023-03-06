@@ -663,7 +663,8 @@ export default gql`
     type: Int!
     buys: [JSON]
     publish: Boolean = false
-    auto: Boolean = false
+    test: Boolean = false
+    ownerId: ID
   }
 
   enum WithdrawModeType {
@@ -714,14 +715,14 @@ export default gql`
     socialObject: String
   }
 
-  enum DateLotteryModeType {
+  enum DatesLotteryModeType {
     NEW
     EDIT
     DELETE
   }
 
-  input DateLotteryInput{
-    mode: DateLotteryModeType!
+  input DatesLotteryInput{
+    mode: DatesLotteryModeType!
     _id: ID
     title: String!
     date: Date!
@@ -741,7 +742,7 @@ export default gql`
     withdraw(input: WithdrawInput): JSON 
     bank(input: BankInput): JSON 
     follow(_id: ID!): JSON 
-    dateLottery(input: DateLotteryInput): JSON 
+    datesLottery(input: [Date]): JSON 
   }
 
   type Subscription {

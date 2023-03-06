@@ -599,158 +599,171 @@ const HomePage = (props) => {
     return   loadingSuppliers
             ? <CircularProgress />
             : <div className="contrainer">
-              <div style={{ paddingBottom: "1rem" }}>
-                <HomeSearchPage
-                  classes={classes}
-                  onSearch={(v)=>console.log("v :", v)} />
-              </div>
-
-              <div className="row">
-                <div className="col-12 pb-2">
-                {
-                  _.isEmpty(datas)
-                  ? <div className="noData p-2 m-1"><ErrorOutlineIcon /> ไม่พบข้อมูลที่ค้นหา </div>
-                  : <InfiniteScroll
-                      dataLength={slice}
-                      next={handleNext}
-                      hasMore={hasMore}
-                      loader={<h4>Loading...</h4>}
-                      // loader={
-                      //   <div className="row">
-                      //     <div className="col-md-6 col-lg-3">
-                      //       <div
-                      //         key={1}
-                      //         className="skeleton card-custom card"
-                      //         style={{ width: "100%" }}
-                      //       >
-                      //         <p className="image"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //       </div>
-                      //     </div>
-                      //     <div className="col-md-6 col-lg-3">
-                      //       <div
-                      //         key={2}
-                      //         className="skeleton card-custom card"
-                      //         style={{ width: "100%" }}
-                      //       >
-                      //         <p className="image"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //       </div>
-                      //     </div>
-                      //     <div className="col-md-6 col-lg-3 pb-3">
-                      //       <div
-                      //         key={3}
-                      //         className="skeleton card-custom card"
-                      //         style={{ width: "100%" }}
-                      //       >
-                      //         <p className="image"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //       </div>
-                      //     </div>
-                      //     <div className="col-md-6 col-lg-3 pb-3">
-                      //       <div
-                      //         key={4}
-                      //         className="skeleton card-custom card"
-                      //         style={{ width: "100%" }}
-                      //       >
-                      //         <p className="image"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //       </div>
-                      //     </div>
-                      //     <div className="col-md-6 col-lg-3 pb-3">
-                      //       <div
-                      //         key={5}
-                      //         className="skeleton card-custom card"
-                      //         style={{ width: "100%" }}
-                      //       >
-                      //         <p className="image"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //       </div>
-                      //     </div>
-                      //     <div className="col-md-6 col-lg-3 pb-3">
-                      //       <div
-                      //         key={6}
-                      //         className="skeleton card-custom card"
-                      //         style={{ width: "100%" }}
-                      //       >
-                      //         <p className="image"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //       </div>
-                      //     </div>
-                      //     <div className="col-md-6 col-lg-3 pb-3">
-                      //       <div
-                      //         key={7}
-                      //         className="skeleton card-custom card"
-                      //         style={{ width: "100%" }}
-                      //       >
-                      //         <p className="image"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //       </div>
-                      //     </div>
-                      //     <div className="col-md-6 col-lg-3 pb-3">
-                      //       <div
-                      //         key={8}
-                      //         className="skeleton card-custom card"
-                      //         style={{ width: "100%" }}
-                      //       >
-                      //         <p className="image"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //         <p className="line"></p>
-                      //       </div>
-                      //     </div>
-                      //   </div>
-                      // }
-                      scrollThreshold={0.5}
-                      scrollableTarget="scrollableDiv"
-                      endMessage={<h2>You have reached the end</h2>}>
-                      <div className="row">
-                        {_.map(datas, (item, index) =>{
-                          return <HomeItemPage 
-                                  {...props} 
-                                  key={index} 
-                                  index={index}
-                                  item={item}
-                                  onDialogLogin={()=>{
-                                    setDialogLogin(true)
-                                  }} />
-                        } )}
-                      </div>
-                    </InfiniteScroll>
-                  }
+                <div style={{ paddingBottom: "1rem" }}>
+                  <HomeSearchPage
+                    classes={classes}
+                    onSearch={(v)=>console.log("v :", v)} />
                 </div>
+
+                <div className="row">
+                  <div className="col-12 pb-2">
+                  {
+                    _.isEmpty(datas)
+                    ? <div className="noData p-2 m-1"><ErrorOutlineIcon /> ไม่พบข้อมูลที่ค้นหา </div>
+                    : <InfiniteScroll
+                        dataLength={slice}
+                        next={handleNext}
+                        hasMore={hasMore}
+                        loader={<h4>Loading...</h4>}
+                        // loader={
+                        //   <div className="row">
+                        //     <div className="col-md-6 col-lg-3">
+                        //       <div
+                        //         key={1}
+                        //         className="skeleton card-custom card"
+                        //         style={{ width: "100%" }}
+                        //       >
+                        //         <p className="image"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //       </div>
+                        //     </div>
+                        //     <div className="col-md-6 col-lg-3">
+                        //       <div
+                        //         key={2}
+                        //         className="skeleton card-custom card"
+                        //         style={{ width: "100%" }}
+                        //       >
+                        //         <p className="image"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //       </div>
+                        //     </div>
+                        //     <div className="col-md-6 col-lg-3 pb-3">
+                        //       <div
+                        //         key={3}
+                        //         className="skeleton card-custom card"
+                        //         style={{ width: "100%" }}
+                        //       >
+                        //         <p className="image"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //       </div>
+                        //     </div>
+                        //     <div className="col-md-6 col-lg-3 pb-3">
+                        //       <div
+                        //         key={4}
+                        //         className="skeleton card-custom card"
+                        //         style={{ width: "100%" }}
+                        //       >
+                        //         <p className="image"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //       </div>
+                        //     </div>
+                        //     <div className="col-md-6 col-lg-3 pb-3">
+                        //       <div
+                        //         key={5}
+                        //         className="skeleton card-custom card"
+                        //         style={{ width: "100%" }}
+                        //       >
+                        //         <p className="image"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //       </div>
+                        //     </div>
+                        //     <div className="col-md-6 col-lg-3 pb-3">
+                        //       <div
+                        //         key={6}
+                        //         className="skeleton card-custom card"
+                        //         style={{ width: "100%" }}
+                        //       >
+                        //         <p className="image"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //       </div>
+                        //     </div>
+                        //     <div className="col-md-6 col-lg-3 pb-3">
+                        //       <div
+                        //         key={7}
+                        //         className="skeleton card-custom card"
+                        //         style={{ width: "100%" }}
+                        //       >
+                        //         <p className="image"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //       </div>
+                        //     </div>
+                        //     <div className="col-md-6 col-lg-3 pb-3">
+                        //       <div
+                        //         key={8}
+                        //         className="skeleton card-custom card"
+                        //         style={{ width: "100%" }}
+                        //       >
+                        //         <p className="image"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //         <p className="line"></p>
+                        //       </div>
+                        //     </div>
+                        //   </div>
+                        // }
+                        scrollThreshold={0.5}
+                        scrollableTarget="scrollableDiv"
+                        endMessage={<h2>You have reached the end</h2>}>
+                        <div className="row">
+                          {_.map(datas, (item, index) =>{
+                            return <HomeItemPage 
+                                    {...props} 
+                                    key={index} 
+                                    index={index}
+                                    item={item}
+                                    onDialogLogin={()=>{
+                                      setDialogLogin(true)
+                                    }} />
+                          } )}
+                        </div>
+                      </InfiniteScroll>
+                    }
+                  </div>
+                </div>
+
+                {dialogLogin && (
+                  <DialogLogin
+                    {...props}
+                    open={dialogLogin}
+                    onComplete={async(data)=>{
+                      setDialogLogin(false);
+                    }}
+                    onClose={() => {
+                      setDialogLogin(false);
+                    }}
+                  />
+                )}
               </div>
-            </div>
   }
 
   /////////////////////////

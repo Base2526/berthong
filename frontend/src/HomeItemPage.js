@@ -16,7 +16,6 @@ import _ from "lodash"
 import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
 
 import ItemFollow from "./ItemFollow"
-const ITEM_HEIGHT = 48;
 
 const HomeItemPage = (props) => {
   const navigate = useNavigate();
@@ -103,8 +102,8 @@ const HomeItemPage = (props) => {
           <img
             className="img-fluid"
             src={
-              !_.isEmpty(owner?.image)
-                ? owner?.image[0].url
+              !_.isEmpty(owner?.avatar)
+                ? owner?.avatar?.url
                 : "https://img.myloview.com/stickers/default-avatar-profile-icon-vector-social-media-user-image-700-205124837.jpg"
             }
             alt="Avatar"

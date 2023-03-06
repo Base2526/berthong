@@ -48,7 +48,8 @@ const SupplierSchema = new Schema({
     buys: [BuyInput],
     publish: { type: Boolean, default: false },
     ownerId: { type: Schema.Types.ObjectId, required:[true, "OwnerId is a required field"] },
-    follows: [FollowInput]
+    follows: [FollowInput],
+    test: { type: Boolean, default: false },
 },
 {
     timestamps: true

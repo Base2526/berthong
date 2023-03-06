@@ -141,7 +141,7 @@ export default {
             let user = await User.findById(item.ownerId);
             if(_.isNull(user)) return null;
             return {...item._doc,  owner: user?._doc }
-          }).filter(i=>!_.isEmpty(i)))
+          }).filter(i=>!_.isNull(i)))
 
           return {  
             status: true,
@@ -153,11 +153,13 @@ export default {
         default:{
           if( checkRole(current_user) == AMDINISTRATOR ){
             let suppliers = await Supplier.find({});
+
+           
             suppliers = await Promise.all(_.map(suppliers, async(item)=>{
                           let user = await User.findById(item.ownerId);
                           if(_.isNull(user)) return null;
                           return {...item._doc,  owner: user?._doc }
-                        }).filter(i=>!_.isEmpty(i)))
+                        }).filter(i=>!_.isNull(i)))
 
             return {  status: true,
                       data: suppliers,
@@ -169,7 +171,7 @@ export default {
                         let user = await User.findById(item.ownerId);
                         if(_.isNull(user)) return null;
                         return {...item._doc,  owner: user?._doc }
-                      }).filter(i=>!_.isEmpty(i)))
+                      }).filter(i=>!_.isNull(i)))
 
           return {  
             status: true,
@@ -433,6 +435,11 @@ export default {
 
       let dateLotterys = await DateLottery.find({})
       if(_.isNull(dateLotterys)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
+
+      dateLotterys = await Promise.all( _.map(dateLotterys, async(lo)=>{
+        let suppliers = await Supplier.find({ dateLottery: lo?._id });
+        return  {...lo._doc, suppliers }
+      }) )
       
       return {  status: true,
                 data: dateLotterys,
@@ -1031,6 +1038,8 @@ export default {
                                 {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, selected}] } );
             
           let newSupplier = await Supplier.findById(supplierId)
+          newSupplier = {...newSupplier, owner: current_user?._doc}
+
           pubsub.publish("SUPPLIER_BY_ID", {
             supplierById: { mutation: "BOOK", data: newSupplier },
           });
@@ -1057,6 +1066,8 @@ export default {
         {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id ) },  );
 
         let newSupplier = await Supplier.findById(supplierId)
+        newSupplier = {...newSupplier, owner: current_user?._doc}
+        
         pubsub.publish("SUPPLIER_BY_ID", {
           supplierById: { mutation: "UNBOOK", data: newSupplier },
         });
@@ -1112,56 +1123,68 @@ export default {
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
       if( checkRole(current_user) != AMDINISTRATOR && checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated and Authenticated only!')
 
+
+      if(input.test){
+        let supplier = await Supplier.create(input);
+        
+        return {
+          status: true,
+          mode: input.mode.toLowerCase(),
+          data: supplier,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }
+
       switch(input.mode.toLowerCase()){
         case "new":{
           let newFiles = [];
-          if(!input.auto){
-            if(!_.isEmpty(input.files)){
-          
-              for (let i = 0; i < input.files.length; i++) {
-                const { createReadStream, filename, encoding, mimetype } = (await input.files[i]).file //await input.files[i];
+          // if(!input.test){
+          if(!_.isEmpty(input.files)){
+        
+            for (let i = 0; i < input.files.length; i++) {
+              const { createReadStream, filename, encoding, mimetype } = (await input.files[i]).file //await input.files[i];
+  
+              const stream = createReadStream();
+              const assetUniqName = fileRenamer(filename);
+              let pathName = `/app/uploads/${assetUniqName}`;
     
-                const stream = createReadStream();
-                const assetUniqName = fileRenamer(filename);
-                let pathName = `/app/uploads/${assetUniqName}`;
-      
-                const output = fs.createWriteStream(pathName)
-                stream.pipe(output);
-      
-                await new Promise(function (resolve, reject) {
-                  output.on('close', () => {
-                    resolve();
-                  });
-            
-                  output.on('error', (err) => {
-                    logger.error(err.toString());
-      
-                    reject(err);
-                  });
+              const output = fs.createWriteStream(pathName)
+              stream.pipe(output);
+    
+              await new Promise(function (resolve, reject) {
+                output.on('close', () => {
+                  resolve();
                 });
-      
-                const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
-                newFiles.push({ url: urlForArray, filename, encoding, mimetype });
-              }
-            }
-
-            let supplier = await Supplier.create({ ...input, files:newFiles, ownerId: current_user?._id });
           
-            return {
-              status: true,
-              mode: input.mode.toLowerCase(),
-              data: supplier,
-              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-            }
-          }else{
-            let supplier = await Supplier.create({ ...input, ownerId: current_user?._id });
-            return {
-              status: true,
-              mode: input.mode.toLowerCase(),
-              data: supplier,
-              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+                output.on('error', (err) => {
+                  logger.error(err.toString());
+    
+                  reject(err);
+                });
+              });
+    
+              const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+              newFiles.push({ url: urlForArray, filename, encoding, mimetype });
             }
           }
+
+          let supplier = await Supplier.create({ ...input, files:newFiles, ownerId: current_user?._id });
+        
+          return {
+            status: true,
+            mode: input.mode.toLowerCase(),
+            data: supplier,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }
+          // }else{
+          //   let supplier = await Supplier.create({ ...input, ownerId: current_user?._id });
+          //   return {
+          //     status: true,
+          //     mode: input.mode.toLowerCase(),
+          //     data: supplier,
+          //     executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          //   }
+          // }
         }
 
         case "edit":{
@@ -1591,14 +1614,15 @@ export default {
 
       await Supplier.updateOne( { _id }, { follows } );
       supplier = await Supplier.findOne({_id})
+      
       return {
         status: true,
-        data: {...supplier._doc, ownerName: (await User.findById(supplier.ownerId))?.displayName },
+        data: {...supplier._doc, owner: (await User.findById(supplier.ownerId))?._doc },
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
 
-    async dateLottery(parent, args, context, info) {
+    async datesLottery(parent, args, context, info) {
       let start = Date.now()
       let { input } = args
       let { req } = context
@@ -1606,6 +1630,26 @@ export default {
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
+      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Administrator only!')
+
+      await Promise.all( _.map(input, async(date, weight)=>{
+                          let dateLottery =  await DateLottery.findOne({date})
+                          _.isEmpty(dateLottery) ? await DateLottery.create({ date, weight }) : await dateLottery.updateOne({ weight })
+                        }))
+
+      let dateLottery = await DateLottery.find({})
+      dateLottery = await Promise.all( _.map(dateLottery, async(lo)=>{
+        let suppliers = await Supplier.find({ dateLottery: lo?._id });
+        return {...lo._doc, suppliers }
+      }) )
+
+      return {
+        status: true,
+        data: dateLottery,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+
+      /*
       switch(input.mode.toLowerCase()){
         case "new":{
           input = {...input, weight: 1}
@@ -1640,6 +1684,7 @@ export default {
           throw new AppError(ERROR, 'Other case')
         }
       }
+      */
     },
   },
   Subscription:{

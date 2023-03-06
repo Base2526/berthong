@@ -5,6 +5,7 @@ import _ from "lodash";
 import { useTranslation } from "react-i18next";
 import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
+import moment from "moment";
 
 import { mutationSupplier, queryDateLotterys, querySupplierById, querySuppliers } from "./gqlQuery";
 import { getHeaders, showToast } from "./util";
@@ -286,7 +287,14 @@ const SupplierPage = (props) => {
                     onChange={ onInputChange }
                     onBlur={ validateInput } >
                     <option value={""}>ไม่เลือก</option>
-                    {_.map(dateLotterysValues, (dateLotterysValue)=><option value={dateLotterysValue._id}>{dateLotterysValue.title}</option>)}
+                    {_.map(dateLotterysValues, (dateLotterysValue)=>{
+
+                      // let {date} = props.row.original 
+                      let date = new Date(dateLotterysValue.date).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+                      // return <div>งวดวันที่ { (moment(date, 'MM/DD/YYYY')).format('DD MMM, YYYY')}</div>
+
+                      return <option value={dateLotterysValue._id}>งวดวันที่ { (moment(date, 'MM/DD/YYYY')).format('DD MMM, YYYY')}</option>
+                    })}
                   </select>
               }
               <p className="text-red-500"> {_.isEmpty(error.dateLottery) ? "" : error.dateLottery} </p>

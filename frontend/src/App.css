@@ -996,3 +996,9 @@ ul {
 .container-breadcrumb{
   padding-bottom: 10px;
 }
+
+tbody, td, tfoot, th, thead, tr {
+  border-color: inherit !important;
+  border-style: solid !important;
+  border-width: thin !important;
+}

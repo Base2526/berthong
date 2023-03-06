@@ -326,8 +326,7 @@ const modelExists =()=>{
   DateLottery.find({}, async(err, result)=> {
     if (result.length > 0) {
     } else {
-      let newDateLottery = new DateLottery({  title: "title",
-                                              date: new Date(),
+      let newDateLottery = new DateLottery({  date: new Date(),
                                               weight: 1 });
       await newDateLottery.save();
       await DateLottery.deleteMany({})

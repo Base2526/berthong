@@ -9,7 +9,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 import Editor from "./editor/Editor";
-import { mutationDateLottery, queryDateLotteryById, queryDateLotterys } from "./gqlQuery"
+import { mutationDatesLottery, queryDateLotteryById, queryDateLotterys } from "./gqlQuery"
 import _ from "lodash";
 
 let editValues = undefined;
@@ -29,12 +29,11 @@ const DateLotteryPage = (props) => {
   const { loading: loadingDateLotteryById, 
           data: dataDateLotteryById, 
           error: errorDateLotteryById,
-          refetch: refetchDateLotteryById} = useQuery(queryDateLotteryById, {
-                                    // variables: {id: _id},
-                                    notifyOnNetworkStatusChange: true,
-                                  });
+          refetch: refetchDateLotteryById} =  useQuery(queryDateLotteryById, {
+                                                notifyOnNetworkStatusChange: true,
+                                              });
 
-  const [onMutationDateLottery, resultMutationDateLotteryValues] = useMutation(mutationDateLottery
+  const [onMutationDateLottery, resultMutationDateLotteryValues] = useMutation(mutationDatesLottery
     , {
         update: (cache, {data: {dateLottery}}) => {
 
