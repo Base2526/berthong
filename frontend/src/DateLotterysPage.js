@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useNavigate, useLocation} from "react-router-dom";
+import { useNavigate, useLocation, createSearchParams} from "react-router-dom";
 import {
   Dialog,
   DialogActions,
@@ -9,7 +9,8 @@ import {
   Typography,
   CircularProgress,
   SpeedDial,
-  SpeedDialIcon
+  SpeedDialIcon,
+  Stack
 } from '@mui/material';
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
@@ -51,7 +52,7 @@ const DateLotterysPage = (props) => {
     , {
         update: (cache, {data: {datesLottery}}) => {
 
-          console.log("datesLottery :", datesLottery)
+          // console.log("datesLottery :", datesLottery)
           
           // ////////// udpate cache Banks ///////////
           // let queryDateLotterysValue = cache.readQuery({ query: queryDateLotterys });
@@ -96,7 +97,7 @@ const DateLotterysPage = (props) => {
           // navigate(-1);
         },
         onError(error){
-          console.log("error :", error)
+          // console.log("error :", error)
         }
       }
   );
@@ -107,8 +108,10 @@ const DateLotterysPage = (props) => {
         let { status, data } = dataDateLotterys.dateLotterys
 
         if(status){
-          setDateLotterys(data)
-          setDates( _.map(data, (i)=>i.date) )
+          if(!_.isEqual(dateLotterys, data)) setDateLotterys(data)
+          
+          let newDates = _.map(data, (i)=>i.date)
+          if(!_.isEqual(newDates, dates)) setDates( newDates )
         }
       }
     }
@@ -170,8 +173,17 @@ const DateLotterysPage = (props) => {
           accessor: "suppliers",
           Cell: props =>{
             let {suppliers} = props.row.values 
-            let ids = _.map(suppliers, (s)=>s?._id)
-            return <div>{ids.join(", ")} - ( {suppliers.length} )</div>
+            // let ids = _.map(suppliers, (s)=>s?._id)
+            // return <div>{ids.join(", ")} - ( {suppliers.length} )</div>
+
+
+            return <div><ul>{_.map(suppliers, (value)=><li className="MuiListItem-root" key={ value?._id } onClick={()=>{
+              navigate({
+              pathname: "/d",
+              search: `?${createSearchParams({ id: value._id})}`,
+              state: { id: value._id }
+            })
+          }}>{value.title}</li>) }</ul></div>
           }
         },
         {
@@ -194,17 +206,17 @@ const DateLotterysPage = (props) => {
         {
           Header: 'Action',
           Cell: props => {
-            console.log("Cell :", props)
+            // console.log("Cell :", props)
 
             let {_id, name} = props.row.original
-            return  <div>
+            return  <Stack direction="row" spacing={2}>
                       <button onClick={()=>{
                         navigate("/date-lottery", { state: {from: "/", mode: "edit", _id} })
                       }}><EditIcon/>{t("edit")}</button>
                       <button onClick={(e)=>{
                         // setOpenDialogDelete({ isOpen: true, id: _id, description: name })
                       }}><DeleteForeverIcon/>{t("delete")}</button>
-                    </div>
+                    </Stack>
           }
         },
     ],

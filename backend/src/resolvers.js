@@ -157,10 +157,44 @@ export default {
           /*
             let data = await  User.find({}).limit(perPage).skip(page); 
             let total = (await User.find({})).length;
-          */
+          */ 
+          //  mongoose
+          // let condition = {$and: [] }
+          if(!_.isEmpty(NUMBER)){
+            
+          }
+
+          if(!_.isEmpty(TITLE)){
+            
+          }
+
+          if(!_.isEmpty(DETAIL)){
+            
+          }
+
+          if(PRICE != 500){
+
+          }
+
+          if(CHK_BON){
+
+          }
+
+          if(CHK_LAND){
+
+          }
+
+          if(CHK_MONEY){
+
+          }
+
+          if(CHK_GOLD){
+
+          }
+
           let total = (await Supplier.find({})).length;
 
-          let suppliers = await Supplier.find({}).limit(limit).skip(offset); 
+          let suppliers = await Supplier.find({}).limit(LIMIT).skip(OFF_SET); 
           suppliers = await Promise.all(_.map(suppliers, async(item)=>{
             let user = await User.findById(item.ownerId);
             if(_.isNull(user)) return null;

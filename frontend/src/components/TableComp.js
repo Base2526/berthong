@@ -168,7 +168,7 @@ const TableComp = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipRe
 
     useEffect(() => {
 
-      console.log("fetchData is being called #2 : ", pageIndex, pageSize)
+      // console.log("fetchData is being called #2 : ", pageIndex, pageSize)
       fetchData && fetchData({ pageIndex, pageSize });
     }, [fetchData, pageIndex, pageSize]);
   

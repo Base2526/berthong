@@ -24,7 +24,7 @@ const Breadcs = (props) => {
 
   let queryParams = queryString.parse(location.search)
   
-  console.log("params :", queryParams)
+  // console.log("params :", queryParams)
   const { loading: loadingProfile, 
           data: dataProfile, 
           error: errorProfile, 
@@ -53,7 +53,7 @@ const Breadcs = (props) => {
   }, [dataProfile, loadingProfile])
 
   const BreadcrumbsView = () =>{
-    console.log("location :", location, params, props)
+    // console.log("location :", location, params, props)
 
     switch(location?.pathname){
       case "/":{
@@ -204,6 +204,13 @@ const Breadcs = (props) => {
             ]
           }
         }
+      }
+
+      case "/date-lotterys":{
+        return [  
+          <MuiLink component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="3" color="text.primary">วันออกหวยทั้งหมด</Typography>
+        ]
       }
    
       default: 

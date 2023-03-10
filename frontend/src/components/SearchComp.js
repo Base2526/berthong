@@ -52,7 +52,7 @@ const SearchComp = (props) => {
                       <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
                         <TextField
                           id="standard-basic"
-                          label="ตัวเลข"
+                          label="ตัวเลขต้องการซื้อ"
                           variant="filled"
                           name={"number"}
                           value={search.NUMBER}
