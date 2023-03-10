@@ -18,13 +18,12 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import moment from "moment";
 import LinearProgress from '@mui/material/LinearProgress';
-import Lightbox from "react-image-lightbox";
 
 import { getHeaders, checkRole, showToast } from "./util"
 import { queryDeposits, mutationDeposit, queryBanks } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
 import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants"
-import Table from "./TableContainer"
+import TableComp from "./components/TableComp"
 
 deepdash(_);
 
@@ -33,12 +32,11 @@ const DepositsPage = (props) => {
   const location = useLocation();
   const { t } = useTranslation();
 
-  let { user, logout } = props
+  let { user, logout, onLightbox } = props
 
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
   const [pageIndex, setPageIndex]     = useState(0);  
   const [pageSize, setPageSize]       = useState(pageOptions[0])
-  const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" }); 
   const [datas, setDatas]             = useState([]);  
 
@@ -139,7 +137,7 @@ const DepositsPage = (props) => {
                       src={props.value[0].url}
                       onClick={(e) => {
                         console.log("files props: ", props.value)
-                        setLightbox({ isOpen: true, photoIndex: 0, images:props.value })
+                        onLightbox({ isOpen: true, photoIndex: 0, images:props.value })
                       }}
                     />
                   </CardActionArea>
@@ -314,7 +312,7 @@ const DepositsPage = (props) => {
                     }}>เพิ่ม แจ้งฝากเงิน</button>
                   : ""
                   }
-                <Table
+                <TableComp
                   columns={columns}
                   data={datas}
                   fetchData={fetchData}
@@ -354,31 +352,6 @@ const DepositsPage = (props) => {
             </Dialog>
           )}
 
-          {lightbox.isOpen && (
-              <Lightbox
-                mainSrc={lightbox.images[lightbox.photoIndex].url}
-                nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
-                prevSrc={
-                  lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
-                }
-                onCloseRequest={() => {
-                  setLightbox({ ...lightbox, isOpen: false });
-                }}
-                onMovePrevRequest={() => {
-                  setLightbox({
-                    ...lightbox,
-                    photoIndex:
-                      (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
-                  });
-                }}
-                onMoveNextRequest={() => {
-                  setLightbox({
-                    ...lightbox,
-                    photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
-                  });
-                }}
-              />
-            )}
           </div>);
 }
 

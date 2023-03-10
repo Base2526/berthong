@@ -23,7 +23,7 @@ import { DeleteForever as DeleteForeverIcon,
         Edit as EditIcon} from '@mui/icons-material';
 
 import { queryDateLotterys, mutationDatesLottery } from "./gqlQuery"
-import Table from "./TableContainer"
+import TableComp from "./components/TableComp"
 import { getHeaders, checkRole, showToast } from "./util"
 
 const DateLotterysPage = (props) => {
@@ -244,7 +244,7 @@ const DateLotterysPage = (props) => {
                 let newInput =  _.map(dates, (date)=> (date instanceof DateObject) ?  date.toDate() : date)
                 onMutationDatesLottery({ variables: { input: newInput } })
               }}>Update</button>
-              <Table
+              <TableComp
                 columns={columns}
                 data={dateLotterys}
                 fetchData={fetchData}

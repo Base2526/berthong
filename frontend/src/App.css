@@ -98,6 +98,7 @@ body {
   left: 1.25rem;
   width: 85px;
   height: 85px;
+  cursor: pointer;
 }
 
 .card {
@@ -967,11 +968,17 @@ ul {
 }
 
 .MuiListItem-root {
-  width: 50px !important;
+  /* width: 50px !important; */
+  cursor: pointer;
 }
 
 .card-title {
   font-size: 18px;
+  cursor: pointer;
+}
+
+.card-text {
+  cursor: pointer;
 }
 
 .noData {
@@ -1002,3 +1009,4 @@ tbody, td, tfoot, th, thead, tr {
   border-style: solid !important;
   border-width: thin !important;
 }
+

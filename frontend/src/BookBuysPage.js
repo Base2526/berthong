@@ -13,7 +13,7 @@ import { useQuery, useMutation } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 
 import { queryBookBuyTransitions } from "./gqlQuery"
-import Table from "./TableContainer"
+import TableComp from "./components/TableComp"
 
 const BookBuysPage = (props) => {
   const navigate = useNavigate();
@@ -95,7 +95,7 @@ const BookBuysPage = (props) => {
             return (<div onClick={(e)=>{ 
               // history.push({ pathname: "/p", search: `?id=${_id}`, state: { id: _id } }) 
               navigate({
-                        pathname: "/p",
+                        pathname: "/d",
                         search: `?${createSearchParams({ id: _id})}`,
                         state: { id: _id }
                       })
@@ -173,7 +173,7 @@ const BookBuysPage = (props) => {
       {
          loadingBookBuyTransitions
          ?  <CircularProgress /> 
-         :  <Table
+         :  <TableComp
               columns={columns}
               data={datas}
               fetchData={fetchData}

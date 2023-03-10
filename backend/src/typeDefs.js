@@ -55,16 +55,16 @@ export default gql`
   }
 
   input SearchInput{
-    offset: Int
-    limit: Int
-    number: String
-    title: String
-    detail: String
-    price: Int
-    chkBon: Boolean
-    chkLang: Boolean
-    chkMoney: Boolean
-    chkGold: Boolean
+    OFF_SET: Int
+    LIMIT: Int
+    NUMBER: String
+    TITLE: String
+    DETAIL: String
+    PRICE: Int
+    CHK_BON: Boolean
+    CHK_LAND: Boolean
+    CHK_MONEY: Boolean
+    CHK_GOLD: Boolean
   }
 
   input LoginInput {
@@ -477,7 +477,7 @@ export default gql`
 
     historyTransitions: JSON
 
-    supplierProfile(_id: ID): JSON
+    profile(_id: ID): JSON
 
     dateLotterys: JSON
     dateLotteryById(_id: ID!): JSON

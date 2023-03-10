@@ -16,14 +16,8 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { useQuery, useMutation } from "@apollo/client";
 import { useTranslation } from "react-i18next";
-import styled from "styled-components";
-
 import { queryBanks } from "./gqlQuery"
-import Table from "./TableContainer"
-
-export const UserListContainer = styled.div`
-  flex: 4;
-`;
+import TableComp from "./components/TableComp"
 
 const BanksPage = (props) => {
   const navigate = useNavigate();
@@ -163,11 +157,11 @@ const BanksPage = (props) => {
   //////////////////////
 
   return (
-    <UserListContainer>
+    <div>
       {
          bankValues.loading
          ?  <div><CircularProgress /></div> 
-         :  <Table
+         :  <TableComp
               columns={columns}
               data={bankValues.data.banks.data}
               fetchData={fetchData}
@@ -216,7 +210,7 @@ const BanksPage = (props) => {
           navigate("/bank", {state: {from: "/", mode: "new"} })
         }}
       />
-    </UserListContainer>
+    </div>
   );
 };
 

@@ -4,10 +4,12 @@ import {
   MoreVert as MoreVertIcon,
 } from "@material-ui/icons";
 import {
+  Avatar,
   IconButton,
   Menu,
   MenuItem
 } from "@mui/material";
+
 import {
   ContentCopy as ContentCopyIcon,
   BugReport as BugReportIcon
@@ -17,7 +19,7 @@ import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } fr
 
 import ItemFollow from "./ItemFollow"
 
-const HomeItemPage = (props) => {
+const HomeItem = (props) => {
   const navigate = useNavigate();
   let { index, item, onDialogLogin } = props;
   let { owner, files } = item
@@ -98,7 +100,14 @@ const HomeItemPage = (props) => {
             })`
           }}
         ></div>
-        <div className="card-custom-avatar">
+        <div 
+          className="card-custom-avatar"
+          onClick={(e)=>{
+            navigate({
+              pathname: `/p`,
+              search: `?${createSearchParams({ id: item.ownerId})}`
+            })
+          }}>
           <img
             className="img-fluid"
             src={
@@ -113,10 +122,19 @@ const HomeItemPage = (props) => {
           {/* <h4 class="card-title">{post.title}</h4> */}
           <div className="row">
             <div className="col-12 p-2">
-              <span class="card-title" style={{ float: "left" }}>
-                <b>{item?.title}</b>
+              <span 
+                className="card-title" 
+                style={{ float: "left" }}
+                onClick={()=>{
+                  navigate({
+                  pathname: "/d",
+                  search: `?${createSearchParams({ id: item._id})}`,
+                  state: { id: item._id }
+                })}}>
+                <b>{item?.title} - ยอดจอง {  _.filter(item.buys, (buy)=> buy.selected == 0 )?.length }, ขายไปแล้ว { _.filter(item.buys, (buy)=> buy.selected == 1 )?.length } </b>
               </span>
-              <h4 className="card-title" style={{ float: "right" }}>
+              <h4 className="card-title" 
+                style={{ float: "right" }}>
                 {/* <IconButton><BookmarkIcon /></IconButton> */}
                 <ItemFollow 
                   {...props} 
@@ -132,7 +150,7 @@ const HomeItemPage = (props) => {
             <p className="card-text"
               onClick={()=>{
                 navigate({
-                pathname: "/p",
+                pathname: "/d",
                 search: `?${createSearchParams({ id: item._id})}`,
                 state: { id: item._id }
               })
@@ -175,4 +193,4 @@ const HomeItemPage = (props) => {
   );
 };
 
-export default HomeItemPage;
+export default HomeItem;

@@ -20,13 +20,11 @@ import {
   Drawer
 } from "@material-ui/core";
 import {
-  Home as HomeIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   Menu as MenuIcon
 } from "@material-ui/icons";
 import {
-  Logout as LogoutIcon,
   AccountBalanceWallet as AccountBalanceWalletIcon,
   AccountTree as AccountTreeIcon,
   AddRoad as AddRoadIcon,
@@ -36,11 +34,20 @@ import {
   Assistant as AssistantIcon,
   Login as LoginIcon
 } from '@mui/icons-material';
-import {
-  IconButton,
-  ClickAwayListener
-} from "@mui/material";
 
+import {
+  FiLogOut as LogoutIcon,
+} from 'react-icons/fi';
+
+import {
+  HiOutlineHome as HomeIcon,
+} from 'react-icons/hi';
+import {
+  Avatar,
+  IconButton,
+  ClickAwayListener,
+  Stack
+} from "@mui/material";
 import _ from "lodash"
 
 import BankPage from "./BankPage";
@@ -59,23 +66,25 @@ import MePage from "./MePage";
 import ProfileBankPage from "./ProfileBankPage";
 import { editedUserBalace, editedUserBalaceBook } from "./redux/actions/auth";
 import SupplierPage from "./SupplierPage";
-import SupplierProfilePage from "./SupplierProfilePage";
+import ProfilePage from "./ProfilePage";
 import SuppliersPage from "./SuppliersPage";
 import UserPage from "./UserPage";
 import UsersPage from "./UsersPage";
 import { checkRole, getHeaders } from "./util";
 import WithdrawPage from "./WithdrawPage";
 import WithdrawsPage from "./WithdrawsPage";
-import Breadcs from "./components/breadcrumbs";
-import DialogLogin from "./DialogLogin";
+import Breadcs from "./components/Breadcs";
 import DialogLogout from "./DialogLogout";
+
+import LightboxComp from "./components/LightboxComp"
+import DialogLoginComp from "./components/DialogLoginComp"
 
 import {
   AMDINISTRATOR, AUTHENTICATED, WS_CLOSED, WS_CONNECTED, WS_CONNECTION, WS_SHOULD_RETRY
 } from "./constants";
 import { login, logout } from "./redux/actions/auth";
 
-const drawerWidth = 300;
+const drawerWidth = 240;
 const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex"
@@ -171,9 +180,11 @@ const App =(props) =>{
   const [open, setOpen] = useState(false);
   const [openDialogLogout, setOpenDialogLogout] = useState(false);
   const [dialogLogin, setDialogLogin] = useState(false);
+  const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
 
   let { ws, user, editedUserBalace, editedUserBalaceBook } = props
 
+  
   // console.log("ws :", location)
 
   /////////////////////// ping ///////////////////////////////////
@@ -267,51 +278,10 @@ const App =(props) =>{
     setOpen(false);
   };
 
-  /*
-  return2 (
-      <div className="App">
-        <ToastContainer />
-        {statusView()}
-        <Breadcs />
-        <div className="container">
-          <div className="row">
-            <Routes>
-              <Route path="/" exact element={<HomePage />} />
-              <Route path="/p" element={<DetailPage />} />
-              <Route path="/user/login" element={<LoginPage />} />
-              <Route path="/suppliers" element={<SuppliersPage />} />
-              <Route path="/supplier" element={<SupplierPage />} />
-              <Route path="/profile" element={<SupplierProfilePage />}/>
-              <Route element={<ProtectedAuthenticatedRoute user={user} />}>
-                <Route path="/me" element={<MePage />} />
-                <Route path="/deposit" element={<DepositPage />} />
-                <Route path="/withdraw" element={<WithdrawPage />} />
-                <Route path="/history-transitions" element={<HistoryTransitionsPage />} />
-                <Route path="/me+bank" element={<ProfileBankPage />} />
-                <Route path="/book+buys" element={<BookBuysPage />} />
-              </Route>
-              <Route element={<ProtectedAdministratorRoute user={user} />}>
-                <Route path="/deposits" element={<DepositsPage />} />
-                <Route path="/withdraws" element={<WithdrawsPage />} />
-                <Route path="/date-lotterys" element={<DateLotterysPage />} />
-                <Route path="/date-lottery" element={<DateLotteryPage />} />
-                <Route path="/users" element={<UsersPage />} />
-                <Route path="/user" element={<UserPage />} />
-                <Route path="/banks" element={<BanksPage />} />
-                <Route path="/bank" element={<BankPage />} />
-              </Route>
-              <Route path="*" element={<p>There's nothing here: 404!</p>} />
-            </Routes>
-          </div>
-        </div>
-      </div>
-  );
-  */
-
   const menuList = () =>{
     switch(checkRole(user)){
       case AMDINISTRATOR:{
-        return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon />, path: "/"},
+        return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em"/>, path: "/"},
                 {id: 1, title:"รายการถอดเงิน รออนุมัติ", icon: <AccountTreeIcon />, path: "/withdraws"},
                 {id: 2, title:"รายการฝากเงิน รออนุมัติ", icon: <AddRoadIcon />, path: "/deposits"},
                 {id: 3, title:"จัดการ Suppliers ทั้งหมด", icon: <AdjustIcon />, path: "/suppliers"},
@@ -319,20 +289,20 @@ const App =(props) =>{
                 {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/banks"},
                 {id: 6, title:"วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/date-lotterys"},
                 {id: 7, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+bank"},
-                {id: 8, title:"Logout", icon: <LogoutIcon />, path: "/logout"}]
+                {id: 8, title:"Logout", icon: <LogoutIcon size="1.5em"/>, path: "/logout"}]
       }
       case AUTHENTICATED:{
-        return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon />, path: "/"},
+        return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
                 {id: 1, title:"รายการ จอง-ซื้อ", icon: <AccountTreeIcon />, path: "/book+buys"},
                 {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
                 {id: 4, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+bank"},
                 {id: 5, title:"Supplier list", icon: <AssistantIcon />, path: "/suppliers"},
                 {id: 6, title:"History-Transitions", icon: <AddRoadIcon />, path: "/history-transitions"},
-                {id: 7, title:"Logout", icon: <LogoutIcon />, path: "/logout"}]
+                {id: 7, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
       }
       default:{
-        return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon />, path: "/"},
+        return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
                 {id: 7, title:"Login", icon: <LoginIcon />, path: "/login"}]
       }
     }
@@ -340,10 +310,26 @@ const App =(props) =>{
 
   return (
     <div className="App">
+      {lightbox.isOpen  && <LightboxComp lightbox={lightbox} onLightbox={(v)=>setLightbox(v)}/> }
       <ToastContainer />
       {
-        openDialogLogout && <DialogLogout open={openDialogLogout} onClose={()=>setOpenDialogLogout(false)}/>
+        openDialogLogout 
+        && <DialogLogout open={openDialogLogout} onClose={()=>setOpenDialogLogout(false)}/>
       }
+
+      {
+        dialogLogin 
+        && <DialogLoginComp   
+            {...props}
+            open={dialogLogin}
+            onComplete={async(data)=>{
+              setDialogLogin(false);
+            }}
+            onClose={() => {
+              setDialogLogin(false);
+            }}/>
+      }
+      
       {statusView()}
       <div class="container-fluid">
         <div className={classes.root}>
@@ -363,10 +349,20 @@ const App =(props) =>{
                 className={clsx(classes.menuButton, open && classes.hide)}
               ><MenuIcon /></IconButton>
               <Typography variant="h6" noWrap onClick={()=>navigate("/")}>BERTHONG</Typography>
-              <Typography variant="h6" noWrap>
-                {!_.isEmpty(user)? "[  Name :" + user?.displayName +", Email :"+ user?.email + " ]" : ""}
-              </Typography>
-              <div>Balance : {user?.balance} [-{user?.balanceBook}]</div>
+              {
+                !_.isEmpty(user)
+                ? <Stack direction={"row"} spacing={2} alignItems="center">
+                    <Avatar 
+                      src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
+                      alt="Avatar"
+                    />
+                    <Typography variant="h6" noWrap>
+                      {"[  Name :" + user?.displayName +", Email :"+ user?.email + " ]"}
+                    </Typography>
+                    <div>Balance : {user?.balance} [-{user?.balanceBook}]</div>
+                  </Stack>
+                : ""
+              }
             </Toolbar>
           </AppBar>
           <ClickAwayListener
@@ -392,7 +388,7 @@ const App =(props) =>{
               </div>
               <Divider />
               <List>
-                {menuList().map((item, index) => {
+                {_.map(menuList(), (item, index) => {
                   return  <ListItem
                             // button
                             selected={location?.pathname == item.path ? true : false}
@@ -408,9 +404,6 @@ const App =(props) =>{
                                   setOpenDialogLogout(true)
                                   break;
                                 }
-
-                                //  navigate("/deposit", {state: {from: "/", mode: "edit", id: _id }} )
-
                                 case "/withdraw":
                                 case "/deposit":{
                                   navigate(item.path, {state: {from: "/", mode: "new" }})
@@ -443,23 +436,19 @@ const App =(props) =>{
               <Typography variant="caption" display="block" gutterBottom>© 2023 BERTHONG LLC</Typography>
             </Drawer>
           </ClickAwayListener>
-          <main
-            className={clsx(classes.content, {
-              [classes.contentShift]: open
-            })}
-          >
-            {<div className={classes.drawerHeader} />}
+          <main className={clsx(classes.content, { [classes.contentShift]: open })} >
+            { <div className={classes.drawerHeader} /> }
           </main>
         </div>
         <div className="container">
           <Breadcs {...props}/>
           <Routes>
-            <Route path="/" exact element={<HomePage />} />
-            <Route path="/p" element={<DetailPage />} />
+            <Route path="/" exact element={<HomePage onLogin={()=>setDialogLogin(true)} />} />
+            <Route path="/d" element={<DetailPage onLogin={()=>setDialogLogin(true)} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/user/login" element={<LoginPage />} />
-            <Route path="/suppliers" element={<SuppliersPage />} />
+            <Route path="/suppliers" element={<SuppliersPage onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/supplier" element={<SupplierPage />} />
-            <Route path="/profile" element={<SupplierProfilePage />}/>
+            <Route path="/p" element={<ProfilePage onLightbox={(value)=>setLightbox(value)} />}/>
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
               <Route path="/me" element={<MePage />} />
               <Route path="/deposit" element={<DepositPage />} />
@@ -469,8 +458,8 @@ const App =(props) =>{
               <Route path="/book+buys" element={<BookBuysPage />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
-              <Route path="/deposits" element={<DepositsPage />} />
-              <Route path="/withdraws" element={<WithdrawsPage />} />
+              <Route path="/deposits" element={<DepositsPage onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/withdraws" element={<WithdrawsPage onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/date-lotterys" element={<DateLotterysPage />} />
               <Route path="/date-lottery" element={<DateLotteryPage />} />
               <Route path="/users" element={<UsersPage />} />
@@ -481,19 +470,6 @@ const App =(props) =>{
             <Route path="*" element={<p>There's nothing here: 404!</p>} />
           </Routes>
         </div>
-
-        {dialogLogin && (
-                  <DialogLogin
-                    {...props}
-                    open={dialogLogin}
-                    onComplete={async(data)=>{
-                      setDialogLogin(false);
-                    }}
-                    onClose={() => {
-                      setDialogLogin(false);
-                    }}
-                  />
-                )}
       </div>
     </div>
   );
@@ -508,4 +484,5 @@ const mapDispatchToProps = {
   editedUserBalaceBook,
   login
 }
+
 export default connect( mapStateToProps, mapDispatchToProps )(App);

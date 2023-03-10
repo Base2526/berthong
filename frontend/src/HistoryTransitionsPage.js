@@ -18,18 +18,17 @@ import { getHeaders, checkRole } from "./util"
 import { queryHistoryTransitions, mutationDeposit, queryDeposits } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
-import Table from "./TableContainer"
+import TableComp from "./components/TableComp"
 
 deepdash(_);
 
 const HistoryTransitionsPage = (props) => {
   const location = useLocation();
   const { t } = useTranslation();
-  const { user, logout } = props
+  const { user, logout, onLightbox } = props
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
   const [pageIndex, setPageIndex]     = useState(0);  
   const [pageSize, setPageSize]       = useState(pageOptions[0])
-  const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
   console.log("user :", user)
@@ -241,7 +240,7 @@ const HistoryTransitionsPage = (props) => {
             historyTransitionsValue.loading
             ? <CircularProgress /> 
             : <div>
-                <Table
+                <TableComp
                   columns={columns}
                   data={historyTransitionsValue.data.historyTransitions.data}
                   fetchData={fetchData}

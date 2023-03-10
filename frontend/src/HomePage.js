@@ -1,22 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NetworkStatus, useQuery } from "@apollo/client";
-import CardActionArea from "@material-ui/core/CardActionArea";
-import {
-  ContentCopy as ContentCopyIcon,
-  MoreVert as MoreVertIcon
-} from "@mui/icons-material"
-import {
-  Avatar,
-  CircularProgress,
-  IconButton,
-  Menu,
-  MenuItem
-} from "@mui/material";
 import _ from "lodash";
-import Lightbox from "react-image-lightbox";
 import { connect } from "react-redux";
-import { createSearchParams, useLocation, useNavigate } from "react-router-dom";
-import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import InfiniteScroll from "react-infinite-scroll-component";
 import { makeStyles } from "@material-ui/core/styles";
@@ -24,16 +10,19 @@ import { ErrorOutline as ErrorOutlineIcon } from "@material-ui/icons";
 // color
 import { lightGreen, blueGrey } from "@material-ui/core/colors";
 
-import { AMDINISTRATOR, AUTHENTICATED, FORCE_LOGOUT, 
-         WS_CLOSED, WS_CONNECTED, WS_SHOULD_RETRY } from "./constants";
-import DialogLogin from "./DialogLogin";
+import {  FORCE_LOGOUT, 
+          WS_CLOSED, 
+          WS_CONNECTED, 
+          WS_SHOULD_RETRY } from "./constants";
+
 import { querySuppliers, subscriptionSuppliers } from "./gqlQuery";
-import ItemFollow from "./ItemFollow";
-import ItemShare from "./ItemShare";
 import { login, logout } from "./redux/actions/auth";
-import { bookView, checkRole, getHeaders, sellView } from "./util";
-import HomeItemPage from "./HomeItemPage"
-import HomeSearchPage from "./HomeSearchPage"
+import { getHeaders } from "./util";
+import HomeItem from "./HomeItem"
+import SearchComp from "./components/SearchComp"
+import SkeletonComp from "./components/SkeletonComp"
+
+import * as Constants from "./constants"
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -92,55 +81,24 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const initSearch = {
-  offset: 0,
-  limit: 10,
-  number: "",
-  title: "",
-  detail: "",
-  price: 500,
-  chkBon: false,
-  chkLang: false,
-  chkMoney: false,
-  chkGold: false
-}
-
 let unsubscribeSuppliers = null;
 const HomePage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const toastIdRef = useRef(null)
   const classes = useStyles();
-  const [dialogLogin, setDialogLogin] = useState(false);
-  const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
-  let [openMenuSetting, setOpenMenuSetting] = useState(null);
-  let [openMenuShare, setOpenMenuShare] = useState(null);
   let [datas, setDatas] = useState([]);
-
+  let [total, setTotal] = useState(0);
 
   const [loading, setLoading] = useState(true);
 
-  let [search, setSearch] = useState(initSearch)
+  let [search, setSearch] = useState(Constants.INIT_SEARCH)
+  let [reset, setReset] = useState(false)
 
-  const [slice, setSlice] = useState(10);
+  const [slice, setSlice] = useState(12);
   const [hasMore, setHasMore] = useState(true);
-  const increment = 8;
 
-  // const [number, setNumber] = useState();
-  // const [title, setTitle] = useState();
-  // const [detail, setDetail] = useState();
-  // const [price, setPrice] = useState(500);
-  // const [chkBon, setChkBon] = useState(true);
-  // const [chkLang, setChkLang] = useState(true);
-  // const [chkMoney, setChkMoney] = useState(true);
-  // const [chkGold, setChkGold] = useState(true);
-  // const [filteredList, setFilteredList] = useState([]);
-  // const [noDataList, setNoDataList] = useState(null);
-  // const searchForm = useRef(null);
-  // const [totalSearch, setTotalSearch] = useState("");
-  // const len = dataList.length;
-
-  let { user, logout, ws } = props
+  let { logout, ws, onLogin } = props
 
   const { loading: loadingSuppliers, 
           data: dataSuppliers, 
@@ -158,7 +116,6 @@ const HomePage = (props) => {
                                       }
                                     );
 
-  console.log("loadingSuppliers : ", loadingSuppliers)
   if(!_.isEmpty(errorSuppliers)){
     _.map(errorSuppliers?.graphQLErrors, (e)=>{
       switch(e?.extensions?.code){
@@ -180,8 +137,11 @@ const HomePage = (props) => {
   useEffect(() => {
     if(!loadingSuppliers){
       if(!_.isEmpty(dataSuppliers?.suppliers)){
-        let { status, code, data } = dataSuppliers.suppliers
-        if(status)setDatas(data)
+        let { status, total, data } = dataSuppliers?.suppliers
+        if(status){
+          setDatas(data)
+          setTotal(total)
+        }
 
         setLoading(false)
       }
@@ -189,9 +149,7 @@ const HomePage = (props) => {
   }, [dataSuppliers, loadingSuppliers])
 
   useEffect(()=>{
-
     let supplierIds = JSON.stringify(_.map(datas, _.property("_id")));
-
     unsubscribeSuppliers && unsubscribeSuppliers()
     unsubscribeSuppliers = null;
 
@@ -233,264 +191,15 @@ const HomePage = (props) => {
     });
   }, [datas])
 
-  // useEffect(()=>{
-  //   refetchSuppliers({input: search});
-  //   console.log("search :", search)
-  // }, [search])
-
-  const managementView = () =>{
-    switch(checkRole(user)){
-      case AMDINISTRATOR:{
-        return  <div><div onClick={()=>navigate("/me")}>AMDINISTRATOR : {user.displayName} - {user.email}</div></div>
-      }
-
-      case AUTHENTICATED:{
-        return  <div className="itm">
-                  <div>Balance : {user?.balance} [-{user?.balanceBook}]</div>
-                  <div onClick={()=>navigate("/me")}>AUTHENTICATED : {user.displayName} - {user.email}</div>
-                </div>
-      }
-      
-      default:{
-        return  <div>
-                  <div>ANONYMOUS</div>
-                  <div><button onClick={()=>setDialogLogin(true)}>Login</button></div>
-                </div>
-      }
-    }
-  }
-
-  const menuShareView = (item, index) =>{
-    return  <Menu
-              anchorEl={openMenuShare && openMenuShare[index]}
-              keepMounted
-              open={openMenuShare && Boolean(openMenuShare[index])}
-              onClose={(e)=>setOpenMenuShare(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-              transformOrigin={{ vertical: "top", horizontal: "center" }}
-              MenuListProps={{ "aria-labelledby": "lock-button", role: "listbox" }}>
-              <MenuItem onClose={(e)=>setOpenMenuShare(null)}>
-                  <FacebookShareButton
-                    url={ window.location.href + "detail/"}
-                    quote={item?.title}
-                    // hashtag={"#hashtag"}
-                    description={item?.description}
-                    className="Demo__some-network__share-button"
-                    onClick={(e)=>setOpenMenuShare(null)} >
-                    <FacebookIcon size={32} round /> Facebook
-                  </FacebookShareButton>
-              </MenuItem>{" "}
-
-              <MenuItem onClose={(e)=>setOpenMenuShare(null)}>
-                <TwitterShareButton
-                  title={item?.title}
-                  url={ window.location.origin + "/detail/"  }
-                  // hashtags={["hashtag1", "hashtag2"]}
-                  onClick={(e)=>setOpenMenuShare(null)} >
-                  <TwitterIcon size={32} round />
-                  Twitter
-                </TwitterShareButton>
-              </MenuItem>
-
-              <MenuItem 
-              onClick={async(e)=>{
-                let text = window.location.href + "p/?id=" + item._id
-                if ('clipboard' in navigator) {
-                  await navigator.clipboard.writeText(text);
-                } else {
-                  document.execCommand('copy', true, text);
-                }
-
-                setOpenMenuShare(null)
-              }}>
-                
-              <ContentCopyIcon size={32} round /> Copy link
-              </MenuItem>
-            </Menu>
-  }
-
-  const menuSettingView = (item, index) =>{
-    return  <Menu
-              anchorEl={openMenuSetting && openMenuSetting[index]}
-              keepMounted
-              open={openMenuSetting && Boolean(openMenuSetting[index])}
-              onClose={()=>{ setOpenMenuSetting(null) }}
-              getContentAnchorEl={null}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "center"
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "center"
-              }}
-              MenuListProps={{
-                "aria-labelledby": "lock-button",
-                role: "listbox"
-              }}
-            >
-              <MenuItem onClick={(e)=>{setOpenMenuSetting(null)}}>Report</MenuItem>
-            </Menu>
-  }
-
-  const imageView = (val) =>{
-    return (
-      <div style={{ position: "relative" }}>
-        <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
-          <Avatar
-            sx={{ height: 100, width: 100 }}
-            variant="rounded"
-            alt="Example Alt"
-            src={val.files[0].url}
-            onClick={(e) => {
-              setLightbox({ isOpen: true, photoIndex: 0, images:val.files })
-            }}
-          />
-        </CardActionArea>
-        <div style={{ position: "absolute", bottom: "5px", right: "5px", padding: "5px", backgroundColor: "#e1dede", color: "#919191"}}>
-          {(_.filter(val.files, (v)=>v.url)).length}
-        </div>
-      </div>
-    );
-  }
-
-  const mainView = () =>{
-    switch(ws?.ws_status){
-      case WS_SHOULD_RETRY: 
-      case WS_CLOSED:{
-        if(_.isNull(toastIdRef.current)){
-          toastIdRef.current =  toast.promise(
-            new Promise(resolve => setTimeout(resolve, 300000)),
-            {
-              pending: 'Network not stable 🤯',
-              // success: 'Promise resolved 👌',
-              // error: 'Promise rejected 🤯'
-            }
-          );
-        }
-        break;
-      }
-
-      case WS_CONNECTED:{
-        if(!_.isNull(toastIdRef.current)){
-          toast.dismiss()
-        }
-        break;
-      }
-    }
-    
-    switch(networkStatus){
-      case NetworkStatus.error:{
-        return <div>Network not stable 🤯</div>
-      }
-
-      case NetworkStatus.refetch:{
-        break;
-      }
-
-      case NetworkStatus.loading:{
-        break;
-      }
-
-      case NetworkStatus.poll:{
-        console.log("poll")
-        break;
-      }
+  useEffect(()=>{
+    if(!_.isEqual(Constants.INIT_SEARCH, search)){
+      console.log("search :", search)
     }
 
-    return  loadingSuppliers
-            ? <CircularProgress />
-            : <div style={{flex:1}}>
-                {managementView()}
-                {
-                  _.map(datas, (val, k)=>{
-                    return  <div key={k} className="home-item" >
-                              <img width={25} height={25} src={"https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/1176.jpg"} />
-                              <div onClick={()=>{
-                                // history.push({pathname: "/profile", search: `?u=${val.ownerId}` })
-                                navigate({
-                                  pathname: "/profile",
-                                  search: `?${createSearchParams({ u: val.ownerId})}`
-                                })
-                              }}>Supplier : {val?.owner?.displayName}</div>
-                              {menuShareView(val, k)}
-                              {menuSettingView(val, k)}
-
-                              {imageView(val)}
-
-                              <div>ชื่อ :{val.title}, ราคา : {val.price}</div>
-                              <div>จอง :{bookView(val)}</div>
-                              <div>ขายไปแล้ว :{sellView(val)}</div>
-                              <button onClick={(evt)=>{
-                                navigate({
-                                  pathname: "/p",
-                                  search: `?${createSearchParams({ id: val._id})}`,
-                                  state: { id: val._id }
-                                })
-                              }}>ดูรายละเอียด</button>
-
-                              <div>
-                                <ItemFollow 
-                                  {...props} 
-                                  item={val} 
-                                  onDialogLogin={(e)=>{
-                                    setDialogLogin(true)
-                                  }}/>
-                                <ItemShare 
-                                  {...props}  
-                                  onOpenMenuShare={(e)=>{
-                                    setOpenMenuShare({ [k]: e.currentTarget });
-                                  }}/>
-                                <IconButton  onClick={(e) => { setOpenMenuSetting({ [k]: e.currentTarget }); }}>
-                                  <MoreVertIcon />
-                                </IconButton>
-                              </div>
-                            </div>
-                  })
-                }
-
-                {dialogLogin && (
-                  <DialogLogin
-                    {...props}
-                    open={dialogLogin}
-                    onComplete={async(data)=>{
-                      setDialogLogin(false);
-
-                      // window.location.reload(false)
-                    }}
-                    onClose={() => {
-                      setDialogLogin(false);
-                    }}
-                  />
-                )}
-
-                {lightbox.isOpen && (
-                  <Lightbox
-                    mainSrc={lightbox.images[lightbox.photoIndex].url}
-                    nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
-                    prevSrc={
-                      lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
-                    }
-                    onCloseRequest={() => {
-                      setLightbox({ ...lightbox, isOpen: false });
-                    }}
-                    onMovePrevRequest={() => {
-                      setLightbox({
-                        ...lightbox,
-                        photoIndex:
-                          (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
-                      });
-                    }}
-                    onMoveNextRequest={() => {
-                      setLightbox({
-                        ...lightbox,
-                        photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
-                      });
-                    }}
-                  />
-                )}
-              </div>
-  }
+    if(reset){
+      setReset(false)
+    }
+  }, [search, reset])
 
   /////////////////////////
   // const handleSearch = (v) => {
@@ -534,67 +243,26 @@ const HomePage = (props) => {
   // };
 
   const handleNext = async() => {
-
-    let mores =  await fetchMore({ variables: { input: {...search, offset:search.offset + 1} } })
+    let mores =  await fetchMore({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
     let {status, data} =  mores.data.suppliers
     console.log("status, data :", status, data)
 
+    if(slice === total){
+      setHasMore(false);
+    }else{
+      setTimeout(() => {
+        let newDatas = [...datas, ...data]
+        setDatas(newDatas)
+        setSlice(newDatas.length);
+      }, 1000); 
+    }
+  }
 
-    setDatas([...datas, ...data])
-    // setHasMore(true);
-
-    setSlice(100);
-
-
-    // if (slice === datas.length) {
-    //   setHasMore(false);
-    //   return;
-    // } else if (slice + increment > datas.length) {
-    //   setSlice(datas.length);
-    //   return;
-    // }
-    // setTimeout(() => {
-    //   setSlice(slice + increment);
-    // }, 2000);
-    
-  };
-
-  // const handleSliderChange = (event, newValue) => {
-  //   setPrice(newValue);
-  // };
-  // const handleInputChange = (event) => {
-  //   setPrice(event.target.value === "" ? "" : Number(event.target.value));
-  // };
-  // const [expanded, setExpanded] = useState(false);
-
-  // const handleChange = (panel) => (event, isExpanded) => {
-  //   console.log(panel);
-  //   console.log(isExpanded);
-  //   setExpanded(isExpanded ? panel : false);
-  // };
-
-  // const handleChk = (event) => {
-  //   if (event.target.name === "chkBon") {
-  //     console.log(event.target.checked);
-  //     setChkBon(event.target.checked);
-  //   } else if (event.target.name === "chkLang") {
-  //     setChkLang(event.target.checked);
-  //   } else if (event.target.name === "chkMoney") {
-  //     setChkMoney(event.target.checked);
-  //   } else if (event.target.name === "chkGold") {
-  //     setChkGold(event.target.checked);
-  //   }
-  // };
-
-  // const itemViewUI = () =>{
-  //   // return  (filteredList[0] !== undefined ? filteredList : dataList)
-  //   // .slice(0, slice)
-  //   // .map((post, index) => <HomeItemPage key={index} post={post} />);
-  // }
-
-  const mainViewUI = () =>{
+  const mainView = () =>{
     switch(ws?.ws_status){
-      case WS_SHOULD_RETRY: 
+      case WS_SHOULD_RETRY:{
+        break;
+      }
       case WS_CLOSED:{
         if(_.isNull(toastIdRef.current)){
           toastIdRef.current =  toast.promise(
@@ -636,17 +304,20 @@ const HomePage = (props) => {
       }
     }
 
-    return   loading
-            ? <CircularProgress />
-            : <div className="contrainer">
-                <div style={{ paddingBottom: "1rem" }}>
-                  <HomeSearchPage
-                    {...props}
-                    classes={classes}
-                    // initSearch={search}
-                    onSearch={(search)=>setSearch(search)} />
-                </div>
-                <div className="row">
+    return  <div className="contrainer">
+              <div style={{ paddingBottom: "1rem" }}>
+                <SearchComp
+                  {...props}
+                  classes={classes}
+                  // initSearch={Constants.INIT_SEARCH}
+                  onReset={()=>{
+                    setReset(true)
+                  }}
+                  onSearch={(search)=>setSearch(search)} />
+              </div>
+              {loading 
+              ? <SkeletonComp />
+              : <div className="row">
                   <div className="col-12 pb-2">
                   {
                     _.isEmpty(datas)
@@ -655,135 +326,19 @@ const HomePage = (props) => {
                         dataLength={slice}
                         next={handleNext}
                         hasMore={hasMore}
-                        loader={<h4>Loading...</h4>}
-                        // loader={
-                        //   <div className="row">
-                        //     <div className="col-md-6 col-lg-3">
-                        //       <div
-                        //         key={1}
-                        //         className="skeleton card-custom card"
-                        //         style={{ width: "100%" }}
-                        //       >
-                        //         <p className="image"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //       </div>
-                        //     </div>
-                        //     <div className="col-md-6 col-lg-3">
-                        //       <div
-                        //         key={2}
-                        //         className="skeleton card-custom card"
-                        //         style={{ width: "100%" }}
-                        //       >
-                        //         <p className="image"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //       </div>
-                        //     </div>
-                        //     <div className="col-md-6 col-lg-3 pb-3">
-                        //       <div
-                        //         key={3}
-                        //         className="skeleton card-custom card"
-                        //         style={{ width: "100%" }}
-                        //       >
-                        //         <p className="image"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //       </div>
-                        //     </div>
-                        //     <div className="col-md-6 col-lg-3 pb-3">
-                        //       <div
-                        //         key={4}
-                        //         className="skeleton card-custom card"
-                        //         style={{ width: "100%" }}
-                        //       >
-                        //         <p className="image"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //       </div>
-                        //     </div>
-                        //     <div className="col-md-6 col-lg-3 pb-3">
-                        //       <div
-                        //         key={5}
-                        //         className="skeleton card-custom card"
-                        //         style={{ width: "100%" }}
-                        //       >
-                        //         <p className="image"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //       </div>
-                        //     </div>
-                        //     <div className="col-md-6 col-lg-3 pb-3">
-                        //       <div
-                        //         key={6}
-                        //         className="skeleton card-custom card"
-                        //         style={{ width: "100%" }}
-                        //       >
-                        //         <p className="image"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //       </div>
-                        //     </div>
-                        //     <div className="col-md-6 col-lg-3 pb-3">
-                        //       <div
-                        //         key={7}
-                        //         className="skeleton card-custom card"
-                        //         style={{ width: "100%" }}
-                        //       >
-                        //         <p className="image"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //       </div>
-                        //     </div>
-                        //     <div className="col-md-6 col-lg-3 pb-3">
-                        //       <div
-                        //         key={8}
-                        //         className="skeleton card-custom card"
-                        //         style={{ width: "100%" }}
-                        //       >
-                        //         <p className="image"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //         <p className="line"></p>
-                        //       </div>
-                        //     </div>
-                        //   </div>
-                        // }
+                        loader={<SkeletonComp />}
                         scrollThreshold={0.5}
                         scrollableTarget="scrollableDiv"
-                        endMessage={<h2>You have reached the end</h2>}>
+                        endMessage={<h1>You have reached the end</h1>}>
                         <div className="row">
                           {_.map(datas, (item, index) =>{
-                            return <HomeItemPage 
+                            return <HomeItem 
                                     {...props} 
                                     key={index} 
                                     index={index}
                                     item={item}
                                     onDialogLogin={()=>{
-                                      setDialogLogin(true)
+                                      onLogin(true)
                                     }} />
                           } )}
                         </div>
@@ -791,23 +346,11 @@ const HomePage = (props) => {
                     }
                   </div>
                 </div>
-
-                {dialogLogin && (
-                  <DialogLogin
-                    {...props}
-                    open={dialogLogin}
-                    onComplete={async(data)=>{
-                      setDialogLogin(false);
-                    }}
-                    onClose={() => {
-                      setDialogLogin(false);
-                    }}
-                  />
-                )}
-              </div>
+                }
+            </div>
   }
 
-  return mainViewUI()
+  return mainView()
 }
 
 const mapStateToProps = (state, ownProps) => {

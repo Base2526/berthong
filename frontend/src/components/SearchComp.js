@@ -13,31 +13,22 @@ import {
 } from "@material-ui/core";
 import Box from "@mui/joy/Box";
 import Checkbox, { checkboxClasses } from "@mui/joy/Checkbox";
-
+import { Stack } from '@mui/material';
 import _ from "lodash"
 
-const initSearch = {
-  number: "",
-  title: "",
-  detail: "",
-  price: 500,
-  chkBon: false,
-  chkLang: false,
-  chkMoney: false,
-  chkGold: false
-}
+import * as Constants from "../constants"
 
-const HomeSearchPage = (props) => {
-  const { classes, onSearch } = props
+const SearchComp = (props) => {
+  const { classes, onSearch, onReset } = props
 
-  const [search, setSearch] = useState(initSearch)
+  const [search, setSearch] = useState(Constants.INIT_SEARCH)
 
   const handleSliderChange = (event, newValue) => {
-    setSearch({...search, price: newValue})
+    setSearch({...search, PRICE: newValue})
   };
 
   const handleInputChange = (event) => {
-    setSearch({...search, price: _.isEmpty(event.target.value) ? "" : Number(event.target.value)})
+    setSearch({...search, PRICE: _.isEmpty(event.target.value) ? "" : Number(event.target.value)})
   };
 
   const handleCheckbox = (event) => {
@@ -64,8 +55,8 @@ const HomeSearchPage = (props) => {
                           label="ตัวเลข"
                           variant="filled"
                           name={"number"}
-                          value={search.number}
-                          onChange={(evt) => setSearch({...search, number: evt.target.value}) }
+                          value={search.NUMBER}
+                          onChange={(evt) => setSearch({...search, NUMBER: evt.target.value}) }
                         />
                       </div>
                       <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
@@ -73,8 +64,8 @@ const HomeSearchPage = (props) => {
                           id="standard-basic"
                           label="ชื่อ"
                           variant="filled"
-                          value={search.title}
-                          onChange={(evt) => setSearch({...search, title: evt.target.value}) }
+                          value={search.TITLE}
+                          onChange={(evt) => setSearch({...search, TITLE: evt.target.value}) }
                         />
                       </div>
                       <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
@@ -82,16 +73,15 @@ const HomeSearchPage = (props) => {
                           id="standard-basic"
                           label="รายละเอียด"
                           variant="filled"
-                          value={search.detail}
-                          onChange={(evt) => setSearch({...search, detail: evt.target.value}) }
+                          value={search.DETAIL}
+                          onChange={(evt) => setSearch({...search, DETAIL: evt.target.value}) }
                         />
                       </div>
                       <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
                         <div>
                           <Slider
                             sx={{ width: "100%" }}
-                            // value={typeof price === "number" ? price : 0}
-                            value={search.price}
+                            value={search.PRICE}
                             onChange={handleSliderChange}
                             aria-labelledby="input-slider"
                             min={10}
@@ -100,7 +90,7 @@ const HomeSearchPage = (props) => {
                           ราคาไม่เกิน
                           <Input
                             className={classes.input}
-                            value={search.price}
+                            value={search.PRICE}
                             margin="dense"
                             onChange={handleInputChange}
                             inputProps={{
@@ -118,10 +108,10 @@ const HomeSearchPage = (props) => {
                       <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1 m-1">
                         <Box sx={{ display: "flex", gap: 2 }}>
                           <Checkbox
-                            name="chkBon"
+                            name="CHK_BON"
                             label="บน"
                             // defaultChecked
-                            checked={search.chkBon}
+                            checked={search.CHK_BON}
                             onChange={handleCheckbox}
                             sx={{
                               [`& > .${checkboxClasses.checkbox}`]: {}
@@ -134,10 +124,10 @@ const HomeSearchPage = (props) => {
                             }}
                           />
                           <Checkbox
-                            name="chkLang"
+                            name="CHK_LAND"
                             label="ล่าง"
                             // defaultChecked
-                            checked={search.chkLang}
+                            checked={search.CHK_LAND}
                             onChange={handleCheckbox}
                             sx={{
                               [`& > .${checkboxClasses.checkbox}`]: {}
@@ -150,10 +140,10 @@ const HomeSearchPage = (props) => {
                             }}
                           />
                           <Checkbox
-                            name="chkMoney"
+                            name="CHK_MONEY"
                             label="เงิน"
                             // defaultChecked
-                            checked={search.chkMoney}
+                            checked={search.CHK_MONEY}
                             onChange={handleCheckbox}
                             color="warning"
                             sx={{
@@ -167,10 +157,10 @@ const HomeSearchPage = (props) => {
                             }}
                           />
                           <Checkbox
-                            name="chkGold"
+                            name="CHK_GOLD"
                             label="ทอง"
                             // defaultChecked
-                            checked={search.chkGold}
+                            checked={search.CHK_GOLD}
                             onChange={handleCheckbox}
                             color="warning"
                             sx={{
@@ -220,30 +210,36 @@ const HomeSearchPage = (props) => {
                     </div>
                   </Typography>
                 </AccordionDetails>
-                <AccordionActions className={classes.details}>
+                
                   {
-                    _.isEqual(search, initSearch)
+                    _.isEqual(search, Constants.INIT_SEARCH)
                     ? <div />
-                    : <div>
-                        <div style={{ justifyContent: "flex-start" }}>ผลการค้นหา  { /*totalSearch*/ } </div>
-                        <Button
-                          className={classes.containedBlueGrey}
-                          size="small"
-                          onClick={() =>setSearch(initSearch) }>
-                          RESET
-                        </Button>
-                      </div>
+                    : <AccordionActions className={classes.details}>
+                        <Stack direction="row" spacing={2} alignItems="flex-end">
+                          <div style={{ justifyContent: "flex-start" }}>ผลการค้นหา  { /*totalSearch*/ } </div>
+                          <Button
+                            className={classes.containedBlueGrey}
+                            size="small"
+                            onClick={() =>{
+                              setSearch(Constants.INIT_SEARCH)
+                              onReset(true)
+                            }}>
+                            RESET
+                          </Button>
+                          <Button
+                            size="small"
+                            onClick={()=>onSearch(search)}
+                            className={classes.containedLightGreen}>
+                            SEARCH
+                          </Button>
+                        </Stack>
+                      </AccordionActions>
                   }
-                  <Button
-                    size="small"
-                    onClick={()=>onSearch(search)}
-                    className={classes.containedLightGreen}>
-                    SEARCH
-                  </Button>
-                </AccordionActions>
+                  
+                
               </Accordion>
             </form>
           </div>);
 };
 
-export default HomeSearchPage;
+export default SearchComp;

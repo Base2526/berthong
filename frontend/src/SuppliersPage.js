@@ -12,7 +12,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import _ from "lodash"
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
-import Lightbox from "react-image-lightbox";
 import { connect } from "react-redux";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
@@ -24,18 +23,17 @@ import moment from "moment";
 import { getHeaders, checkRole } from "./util"
 import { querySuppliers } from "./gqlQuery"
 import ReadMoreMaster from "./ReadMoreMaster"
-import Table from "./TableContainer"
+import TableComp from "./components/TableComp"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 
 const SuppliersPage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  let { user } = props
+  let { user, onLightbox } = props
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
   const [pageIndex, setPageIndex]     = useState(0);  
   const [pageSize, setPageSize]       = useState(pageOptions[0])
-  const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
   let [data, setData] = useState([]);
@@ -133,8 +131,7 @@ const SuppliersPage = (props) => {
                         alt="Example Alt"
                         src={props.value[0].url}
                         onClick={(e) => {
-                          console.log("files props: ", props.value)
-                          setLightbox({ isOpen: true, photoIndex: 0, images:props.value })
+                          onLightbox({ isOpen: true, photoIndex: 0, images:props.value })
                         }}
                       />
                     </CardActionArea>
@@ -165,7 +162,7 @@ const SuppliersPage = (props) => {
                               //   state: { id: _id }
                               // });
                               navigate({
-                                pathname: "/p",
+                                pathname: "/d",
                                 search: `?${createSearchParams({ id: _id})}`,
                                 state: { id: _id }
                               })
@@ -300,7 +297,7 @@ const SuppliersPage = (props) => {
                         src={props.value[0].url}
                         onClick={(e) => {
                           console.log("files props: ", props.value)
-                          setLightbox({ isOpen: true, photoIndex: 0, images:props.value })
+                          onLightbox({ isOpen: true, photoIndex: 0, images:props.value })
                         }}
                       />
                     </CardActionArea>
@@ -332,7 +329,7 @@ const SuppliersPage = (props) => {
                               //   state: { id: _id }
                               // });
                               navigate({
-                                pathname: "/p",
+                                pathname: "/d",
                                 search: `?${createSearchParams({ id: _id})}`,
                                 state: { id: _id }
                               })
@@ -474,15 +471,15 @@ const SuppliersPage = (props) => {
               {
                 loadingSuppliers
                 ? <CircularProgress />
-                : <Table
-                  columns={columns}
-                  data={data}
-                  fetchData={fetchData}
-                  rowsPerPage={pageOptions}
-                  updateMyData={updateMyData}
-                  skipReset={skipResetRef.current}
-                  isDebug={false}
-                />
+                : <TableComp
+                    columns={columns}
+                    data={data}
+                    fetchData={fetchData}
+                    rowsPerPage={pageOptions}
+                    updateMyData={updateMyData}
+                    skipReset={skipResetRef.current}
+                    isDebug={false}
+                  />
               }
 
               {openDialogDelete.isOpen && (
@@ -510,32 +507,6 @@ const SuppliersPage = (props) => {
                     <Button variant="contained" onClick={handleClose} autoFocus>{t("close")}</Button>
                   </DialogActions>
                 </Dialog>
-              )}
-
-              {lightbox.isOpen && (
-                <Lightbox
-                  mainSrc={lightbox.images[lightbox.photoIndex].url}
-                  nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
-                  prevSrc={
-                    lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
-                  }
-                  onCloseRequest={() => {
-                    setLightbox({ ...lightbox, isOpen: false });
-                  }}
-                  onMovePrevRequest={() => {
-                    setLightbox({
-                      ...lightbox,
-                      photoIndex:
-                        (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
-                    });
-                  }}
-                  onMoveNextRequest={() => {
-                    setLightbox({
-                      ...lightbox,
-                      photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
-                    });
-                  }}
-                />
               )}
 
               <SpeedDial

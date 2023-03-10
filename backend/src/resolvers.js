@@ -140,33 +140,25 @@ export default {
         case "/":{
 
           let {
-            offset,
-            limit,
-            number,
-            title,
-            detail,
-            price,
-            chkBon,
-            chkLang,
-            chkMoney,
-            chkGold
+            OFF_SET,
+            LIMIT,
+            NUMBER,
+            TITLE,
+            DETAIL,
+            PRICE,
+            CHK_BON,
+            CHK_LAND,
+            CHK_MONEY,
+            CHK_GOLD
           } = args?.input
 
-          console.log("?????: ", offset,
-          limit,
-          number,
-          title,
-          detail,
-          price,
-          chkBon,
-          chkLang,
-          chkMoney,
-          chkGold)
+          console.log("suppliers: ", args?.input)
 
           /*
-           let data = await  User.find({}).limit(perPage).skip(page); 
-        let total = (await User.find({})).length;
+            let data = await  User.find({}).limit(perPage).skip(page); 
+            let total = (await User.find({})).length;
           */
+          let total = (await Supplier.find({})).length;
 
           let suppliers = await Supplier.find({}).limit(limit).skip(offset); 
           suppliers = await Promise.all(_.map(suppliers, async(item)=>{
@@ -178,6 +170,7 @@ export default {
           return {  
             status: true,
             data: suppliers,
+            total,
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
           }
         }
@@ -186,7 +179,6 @@ export default {
           if( checkRole(current_user) == AMDINISTRATOR ){
             let suppliers = await Supplier.find({});
 
-           
             suppliers = await Promise.all(_.map(suppliers, async(item)=>{
                           let user = await User.findById(item.ownerId);
                           if(_.isNull(user)) return null;
@@ -195,9 +187,11 @@ export default {
 
             return {  status: true,
                       data: suppliers,
+                      total: suppliers.length,
                       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
           }
 
+          
           let suppliers = await Supplier.find({ownerId: current_user?._id});
           suppliers = await Promise.all(_.map(suppliers, async(item)=>{
                         let user = await User.findById(item.ownerId);
@@ -208,6 +202,7 @@ export default {
           return {  
             status: true,
             data: suppliers,
+            total: suppliers.length,
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
           }
         }
@@ -438,7 +433,7 @@ export default {
 
     },
 
-    async supplierProfile(parent, args, context, info){
+    async profile(parent, args, context, info){
       let start = Date.now()
       let { _id } = args
       let { req } = context

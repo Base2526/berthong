@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
+import { useNavigate, useLocation, createSearchParams, useParams } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import _ from "lodash"
@@ -14,61 +14,49 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 import { getHeaders, checkRole } from "./util"
-import { queryUserById, querySupplierProfile } from "./gqlQuery"
+import { queryUserById, queryProfile } from "./gqlQuery"
 import { login, logout } from "./redux/actions/auth"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
-import Table from "./TableContainer"
+import TableComp from "./components/TableComp"
 import ReadMoreMaster from "./ReadMoreMaster"
 
-const SupplierProfilePage = (props) => {
+const ProfilePage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useTranslation();
 
+    const { onLightbox } = props
+    
     let [pageOptions, setPageOptions] = useState([30, 50, 100]);  
     let [pageIndex, setPageIndex]     = useState(0);  
     let [pageSize, setPageSize]       = useState(pageOptions[0])
-    const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
-
+    let [data, setData] = useState([]);
+      
     let params = queryString.parse(location.search)
-    let [data, setData] = useState([]);  
-    
-    let { user } = props
-
-    console.log("params :", params)
-    if(_.isEmpty(params.u)){
-        // history.push({ pathname: "/" });
+    if(_.isEmpty(params?.id)){
         navigate(-1)
         return;
     }
 
-    // let profileValue;
-    // let profileValue = useQuery(querySupplierProfile, {
-    //     context: { headers: getHeaders(location) },
-    //     variables: {id: params.u},
-    //     notifyOnNetworkStatusChange: true,
-    // });
-
-    const { loading: loadingSupplierProfile, 
-            data: dataSupplierProfile, 
-            error: errorSupplierProfile, 
-            subscribeToMore, 
-            networkStatus } = useQuery( querySupplierProfile, { 
+    const { loading: loadingProfile, 
+            data: dataProfile, 
+            error: errorProfile, 
+            networkStatus } = useQuery( queryProfile, { 
                                         context: { headers: getHeaders(location) }, 
-                                        variables: {id: params.u},
+                                        variables: {id: params.id},
                                         fetchPolicy: 'network-only', 
                                         notifyOnNetworkStatusChange: true});
 
-
     useEffect(() => {
-        if (dataSupplierProfile) {
-          let { status, data } = dataSupplierProfile.supplierProfile
-          if(status){
-            setData(data)
-          }
+        if(!loadingProfile){
+            if (dataProfile?.profile) {
+                let { status, data } = dataProfile?.profile
+                if(status){
+                  setData(data)
+                }
+            }
         }
-    }, [dataSupplierProfile, loadingSupplierProfile])
-
+    }, [dataProfile, loadingProfile])
 
     ///////////////////////
     const fetchData = useCallback(({ pageSize, pageIndex }) => {
@@ -99,8 +87,7 @@ const SupplierProfilePage = (props) => {
                                 alt="Example Alt"
                                 src={props.value[0].url}
                                 onClick={(e) => {
-                                console.log("files props: ", props.value)
-                                setLightbox({ isOpen: true, photoIndex: 0, images:props.value })
+                                    onLightbox({ isOpen: true, photoIndex: 0, images:props.value })
                                 }}
                             />
                             </CardActionArea>
@@ -123,18 +110,15 @@ const SupplierProfilePage = (props) => {
                     accessor: 'title',
                     Cell: props =>{
                         let {_id, title} = props.row.original
-                        return ( <div style={{ position: "relative" }} 
+                        return ( <div 
+                                    className="card-title" 
+                                    style={{ position: "relative" }} 
                                     onClick={()=>{
-                                    // history.push({
-                                    //     pathname: "/p",
-                                    //     search: `?id=${_id}`,
-                                    //     state: { id: _id }
-                                    // });
-                                    navigate({
-                                        pathname: "/p",
-                                        search: `?${createSearchParams({ id: _id})}`,
-                                        state: { id: _id }
-                                      })
+                                        navigate({
+                                            pathname: "/d",
+                                            search: `?${createSearchParams({ id: _id})}`,
+                                            state: { id: _id }
+                                        })
                                     }}>{title}</div> );
                     }
                 },
@@ -199,12 +183,9 @@ const SupplierProfilePage = (props) => {
     //////////////////////
     //////////////////////
     
-    if( loadingSupplierProfile ){
+    if( loadingProfile ){
         return <CircularProgress />
     }
-
-
-   
 
     let suppliers = data?.suppliers?.slice(0, 10)
     console.log("data?.suppliers ", data?.suppliers, suppliers)
@@ -217,20 +198,19 @@ const SupplierProfilePage = (props) => {
                     }}
                     variant="rounded"
                     alt="Example Alt"
-                    // src={_.isEmpty(data.image) ? "" : data.image[0].url }
+                    src={_.isEmpty(data?.avatar) ? "" : data?.avatar?.url }
                     />
                 <div> Name : {data?.displayName}</div>
-                <div>
-                    <Table
+                <TableComp
                     columns={columns}
                     data={_.isEmpty( data?.suppliers ) ? [] :  data?.suppliers }
                     fetchData={fetchData}
                     rowsPerPage={pageOptions}
                     updateMyData={updateMyData}
                     skipReset={skipResetRef.current}
-                    isDebug={false}
-                    />
-                </div>
+                    isDebug={false}/>
+                   
+                
             </div>);
     }
 
@@ -240,4 +220,4 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = { login, logout }
 
-export default connect( mapStateToProps, mapDispatchToProps )(SupplierProfilePage);
+export default connect( mapStateToProps, mapDispatchToProps )(ProfilePage);

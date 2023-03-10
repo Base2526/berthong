@@ -20,19 +20,18 @@ import { mutationWithdraw, queryWithdraws } from "./gqlQuery";
 import { logout } from "./redux/actions/auth";
 import { checkRole, getHeaders, showToast } from "./util";
 import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants";
-import Table from "./TableContainer";
+import TableComp from "./components/TableComp"
 
 const WithdrawsPage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
 
-  let { user, logout } = props
+  let { user, logout, onLightbox } = props
 
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
   const [pageIndex, setPageIndex]     = useState(0);  
   const [pageSize, setPageSize]       = useState(pageOptions[0])
-  const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
   const [datas, setDatas] = useState([])
 
@@ -241,7 +240,7 @@ const WithdrawsPage = (props) => {
                       }}>เพิ่ม แจ้งถอดเงิน</button> 
                   : ""
                   }
-                  <Table
+                  <TableComp
                     columns={columns}
                     data={datas}
                     fetchData={fetchData}

@@ -18,7 +18,7 @@ import moment from "moment";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { queryUsers } from "./gqlQuery";
-import Table from "./TableContainer";
+import TableComp from "./components/TableComp"
 import { getHeaders, showToast } from "./util";
 import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants";
 
@@ -202,7 +202,7 @@ const UsersPage = (props) => {
         {
           loadingUsers
           ? <div><CircularProgress /></div> 
-          : <Table
+          : <TableComp
               columns={columns}
               data={datas}
               fetchData={fetchData}

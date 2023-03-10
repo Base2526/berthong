@@ -53,7 +53,7 @@ const IndeterminateCheckbox = React.forwardRef(
 
   
 // Be sure to pass our updateMyData and the skipReset option
-const Table = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipReset, isDebug = false }) => {
+const TableComp = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipReset, isDebug = false }) => {
     const filterTypes = React.useMemo(
       () => ({
         // Add a new fuzzyTextFilterFn filter type.
@@ -327,4 +327,4 @@ const Table = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipReset,
     )
 }
 
-export default Table
+export default TableComp

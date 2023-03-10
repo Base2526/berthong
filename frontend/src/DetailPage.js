@@ -17,13 +17,16 @@ import {
 } from "@mui/material";
 import _ from "lodash";
 import queryString from 'query-string';
-import Lightbox from "react-image-lightbox";
 import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
 
-import { DATA_NOT_FOUND, ERROR, FORCE_LOGOUT, UNAUTHENTICATED, 
-         WS_CLOSED, WS_CONNECTED, WS_SHOULD_RETRY } from "./constants";
+import {  DATA_NOT_FOUND, 
+          ERROR, 
+          FORCE_LOGOUT, 
+          UNAUTHENTICATED, 
+          WS_CLOSED, 
+          WS_CONNECTED, 
+          WS_SHOULD_RETRY } from "./constants";
 import DialogBuy from "./DialogBuy";
-import DialogLogin from "./DialogLogin";
 import { mutationBook, mutationBuy, querySupplierById, querySuppliers, subscriptionSupplierById } from "./gqlQuery";
 import ItemFollow from "./ItemFollow";
 import ItemShare from "./ItemShare";
@@ -34,9 +37,7 @@ let unsubscribeSupplierById = null;
 const DetailPage = (props) => {
   const location = useLocation();
   const toastIdRef = useRef(null)
-  let [lightbox, setLightbox] = useState({ isOpen: false, photoIndex: 0, images: [] });
   let [datas, setDatas] = useState([])
-  let [dialogLogin, setDialogLogin] = useState(false);
   let [dialogBuy, setDialogBuy] = useState(false);
   let [openMenuSetting, setOpenMenuSetting] = useState(null);
   let [openMenuShare, setOpenMenuShare] = useState(null);
@@ -44,7 +45,7 @@ const DetailPage = (props) => {
   let params = queryString.parse(location.search)
 
   let { id } = params; 
-  let { user, ws, logout } = props;
+  let { user, ws, logout, onLightbox, onLogin } = props;
 
   let [datasSupplierById, setDatasSupplierById] = useState([]);
 
@@ -276,7 +277,7 @@ const DetailPage = (props) => {
             alt="Example Alt"
             src={_.isEmpty(datasSupplierById?.files) ? "" : datasSupplierById?.files[0].url}
             onClick={(e) => {
-              setLightbox({ isOpen: true, photoIndex: 0, images: datasSupplierById?.files })
+              onLightbox({ isOpen: true, photoIndex: 0, images: datasSupplierById?.files })
             }}
           />
         </CardActionArea>
@@ -414,6 +415,9 @@ const DetailPage = (props) => {
                 <div>ชื่อ :{datasSupplierById.title},  ราคา : {datasSupplierById?.price}</div>
                 <div>จอง :{bookView(datasSupplierById)}</div>
                 <div>ขายไปแล้ว :{sellView(datasSupplierById)}</div>
+                <div>
+                  <p className="card-text">{datasSupplierById?.description}</p>
+                </div>
               </div>
             
               {menuShareView(datasSupplierById, 1)}
@@ -424,7 +428,7 @@ const DetailPage = (props) => {
                   {...props} 
                   item={datasSupplierById} 
                   onDialogLogin={(e)=>{
-                    setDialogLogin(true)
+                    onLogin(true)
                   }}/>
                 <ItemShare 
                   {...props}  
@@ -454,7 +458,7 @@ const DetailPage = (props) => {
                             // disabled={ !_.isEmpty(fn) && (fn?.selected == 0 || fn?.selected == 1 )? true : false }
                             onClick={(evt)=>{
                               if(_.isEmpty(user)){
-                                setDialogLogin(true)
+                                onLogin(true)
                               }else{
                                 onSelected(evt, key)
                               }
@@ -462,16 +466,7 @@ const DetailPage = (props) => {
                           </div>  
                 })
               }
-              </div>  
-              {dialogLogin && (
-                <DialogLogin
-                  {...props}
-                  open={dialogLogin}
-                  onComplete={async(data)=>{ setDialogLogin(false) }}
-                  onClose={() => { setDialogLogin(false) }}
-                />
-              )}
-
+              </div> 
               {
                 dialogBuy && (
                   <DialogBuy 
@@ -484,31 +479,6 @@ const DetailPage = (props) => {
                     onClose={()=>setDialogBuy(false)} />
                 )
               }
-              {lightbox.isOpen && (
-                <Lightbox
-                  mainSrc={lightbox.images[lightbox.photoIndex].url}
-                  nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
-                  prevSrc={
-                    lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
-                  }
-                  onCloseRequest={() => {
-                    setLightbox({ ...lightbox, isOpen: false });
-                  }}
-                  onMovePrevRequest={() => {
-                    setLightbox({
-                      ...lightbox,
-                      photoIndex:
-                        (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
-                    });
-                  }}
-                  onMoveNextRequest={() => {
-                    setLightbox({
-                      ...lightbox,
-                      photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
-                    });
-                  }}
-                />
-              )}
             </div>
   }
 
