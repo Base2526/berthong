@@ -1,23 +1,28 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import Box from "@mui/material/Box";
 import { useQuery, useMutation } from "@apollo/client";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import CircularProgress from '@mui/material/CircularProgress';
 import _ from "lodash"
-import SpeedDial from '@mui/material/SpeedDial';
-import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { connect } from "react-redux";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 import { useTranslation } from "react-i18next";
 import CardActionArea from "@material-ui/core/CardActionArea";
-import Avatar from "@mui/material/Avatar";
+
+import {
+  Box,
+  Stack,
+  Avatar,
+  SpeedDial,
+  SpeedDialIcon,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  CircularProgress
+} from "@mui/material";
+
 import moment from "moment";
 
 import { getHeaders, checkRole } from "./util"
@@ -61,11 +66,8 @@ const SuppliersPage = (props) => {
     }
   });
   console.log("resultDeletePhone :", resultDeletePhone)
-
   
   */
-
-  // const suppliersValue = useQuery(querySuppliers, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
 
   const { loading: loadingSuppliers, 
           data: dataSuppliers, 
@@ -103,9 +105,6 @@ const SuppliersPage = (props) => {
   ///////////////////////
   const columns = useMemo(
     () =>{
-
-      // console.log("props.row.original : ", suppliersValue?.data?.suppliers?.data)
-
       switch(checkRole(user)){
         case AMDINISTRATOR:{
           return [
@@ -255,7 +254,11 @@ const SuppliersPage = (props) => {
               Header: 'Action',
               Cell: props => {
                 let {_id, description} = props.row.original
-                return  <div className="Btn--posts">
+                return  <Stack
+                          direction="row"
+                          spacing={0.5}
+                          justifyContent="center"
+                          alignItems="center">
                             <button onClick={(evt)=>{
                               // history.push({ 
                               //   pathname: "/supplier", 
@@ -266,7 +269,7 @@ const SuppliersPage = (props) => {
                             <button onClick={(e)=>{
                               setOpenDialogDelete({ isOpen: true, id: _id, description });
                             }}><DeleteForeverIcon/>{t("delete")}</button>
-                        </div>
+                        </Stack>
               }
             },
           ] 

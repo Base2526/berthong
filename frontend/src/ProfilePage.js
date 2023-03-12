@@ -1,22 +1,27 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { useNavigate, useLocation, createSearchParams, useParams } from "react-router-dom";
+import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import _ from "lodash"
-import { useQuery, useMutation, useSubscription } from "@apollo/client";
-import LinearProgress from '@mui/material/LinearProgress';
+import { useQuery } from "@apollo/client";
 import queryString from 'query-string';
-import CircularProgress from '@mui/material/CircularProgress';
-import Avatar from "@mui/material/Avatar";
 import CardActionArea from "@material-ui/core/CardActionArea";
-import Box from "@mui/material/Box";
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
-import { getHeaders, checkRole } from "./util"
-import { queryUserById, queryProfile } from "./gqlQuery"
+import {
+    Box,
+    Stack,
+    Avatar,
+    CircularProgress,
+    IconButton
+} from '@mui/material';
+
+import {
+    SlUserFollow
+} from "react-icons/sl"
+
+import { getHeaders } from "./util"
+import { queryProfile } from "./gqlQuery"
 import { login, logout } from "./redux/actions/auth"
-import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 import TableComp from "./components/TableComp"
 import ReadMoreMaster from "./ReadMoreMaster"
 
@@ -44,7 +49,8 @@ const ProfilePage = (props) => {
             networkStatus } = useQuery( queryProfile, { 
                                         context: { headers: getHeaders(location) }, 
                                         variables: {id: params.id},
-                                        fetchPolicy: 'network-only', 
+                                        fetchPolicy: 'network-only', // Used for first execution
+                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
                                         notifyOnNetworkStatusChange: true});
 
     useEffect(() => {
@@ -154,9 +160,6 @@ const ProfilePage = (props) => {
         []
     )
 
-    // const [data, setData] = useState(() => makeData(10000))
-    // const [originalData] = useState(data)
-
     // We need to keep the table from resetting the pageIndex when we
     // Update data. So we can keep track of that flag with a ref.
     const skipResetRef = useRef(false)
@@ -165,42 +168,26 @@ const ProfilePage = (props) => {
     // the rowIndex, columnId and new value to update the
     // original data
     const updateMyData = (rowIndex, columnId, value) => {
-        console.log("updateMyData")
-        // We also turn on the flag to not reset the page
         skipResetRef.current = true
-        // setData(old =>
-        //   old.map((row, index) => {
-        //     if (index === rowIndex) {
-        //       return {
-        //         ...row,
-        //         [columnId]: value,
-        //       }
-        //     }
-        //     return row
-        //   })
-        // )
     }
-    //////////////////////
-    //////////////////////
     
     if( loadingProfile ){
         return <CircularProgress />
     }
 
-    let suppliers = data?.suppliers?.slice(0, 10)
-    console.log("data?.suppliers ", data?.suppliers, suppliers)
     return (<div style={{flex:1}}>
-                <Avatar
-                    className={"user-profile"}
-                    sx={{
-                        height: 80,
-                        width: 80
-                    }}
-                    variant="rounded"
-                    alt="Example Alt"
-                    src={_.isEmpty(data?.avatar) ? "" : data?.avatar?.url }
-                    />
-                <div> Name : {data?.displayName}</div>
+                <Stack 
+                    direction="row" 
+                    spacing={2}>
+                    <Avatar
+                        className={"user-profile"}
+                        sx={{ height: 80, width: 80 }}
+                        variant="rounded"
+                        alt="Example Alt"
+                        src={_.isEmpty(data?.avatar) ? "" : data?.avatar?.url }/>
+                    <div> Name : {data?.displayName}</div>    
+                    <SlUserFollow size={"20px"} />
+                </Stack>
                 <TableComp
                     columns={columns}
                     data={_.isEmpty( data?.suppliers ) ? [] :  data?.suppliers }
@@ -209,15 +196,11 @@ const ProfilePage = (props) => {
                     updateMyData={updateMyData}
                     skipReset={skipResetRef.current}
                     isDebug={false}/>
-                   
-                
             </div>);
     }
 
 const mapStateToProps = (state, ownProps) => {
     return { user:state.auth.user }
-};
-
+}
 const mapDispatchToProps = { login, logout }
-
 export default connect( mapStateToProps, mapDispatchToProps )(ProfilePage);

@@ -20,6 +20,7 @@ export const queryProfile         = gql`query profile($id: ID!) { profile(_id: $
 export const queryDateLotterys    = gql`query dateLotterys { dateLotterys }`;
 export const queryDateLotteryById = gql`query dateLotteryById($id: ID!) { dateLotteryById(_id: $id) }`;
 export const queryBuys            = gql`query buys { buys }`;
+export const queryNotifications   = gql`query notifications { notifications }`;
 
 // mutation
 export const mutationLogin      = gql`mutation login($input: LoginInput) { login(input: $input) }`;

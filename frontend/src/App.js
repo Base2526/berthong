@@ -42,11 +42,18 @@ import {
 import {
   HiOutlineHome as HomeIcon,
 } from 'react-icons/hi';
+
+import {
+  MdCircleNotifications as MdCircleNotificationsIcon,
+} from 'react-icons/md';
+
+
 import {
   Avatar,
   IconButton,
   ClickAwayListener,
-  Stack
+  Stack,
+  Badge
 } from "@mui/material";
 import _ from "lodash"
 
@@ -73,8 +80,9 @@ import UsersPage from "./UsersPage";
 import { checkRole, getHeaders } from "./util";
 import WithdrawPage from "./WithdrawPage";
 import WithdrawsPage from "./WithdrawsPage";
-import Breadcs from "./components/Breadcs";
+import BreadcsComp from "./components/BreadcsComp";
 import DialogLogout from "./DialogLogout";
+import NotificationsPage from "./NotificationsPage";
 
 import LightboxComp from "./components/LightboxComp"
 import DialogLoginComp from "./components/DialogLoginComp"
@@ -186,9 +194,9 @@ const App =(props) =>{
 
   
   // console.log("ws :", location)
-
+  
   /////////////////////// ping ///////////////////////////////////
-  const pingValues =useQuery(queryPing, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true});
+  // const pingValues =useQuery(queryPing, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true});
 
   useSubscription(subscriptionMe, {
     onSubscriptionData: useCallback((res) => {
@@ -217,15 +225,17 @@ const App =(props) =>{
     variables: {sessionId: localStorage.getItem('token')},
   });
 
-  useEffect(()=> {
-    intervalPing.current = setInterval(() => {
-      pingValues && pingValues.refetch()
+  
+  // useEffect(()=> {
+  //   intervalPing.current = setInterval(() => {
+  //     pingValues && pingValues.refetch()
         
-      console.log("ping, auth : ", moment().format("DD-MM-YYYY hh:mm:ss") )
+  //     console.log("ping, auth : ", moment().format("DD-MM-YYYY hh:mm:ss") )
 
-    }, 60000 /*1 min*/);
-    return ()=> clearInterval(intervalPing.current);
-  }, [user]);
+  //   }, 60000 );
+  //   return ()=> clearInterval(intervalPing.current);
+  // }, [user]);
+  
 
   const ProtectedAuthenticatedRoute = ({ user, redirectPath = '/' }) => {
     switch(checkRole(user)){
@@ -299,7 +309,8 @@ const App =(props) =>{
                 {id: 4, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+bank"},
                 {id: 5, title:"Supplier list", icon: <AssistantIcon />, path: "/suppliers"},
                 {id: 6, title:"History-Transitions", icon: <AddRoadIcon />, path: "/history-transitions"},
-                {id: 7, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
+                // {id: 7, title:"Notifications", icon: <MdCircleNotificationsIcon  size="1.5em"/>, path: "/notifications"},
+                {id: 8, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
       }
       default:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
@@ -352,14 +363,25 @@ const App =(props) =>{
               {
                 !_.isEmpty(user)
                 ? <Stack direction={"row"} spacing={2} alignItems="center">
-                    <Avatar 
-                      src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
-                      alt="Avatar"
-                    />
+                    <IconButton size={'small'}>
+                      <Avatar 
+                        src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
+                        alt="profile"
+                      />
+                    </IconButton>
                     <Typography variant="h6" noWrap>
                       {"[  Name :" + user?.displayName +", Email :"+ user?.email + " ]"}
                     </Typography>
                     <div>Balance : {user?.balance} [-{user?.balanceBook}]</div>
+                    <IconButton 
+                      size={'small'}
+                      onClick={()=>{
+                        navigate("/notifications")
+                      }}>
+                      <Badge badgeContent={10} color="primary">
+                        <MdCircleNotificationsIcon color="action" size="1.2em"/>
+                      </Badge>
+                    </IconButton>
                   </Stack>
                 : ""
               }
@@ -441,7 +463,7 @@ const App =(props) =>{
           </main>
         </div>
         <div className="container">
-          <Breadcs {...props}/>
+          <BreadcsComp {...props}/>
           <Routes>
             <Route path="/" exact element={<HomePage onLogin={()=>setDialogLogin(true)} />} />
             <Route path="/d" element={<DetailPage onLogin={()=>setDialogLogin(true)} onLightbox={(value)=>setLightbox(value)} />} />
@@ -456,6 +478,7 @@ const App =(props) =>{
               <Route path="/history-transitions" element={<HistoryTransitionsPage />} />
               <Route path="/me+bank" element={<ProfileBankPage />} />
               <Route path="/book+buys" element={<BookBuysPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
               <Route path="/deposits" element={<DepositsPage onLightbox={(value)=>setLightbox(value)} />} />

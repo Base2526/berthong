@@ -1,7 +1,10 @@
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
-import { DeleteForever as DeleteForeverIcon, Edit as EditIcon, ExitToApp as ExitToAppIcon } from '@mui/icons-material';
+import { DeleteForever as DeleteForeverIcon, 
+        Edit as EditIcon, 
+        ExitToApp as ExitToAppIcon } from '@mui/icons-material';
 import {
+  Stack,
   Avatar,
   Button,
   CircularProgress,
@@ -161,18 +164,21 @@ const UsersPage = (props) => {
                               Header: 'Action',
                               Cell: props => {
                                 let {_id, displayName} = props.row.original
-                                return  <div className="Btn--posts">
+                                return  <Stack
+                                          direction="row"
+                                          spacing={0.5}
+                                          justifyContent="center"
+                                          alignItems="center">
                                           <button onClick={(e)=>{
                                             console.log("Force logout")
                                           }}><ExitToAppIcon />Force logout</button>
                                           <button onClick={()=>{
                                             navigate("/user", {state: {from: "/", mode: "edit", id: _id } } )
-                                            // navigate("/supplier", {state: {from: "/", mode: "edit", id: _id} })
                                           }}><EditIcon/>{t("edit")}</button>
                                           <button onClick={(e)=>{
                                             setOpenDialogDelete({ isOpen: true, id: _id, description: displayName });
                                           }}><DeleteForeverIcon/>{t("delete")}</button>
-                                        </div>
+                                        </Stack>
                               }
                             },
                           ],

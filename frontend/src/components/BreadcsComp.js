@@ -8,13 +8,16 @@ import { useQuery } from "@apollo/client";
 import _ from "lodash"
 
 import { AiFillHome as HomeIcon} from 'react-icons/ai';
+import {
+  MdCircleNotifications as MdCircleNotificationsIcon,
+} from 'react-icons/md';
 
 import { AMDINISTRATOR, AUTHENTICATED } from "../constants";
 import { getHeaders, checkRole } from "../util"
 import { queryProfile } from "../gqlQuery"
 import { useEffect, useState } from "react";
 
-const Breadcs = (props) => {
+const BreadcsComp = (props) => {
   const location = useLocation();
   const { t } = useTranslation();
   const params = useParams();
@@ -212,6 +215,12 @@ const Breadcs = (props) => {
           <Typography key="3" color="text.primary">วันออกหวยทั้งหมด</Typography>
         ]
       }
+
+      case "/notifications":{
+        return [  
+          <Typography key="3" color="text.primary"><MdCircleNotificationsIcon  size={"1.5em"} /> {t("Notifications")} </Typography>
+        ]
+      }
    
       default: 
         return []
@@ -229,4 +238,4 @@ const Breadcs = (props) => {
   );
 };
 
-export default Breadcs;
+export default BreadcsComp;

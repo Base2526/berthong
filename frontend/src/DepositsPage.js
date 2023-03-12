@@ -10,14 +10,24 @@ import CardActionArea from "@material-ui/core/CardActionArea";
 import Avatar from "@mui/material/Avatar";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+// import Button from "@mui/material/Button";
+// import Dialog from "@mui/material/Dialog";
+// import DialogActions from "@mui/material/DialogActions";
+// import DialogContent from "@mui/material/DialogContent";
+// import DialogContentText from "@mui/material/DialogContentText";
+// import DialogTitle from "@mui/material/DialogTitle";
 import moment from "moment";
-import LinearProgress from '@mui/material/LinearProgress';
+
+import {
+        Button,
+        Dialog,
+        DialogActions,
+        DialogContent, 
+        DialogContentText,
+        DialogTitle,
+        Divider,
+        Stack
+      } from '@mui/material';
 
 import { getHeaders, checkRole, showToast } from "./util"
 import { queryDeposits, mutationDeposit, queryBanks } from "./gqlQuery"
@@ -112,6 +122,7 @@ const DepositsPage = (props) => {
     setPageSize(pageSize)
     setPageIndex(pageIndex)
   })
+
   ///////////////
   const columns = useMemo(
       () => 
@@ -215,49 +226,43 @@ const DepositsPage = (props) => {
               let {_id, status, description} = props.row.original
               switch(status){
                 case "wait":{
-                  return  <div className="Btn--posts">
+                  return  <Stack
+                            direction="row"
+                            spacing={0.5}
+                            justifyContent="center"
+                            alignItems="center">
                               <button onClick={(evt)=>{
-                                // history.push({ 
-                                //   pathname: "/deposit", 
-                                //   state: {from: "/", mode: "edit", id: _id } 
-                                // });
                                 navigate("/deposit", {state: {from: "/", mode: "edit", id: _id }} )
                               }}><EditIcon/>{t("edit")}</button>
                               <button onClick={(e)=>{
                                 setOpenDialogDelete({ isOpen: true, id: _id, description });
                               }}><DeleteForeverIcon/>{t("delete")}</button>
-                          </div>
-                  break;
+                          </Stack>
                 }
                 case "approved":{
-                  return  <div className="Btn--posts">
-                            {/* <button onClick={(evt)=>{
-                              history.push({ 
-                                pathname: "/deposit", 
-                                state: {from: "/", mode: "edit", id: _id } 
-                              });
-                            }}><EditIcon/>{t("edit")}</button> */}
-                            <button onClick={(e)=>{
-                              setOpenDialogDelete({ isOpen: true, id: _id, description });
-                            }}><DeleteForeverIcon/>{t("delete")}</button>
-                        </div>
-                  break;
+                  return  <Stack
+                            direction="row"
+                            spacing={0.5}
+                            justifyContent="center"
+                            alignItems="center">
+                              <button onClick={(e)=>{
+                                setOpenDialogDelete({ isOpen: true, id: _id, description });
+                              }}><DeleteForeverIcon/>{t("delete")}</button>
+                          </Stack>
                 }
                 case "reject":{
-                  return  <div className="Btn--posts">
+                  return  <Stack
+                            direction="row"
+                            spacing={0.5}
+                            justifyContent="center"
+                            alignItems="center">
                             <button onClick={(evt)=>{
-                              // history.push({ 
-                              //   pathname: "/deposit", 
-                              //   state: {from: "/", mode: "edit", id: _id } 
-                              // });
-
                               navigate("/deposit", {state: {from: "/", mode: "edit", id: _id }} )
                             }}><EditIcon/>{t("edit")}</button>
                             <button onClick={(e)=>{
                               setOpenDialogDelete({ isOpen: true, id: _id, description });
                             }}><DeleteForeverIcon/>{t("delete")}</button>
-                          </div>
-                  break;
+                          </Stack>
                 }
 
                 default:{
@@ -282,20 +287,20 @@ const DepositsPage = (props) => {
   // the rowIndex, columnId and new value to update the
   // original data
   const updateMyData = (rowIndex, columnId, value) => {
-  console.log("updateMyData")
-  // We also turn on the flag to not reset the page
-  skipResetRef.current = true
-  // setData(old =>
-  //   old.map((row, index) => {
-  //     if (index === rowIndex) {
-  //       return {
-  //         ...row,
-  //         [columnId]: value,
-  //       }
-  //     }
-  //     return row
-  //   })
-  // )
+    console.log("updateMyData")
+    // We also turn on the flag to not reset the page
+    skipResetRef.current = true
+    // setData(old =>
+    //   old.map((row, index) => {
+    //     if (index === rowIndex) {
+    //       return {
+    //         ...row,
+    //         [columnId]: value,
+    //       }
+    //     }
+    //     return row
+    //   })
+    // )
   }
   //////////////////////
 

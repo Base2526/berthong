@@ -483,6 +483,8 @@ export default gql`
     dateLotteryById(_id: ID!): JSON
 
     buys: JSON
+
+    notifications: JSON
   }  
   
   input RoomInput {

@@ -227,12 +227,9 @@ const modelExists =()=>{
 
   Notification.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Notification');
     } else {
-      // console.log('Not found Notification, creating');
-      let newNotification = new Notification({});
+      let newNotification = new Notification({ user_to_notify: new mongoose.Types.ObjectId() });
       await newNotification.save();
-
       await Notification.deleteMany({})
     }
   });

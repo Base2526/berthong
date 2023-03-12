@@ -1,20 +1,24 @@
-import { Link } from "react-router-dom";
-import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import CircularProgress from '@mui/material/CircularProgress';
-import Avatar from "@mui/material/Avatar";
 import _ from "lodash"
-import SpeedDial from '@mui/material/SpeedDial';
-import SpeedDialIcon from '@mui/material/SpeedDialIcon';
-import { useQuery, useMutation } from "@apollo/client";
+import {
+  Box,
+  Typography,
+  DialogTitle,
+  DialogContentText,
+  DialogContent,
+  DialogActions,
+  Dialog,
+  Button,
+  CircularProgress,
+  SpeedDialIcon,
+  SpeedDial,
+  Stack
+} from '@mui/material';
+import {  DeleteForever as DeleteForeverIcon, 
+          Edit as EditIcon } from '@mui/icons-material';
+
+import { useQuery } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 import { queryBanks } from "./gqlQuery"
 import TableComp from "./components/TableComp"
@@ -109,19 +113,18 @@ const BanksPage = (props) => {
             console.log("Cell :", props)
 
             let {_id, name} = props.row.original
-            return  <div>
+            return  <Stack
+                      direction="row"
+                      spacing={0.5}
+                      justifyContent="center"
+                      alignItems="center">
                       <button onClick={()=>{
-                        // history.push({ 
-                        //   pathname: "/bank", 
-                        //   state: {from: "/", mode: "edit", _id} 
-                        // });
-
                         navigate("/bank", {state: {from: "/", mode: "edit", _id}})
-                      }}>{t("edit")}</button>
+                      }}><EditIcon/>{t("edit")}</button>
                       <button onClick={(e)=>{
                         // setOpenDialogDelete({ isOpen: true, id: _id, description: name })
-                      }}>{t("delete")}</button>
-                    </div>
+                      }}><DeleteForeverIcon/>{t("delete")}</button>
+                    </Stack>
           }
         },
     ],

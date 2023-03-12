@@ -556,6 +556,39 @@ export default {
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
     },
+
+    async notifications(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+
+      console.log("notifications: ")
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if( !status && code == FORCE_LOGOUT ) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
+
+
+      let data = [{ user_to_notify: '63ff3c0c6637e303283bc40f', 
+                    type: "system",
+                    data: "test [system]",
+                    status: "unread"
+                  },
+                  { user_to_notify: '63ff3c0c6637e303283bc40f', 
+                    type: "withdraw",
+                    data: "test [withdraw]",
+                    status: "unread"
+                  },
+                  { user_to_notify: '63ff3c0c6637e303283bc40f', 
+                    type: "deposit",
+                    data: "test [deposit]",
+                    status: "unread"
+                  }]
+      return {  status: true,
+                data,
+                total: data.length,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
   },
   Upload: GraphQLUpload,
   Mutation: {
