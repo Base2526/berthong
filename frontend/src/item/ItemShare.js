@@ -5,7 +5,7 @@ import ShareIcon from "@mui/icons-material/Share";
 import _ from "lodash"
 
 // import { gqlShareByPostId, subShare } from "../../gqlQuery"
-import { getHeaders } from "./util"
+import { getHeaders } from "../util"
 
 let unsubscribe =  null
 const ItemShare = (props) => {

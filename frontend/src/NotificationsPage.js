@@ -3,8 +3,7 @@ import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import _ from "lodash"
-import { useQuery } from "@apollo/client";
-import queryString from 'query-string';
+import { useQuery, useMutation } from "@apollo/client";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import {
@@ -26,17 +25,7 @@ import {
 } from "react-icons/md"
 
 import { getHeaders } from "./util"
-import { queryNotifications } from "./gqlQuery"
-// import { login, logout } from "./redux/actions/auth"
-// import TableComp from "./components/TableComp"
-// import ReadMoreMaster from "./ReadMoreMaster"
-
-const style = {
-    height: 30,
-    border: "1px solid green",
-    margin: 6,
-    padding: 8
-};
+import { queryNotifications, mutationNotification } from "./gqlQuery"
 
 const NotificationsPage = (props) => {
     const navigate = useNavigate();
@@ -56,6 +45,65 @@ const NotificationsPage = (props) => {
                                                     fetchPolicy: 'network-only', // Used for first execution
                                                     nextFetchPolicy: 'cache-first', // Used for subsequent executions
                                                     notifyOnNetworkStatusChange: true});
+
+    const [onMutationNotification, resultNotification] = useMutation(mutationNotification, {
+        context: { headers: getHeaders(location) },
+        update: (cache, {data: {notification}}) => {
+            let { data, status } = notification
+            console.log("update")
+
+        //   if(status){
+        //     switch(mode){
+        //       case "new":{
+        //         const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+
+        //         if(!_.isNull(querySuppliersValue)){
+        //           let newData = [...querySuppliersValue.suppliers.data, data];
+
+        //           cache.writeQuery({
+        //             query: querySuppliers,
+        //             data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+        //           });
+        //         }
+        //         break;
+        //       }
+        //       case "edit":{
+        //         const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+        //         if(!_.isNull(querySuppliersValue)){
+        //           let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
+
+        //           cache.writeQuery({
+        //             query: querySuppliers,
+        //             data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+        //           });
+        //         }
+        //         break;
+        //       }
+        //     }
+        //   }
+        },
+        onCompleted(data) {
+            // navigate(-1)
+            console.log("onCompleted")
+        },
+        onError(error){
+            console.log(error)
+        //   _.map(error?.graphQLErrors, (e)=>{
+        //     switch(e?.extensions?.code){
+        //       case FORCE_LOGOUT:{
+        //         logout()
+        //         break;
+        //       } 
+        //       case DATA_NOT_FOUND:
+        //       case UNAUTHENTICATED:
+        //       case ERROR:{
+        //         showToast("error", e?.message)
+        //         break;
+        //       }
+        //     }
+        //   })
+        }
+    });
 
     useEffect(() => {
         if (!loadingNotifications) {
@@ -88,7 +136,7 @@ const NotificationsPage = (props) => {
         }
     }
 
-    return (<div style={{flex:1}}>
+    return (<div>
                 {
                 total == 0 
                 ?   <label>Empty notifications</label>
@@ -103,19 +151,37 @@ const NotificationsPage = (props) => {
                                     case "system":{
                                         return  <Stack direction="row" spacing={2}>
                                                     <SystemIcon />
-                                                    <div key={index}>{i?.data} {i?.status} </div>
+                                                    <div 
+                                                        onClick={(evt)=>{
+                                                            console.log("system")
+
+                                                            onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
+                                                        }
+                                                    } key={index}>{i?.data} {i?.status} </div>
                                                 </Stack>
                                     }
                                     case "withdraw":{
                                         return  <Stack direction="row" spacing={2}>
                                                     <WithdrawIcon />
-                                                    <div key={index}>{i?.data} {i?.status} </div>
+                                                    <div 
+                                                        onClick={(evt)=>{
+                                                            console.log("withdraw")
+
+                                                            onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
+                                                        }
+                                                    } key={index}>{i?.data} {i?.status} </div>
                                                 </Stack>
                                     }
                                     case "deposit":{
                                         return  <Stack direction="row" spacing={2}>
                                                     <DepositIcon />
-                                                    <div key={index}>{i?.data} {i?.status} </div>
+                                                    <div 
+                                                        onClick={(evt)=>{
+                                                            console.log("deposit")
+
+                                                            onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
+                                                        }
+                                                    } key={index}>{i?.data} {i?.status} </div>
                                                 </Stack>
                                     }
                                 }
@@ -128,7 +194,7 @@ const NotificationsPage = (props) => {
 }
 
 const mapStateToProps = (state, ownProps) => {
-    return { user:state.auth.user }
+    return { }
 }
 const mapDispatchToProps = { }
 export default connect( mapStateToProps, mapDispatchToProps )(NotificationsPage);

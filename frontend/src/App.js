@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useApolloClient, useQuery, useSubscription } from "@apollo/client";
-import moment from "moment";
 import { connect } from "react-redux";
 import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
@@ -70,7 +69,7 @@ import HistoryTransitionsPage from "./HistoryTransitionsPage";
 import HomePage from "./HomePage";
 import LoginPage from "./LoginPage";
 import MePage from "./MePage";
-import ProfileBankPage from "./ProfileBankPage";
+import MeBankPage from "./MeBankPage";
 import { editedUserBalace, editedUserBalaceBook } from "./redux/actions/auth";
 import SupplierPage from "./SupplierPage";
 import ProfilePage from "./ProfilePage";
@@ -86,6 +85,8 @@ import NotificationsPage from "./NotificationsPage";
 
 import LightboxComp from "./components/LightboxComp"
 import DialogLoginComp from "./components/DialogLoginComp"
+
+import { queryNotifications } from "./gqlQuery"
 
 import {
   AMDINISTRATOR, AUTHENTICATED, WS_CLOSED, WS_CONNECTED, WS_CONNECTION, WS_SHOULD_RETRY
@@ -190,9 +191,35 @@ const App =(props) =>{
   const [dialogLogin, setDialogLogin] = useState(false);
   const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
 
+  let [notifications, setNotifications] =useState([])
+
   let { ws, user, editedUserBalace, editedUserBalaceBook } = props
 
-  
+  const { loading: loadingNotifications, 
+          data: dataNotifications, 
+          error: errorNotifications,
+          refetch: refetchNotifications, } =  useQuery( queryNotifications, { 
+                                              context: { headers: getHeaders(location) }, 
+                                              fetchPolicy: 'network-only', // Used for first execution
+                                              nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                              notifyOnNetworkStatusChange: true});
+
+  useEffect(()=>{
+    if(!_.isEmpty(user)){
+      refetchNotifications();
+    }
+  }, [user])
+
+  useEffect(() => {
+    if (!loadingNotifications) {
+      if(dataNotifications?.notifications){
+        let { status, data } = dataNotifications?.notifications
+        if(status){
+          setNotifications(data)
+        }
+      }
+    }
+  }, [dataNotifications, loadingNotifications])
   // console.log("ws :", location)
   
   /////////////////////// ping ///////////////////////////////////
@@ -342,7 +369,7 @@ const App =(props) =>{
       }
       
       {statusView()}
-      <div class="container-fluid">
+      <div className="container-fluid">
         <div className={classes.root}>
           <CssBaseline />
           <AppBar
@@ -373,15 +400,19 @@ const App =(props) =>{
                       {"[  Name :" + user?.displayName +", Email :"+ user?.email + " ]"}
                     </Typography>
                     <div>Balance : {user?.balance} [-{user?.balanceBook}]</div>
-                    <IconButton 
-                      size={'small'}
-                      onClick={()=>{
-                        navigate("/notifications")
-                      }}>
-                      <Badge badgeContent={10} color="primary">
-                        <MdCircleNotificationsIcon color="action" size="1.2em"/>
-                      </Badge>
-                    </IconButton>
+                    { 
+                      checkRole(user) === AUTHENTICATED 
+                      ? <IconButton 
+                          size={'small'}
+                          onClick={()=>{
+                            navigate("/notifications")
+                          }}>
+                          <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
+                            <MdCircleNotificationsIcon color="white" size="1.2em"/>
+                          </Badge>
+                        </IconButton>
+                      : ""  }
+                    
                   </Stack>
                 : ""
               }
@@ -441,17 +472,7 @@ const App =(props) =>{
                             <ListItemText 
                               primary={item.title} />
                           </ListItem>
-                }
-
-                /*
-                 <ListItem button key="1" component={Link} to={"/dash"}>
-              <ListItemIcon>
-                <PaletteIcon />
-              </ListItemIcon>
-              <ListItemText primary="Dash" />
-            </ListItem>
-                */
-                  
+                }                  
                 )}
               </List>
               <Divider />
@@ -474,11 +495,11 @@ const App =(props) =>{
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
               <Route path="/me" element={<MePage />} />
               <Route path="/deposit" element={<DepositPage />} />
-              <Route path="/withdraw" element={<WithdrawPage />} />
+              <Route path="/withdraw" element={<WithdrawPage user={user} />} />
               <Route path="/history-transitions" element={<HistoryTransitionsPage />} />
-              <Route path="/me+bank" element={<ProfileBankPage />} />
+              <Route path="/me+bank" element={<MeBankPage user={user} />} />
               <Route path="/book+buys" element={<BookBuysPage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/notifications" element={<NotificationsPage user={user} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
               <Route path="/deposits" element={<DepositsPage onLightbox={(value)=>setLightbox(value)} />} />

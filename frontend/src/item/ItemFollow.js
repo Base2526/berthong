@@ -5,9 +5,9 @@ import _ from "lodash";
 import React from "react";
 import { useLocation } from "react-router-dom";
 
-import { UNAUTHENTICATED } from "./constants";
-import { mutationFollow, querySupplierById, querySuppliers } from "./gqlQuery";
-import { getHeaders, showToast } from "./util";
+import { UNAUTHENTICATED } from "../constants";
+import { mutationFollow, querySupplierById, querySuppliers } from "../gqlQuery";
+import { getHeaders, showToast } from "../util";
 
 const ItemFollow = (props) => {
   let location = useLocation();

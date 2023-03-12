@@ -753,6 +753,8 @@ export default gql`
     bank(input: BankInput): JSON 
     follow(_id: ID!): JSON 
     datesLottery(input: [Date]): JSON 
+
+    notification(_id: ID!): JSON 
   }
 
   type Subscription {

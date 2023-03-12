@@ -1,11 +1,5 @@
 import { useMutation, useQuery } from "@apollo/client";
-import Autocomplete from "@mui/material/Autocomplete";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import LinearProgress from '@mui/material/LinearProgress';
-import TextField from "@mui/material/TextField";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,7 +9,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { mutationWithdraw, queryBanks, queryWithdrawById, queryWithdraws } from "./gqlQuery";
 import { logout } from "./redux/actions/auth";
 import { getHeaders, checkRole } from "./util";
-import { AMDINISTRATOR, AUTHENTICATED} from "./constants";
+import  * as Constants from "./constants";
 
 let initValues = { bank: null,  balance: "", status: "" }
 
@@ -131,12 +125,12 @@ const WithdrawPage = (props) => {
     },
     onCompleted(data) {
       switch(checkRole(user)){
-        case AMDINISTRATOR:{
+        case Constants.AMDINISTRATOR:{
           navigate("/withdraws")
           break;
         }
   
-        case AUTHENTICATED:{
+        case Constants.AUTHENTICATED:{
           navigate("/")
           break;
         }
@@ -294,7 +288,7 @@ const WithdrawPage = (props) => {
               }
               {balanceView()}
               {
-                  mode == "edit" && checkRole(user) == AMDINISTRATOR 
+                  mode == "edit" && checkRole(user) == Constants.AMDINISTRATOR 
                   &&  <div>
                         <label>{t("status")} </label>
                         <select 
@@ -316,9 +310,7 @@ const WithdrawPage = (props) => {
 }
 
 const mapStateToProps = (state, ownProps) => {
-    return { user:state.auth.user }
-};
-
+    return { }
+}
 const mapDispatchToProps = { logout }
-
 export default connect( mapStateToProps, mapDispatchToProps )(WithdrawPage);

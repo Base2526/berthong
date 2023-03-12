@@ -43,7 +43,7 @@ const SearchComp = (props) => {
                   aria-controls="panel1a-content"
                   id="panel1a-header">
                   <Typography>
-                    <i class="icon icon-search far fas fa-search"></i> Advance search
+                    <i className="icon icon-search far fas fa-search"></i> Advance search
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>

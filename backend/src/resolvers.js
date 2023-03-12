@@ -1780,6 +1780,43 @@ export default {
       }
       */
     },
+
+    // 
+    async notification(parent, args, context, info) {
+      let start = Date.now()
+      let { _id } = args
+      let { req } = context
+
+      console.log("notification :", _id)
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
+
+      // let supplier = await Supplier.findOne({_id})
+      // if(_.isNull(supplier)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
+
+      // let {follows} = supplier  
+      // if(!_.isEmpty(follows)){
+      //   let isFollow = _.find(follows, (follow)=>_.isEqual(follow.userId, current_user?._id))
+      //   if(_.isEmpty(isFollow)){
+      //     follows = [...follows, {userId: current_user?._id}]
+      //   }else{
+      //     follows = _.filter(follows, (follow)=>!_.isEqual(follow.userId, current_user?._id))
+      //   }
+      // }else{
+      //   follows = [{userId: current_user?._id}]
+      // }
+
+      // await Supplier.updateOne( { _id }, { follows } );
+      // supplier = await Supplier.findOne({_id})
+      
+      return {
+        status: true,
+        // data: {...supplier._doc, owner: (await User.findById(supplier.ownerId))?._doc },
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+    },
   },
   Subscription:{
     subscriptionMe: {

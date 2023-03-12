@@ -18,10 +18,9 @@ import {  FORCE_LOGOUT,
 import { querySuppliers, subscriptionSuppliers } from "./gqlQuery";
 import { login, logout } from "./redux/actions/auth";
 import { getHeaders } from "./util";
-import HomeItem from "./HomeItem"
+import HomeItem from "./item/HomeItem"
 import SearchComp from "./components/SearchComp"
 import SkeletonComp from "./components/SkeletonComp"
-
 import * as Constants from "./constants"
 
 const useStyles = makeStyles((theme) => ({

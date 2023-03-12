@@ -37,6 +37,8 @@ export const mutationFollow     = gql`mutation follow($id: ID!) { follow(_id: $i
 export const mutationDatesLottery = gql`mutation datesLottery($input: [Date]){ datesLottery(input: $input) }`;
 // export const mutationDateLotteryDetail = gql`mutation dateLotteryDetail($input: DateLotteryDetailInput){ dateLotteryDetail(input: $input) }`;
 
+export const mutationNotification = gql`mutation notification($id: ID!) { notification(_id: $id) }`;
+
 // subscription 
 export const subscriptionMe            = gql`subscription subscriptionMe($sessionId: ID!){ subscriptionMe(sessionId: $sessionId) }`;
 export const subscriptionSupplierById  = gql`subscription subscriptionSupplierById( $supplierById: ID! ){ subscriptionSupplierById(supplierById: $supplierById) }`;

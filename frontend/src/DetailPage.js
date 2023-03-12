@@ -28,8 +28,8 @@ import {  DATA_NOT_FOUND,
           WS_SHOULD_RETRY } from "./constants";
 import DialogBuy from "./DialogBuy";
 import { mutationBook, mutationBuy, querySupplierById, querySuppliers, subscriptionSupplierById } from "./gqlQuery";
-import ItemFollow from "./ItemFollow";
-import ItemShare from "./ItemShare";
+import ItemFollow from "./item/ItemFollow";
+import ItemShare from "./item/ItemShare";
 import { login, logout } from "./redux/actions/auth";
 import { bookView, getHeaders, sellView, showToast } from "./util";
 
