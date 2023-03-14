@@ -22,12 +22,12 @@ import {
   DialogTitle,
   CircularProgress
 } from "@mui/material";
-
+import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
 
 import { getHeaders, checkRole } from "./util"
 import { querySuppliers } from "./gqlQuery"
-import ReadMoreMaster from "./ReadMoreMaster"
+import ReadMoreMaster from "./helpers/ReadMoreMaster"
 import TableComp from "./components/TableComp"
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
 
@@ -36,12 +36,15 @@ const SuppliersPage = (props) => {
   const location = useLocation();
   const { t } = useTranslation();
   let { user, onLightbox } = props
-  const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
-  const [pageIndex, setPageIndex]     = useState(0);  
-  const [pageSize, setPageSize]       = useState(pageOptions[0])
+  // const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
+  // const [pageIndex, setPageIndex]     = useState(0);  
+  // const [pageSize, setPageSize]       = useState(pageOptions[0])
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
-  let [data, setData] = useState([]);
+  let [datas, setDatas] = useState([]);
+  let [total, setTotal] = useState(0)
+  let [slice, setSlice] = useState(20);
+  let [hasMore, setHasMore] = useState(true)
   /*
   const [onDeletePhone, resultDeletePhone] = useMutation(gqlDeletePhone, {
     context: { headers: getHeaders() },
@@ -66,32 +69,33 @@ const SuppliersPage = (props) => {
     }
   });
   console.log("resultDeletePhone :", resultDeletePhone)
-  
   */
 
   const { loading: loadingSuppliers, 
           data: dataSuppliers, 
           error: errorSuppliers, 
-          subscribeToMore, 
-          networkStatus } = useQuery( querySuppliers, { 
-                                      context: { headers: getHeaders(location) }, 
-                                      fetchPolicy: 'network-only', 
-                                      notifyOnNetworkStatusChange: true});
+          subscribeToMore: subscribeToMoreSuppliers, 
+          networkStatus: networkStatusSuppliers } = useQuery( querySuppliers, { 
+                                                                context: { headers: getHeaders(location) }, 
+                                                                fetchPolicy: 'network-only', 
+                                                                notifyOnNetworkStatusChange: true});
 
   useEffect(() => {
-    if (dataSuppliers) {
-      let { status, data } = dataSuppliers.suppliers
-      if(status){
-        setData(data)
+    if(!loadingSuppliers){
+      if (dataSuppliers?.suppliers) {
+        let { status, data } = dataSuppliers?.suppliers
+        if(status){
+          setDatas(data)
+        }
       }
     }
-  }, [dataSuppliers])
+  }, [dataSuppliers, loadingSuppliers])
 
   ///////////////
-  const fetchData = useCallback(({ pageSize, pageIndex }) => {
-    setPageSize(pageSize)
-    setPageIndex(pageIndex)
-  })
+  // const fetchData = useCallback(({ pageSize, pageIndex }) => {
+  //   setPageSize(pageSize)
+  //   setPageIndex(pageIndex)
+  // })
   ///////////////
 
   const handleClose = () => {
@@ -446,32 +450,48 @@ const SuppliersPage = (props) => {
 
   // We need to keep the table from resetting the pageIndex when we
   // Update data. So we can keep track of that flag with a ref.
-  const skipResetRef = useRef(false)
+  // const skipResetRef = useRef(false)
 
   // When our cell renderer calls updateMyData, we'll use
   // the rowIndex, columnId and new value to update the
   // original data
-  const updateMyData = (rowIndex, columnId, value) => {
-    console.log("updateMyData")
-    // We also turn on the flag to not reset the page
-    skipResetRef.current = true
-    // setData(old =>
-    //   old.map((row, index) => {
-    //     if (index === rowIndex) {
-    //       return {
-    //         ...row,
-    //         [columnId]: value,
-    //       }
-    //     }
-    //     return row
-    //   })
-    // )
-  }
+  // const updateMyData = (rowIndex, columnId, value) => {
+  //   console.log("updateMyData")
+  //   // We also turn on the flag to not reset the page
+  //   skipResetRef.current = true
+  //   // setData(old =>
+  //   //   old.map((row, index) => {
+  //   //     if (index === rowIndex) {
+  //   //       return {
+  //   //         ...row,
+  //   //         [columnId]: value,
+  //   //       }
+  //   //     }
+  //   //     return row
+  //   //   })
+  //   // )
+  // }
   //////////////////////
+
+  const fetchMoreData = async() =>{
+    // let mores =  await fetchMoreNotifications({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
+    // let {status, data} =  mores.data.suppliers
+    // console.log("status, data :", status, data)
+   
+    if(slice === total){
+        setHasMore(false);
+    }else{
+        setTimeout(() => {
+            // let newDatas = [...datas, ...data]
+            // setDatas(newDatas)
+            // setSlice(newDatas.length);
+        }, 1000); 
+    }
+  }
 
   return (<div className="pl-2 pr-2">
             <Box style={{ flex: 4 }} className="table-responsive">
-              {
+              {/* {
                 loadingSuppliers
                 ? <CircularProgress />
                 : <TableComp
@@ -483,6 +503,26 @@ const SuppliersPage = (props) => {
                     skipReset={skipResetRef.current}
                     isDebug={false}
                   />
+              } */}
+
+              {
+                loadingSuppliers
+                ?  <CircularProgress />
+                :  datas.length == 0 
+                    ?   <label>Empty data</label>
+                    :   <InfiniteScroll
+                            dataLength={slice}
+                            next={fetchMoreData}
+                            hasMore={hasMore}
+                            loader={<h4>Loading...</h4>}>
+                            { 
+                            _.map(datas, (i, index) => {
+
+                              console.log("item :", i)
+                              return  <Stack direction="row" spacing={2}>{index} : {i.title}</Stack>
+                            })
+                          }
+                        </InfiniteScroll>
               }
 
               {openDialogDelete.isOpen && (

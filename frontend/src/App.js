@@ -46,6 +46,13 @@ import {
   MdCircleNotifications as MdCircleNotificationsIcon,
 } from 'react-icons/md';
 
+import {
+  FiShoppingCart
+} from "react-icons/fi"
+
+import {
+  AiOutlineHistory
+} from "react-icons/ai"
 
 import {
   Avatar,
@@ -58,7 +65,7 @@ import _ from "lodash"
 
 import BankPage from "./BankPage";
 import BanksPage from "./BanksPage";
-import BookBuysPage from "./BookBuysPage";
+import MeBookBuysPage from "./MeBookBuysPage";
 import DateLotteryPage from "./DateLotteryPage";
 import DateLotterysPage from "./DateLotterysPage";
 import DepositPage from "./DepositPage";
@@ -67,6 +74,7 @@ import DetailPage from "./DetailPage";
 import { queryPing, subscriptionMe } from "./gqlQuery";
 import HistoryTransitionsPage from "./HistoryTransitionsPage";
 import HomePage from "./HomePage";
+import AdminHomePage from "./AdminHomePage";
 import LoginPage from "./LoginPage";
 import MePage from "./MePage";
 import MeBankPage from "./MeBankPage";
@@ -87,10 +95,7 @@ import LightboxComp from "./components/LightboxComp"
 import DialogLoginComp from "./components/DialogLoginComp"
 
 import { queryNotifications } from "./gqlQuery"
-
-import {
-  AMDINISTRATOR, AUTHENTICATED, WS_CLOSED, WS_CONNECTED, WS_CONNECTION, WS_SHOULD_RETRY
-} from "./constants";
+import * as Constants from "./constants"
 import { login, logout } from "./redux/actions/auth";
 
 const drawerWidth = 240;
@@ -252,22 +257,29 @@ const App =(props) =>{
     variables: {sessionId: localStorage.getItem('token')},
   });
 
-  
   // useEffect(()=> {
   //   intervalPing.current = setInterval(() => {
   //     pingValues && pingValues.refetch()
-        
   //     console.log("ping, auth : ", moment().format("DD-MM-YYYY hh:mm:ss") )
-
   //   }, 60000 );
   //   return ()=> clearInterval(intervalPing.current);
   // }, [user]);
+  // const ProtectedHomeRoute = ({user}) =>{
+  //   switch(checkRole(user)){
+  //     case Constants.AMDINISTRATOR:
+  //     case Constants.AUTHENTICATED:{
+  //       return <Outlet />;
+  //     }
+  //     default:{
+  //       return <Navigate to={redirectPath} replace />;
+  //     }
+  //   }
+  // }
   
-
   const ProtectedAuthenticatedRoute = ({ user, redirectPath = '/' }) => {
     switch(checkRole(user)){
-      case AMDINISTRATOR:
-      case AUTHENTICATED:{
+      case Constants.AMDINISTRATOR:
+      case Constants.AUTHENTICATED:{
         return <Outlet />;
       }
       default:{
@@ -278,7 +290,7 @@ const App =(props) =>{
 
   const ProtectedAdministratorRoute = ({ user, redirectPath = '/' }) => {
     switch(checkRole(user)){
-      case AMDINISTRATOR:{
+      case Constants.AMDINISTRATOR:{
         return <Outlet />;
       }
       default:{
@@ -289,15 +301,15 @@ const App =(props) =>{
 
   const statusView = () =>{
     switch(ws?.ws_status){
-      // case WS_CONNECTED :{
+      // case Constants.WS_CONNECTED :{
       //   return <div />
       // }
-      case WS_CONNECTION :
-      case WS_SHOULD_RETRY: {
+      case Constants.WS_CONNECTION :
+      case Constants.WS_SHOULD_RETRY: {
         return <div className="ws">server กำลังทำการเชื่อมต่อ <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
       }
 
-      case WS_CLOSED:{
+      case Constants.WS_CLOSED:{
         return <div className="ws">server มีปัญหา <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
       }
 
@@ -317,31 +329,29 @@ const App =(props) =>{
 
   const menuList = () =>{
     switch(checkRole(user)){
-      case AMDINISTRATOR:{
+      case Constants.AMDINISTRATOR:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em"/>, path: "/"},
-                {id: 1, title:"รายการถอดเงิน รออนุมัติ", icon: <AccountTreeIcon />, path: "/withdraws"},
-                {id: 2, title:"รายการฝากเงิน รออนุมัติ", icon: <AddRoadIcon />, path: "/deposits"},
-                {id: 3, title:"จัดการ Suppliers ทั้งหมด", icon: <AdjustIcon />, path: "/suppliers"},
+                {id: 1, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/withdraws"},
+                {id: 2, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/deposits"},
+                {id: 3, title:"รายการสินค้าทั้งหมด", icon: <AdjustIcon />, path: "/suppliers"},
                 {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
                 {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/banks"},
                 {id: 6, title:"วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/date-lotterys"},
                 {id: 7, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+bank"},
                 {id: 8, title:"Logout", icon: <LogoutIcon size="1.5em"/>, path: "/logout"}]
       }
-      case AUTHENTICATED:{
+      case Constants.AUTHENTICATED:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
-                {id: 1, title:"รายการ จอง-ซื้อ", icon: <AccountTreeIcon />, path: "/book+buys"},
+                {id: 1, title:"รายการ สินค้า", icon: <AssistantIcon />, path: "/suppliers"},
                 {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
-                {id: 4, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+bank"},
-                {id: 5, title:"Supplier list", icon: <AssistantIcon />, path: "/suppliers"},
-                {id: 6, title:"History-Transitions", icon: <AddRoadIcon />, path: "/history-transitions"},
-                // {id: 7, title:"Notifications", icon: <MdCircleNotificationsIcon  size="1.5em"/>, path: "/notifications"},
-                {id: 8, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
+                {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"},
+                {id: 5, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+bank"},
+                {id: 6, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
       }
       default:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
-                {id: 7, title:"Login", icon: <LoginIcon />, path: "/login"}]
+                {id: 1, title:"Login", icon: <LoginIcon />, path: "/login"}]
       }
     }
   }
@@ -376,45 +386,57 @@ const App =(props) =>{
             position="fixed"
             className={clsx(classes.appBar, {
               [classes.appBarShift]: open
-            })}
-          >
+            })}>
             <Toolbar>
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                onClick={handleDrawerOpen}
-                edge="start"
-                className={clsx(classes.menuButton, open && classes.hide)}
-              ><MenuIcon /></IconButton>
-              <Typography variant="h6" noWrap onClick={()=>navigate("/")}>BERTHONG</Typography>
               {
-                !_.isEmpty(user)
-                ? <Stack direction={"row"} spacing={2} alignItems="center">
-                    <IconButton size={'small'}>
-                      <Avatar 
-                        src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
-                        alt="profile"
-                      />
-                    </IconButton>
-                    <Typography variant="h6" noWrap>
-                      {"[  Name :" + user?.displayName +", Email :"+ user?.email + " ]"}
-                    </Typography>
-                    <div>Balance : {user?.balance} [-{user?.balanceBook}]</div>
-                    { 
-                      checkRole(user) === AUTHENTICATED 
-                      ? <IconButton 
-                          size={'small'}
-                          onClick={()=>{
-                            navigate("/notifications")
-                          }}>
-                          <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
-                            <MdCircleNotificationsIcon color="white" size="1.2em"/>
-                          </Badge>
-                        </IconButton>
-                      : ""  }
-                    
-                  </Stack>
-                : ""
+                // _.isEqual(checkRole(user), Constants.AMDINISTRATOR)
+                // ? <Typography variant="h6" noWrap>AMDINISTRATOR</Typography> 
+                // : 
+                <>
+                    <IconButton
+                      color="inherit"
+                      aria-label="open drawer"
+                      onClick={handleDrawerOpen}
+                      edge="start"
+                      className={clsx(classes.menuButton, open && classes.hide)}
+                    ><MenuIcon /></IconButton>
+                    <Typography variant="h6" noWrap onClick={()=>navigate("/")}>BERTHONG</Typography>
+                    {
+                      !_.isEmpty(user) && checkRole(user) === Constants.AUTHENTICATED 
+                      ? <Stack direction={"row"} spacing={2} alignItems="center">
+                          <IconButton size={'small'}>
+                            <Avatar 
+                              src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
+                              alt="profile"
+                            />
+                          </IconButton>
+                          <Typography variant="h6" noWrap>
+                            {"[  Name :" + user?.displayName +", Email :"+ user?.email + " ]"}
+                          </Typography>
+                          <div>Balance : {user?.balance} [-{user?.balanceBook}]</div>
+                          <IconButton 
+                            size={'small'}
+                            onClick={()=>{
+                              navigate("/notifications")
+                            }}>
+                            <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
+                              <MdCircleNotificationsIcon color="white" size="1.2em"/>
+                            </Badge>
+                          </IconButton>
+
+                          <IconButton 
+                            size={'small'}
+                            onClick={()=>{
+                              navigate("/me+book+buys")
+                            }}>
+                            <Badge badgeContent={1} color="primary">
+                              <FiShoppingCart color="white" size="1.2em"/>
+                            </Badge>
+                          </IconButton>
+                        </Stack>
+                      : ""  
+                    }
+                  </>
               }
             </Toolbar>
           </AppBar>
@@ -440,41 +462,41 @@ const App =(props) =>{
                 </IconButton>
               </div>
               <Divider />
-              <List>
-                {_.map(menuList(), (item, index) => {
-                  return  <ListItem
-                            // button
-                            selected={location?.pathname == item.path ? true : false}
-                            key={index}
-                            onClick={() => {
-                              switch(item.path){
-                                case "/login":{
-                                  setDialogLogin(true)
-                                  break;
-                                }
-                                case "/logout":{
-                                  handleDrawerClose();
-                                  setOpenDialogLogout(true)
-                                  break;
-                                }
-                                case "/withdraw":
-                                case "/deposit":{
-                                  navigate(item.path, {state: {from: "/", mode: "new" }})
-                                  break;
-                                }
+                <List>
+                  {_.map(menuList(), (item, index) => {
+                    return  <ListItem
+                              // button
+                              selected={location?.pathname == item.path ? true : false}
+                              key={index}
+                              onClick={() => {
+                                switch(item.path){
+                                  case "/login":{
+                                    setDialogLogin(true)
+                                    break;
+                                  }
+                                  case "/logout":{
+                                    handleDrawerClose();
+                                    setOpenDialogLogout(true)
+                                    break;
+                                  }
+                                  case "/withdraw":
+                                  case "/deposit":{
+                                    navigate(item.path, {state: {from: "/", mode: "new" }})
+                                    break;
+                                  }
 
-                                default:{
-                                  navigate(item.path)
+                                  default:{
+                                    navigate(item.path)
+                                  }
                                 }
-                              }
-                            }}>
-                            <ListItemIcon>{item.icon}</ListItemIcon>
-                            <ListItemText 
-                              primary={item.title} />
-                          </ListItem>
-                }                  
-                )}
-              </List>
+                              }}>
+                              <ListItemIcon>{item.icon}</ListItemIcon>
+                              <ListItemText 
+                                primary={item.title} />
+                            </ListItem>
+                  }                  
+                  )}
+                </List>
               <Divider />
               <Typography variant="caption" display="block" gutterBottom>© 2023 BERTHONG LLC</Typography>
             </Drawer>
@@ -486,7 +508,7 @@ const App =(props) =>{
         <div className="container">
           <BreadcsComp {...props}/>
           <Routes>
-            <Route path="/" exact element={<HomePage onLogin={()=>setDialogLogin(true)} />} />
+            <Route path="/" exact element={ _.isEqual(checkRole(user), Constants.AMDINISTRATOR) ? <AdminHomePage user={user} ws={ws} onLogin={()=>setDialogLogin(true)} /> : <HomePage user={user} ws={ws} onLogin={()=>setDialogLogin(true)} />} />
             <Route path="/d" element={<DetailPage onLogin={()=>setDialogLogin(true)} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/user/login" element={<LoginPage />} />
             <Route path="/suppliers" element={<SuppliersPage onLightbox={(value)=>setLightbox(value)} />} />
@@ -494,11 +516,11 @@ const App =(props) =>{
             <Route path="/p" element={<ProfilePage onLightbox={(value)=>setLightbox(value)} />}/>
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
               <Route path="/me" element={<MePage />} />
-              <Route path="/deposit" element={<DepositPage />} />
+              <Route path="/deposit" element={<DepositPage user={user} />} />
               <Route path="/withdraw" element={<WithdrawPage user={user} />} />
-              <Route path="/history-transitions" element={<HistoryTransitionsPage />} />
+              <Route path="/history-transitions" element={<HistoryTransitionsPage user={user} />} />
               <Route path="/me+bank" element={<MeBankPage user={user} />} />
-              <Route path="/book+buys" element={<BookBuysPage />} />
+              <Route path="/me+book+buys" element={<MeBookBuysPage user={user} />} />
               <Route path="/notifications" element={<NotificationsPage user={user} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
@@ -521,7 +543,7 @@ const App =(props) =>{
 
 const mapStateToProps = (state, ownProps) => {
   return { user:state.auth.user, ws: state.ws }
-};
+}
 
 const mapDispatchToProps = {
   editedUserBalace,
@@ -530,3 +552,4 @@ const mapDispatchToProps = {
 }
 
 export default connect( mapStateToProps, mapDispatchToProps )(App);
+

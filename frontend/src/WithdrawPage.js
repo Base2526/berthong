@@ -1,10 +1,15 @@
 import { useMutation, useQuery } from "@apollo/client";
-import LinearProgress from '@mui/material/LinearProgress';
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
+
+import { 
+  Stack,
+  Button,
+  LinearProgress,
+} from "@mui/material";
 
 import { mutationWithdraw, queryBanks, queryWithdrawById, queryWithdraws } from "./gqlQuery";
 import { logout } from "./redux/actions/auth";
@@ -17,18 +22,13 @@ const WithdrawPage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  let [snackbar, setSnackbar] = useState({open:false, message:""});
   let [input, setInput]       = useState(initValues);
   let [error, setError]       = useState(initValues);
-
-  const [inputList, setInputList] = useState([]);
 
   const [banks, setBanks] = useState([]);
 
   let { user, logout } = props
   let { mode, id } = location.state
-
-  console.log("user :", user)
 
   const { loading: loadingBanks, 
           data: dataBanks, 
@@ -172,6 +172,8 @@ const WithdrawPage = (props) => {
   }, [id])
 
   const submitForm = async(event) => {
+    console.log("submitForm")
+    /*
     event.preventDefault();
 
     switch(mode){
@@ -190,7 +192,8 @@ const WithdrawPage = (props) => {
         onMutationWithdraw({ variables: { input: newInput } });
         break;
       }
-    }    
+    } 
+    */   
   }
 
   const onInputChange = (e) => {
@@ -253,7 +256,7 @@ const WithdrawPage = (props) => {
 
       case "edit":{
         let f = _.find(banks, (bank)=>_.isEqual(bank._id, input?.bank?.bankId) )
-        return <div>เลขที่บัญชี : {input?.bank?.bankNumber} - {f?.name}</div>
+        return <div>เลือกเลขที่บัญชี : {input?.bank?.bankNumber} - {f?.name}</div>
       }
     }
   }
@@ -279,7 +282,10 @@ const WithdrawPage = (props) => {
     }
   }
  
-  return  <form  onSubmit={submitForm}>
+  return  <Stack
+            direction="column"
+            justifyContent="center"
+            alignItems="flex-start">
             <div>
               {
                 loadingBanks
@@ -305,8 +311,13 @@ const WithdrawPage = (props) => {
                 }
             </div>
             <div>ยอดที่สามารถถอดได้ { user.balance - input.balance - user.balanceBook } บาท</div>
-            <button type="submit" variant="contained" color="primary">{t("withdraw")}</button>
-          </form>
+            <Button 
+              variant="contained" 
+              color="primary"
+              onClick={(evt)=>{
+                submitForm(evt)
+              }}>{t("withdraw")}</Button>
+          </Stack>
 }
 
 const mapStateToProps = (state, ownProps) => {

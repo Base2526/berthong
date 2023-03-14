@@ -485,6 +485,8 @@ export default gql`
     buys: JSON
 
     notifications: JSON
+
+    adminHome: JSON
   }  
   
   input RoomInput {
@@ -761,6 +763,8 @@ export default gql`
     subscriptionMe(sessionId: ID!): JSON
     subscriptionSupplierById(supplierById: ID!): JSON
     subscriptionSuppliers(supplierIds: String!): JSON
+
+    subscriptionAdmin(supplierIds: String!): JSON
   }
 
   type PostSubscriptionPayload {

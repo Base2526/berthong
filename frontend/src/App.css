@@ -1010,3 +1010,21 @@ tbody, td, tfoot, th, thead, tr {
   border-width: thin !important;
 }
 
+.infinite-scroll-component {
+  overflow: hidden !important;
+}
+
+.admin-item{
+  background-color: gainsboro;
+  margin: 1px;
+}
+
+.card-admin {
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  transition: 0.3s;
+  width: 40%;
+}
+
+.card-admin:hover {
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}

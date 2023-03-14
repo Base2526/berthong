@@ -11,7 +11,8 @@ import {
     Stack,
     Avatar,
     CircularProgress,
-    IconButton
+    IconButton,
+    LinearProgress
 } from '@mui/material';
 
 import {
@@ -110,9 +111,9 @@ const NotificationsPage = (props) => {
             if(dataNotifications?.notifications){
                 let { status, data, total} = dataNotifications?.notifications
                 if(status){
-                    setDatas(data)
                     setTotal(total)
-
+                    setDatas(data)
+                    
                     console.log("data: ", data)
                 }
             }
@@ -138,58 +139,59 @@ const NotificationsPage = (props) => {
 
     return (<div>
                 {
-                total == 0 
-                ?   <label>Empty notifications</label>
-                :   <InfiniteScroll
-                        dataLength={slice}
-                        next={fetchMoreData}
-                        hasMore={hasMore}
-                        loader={<h4>Loading...</h4>}>
-                        { 
-                            _.map(datas, (i, index) => {
-                                switch(i?.type){
-                                    case "system":{
-                                        return  <Stack direction="row" spacing={2}>
-                                                    <SystemIcon />
-                                                    <div 
-                                                        onClick={(evt)=>{
-                                                            console.log("system")
+                loadingNotifications
+                ?  <CircularProgress />
+                :  datas.length == 0 
+                    ?   <label>Empty notifications</label>
+                    :   <InfiniteScroll
+                            dataLength={slice}
+                            next={fetchMoreData}
+                            hasMore={hasMore}
+                            loader={<h4>Loading...</h4>}>
+                            { 
+                                _.map(datas, (i, index) => {
+                                    switch(i?.type){
+                                        case "system":{
+                                            return  <Stack direction="row" spacing={2}>
+                                                        <SystemIcon />
+                                                        <div 
+                                                            onClick={(evt)=>{
+                                                                console.log("system")
 
-                                                            onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
-                                                        }
-                                                    } key={index}>{i?.data} {i?.status} </div>
-                                                </Stack>
-                                    }
-                                    case "withdraw":{
-                                        return  <Stack direction="row" spacing={2}>
-                                                    <WithdrawIcon />
-                                                    <div 
-                                                        onClick={(evt)=>{
-                                                            console.log("withdraw")
+                                                                onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
+                                                            }
+                                                        } key={index}>{i?.data} {i?.status} </div>
+                                                    </Stack>
+                                        }
+                                        case "withdraw":{
+                                            return  <Stack direction="row" spacing={2}>
+                                                        <WithdrawIcon />
+                                                        <div 
+                                                            onClick={(evt)=>{
+                                                                console.log("withdraw")
 
-                                                            onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
-                                                        }
-                                                    } key={index}>{i?.data} {i?.status} </div>
-                                                </Stack>
-                                    }
-                                    case "deposit":{
-                                        return  <Stack direction="row" spacing={2}>
-                                                    <DepositIcon />
-                                                    <div 
-                                                        onClick={(evt)=>{
-                                                            console.log("deposit")
+                                                                onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
+                                                            }
+                                                        } key={index}>{i?.data} {i?.status} </div>
+                                                    </Stack>
+                                        }
+                                        case "deposit":{
+                                            return  <Stack direction="row" spacing={2}>
+                                                        <DepositIcon />
+                                                        <div 
+                                                            onClick={(evt)=>{
+                                                                console.log("deposit")
 
-                                                            onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
-                                                        }
-                                                    } key={index}>{i?.data} {i?.status} </div>
-                                                </Stack>
+                                                                onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
+                                                            }
+                                                        } key={index}>{i?.data} {i?.status} </div>
+                                                    </Stack>
+                                        }
                                     }
-                                }
-                            }) 
-                        }
-                    </InfiniteScroll>
+                                }) 
+                            }
+                        </InfiniteScroll>
                 }
-                
             </div>);
 }
 

@@ -23,7 +23,7 @@ import { getHeaders } from "./util"
 import { queryProfile } from "./gqlQuery"
 import { login, logout } from "./redux/actions/auth"
 import TableComp from "./components/TableComp"
-import ReadMoreMaster from "./ReadMoreMaster"
+import ReadMoreMaster from "./helpers/ReadMoreMaster"
 
 const ProfilePage = (props) => {
     const navigate = useNavigate();

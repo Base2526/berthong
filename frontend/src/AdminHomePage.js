@@ -10,15 +10,25 @@ import { ErrorOutline as ErrorOutlineIcon } from "@material-ui/icons";
 // color
 import { lightGreen, blueGrey } from "@material-ui/core/colors";
 
+import {
+  Stack,
+  IconButton,
+  CircularProgress
+} from "@mui/material"
+
+import {
+  FiRefreshCcw
+} from "react-icons/fi"
+
 import {  FORCE_LOGOUT, 
           WS_CLOSED, 
           WS_CONNECTED, 
           WS_SHOULD_RETRY } from "./constants";
 
-import { querySuppliers, subscriptionSuppliers } from "./gqlQuery";
+import { queryAdminHome, subscriptionSuppliers } from "./gqlQuery";
 import { login, logout } from "./redux/actions/auth";
 import { getHeaders } from "./util";
-import HomeItem from "./item/HomeItem"
+import AdminHomeItem from "./item/AdminHomeItem"
 import SearchComp from "./components/SearchComp"
 import SkeletonComp from "./components/SkeletonComp"
 import * as Constants from "./constants"
@@ -81,7 +91,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 let unsubscribeSuppliers = null;
-const HomePage = (props) => {
+const AdminHomePage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const toastIdRef = useRef(null)
@@ -99,22 +109,23 @@ const HomePage = (props) => {
 
   let { logout, ws, onLogin } = props
 
-  const { loading: loadingSuppliers, 
-          data: dataSuppliers, 
-          error: errorSuppliers, 
-          refetch: refetchSuppliers,
-          subscribeToMore, 
-          fetchMore,
-          networkStatus } = useQuery(querySuppliers, 
+  
+  const { loading: loadingAdminHome, 
+          data: dataAdminHome, 
+          error: errorAdminHome, 
+          refetch: refetchAdminHome,
+          subscribeToMore: subscribeToMoreAdminHome, 
+          networkStatus: networkStatusAdminHome } = useQuery(queryAdminHome, 
                                       { 
                                         context: { headers: getHeaders(location) }, 
-                                        variables: {input: search},
+                                        // variables: {input: search},
                                         fetchPolicy: 'network-only', // Used for first execution
                                         nextFetchPolicy: 'cache-first', // Used for subsequent executions
                                         notifyOnNetworkStatusChange: true
                                       }
                                     );
 
+  /*
   if(!_.isEmpty(errorSuppliers)){
     _.map(errorSuppliers?.graphQLErrors, (e)=>{
       switch(e?.extensions?.code){
@@ -132,21 +143,20 @@ const HomePage = (props) => {
       unsubscribeSuppliers = null;
     };
   }, [])
+  */
 
   useEffect(() => {
-    if(!loadingSuppliers){
-      if(!_.isEmpty(dataSuppliers?.suppliers)){
-        let { status, total, data } = dataSuppliers?.suppliers
+    if(!loadingAdminHome){
+      if(!_.isEmpty(dataAdminHome?.adminHome)){
+        let { status, data } = dataAdminHome?.adminHome
         if(status){
           setDatas(data)
-          setTotal(total)
         }
-
-        setLoading(false)
       }
     }
-  }, [dataSuppliers, loadingSuppliers])
+  }, [dataAdminHome, loadingAdminHome])
 
+  /*
   useEffect(()=>{
     let supplierIds = JSON.stringify(_.map(datas, _.property("_id")));
     unsubscribeSuppliers && unsubscribeSuppliers()
@@ -199,6 +209,7 @@ const HomePage = (props) => {
       setReset(false)
     }
   }, [search, reset])
+  */
 
   /////////////////////////
   // const handleSearch = (v) => {
@@ -241,6 +252,7 @@ const HomePage = (props) => {
   //   }
   // };
 
+  /*
   const handleNext = async() => {
     let mores =  await fetchMore({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
     let {status, data} =  mores.data.suppliers
@@ -256,8 +268,10 @@ const HomePage = (props) => {
       }, 1000); 
     }
   }
+  */
 
   const mainView = () =>{
+    /*
     switch(ws?.ws_status){
       case WS_SHOULD_RETRY:{
         break;
@@ -302,59 +316,53 @@ const HomePage = (props) => {
         break;
       }
     }
+    */
 
-    return  <div className="contrainer">
-              <div style={{ paddingBottom: "1rem" }}>
-                <SearchComp
-                  {...props}
-                  classes={classes}
-                  // initSearch={Constants.INIT_SEARCH}
-                  onReset={()=>{
-                    setReset(true)
-                  }}
-                  onSearch={(search)=>setSearch(search)} />
-              </div>
-              {loading 
-              ? <SkeletonComp />
-              : <div className="row">
-                  <div className="col-12 pb-2">
-                  {
-                    _.isEmpty(datas)
-                    ? <div className="noData p-2 m-1"><ErrorOutlineIcon /> ไม่พบข้อมูลที่ค้นหา </div>
-                    : <InfiniteScroll
-                        dataLength={slice}
-                        next={handleNext}
-                        hasMore={hasMore}
-                        loader={<SkeletonComp />}
-                        scrollThreshold={0.5}
-                        scrollableTarget="scrollableDiv"
-                        endMessage={<h1>You have reached the end</h1>}>
-                        <div className="row">
-                          {_.map(datas, (item, index) =>{
-                            return <HomeItem 
-                                    {...props} 
-                                    key={index} 
-                                    index={index}
-                                    item={item}
-                                    onDialogLogin={()=>{
-                                      onLogin(true)
-                                    }} />
-                          } )}
-                        </div>
-                      </InfiniteScroll>
-                    }
-                  </div>
-                </div>
+    return  _.map(datas, (item, index)=>{
+              switch(index){
+                case 0:{
+                  return <div className="card-admin" onClick={(evt)=>navigate("/deposits")}>{item.title} - {item.data?.length}</div>
                 }
-            </div>
+
+                case 1:{
+                  return <div className="card-admin" onClick={(evt)=>navigate("/withdraws")}>{item.title} - {item.data?.length}</div>
+                }
+
+                case 2:{
+                  return <div className="card-admin" onClick={(evt)=>navigate("/suppliers")}>{item.title} - {item.data?.length}</div>
+                }
+
+                case 3:{
+                  return <div className="card-admin" onClick={(evt)=>navigate("/users")}>{item.title} - {item.data?.length}</div>
+                }
+              }
+            })
   }
 
-  return mainView()
+  return  <div className="contrainer">
+            <Stack
+              alignItems="flex-start">
+              <IconButton 
+                size="small"
+                onClick={(evt)=>refetchAdminHome()}><FiRefreshCcw size="0.9em"/></IconButton>
+            </Stack>
+
+            {
+              loadingAdminHome
+              ? <CircularProgress />
+              : <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={{ xs: 1, sm: 2, md: 4 }}>
+                  {mainView()}
+                </Stack>
+            }
+            
+          </div>
 }
 
 const mapStateToProps = (state, ownProps) => {
-  return { /*user:state.auth.user, ws: state.ws*/ }
+  return { user:state.auth.user, ws: state.ws }
 };
 
 const mapDispatchToProps = { login, logout }
-export default connect( mapStateToProps, mapDispatchToProps )(HomePage);
+export default connect( mapStateToProps, mapDispatchToProps )(AdminHomePage);

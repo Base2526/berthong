@@ -1,5 +1,4 @@
 import MuiLink from "@material-ui/core/Link";
-// import HomeIcon from '@mui/icons-material/Home';
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Breadcrumbs, Typography, LinearProgress } from "@mui/material";
@@ -14,7 +13,7 @@ import {
 
 import { AMDINISTRATOR, AUTHENTICATED } from "../constants";
 import { getHeaders, checkRole } from "../util"
-import { queryProfile, queryNotifications } from "../gqlQuery"
+import { queryProfile } from "../gqlQuery"
 import { useEffect, useState } from "react";
 
 const BreadcsComp = (props) => {
@@ -24,7 +23,6 @@ const BreadcsComp = (props) => {
   const { user } = props
 
   let [profile, setProfile] = useState()
-  // let [notifications, setNotifications] =useState([])
 
   let queryParams = queryString.parse(location.search)
   
@@ -37,27 +35,11 @@ const BreadcsComp = (props) => {
                                       fetchPolicy: 'cache-only', 
                                       notifyOnNetworkStatusChange: true});
 
-  // const { loading: loadingNotifications, 
-  //         data: dataNotifications, 
-  //         error: errorNotifications,
-  //         refetch: refetchNotifications, } =  useQuery( queryNotifications, { 
-  //                                             context: { headers: getHeaders(location) }, 
-  //                                             fetchPolicy: 'network-only', // Used for first execution
-  //                                             nextFetchPolicy: 'cache-first', // Used for subsequent executions
-  //                                             notifyOnNetworkStatusChange: true});
-
-
   useEffect(()=>{
     if(location?.pathname === "/p" && !_.isEmpty(queryParams?.id)){
       refetchProfile({id: queryParams?.id});
     }
   }, [queryParams?.id])
-
-  // useEffect(()=>{
-  //   if(!_.isEmpty(user)){
-  //     refetchNotifications();
-  //   }
-  // }, [user])
 
   useEffect(() => {
     if (!loadingProfile) {
@@ -70,20 +52,7 @@ const BreadcsComp = (props) => {
     }
   }, [dataProfile, loadingProfile])
 
-  // useEffect(() => {
-  //   if (!loadingNotifications) {
-  //     if(dataNotifications?.notifications){
-  //       let { status, data } = dataNotifications?.notifications
-  //       if(status){
-  //         setNotifications(data)
-  //       }
-  //     }
-  //   }
-  // }, [dataNotifications, loadingNotifications])
-
   const BreadcrumbsView = () =>{
-    // console.log("location :", location, params, props)
-
     switch(location?.pathname){
       case "/":{
         return [<Typography key="0" color="text.primary"><HomeIcon size={18}/>{t("home")}</Typography>]
@@ -98,22 +67,33 @@ const BreadcsComp = (props) => {
       case "/withdraws":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18} /> {t("home")}</MuiLink>,
-          <Typography key="1" color="text.primary">รายการ ถอดเงิน รออนุมัติ</Typography>
+          <Typography key="1" color="text.primary">รายการ ถอดเงินรออนุมัติ</Typography>
         ]
       }
 
       case "/deposits":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-          <Typography key="1" color="text.primary">รายการถอดเงิน รออนุมัติ</Typography>
+          <Typography key="1" color="text.primary">รายการ ฝากเงินรออนุมัติ</Typography>
         ]
       }
 
       case "/suppliers":{
-        return [  
-          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-          <Typography key="1" color="text.primary">Suppliers ทั้งหมด</Typography>
-        ]
+        switch(checkRole(user)){
+          case AMDINISTRATOR:{
+            return [  
+              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+              <Typography key="1" color="text.primary">รายการ สินค้าทั้งหมด</Typography>
+            ]
+          }
+          case AUTHENTICATED:{
+            return [  
+              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+              <Typography key="1" color="text.primary">รายการ สินค้า</Typography>
+            ]
+          }
+        }
+        
       }
 
       case "/users":{
@@ -154,7 +134,7 @@ const BreadcsComp = (props) => {
           case "new":{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/suppliers">{t("Suppliers ทั้งหมด")}</MuiLink>,
+              <MuiLink key="1" component={Link} to="/suppliers">{t("รายการ สินค้าทั้งหมด")}</MuiLink>,
               <Typography key="2" color="text.primary">สร้าง supplier ใหม่</Typography>
             ]
           }
@@ -162,7 +142,7 @@ const BreadcsComp = (props) => {
           case "edit":{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/suppliers"> {t("Suppliers ทั้งหมด")}</MuiLink>,
+              <MuiLink key="1" component={Link} to="/suppliers"> {t("รายการ สินค้าทั้งหมด")}</MuiLink>,
               <Typography key="2" color="text.primary">แก้ไข supplier</Typography>
             ]
           }
@@ -172,11 +152,11 @@ const BreadcsComp = (props) => {
       case "/history-transitions":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-          <Typography key="1" color="text.primary">History transitions</Typography>
+          <Typography key="1" color="text.primary">ประวัติการ ฝาก-ถอน</Typography>
         ]
       }
 
-      case "/book+buys":{
+      case "/me+book+buys":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายการ จอง-ซื้อ</Typography>

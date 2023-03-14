@@ -22,6 +22,8 @@ export const queryDateLotteryById = gql`query dateLotteryById($id: ID!) { dateLo
 export const queryBuys            = gql`query buys { buys }`;
 export const queryNotifications   = gql`query notifications { notifications }`;
 
+export const queryAdminHome       = gql`query adminHome { adminHome }`;
+
 // mutation
 export const mutationLogin      = gql`mutation login($input: LoginInput) { login(input: $input) }`;
 export const mutationLoginWithSocial = gql`mutation loginWithSocial($input: LoginWithSocialInput) { loginWithSocial(input: $input) }`;
@@ -43,3 +45,5 @@ export const mutationNotification = gql`mutation notification($id: ID!) { notifi
 export const subscriptionMe            = gql`subscription subscriptionMe($sessionId: ID!){ subscriptionMe(sessionId: $sessionId) }`;
 export const subscriptionSupplierById  = gql`subscription subscriptionSupplierById( $supplierById: ID! ){ subscriptionSupplierById(supplierById: $supplierById) }`;
 export const subscriptionSuppliers     = gql`subscription subscriptionSuppliers( $supplierIds: String! ) { subscriptionSuppliers(supplierIds: $supplierIds) }`;
+
+export const subscriptionAdmin         = gql`subscription subscriptionAdmin($sessionId: ID!){ subscriptionAdmin(sessionId: $sessionId) }`;

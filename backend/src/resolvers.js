@@ -410,26 +410,6 @@ export default {
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
-    // async bankAdmin(parent, args, context, info){
-    //   let start = Date.now()
-    //   let { req } = context
-
-    //   let { status, code, pathname, current_user } =  await checkAuthorization(req);
-    //   if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-
-    //   let userAdmin  = await User.findById(mongoose.Types.ObjectId("62a2c0cecf7946010d3c743f"))
-    //   if(_.isNull(userAdmin)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
-
-    //   let banks = await Bank.find({})
-    //   if(_.isNull(banks)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
-
-    //   return {  status: true,
-    //             admin_banks: userAdmin?.banks,
-    //             banks: banks,
-    //             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-
-    // },
-
     async bookBuyTransitions(parent, args, context, info){
       let start = Date.now()
       let { req } = context
@@ -586,6 +566,59 @@ export default {
       return {  status: true,
                 data,
                 total: data.length,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
+    async adminHome(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+
+      console.log("adminHome: ")
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if( !status && code == FORCE_LOGOUT ) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Administrator only!')
+
+
+      let deposits = await Deposit.find({status: "wait"})
+      deposits  = _.filter(await Promise.all(_.map(deposits, async(deposit)=>{
+                                    let f = await Bank.findById(deposit.bank.bankId)
+                                    if(_.isNull(f)) return null
+                                    return {...deposit._doc, bank: {...deposit.bank, bankName: f?.name}}
+                                  })), i=>!_.isEmpty(i))
+
+      let withdraws = await Withdraw.find({status: "wait"})
+      withdraws = _.filter(await Promise.all(_.map(withdraws, async(i)=>{
+                                            let user = await User.findById(i.userIdRequest)
+                                            return _.isEmpty(user) ? null : {...i._doc, userNameRequest: user?.displayName}
+                                          }), i=>!_.isEmpty(i)))
+
+      let suppliers = await Supplier.find({}); 
+
+
+      let users = await User.find({})
+      users = _.filter( await Promise.all(_.map(users, async(user)=>{
+                if(_.isEqual(user._id, current_user?._id)) return null
+
+                let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
+                  return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
+                }))            
+                
+                let newUser = {...user._doc, roles: _.filter(roles, (role)=>role!=undefined)};
+                return _.omit(newUser, ['password']);
+              })), i => !_.isEmpty(i))
+
+      let data =  [ 
+                    { title: "รายการ ฝากเงินรออนุมัติ", data: deposits },
+                    { title: "รายการ ถอดเงินรออนุมัติ", data: withdraws }, 
+                    { title: "รายการ สินค้าทั้งหมด", data: suppliers },
+                    { title: "รายชื่อบุคคลทั้งหมด", data: users } 
+                  ]
+
+
+      return {  status: true,
+                data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
     },
@@ -1817,6 +1850,7 @@ export default {
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
+
   },
   Subscription:{
     subscriptionMe: {
@@ -1893,6 +1927,32 @@ export default {
           }
 
           return false;
+        }
+      )
+    },
+
+    subscriptionAdmin: {
+      resolve: (payload) =>{
+        return payload.admin
+      },
+      subscribe: withFilter((parent, args, context, info) => {
+          return pubsub.asyncIterator(["ADMIN"])
+        }, (payload, variables) => {
+
+          console.log("subscriptionAdmin")
+
+          let {mutation, data} = payload.admin
+
+          // switch(mutation){
+          //   case "BOOK":
+          //   case "UNBOOK":
+          //   case "AUTO_CLEAR_BOOK":
+          //     {
+          //       return _.includes(JSON.parse(variables.supplierIds), data._id.toString())
+          //     }
+          // }
+
+          return true;
         }
       )
     },

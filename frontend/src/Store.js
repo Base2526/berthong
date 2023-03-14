@@ -7,7 +7,7 @@ import {
   sockets,
   roles,
   banks
-} from "./data";
+} from "./helpers/data";
 
 const initialUsersState = userRows;
 const initialProductsState = products;

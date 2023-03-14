@@ -19,7 +19,7 @@ const Input = styled("input")({
 });
 
 const AttackFileField = (props) => {
-  let { label, values, onChange, onSnackbar } = props
+  let { label, values, multiple, onChange, onSnackbar } = props
   const onFileChange = (e) => {
     let newInputList = [...values];
     for (var i = 0; i < e.target.files.length; i++) {
@@ -32,37 +32,33 @@ const AttackFileField = (props) => {
   };
 
   return (
-    <Box sx={{ p: 1 }} component="footer">
-      <div>
-        <Typography variant="overline" display="block" gutterBottom>
-          {label}
-        </Typography>
-        <label htmlFor="contained-button-file">
-          <Input
-            accept="image/*"
-            id="contained-button-file"
-            name="file"
-            multiple
-            type="file"
-            onChange={(e) => {
-              onFileChange(e);
-            }}
-          />
-          <IconButton
-            color="primary"
-            aria-label="upload picture"
-            component="span"
-          >
-            <AddBoxIcon />
-          </IconButton>
-        </label>
-      </div>
-      <Stack direction="row" spacing={2}>
+    <div>
+      <Typography variant="overline" display="block" gutterBottom>
+        {label}
+      </Typography>
+      <label htmlFor="contained-button-file">
+        <Input
+          accept="image/*"
+          id="contained-button-file"
+          name="file"
+          multiple={ _.isNull(multiple) ? true : multiple }
+          type="file"
+          onChange={(e) => {
+            onFileChange(e);
+          }}
+        />
+        <IconButton
+          color="primary"
+          aria-label="upload picture"
+          component="span"
+        >
+          <AddBoxIcon />
+        </IconButton>
+      </label>
+      <Stack direction="row">
         {_.map(
           _.filter(values, (v, key) => !v.delete),
           (file, index) => {
-            console.log("Stack :", !file.url, file.url);
-
             if (!file.url) {
               // new file
               try {
@@ -158,7 +154,7 @@ const AttackFileField = (props) => {
           }
         )}
       </Stack>
-    </Box>
+    </div>
   );
 };
 

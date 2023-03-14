@@ -2,17 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { CircularProgress, LinearProgress } from '@mui/material';
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import Autocomplete from "@mui/material/Autocomplete";
+import { 
+  Stack,
+  Button,
+  LinearProgress,
+  TextField,
+  Autocomplete
+} from "@mui/material";
 
 import { getHeaders, checkRole } from "./util"
 import { queryDeposits, mutationDeposit, queryBanks, queryDepositById } from "./gqlQuery"
@@ -20,7 +20,12 @@ import { logout } from "./redux/actions/auth"
 import { AMDINISTRATOR } from "./constants"
 import AttackFileField from "./AttackFileField";
 
-let initValues = { balance: "", bank: null, status: "", dateTranfer: null, files:[] }
+let initValues = {  balance: "", 
+                    bank: null, 
+                    status: "", 
+                    dateTranfer: null, 
+                    files:[] 
+                  }
 
 const DepositPage = (props) => {
   const navigate = useNavigate();
@@ -48,7 +53,6 @@ const DepositPage = (props) => {
     context: { headers: getHeaders(location) },
     update: (cache, {data: {deposit}}) => {
       let { data, mode, status } = deposit
-      console.log("")
 
       if(status){
         switch(mode){
@@ -138,7 +142,10 @@ const DepositPage = (props) => {
   }, [dataBanks, loadingBanks])
 
   const submitForm = async(event) => {
-    event.preventDefault();
+
+
+
+    /*
 
     switch(mode){
       case "new":{
@@ -161,6 +168,7 @@ const DepositPage = (props) => {
     }
 
     // onMutationDeposit({ variables: { input: newInput } });
+    */
   }
 
   const onBankIdChange = (e, bank) => {
@@ -202,13 +210,15 @@ const DepositPage = (props) => {
     });
   };
 
-  return  <form onSubmit={submitForm}>
-            <div >
+  return  <Stack
+            direction="column"
+            justifyContent="center"
+            alignItems="flex-start">
               {
                 loadingBanks
                 ? <LinearProgress /> 
-                : <div>
-                    <label>{t("bank")}</label>
+                : <Stack alignItems="stretch">
+                    {/* <label>เลือกธนาคารที่โอน :</label>
                     <select 
                       name="bank" 
                       id="bank" 
@@ -217,34 +227,48 @@ const DepositPage = (props) => {
                       onBlur={ validateInput }>
                       <option value={""}>ไม่เลือก</option>
                       { _.map(banks, (value)=><option key={value?._id} value={value?._id}>{value?.bankNumber} - {value?.bankName}</option> )}
-                    </select> 
+                    </select>  */}
+
+                    <Autocomplete
+                      label={"เลือกธนาคารที่โอน *"}
+                      disablePortal
+                      id="bank"
+                      options={banks}
+                      getOptionLabel={(option) => option.name}
+                      defaultValue={ _.find(banks, (v)=>input?.bank?._id === v._id) }
+                      renderInput={(params) => <TextField {...params} label={t("bank_account_name")} required={_.isEmpty(input?.bank?._id) ? true : false} />}
+                      onChange={(event, values) => onBankIdChange(event, values)}
+                    />
                     <p className="text-red-500"> {_.isEmpty(error.bank) ? "" : error.bank} </p>  
-                  </div>  
+                  </Stack>  
               }
-              <div>
-                <label>ยอดเงิน * :</label>
-                <input 
+              <Stack>
+                <TextField 
                   type="number" 
                   name="balance"
+                  label={"ยอดเงิน *"}
                   value={ input.balance }
                   onChange={ onInputChange }
                   onBlur={ validateInput } />
                 <p className="text-red-500"> {_.isEmpty(error.balance) ? "" : error.balance} </p>
-              </div>
-              <DatePicker
-                label={t("date_tranfer")}
-                placeholderText={t("date_tranfer")}
-                required={true}
-                selected={input.dateTranfer}
-                onChange={(date) => {
-                  setInput({...input, dateTranfer: date})
-                }}
-                timeInputLabel="Time:"
-                dateFormat="MM/dd/yyyy h:mm aa"
-                showTimeInput/>
+              </Stack>
+              <Stack>
+                <DatePicker
+                  label={t("date_tranfer")}
+                  placeholderText={t("date_tranfer")}
+                  required={true}
+                  selected={input.dateTranfer}
+                  onChange={(date) => {
+                    setInput({...input, dateTranfer: date})
+                  }}
+                  timeInputLabel="Time:"
+                  dateFormat="MM/dd/yyyy h:mm aa"
+                  showTimeInput/>
+              </Stack>
               <AttackFileField
                 label={t("attack_file")}
                 values={input.files}
+                multiple={false}
                 onChange={(values) => {
                     setInput({...input, files: values})
                 }}
@@ -267,13 +291,16 @@ const DepositPage = (props) => {
                         <p className="text-red-500"> {_.isEmpty(error.status) ? "" : error.status} </p>  
                       </div>   
                 }
-            </div>
-            <button type="submit" variant="contained" color="primary">{t("deposit")}</button>
-          </form>
+            <Button 
+              type="submit" 
+              variant="contained" 
+              color="primary"
+              onClick={evt=>{ submitForm(evt) }}>{t("deposit")}</Button>
+          </Stack>
 }
 
 const mapStateToProps = (state, ownProps) => {
-    return { user:state.auth.user }
+    return { }
 };
 
 const mapDispatchToProps = { logout }
