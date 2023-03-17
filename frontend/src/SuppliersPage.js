@@ -77,7 +77,8 @@ const SuppliersPage = (props) => {
           subscribeToMore: subscribeToMoreSuppliers, 
           networkStatus: networkStatusSuppliers } = useQuery( querySuppliers, { 
                                                                 context: { headers: getHeaders(location) }, 
-                                                                fetchPolicy: 'network-only', 
+                                                                fetchPolicy: 'network-only', // Used for first execution
+                                                                nextFetchPolicy: 'cache-first', // Used for subsequent executions
                                                                 notifyOnNetworkStatusChange: true});
 
   useEffect(() => {
@@ -491,20 +492,6 @@ const SuppliersPage = (props) => {
 
   return (<div className="pl-2 pr-2">
             <Box style={{ flex: 4 }} className="table-responsive">
-              {/* {
-                loadingSuppliers
-                ? <CircularProgress />
-                : <TableComp
-                    columns={columns}
-                    data={data}
-                    fetchData={fetchData}
-                    rowsPerPage={pageOptions}
-                    updateMyData={updateMyData}
-                    skipReset={skipResetRef.current}
-                    isDebug={false}
-                  />
-              } */}
-
               {
                 loadingSuppliers
                 ?  <CircularProgress />
@@ -516,10 +503,52 @@ const SuppliersPage = (props) => {
                             hasMore={hasMore}
                             loader={<h4>Loading...</h4>}>
                             { 
-                            _.map(datas, (i, index) => {
+                            _.map(datas, (item, index) => {
 
-                              console.log("item :", i)
-                              return  <Stack direction="row" spacing={2}>{index} : {i.title}</Stack>
+                              console.log("item :", item)
+                              // return  <Stack direction="row" spacing={2}>{index} : {i.title}</Stack>
+
+                              let title = item.title;
+                              let description = item.description;
+                              let type   = item.type;
+                              let category  = item.category;
+                              let condition = item.condition;
+                              let buys    = item.buys;
+                              let follows = item.follows;
+                              let files   = item?.files
+                              let createdAt = new Date(item.createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+                    
+                              return <Stack direction="row" spacing={2} >
+                                       <Box sx={{ width: '10%' }}>
+                                        <Avatar
+                                          alt="Example avatar"
+                                          variant="rounded"
+                                          src={files[0]?.url}
+                                          onClick={(e) => {
+                                            onLightbox({ isOpen: true, photoIndex: 0, images:files })
+                                          }}
+                                          sx={{ width: 56, height: 56 }}
+                                        />
+                                      </Box>
+                                      <Box sx={{ width: '10%' }}>{title}</Box>
+                                      <Box sx={{ width: '20%' }}>{description}</Box>
+                                      <Box sx={{ width: '5%' }}>{type}</Box>
+                                      <Box sx={{ width: '5%' }}>{category}</Box>
+                                      <Box sx={{ width: '5%' }}>{condition}</Box>
+                                      <Box sx={{ width: '5%' }}>{buys.length}</Box>
+                                      <Box sx={{ width: '5%' }}>{follows.length}</Box>
+                                      <Box sx={{ width: '10%' }}>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A') }</Box>
+                                      <Box sx={{ width: '20%' }}>
+                                        <button onClick={(evt)=>{
+                                          navigate("/supplier", {state: {from: "/", mode: "edit", id: item?._id} })
+                                        }}><EditIcon/>{t("edit")}
+                                        </button>
+                                        <button onClick={(e)=>{
+                                          setOpenDialogDelete({ isOpen: true, id: item?._id, description: item?.description });
+                                        }}><DeleteForeverIcon/>{t("delete")}</button>
+
+                                      </Box>
+                                    </Stack>
                             })
                           }
                         </InfiniteScroll>
@@ -565,7 +594,7 @@ const SuppliersPage = (props) => {
 };
 
 const mapStateToProps = (state, ownProps) => {
-  return {user: state.auth.user}
+  return {}
 };
 
 export default connect( mapStateToProps, null )(SuppliersPage);

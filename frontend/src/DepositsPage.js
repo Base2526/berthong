@@ -25,10 +25,10 @@ import {
         DialogContent, 
         DialogContentText,
         DialogTitle,
-        Divider,
+        Box,
         Stack
       } from '@mui/material';
-
+import InfiniteScroll from "react-infinite-scroll-component";
 import { getHeaders, checkRole, showToast } from "./util"
 import { queryDeposits, mutationDeposit, queryBanks } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
@@ -49,6 +49,9 @@ const DepositsPage = (props) => {
   const [pageSize, setPageSize]       = useState(pageOptions[0])
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" }); 
   const [datas, setDatas]             = useState([]);  
+  let [total, setTotal] = useState(0)
+  let [slice, setSlice] = useState(20);
+  let [hasMore, setHasMore] = useState(true)
 
   const { loading: loadingDeposits, 
           data: dataDeposits, 
@@ -304,8 +307,24 @@ const DepositsPage = (props) => {
   }
   //////////////////////
 
+  const fetchMoreData = async() =>{
+    // let mores =  await fetchMoreNotifications({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
+    // let {status, data} =  mores.data.suppliers
+    // console.log("status, data :", status, data)
+   
+    if(slice === total){
+        setHasMore(false);
+    }else{
+        setTimeout(() => {
+            // let newDatas = [...datas, ...data]
+            // setDatas(newDatas)
+            // setSlice(newDatas.length);
+        }, 1000); 
+    }
+  }
+
   return (<div style={{flex:1}}>
-         {
+         {/* {
             loadingDeposits
             ? <CircularProgress /> 
             : <div>
@@ -326,7 +345,67 @@ const DepositsPage = (props) => {
                   skipReset={skipResetRef.current}
                   isDebug={false}/>
               </div>
-          }
+          } */}
+
+              {
+                loadingDeposits
+                ?  <CircularProgress />
+                :  datas.length == 0 
+                    ?   <label>Empty data</label>
+                    :   <InfiniteScroll
+                            dataLength={slice}
+                            next={fetchMoreData}
+                            hasMore={hasMore}
+                            loader={<h4>Loading...</h4>}>
+                            { 
+                            _.map(datas, (item, index) => {
+
+                              console.log("item :", item)
+                              // return  <Stack direction="row" spacing={2}>{index} : {i.title}</Stack>
+
+                              let files   = item?.files;
+                              let balance = item.balance;
+                              let bank = item.bank;
+                              let dateTranfer   = item.dateTranfer;
+                              let status  = item.status;
+                              let createdAt = item.createdAt;
+
+                              dateTranfer = new Date(dateTranfer).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+                              createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+  
+                              return <Stack direction="row" spacing={2} >
+                                       <Box sx={{ width: '10%' }}>
+                                        <Avatar
+                                          alt="Example avatar"
+                                          variant="rounded"
+                                          src={files[0]?.url}
+                                          onClick={(e) => {
+                                            onLightbox({ isOpen: true, photoIndex: 0, images:files })
+                                          }}
+                                          sx={{ width: 56, height: 56 }}
+                                        />
+                                      </Box>
+                                      <Box sx={{ width: '10%' }}>{balance}</Box>
+                                      <Box sx={{ width: '20%' }}>{bank.bankNumber} - {bank.bankName}</Box>
+                                      <Box sx={{ width: '5%' }}>{(moment(dateTranfer, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</Box>
+                                      <Box sx={{ width: '5%' }}>{status}</Box>
+                                      <Box sx={{ width: '5%' }}>{(moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</Box>
+                                    
+                                      <Box sx={{ width: '20%' }}>
+                                        <button onClick={(evt)=>{
+                                          navigate("/supplier", {state: {from: "/", mode: "edit", id: item?._id} })
+                                        }}><EditIcon/>{t("edit")}
+                                        </button>
+                                        <button onClick={(e)=>{
+                                          setOpenDialogDelete({ isOpen: true, id: item?._id, description: item?.description });
+                                        }}><DeleteForeverIcon/>{t("delete")}</button>
+
+                                      </Box>
+                                    </Stack>
+                            })
+                          }
+                        </InfiniteScroll>
+              }
           {openDialogDelete.isOpen && (
             <Dialog
               open={openDialogDelete.isOpen}

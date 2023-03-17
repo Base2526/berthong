@@ -14,8 +14,10 @@ import {
   DialogContentText,
   DialogTitle,
   SpeedDial,
-  SpeedDialIcon
+  SpeedDialIcon,
+  Box
 } from '@mui/material'
+import InfiniteScroll from "react-infinite-scroll-component";
 import _ from "lodash";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
@@ -32,13 +34,19 @@ const UsersPage = (props) => {
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
   const [pageIndex, setPageIndex] = useState(0);  
   const [pageSize, setPageSize] = useState(pageOptions[0])
-  const [datas, setDatas] = useState([])
+
+  let [datas, setDatas] = useState([]);
+  let [total, setTotal] = useState(0)
+  let [slice, setSlice] = useState(20);
+  let [hasMore, setHasMore] = useState(true)
+
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
   const { loading: loadingUsers, 
           data: dataUsers, 
           error: errorUsers, 
-          networkStatus } = useQuery(queryUsers, 
+          networkStatus: networkStatusUsers,
+          fetchMore: fetchMoreUsers } = useQuery(queryUsers, 
                                       { 
                                         context: { headers: getHeaders(location) }, 
                                         fetchPolicy: 'network-only', // Used for first execution
@@ -61,7 +69,7 @@ const UsersPage = (props) => {
   useEffect(() => {
     if(!loadingUsers){
       if(!_.isEmpty(dataUsers?.users)){
-        let { status, data } = dataUsers.users
+        let { status, data } = dataUsers?.users
         if(status)setDatas(data)
       }
     }
@@ -203,9 +211,25 @@ const UsersPage = (props) => {
     // )
   }
 
+  const fetchMoreData = async() =>{
+    // let mores =  await fetchMoreUsers({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
+    // let {status, data} =  mores.data.suppliers
+    // console.log("status, data :", status, data)
+   
+    if(slice === total){
+        setHasMore(false);
+    }else{
+        setTimeout(() => {
+            // let newDatas = [...datas, ...data]
+            // setDatas(newDatas)
+            // setSlice(newDatas.length);
+        }, 1000); 
+    }
+  }
+
   return (
     <div className="pl-2 pr-2">
-        {
+        {/* {
           loadingUsers
           ? <div><CircularProgress /></div> 
           : <TableComp
@@ -217,6 +241,60 @@ const UsersPage = (props) => {
               skipReset={skipResetRef.current}
               isDebug={false}
             />
+        } */}
+        {
+          loadingUsers
+          ?  <CircularProgress />
+          :  datas.length == 0 
+              ?   <label>Empty data</label>
+              :   <InfiniteScroll
+                      dataLength={slice}
+                      next={fetchMoreData}
+                      hasMore={hasMore}
+                      loader={<h4>Loading...</h4>}>
+                      { 
+                      _.map(datas, (item, index) => {                       
+                        let _id = item._id;
+                        let avatar = item.avatar;
+                        let displayName = item.displayName;
+                        let username = item.username;
+                        let email   = item.email;
+                        let roles  = item.roles;
+                        let lastAccess = item.lastAccess;
+
+                        return <Stack direction="row" spacing={2} >
+                                  <Box sx={{ width: '10%' }}>
+                                    <Avatar
+                                      alt="Example avatar"
+                                      variant="rounded"
+                                      src={avatar?.url}
+                                      // onClick={(e) => {
+                                      //   // onLightbox({ isOpen: true, photoIndex: 0, images:files })
+                                      // }}
+                                      sx={{ width: 56, height: 56 }}
+                                    />
+                                  </Box>
+                                  <Box sx={{ width: '8%' }}>{displayName}</Box>
+                                  <Box sx={{ width: '10%' }}>{username}</Box>
+                                  <Box sx={{ width: '20%' }}>{email}</Box>
+                                  <Box sx={{ width: '15%' }}>{roles.join(',')}</Box>
+                                  <Box sx={{ width: '5%' }}>{ (moment(lastAccess, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</Box>
+                                  <Box sx={{ width: '20%' }}>
+                                    <button onClick={(e)=>{
+                                      console.log("Force logout")
+                                    }}><ExitToAppIcon />Force logout</button>
+                                    <button onClick={()=>{
+                                      navigate("/user", {state: {from: "/", mode: "edit", id: _id } } )
+                                    }}><EditIcon/>{t("edit")}</button>
+                                    <button onClick={(e)=>{
+                                      setOpenDialogDelete({ isOpen: true, id: _id, description: displayName });
+                                    }}><DeleteForeverIcon/>{t("delete")}</button>
+                                  </Box>
+                              </Stack>
+                              
+                      })
+                    }
+                  </InfiniteScroll>
         }
       
         {openDialogDelete.isOpen && (
@@ -250,10 +328,6 @@ const UsersPage = (props) => {
           sx={{ position: 'absolute', bottom: 16, right: 16 }}
           icon={<SpeedDialIcon />}
           onClick={(e)=>{
-            // history.push({ 
-            //   pathname: "/user", 
-            //   state: {from: "/", mode: "new" } 
-            // });
             navigate({
               pathname: "/user",
               state: {from: "/", mode: "new" } 

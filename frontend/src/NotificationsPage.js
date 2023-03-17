@@ -41,7 +41,7 @@ const NotificationsPage = (props) => {
     const { loading: loadingNotifications, 
             data: dataNotifications, 
             error: errorNotifications,
-            fetchMore: fetchMoreNotifications, } = useQuery( queryNotifications, { 
+            fetchMore: fetchMoreNotifications } = useQuery( queryNotifications, { 
                                                     context: { headers: getHeaders(location) }, 
                                                     fetchPolicy: 'network-only', // Used for first execution
                                                     nextFetchPolicy: 'cache-first', // Used for subsequent executions
@@ -196,7 +196,7 @@ const NotificationsPage = (props) => {
 }
 
 const mapStateToProps = (state, ownProps) => {
-    return { }
+    return {}
 }
 const mapDispatchToProps = { }
 export default connect( mapStateToProps, mapDispatchToProps )(NotificationsPage);

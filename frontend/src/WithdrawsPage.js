@@ -14,8 +14,10 @@ import {
   Dialog,
   CircularProgress,
   Button,
+  Box,
+  Stack
 } from '@mui/material';
-
+import InfiniteScroll from "react-infinite-scroll-component";
 import _ from "lodash";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
@@ -40,6 +42,9 @@ const WithdrawsPage = (props) => {
   const [pageSize, setPageSize]       = useState(pageOptions[0])
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
   const [datas, setDatas] = useState([])
+  let [total, setTotal] = useState(0)
+  let [slice, setSlice] = useState(20);
+  let [hasMore, setHasMore] = useState(true)
 
   const { loading: loadingWithdraws, 
           data: dataWithdraws, 
@@ -68,24 +73,12 @@ const WithdrawsPage = (props) => {
   useEffect(() => {
     if(!loadingWithdraws){
       if(!_.isEmpty(dataWithdraws?.withdraws)){
-        let { status, code, data } = dataWithdraws.withdraws
+        let { status, data } = dataWithdraws?.withdraws
         if(status)setDatas(data)
       }
     }
   }, [dataWithdraws, loadingWithdraws])
 
-  /*
-  ฝาก
-  - จำนวนเงิน
-  - วันที่โอนเงิน ชม/นาที
-  - สลิปการโอน
-  */
-
-  /*
-  ถอน 
-  - ชือบัญชี
-  - ยอดเงิน
-  */
 
   const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
     context: { headers: getHeaders(location) },
@@ -228,8 +221,25 @@ const WithdrawsPage = (props) => {
   }
   //////////////////////
 
+  const fetchMoreData = async() =>{
+    // let mores =  await fetchMoreUsers({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
+    // let {status, data} =  mores.data.suppliers
+    // console.log("status, data :", status, data)
+   
+    if(slice === total){
+        setHasMore(false);
+    }else{
+        setTimeout(() => {
+            // let newDatas = [...datas, ...data]
+            // setDatas(newDatas)
+            // setSlice(newDatas.length);
+        }, 1000); 
+    }
+  }
+
+
   return (<div style={{flex:1}}>
-            {
+            {/* {
               loadingWithdraws
               ? <CircularProgress /> 
               : <div>
@@ -255,7 +265,35 @@ const WithdrawsPage = (props) => {
                     skipReset={skipResetRef.current}
                     isDebug={false}/>
                 </div>
-            } 
+            }  */}
+
+        {
+          loadingWithdraws
+          ?  <CircularProgress />
+          :  datas.length == 0 
+              ?   <label>Empty data</label>
+              :   <InfiniteScroll
+                      dataLength={slice}
+                      next={fetchMoreData}
+                      hasMore={hasMore}
+                      loader={<h4>Loading...</h4>}>
+                      { 
+                      _.map(datas, (item, index) => {                       
+                        let balance = item.balance;
+                        let status = item.status;
+                        let createdAt = item.createdAt;
+
+                        return <Stack direction="row" spacing={2} >
+                                  <Box sx={{ width: '8%' }}>{balance}</Box>
+                                  <Box sx={{ width: '10%' }}>{status}</Box>
+                                  <Box sx={{ width: '20%' }}>{(moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</Box>
+                                  <Box sx={{ width: '20%' }}></Box>
+                              </Stack>
+                              
+                      })
+                    }
+                  </InfiniteScroll>
+        }
 
           {openDialogDelete.isOpen && (
             <Dialog

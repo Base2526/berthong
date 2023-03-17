@@ -511,7 +511,7 @@ const App =(props) =>{
             <Route path="/" exact element={ _.isEqual(checkRole(user), Constants.AMDINISTRATOR) ? <AdminHomePage user={user} ws={ws} onLogin={()=>setDialogLogin(true)} /> : <HomePage user={user} ws={ws} onLogin={()=>setDialogLogin(true)} />} />
             <Route path="/d" element={<DetailPage onLogin={()=>setDialogLogin(true)} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/user/login" element={<LoginPage />} />
-            <Route path="/suppliers" element={<SuppliersPage onLightbox={(value)=>setLightbox(value)} />} />
+            <Route path="/suppliers" element={<SuppliersPage user={user} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/supplier" element={<SupplierPage />} />
             <Route path="/p" element={<ProfilePage onLightbox={(value)=>setLightbox(value)} />}/>
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
