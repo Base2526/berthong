@@ -114,6 +114,7 @@ const MeBankPage = (props) => {
             alignItems="flex-start">
             <BankInputField
               label={t("search_by_id_bank")}
+              multiple={false}
               values={input.banks}
               onChange={(values) => {
                 setInput({...input, banks: values})

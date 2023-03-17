@@ -24,7 +24,7 @@ import {
   Menu as MenuIcon
 } from "@material-ui/icons";
 import {
-  AccountBalanceWallet as AccountBalanceWalletIcon,
+  // AccountBalanceWallet as AccountBalanceWalletIcon,
   AccountTree as AccountTreeIcon,
   AddRoad as AddRoadIcon,
   Adjust as AdjustIcon,
@@ -33,6 +33,10 @@ import {
   Assistant as AssistantIcon,
   Login as LoginIcon
 } from '@mui/icons-material';
+
+import {
+  BiWalletAlt as AccountBalanceWalletIcon,
+} from 'react-icons/bi';
 
 import {
   FiLogOut as LogoutIcon,
@@ -78,6 +82,7 @@ import AdminHomePage from "./AdminHomePage";
 import LoginPage from "./LoginPage";
 import MePage from "./MePage";
 import MeBankPage from "./MeBankPage";
+import MeBanksPage from "./MeBanksPage";
 import { editedUserBalace, editedUserBalaceBook } from "./redux/actions/auth";
 import SupplierPage from "./SupplierPage";
 import ProfilePage from "./ProfilePage";
@@ -337,7 +342,7 @@ const App =(props) =>{
                 {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
                 {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/banks"},
                 {id: 6, title:"วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/date-lotterys"},
-                {id: 7, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+bank"},
+                {id: 7, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/me+banks"},
                 {id: 8, title:"Logout", icon: <LogoutIcon size="1.5em"/>, path: "/logout"}]
       }
       case Constants.AUTHENTICATED:{
@@ -346,7 +351,7 @@ const App =(props) =>{
                 {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
                 {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"},
-                {id: 5, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+bank"},
+                {id: 5, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+banks"},
                 {id: 6, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
       }
       default:{
@@ -520,12 +525,13 @@ const App =(props) =>{
               <Route path="/withdraw" element={<WithdrawPage user={user} />} />
               <Route path="/history-transitions" element={<HistoryTransitionsPage user={user} />} />
               <Route path="/me+bank" element={<MeBankPage user={user} />} />
+              <Route path="/me+banks" element={<MeBanksPage user={user} />} />
               <Route path="/me+book+buys" element={<MeBookBuysPage user={user} />} />
               <Route path="/notifications" element={<NotificationsPage user={user} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
-              <Route path="/deposits" element={<DepositsPage onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/withdraws" element={<WithdrawsPage onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/deposits" element={<DepositsPage user={user} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/withdraws" element={<WithdrawsPage user={user} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/date-lotterys" element={<DateLotterysPage />} />
               <Route path="/date-lottery" element={<DateLotteryPage />} />
               <Route path="/users" element={<UsersPage />} />

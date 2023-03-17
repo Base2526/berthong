@@ -11,6 +11,10 @@ import {
   MdCircleNotifications as MdCircleNotificationsIcon,
 } from 'react-icons/md';
 
+import {
+  BiWalletAlt as AccountBalanceWalletIcon,
+} from 'react-icons/bi';
+
 import { AMDINISTRATOR, AUTHENTICATED } from "../constants";
 import { getHeaders, checkRole } from "../util"
 import { queryProfile } from "../gqlQuery"
@@ -219,10 +223,18 @@ const BreadcsComp = (props) => {
         ]
       }
 
-      case "/me+bank":{
+      case "/me+banks":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายการ บัญชีธนาคาร</Typography>
+        ]
+      }
+
+      case "/me+bank":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <MuiLink key="0" component={Link} to="/me+banks"><AccountBalanceWalletIcon size="1.5em" />รายการ บัญชีธนาคาร</MuiLink>,
+          <Typography key="1" color="text.primary">บัญชีธนาคาร</Typography>
         ]
       }
    

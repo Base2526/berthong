@@ -31,7 +31,7 @@ import { queryBanks } from "../gqlQuery"
 const BankInputField = (props) => {
   const location = useLocation();
   const { t }    = useTranslation();
-  const { label, values, onChange } = props
+  const { label, values, onChange, multiple = true } = props
   const [inputList, setInputList] = useState(values);
 
   let [banks, setBanks] = useState([])
@@ -97,16 +97,20 @@ const BankInputField = (props) => {
   };
 
   return  <Stack direction="column" spacing={2} alignItems="flex-start">
-            <Stack alignItems="flex-start" >
-              <Typography variant="overline" display="block" gutterBottom> {label} </Typography>
-              <IconButton
-                color="primary"
-                aria-label="upload picture"
-                component="span"
-                onClick={handleAddClick}>
-                <AddBoxIcon />
-              </IconButton>
-            </Stack>
+            { 
+             multiple == false
+             ?  <div />
+             :  <Stack alignItems="flex-start" >
+                  <Typography variant="overline" display="block" gutterBottom> {label} </Typography>
+                  <IconButton
+                    color="primary"
+                    aria-label="upload picture"
+                    component="span"
+                    onClick={handleAddClick}>
+                    <AddBoxIcon />
+                  </IconButton>
+                </Stack>
+            }
             {_.map(inputList, (x, i) => {
               return (
                 <Stack spacing={2} key={i} >
@@ -131,15 +135,19 @@ const BankInputField = (props) => {
                         onChange={(event, values) => onBankIdChange(event, values, i)}
                       />
                   }
-                  <Stack alignItems="flex-start" >
-                    <IconButton
-                      color="primary"
-                      aria-label="upload picture"
-                      component="span"
-                      onClick={() => handleRemoveClick(i)}>
-                      <RemoveCircleIcon />
-                    </IconButton>
-                  </Stack>
+                  {
+                    multiple == false
+                    ?  <div />
+                    : <Stack alignItems="flex-start" >
+                        <IconButton
+                          color="primary"
+                          aria-label="upload picture"
+                          component="span"
+                          onClick={() => handleRemoveClick(i)}>
+                          <RemoveCircleIcon />
+                        </IconButton>
+                      </Stack>
+                  }
                 </Stack>
               );
             })}

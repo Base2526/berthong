@@ -329,7 +329,7 @@ const WithdrawsPage = (props) => {
 }
 
 const mapStateToProps = (state, ownProps) => {
-    return { user:state.auth.user }
+    return { }
 };
 
 const mapDispatchToProps = { logout }

@@ -29,7 +29,9 @@ import { getHeaders, checkRole } from "./util"
 import { querySuppliers } from "./gqlQuery"
 import ReadMoreMaster from "./helpers/ReadMoreMaster"
 import TableComp from "./components/TableComp"
-import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
+
+import * as Constants from "./constants"
+
 
 const SuppliersPage = (props) => {
   const navigate = useNavigate();
@@ -111,7 +113,7 @@ const SuppliersPage = (props) => {
   const columns = useMemo(
     () =>{
       switch(checkRole(user)){
-        case AMDINISTRATOR:{
+        case Constants.AMDINISTRATOR:{
           return [
             {
               Header: 'รูป',
@@ -280,7 +282,7 @@ const SuppliersPage = (props) => {
           ] 
         }
   
-        case AUTHENTICATED:{
+        case Constants.AUTHENTICATED:{
           return [
             {
               Header: 'รูป',
@@ -581,17 +583,23 @@ const SuppliersPage = (props) => {
                 </Dialog>
               )}
 
-              <SpeedDial
-                ariaLabel="SpeedDial basic example"
-                sx={{ position: 'absolute', bottom: 16, right: 16 }}
-                icon={<SpeedDialIcon />}
-                onClick={(e)=>{ 
-                  navigate("/supplier", {state: {from: "/", mode: "new"} })
-                }}>
-              </SpeedDial>
+              {
+                !_.isEqual(checkRole(user), Constants.AMDINISTRATOR)
+                ? <SpeedDial
+                    ariaLabel="SpeedDial basic example"
+                    sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                    icon={<SpeedDialIcon />}
+                    onClick={(e)=>{ 
+                      navigate("/supplier", {state: {from: "/", mode: "new"} })
+                    }}>
+                  </SpeedDial>
+                : ""
+              }
             </Box>
           </div>);
 };
+
+
 
 const mapStateToProps = (state, ownProps) => {
   return {}
