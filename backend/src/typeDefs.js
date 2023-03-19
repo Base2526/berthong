@@ -67,6 +67,11 @@ export default gql`
     CHK_GOLD: Boolean
   }
 
+  input PagingInput{
+    OFF_SET: Int!
+    LIMIT: Int!
+  }
+
   input LoginInput {
     username: String!
     password: String!
@@ -112,9 +117,9 @@ export default gql`
   }
 
   type UsersPayLoad {
-    status:Boolean
-    executionTime:String
-    data:[User]
+    status: Boolean
+    executionTime: String
+    data: [User]
     total: Int
   }
 
@@ -190,7 +195,6 @@ export default gql`
     postId: ID!
     destination: String
   }
-
 
   type Dblog {
     _id: ID!
@@ -454,9 +458,10 @@ export default gql`
     ping: JSON
 
     me: JSON
-    users: JSON
+    users(input: PagingInput): JSON
     userById(_id: ID): JSON
     roles: JSON
+    roleByIds(input: [String]): JSON
 
     homes: JSON
 
@@ -471,7 +476,6 @@ export default gql`
 
     banks(isAdmin: Boolean = false): JSON
     bankById(_id: ID!): JSON
-
 
     bookBuyTransitions: JSON
 
@@ -710,21 +714,21 @@ export default gql`
   }
 
   input MeInput{
-    uid: ID
+    _id: ID
     username: String
     password: String
     email: String
     displayName: String
     banks:[JSON]
     balance: Long
-    roles: [String]
     isActive: String
-    image: [JSON]
+    avatar: FileInput
     lastAccess: Date
     isOnline: Boolean
     socialType: String, 
     socialId: String
     socialObject: String
+    balanceBook: Int
   }
 
   enum DatesLotteryModeType {

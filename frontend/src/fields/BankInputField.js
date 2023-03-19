@@ -1,18 +1,8 @@
 import React, { useState, useEffect } from "react";
-// import Typography from "@mui/material/Typography";
-// import Link from "@mui/material/Link";
-// import Box from "@mui/material/Box";
-// import TextField from "@mui/material/TextField";
-// import Button from "@mui/material/Button";
-// import { styled } from "@mui/material/styles";
-// import Autocomplete from "@mui/material/Autocomplete";
 import AddBoxIcon from '@mui/icons-material/AddBox';
-// import IconButton from "@mui/material/IconButton";
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import { useQuery } from "@apollo/client";
-// import LinearProgress from '@mui/material/LinearProgress';
 import { useLocation } from "react-router-dom";
-
 import {
   Stack,
   LinearProgress,
@@ -21,7 +11,6 @@ import {
   TextField,
   Typography
 } from '@mui/material'
-
 import { useTranslation } from "react-i18next";
 import _ from "lodash"
 
@@ -31,8 +20,8 @@ import { queryBanks } from "../gqlQuery"
 const BankInputField = (props) => {
   const location = useLocation();
   const { t }    = useTranslation();
-  const { label, values, onChange, multiple = true } = props
-  const [inputList, setInputList] = useState(values);
+  let { label, values, onChange, multiple = true } = props
+  let [ inputList, setInputList ] = useState(values);
 
   let [banks, setBanks] = useState([])
 
@@ -42,8 +31,8 @@ const BankInputField = (props) => {
           networkStatus } = useQuery(queryBanks, 
                                       { 
                                         context: { headers: getHeaders(location) }, 
-                                        fetchPolicy: 'network-only', // Used for first execution
-                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        fetchPolicy: 'cache-first', // Used for first execution
+                                        nextFetchPolicy: 'network-only', // Used for subsequent executions
                                         notifyOnNetworkStatusChange: true
                                       }
                                     );
@@ -123,17 +112,18 @@ const BankInputField = (props) => {
                     required
                     onChange={(e) => onInputChange(e, i)} />
                   { 
-                    loadingBanks
+                    loadingBanks || _.isEmpty(banks) 
                     ? <LinearProgress sx={{width:"100px"}} /> 
                     : <Autocomplete
                         disablePortal
                         id="input-bank-id"
                         options={banks}
-                        getOptionLabel={(option) => option.name}
-                        defaultValue={ _.find(banks, (v)=>x.bankId === v._id) }
+                        getOptionLabel={(option) => option.name || ""}
+                        defaultValue={()=>_.find(banks, (v)=>{return _.isEqual(x.bankId, v._id)} )}
                         renderInput={(params) => <TextField {...params} label={t("bank_account_name")} required={_.isEmpty(x.bankId) ? true : false} />}
                         onChange={(event, values) => onBankIdChange(event, values, i)}
                       />
+                      // : <div />
                   }
                   {
                     multiple == false

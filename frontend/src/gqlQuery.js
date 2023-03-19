@@ -1,19 +1,20 @@
 import { gql } from "@apollo/client";
 
 // query
-export const queryPing        = gql`query ping { ping }`;
-export const querySuppliers   = gql`query suppliers($input: SearchInput ) { suppliers(input: $input) }`;
-export const querySupplierById= gql`query supplierById($id: ID!) { supplierById(_id: $id) }`;
-export const queryDeposits   = gql`query deposits { deposits }`;
-export const queryDepositById= gql`query depositById($id: ID!) { depositById(_id: $id) }`;
-export const queryWithdraws  = gql`query withdraws { withdraws }`;
-export const queryWithdrawById= gql`query withdrawById($id: ID!) { withdrawById(_id: $id) }`;
-export const queryMe          = gql`query me { me }`;
-export const queryUsers       = gql`query users { users }`; // userById
-export const queryUserById    = gql`query userById($id: ID!) { userById(_id: $id) }`;
-export const queryRoles       = gql`query roles { roles }`;
-export const queryBanks       = gql`query banks($isAdmin: Boolean) { banks(isAdmin: $isAdmin ) }`;
-export const queryBankById    = gql`query bankById($id: ID!) { bankById(_id: $id) }`;
+export const queryPing          = gql`query ping { ping }`;
+export const querySuppliers     = gql`query suppliers($input: SearchInput ) { suppliers(input: $input) }`;
+export const querySupplierById  = gql`query supplierById($id: ID!) { supplierById(_id: $id) }`;
+export const queryDeposits      = gql`query deposits { deposits }`;
+export const queryDepositById   = gql`query depositById($id: ID!) { depositById(_id: $id) }`;
+export const queryWithdraws     = gql`query withdraws { withdraws }`;
+export const queryWithdrawById  = gql`query withdrawById($id: ID!) { withdrawById(_id: $id) }`;
+export const queryMe            = gql`query me { me }`;
+export const queryUsers         = gql`query users($input: PagingInput ) { users(input: $input) }`;
+export const queryUserById      = gql`query userById($id: ID!) { userById(_id: $id) }`;
+export const queryRoles         = gql`query roles { roles }`;
+export const queryRoleByIds     = gql`query roleByIds($input: [String]) { roleByIds(input: $input) }`;
+export const queryBanks         = gql`query banks($isAdmin: Boolean) { banks(isAdmin: $isAdmin ) }`;
+export const queryBankById      = gql`query bankById($id: ID!) { bankById(_id: $id) }`;
 export const queryBookBuyTransitions = gql`query bookBuyTransitions { bookBuyTransitions }`;
 export const queryHistoryTransitions = gql`query historyTransitions { historyTransitions }`;
 export const queryProfile         = gql`query profile($id: ID!) { profile(_id: $id) }`;
@@ -21,7 +22,6 @@ export const queryDateLotterys    = gql`query dateLotterys { dateLotterys }`;
 export const queryDateLotteryById = gql`query dateLotteryById($id: ID!) { dateLotteryById(_id: $id) }`;
 export const queryBuys            = gql`query buys { buys }`;
 export const queryNotifications   = gql`query notifications { notifications }`;
-
 export const queryAdminHome       = gql`query adminHome { adminHome }`;
 
 // mutation

@@ -1,220 +1,172 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import _ from "lodash"
+import React, { useState } from "react";
+import {  
+  Edit as EditIcon,
+  DeleteForever as DeleteForeverIcon 
+} from '@mui/icons-material';
 import {
-  Box,
-  Typography,
+  TbMoodEmpty as TbMoodEmptyIcon
+} from "react-icons/tb"
+import {
   DialogTitle,
   DialogContentText,
   DialogContent,
   DialogActions,
   Dialog,
   Button,
-  CircularProgress,
-  SpeedDialIcon,
+  Box,
+  Stack,
   SpeedDial,
-  Stack
+  SpeedDialIcon,
+  LinearProgress
 } from '@mui/material';
-import {  DeleteForever as DeleteForeverIcon, 
-          Edit as EditIcon } from '@mui/icons-material';
-
-import { useQuery } from "@apollo/client";
+import InfiniteScroll from "react-infinite-scroll-component";
+import _ from "lodash";
 import { useTranslation } from "react-i18next";
-import { queryBanks } from "./gqlQuery"
-import TableComp from "./components/TableComp"
+import { connect } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useQuery } from "@apollo/client";
+
+import { queryBankById } from "./gqlQuery"
+import { getHeaders } from "./util"
 
 const BanksPage = (props) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
 
-  const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
-  const [pageIndex, setPageIndex] = useState(0);  
-  const [pageSize, setPageSize] = useState(pageOptions[0])
+  let { user } = props
 
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
-
-  const bankValues = useQuery(queryBanks,  { notifyOnNetworkStatusChange: true });
-
-  console.log("bankValues :", bankValues)
-
-  // const [onDeleteBank, resultDeleteBank] = useMutation(gqlDeleteBank, 
-  //   {
-  //     update: (cache, {data: {deleteBank}}) => {
-  //       const data1 = cache.readQuery({
-  //         query: gqlBanks,
-  //       });
-
-  //       let newBanks = {...data1.banks}
-  //       let newData   = _.filter(data1.banks.data, bank => bank._id !== deleteBank._id)
-  //       newBanks = {...newBanks, total: newData.length, data:newData }
-
-  //       cache.writeQuery({
-  //         query: gqlBanks,
-  //         data: { banks: newBanks },
-  //       });
-  //     },
-  //     onCompleted({ data }) {
-  //       history.push("/banks");
-  //     }
-  //   }
-  // );
-  // console.log("resultDeleteBank :", resultDeleteBank)
-
-  ///////////////
-  const fetchData = useCallback(({ pageSize, pageIndex }) => {
-    setPageSize(pageSize)
-    setPageIndex(pageIndex)
-  })
-  ///////////////
+  let [total, setTotal] = useState(0)
+  let [slice, setSlice] = useState(20);
+  let [hasMore, setHasMore] = useState(true)
 
   const handleClose = () => {
-    setOpenDialogDelete({ ...openDialogDelete, isOpen: false });
+    setOpenDialogDelete({ ...openDialogDelete, isOpen: false, description: "" });
   };
 
-  const handleDelete = (id) => {
-    // onDeleteBank({ variables: { id } });
-  };
-
-  ///////////////////////
-  const columns = useMemo(
-    () => [
-        {
-          Header: 'Name',
-          accessor: 'name',
-        },
-        {
-          Header: 'Description',
-          accessor: 'description',
-          Cell: props => {
-
-            return (
-              <Box
-                sx={{
-                  maxHeight: "inherit",
-                  width: "100%",
-                  whiteSpace: "initial",
-                  lineHeight: "16px"
-                }}
-              >
-                <Typography
-                  variant="body1"
-                  gutterBottom
-                  dangerouslySetInnerHTML={{
-                    __html: props.row.original.description
-                  }}
-                />
-              </Box>
-            );
-          }
-        },
-        {
-          Header: 'Action',
-          Cell: props => {
-            console.log("Cell :", props)
-
-            let {_id, name} = props.row.original
-            return  <Stack
-                      direction="row"
-                      spacing={0.5}
-                      justifyContent="center"
-                      alignItems="center">
-                      <button onClick={()=>{
-                        navigate("/bank", {state: {from: "/", mode: "edit", _id}})
-                      }}><EditIcon/>{t("edit")}</button>
-                      <button onClick={(e)=>{
-                        // setOpenDialogDelete({ isOpen: true, id: _id, description: name })
-                      }}><DeleteForeverIcon/>{t("delete")}</button>
-                    </Stack>
-          }
-        },
-    ],
-    []
-  )
-
-  // const [data, setData] = useState(() => makeData(10000))
-  // const [originalData] = useState(data)
-
-  // We need to keep the table from resetting the pageIndex when we
-  // Update data. So we can keep track of that flag with a ref.
-  const skipResetRef = useRef(false)
-
-  // When our cell renderer calls updateMyData, we'll use
-  // the rowIndex, columnId and new value to update the
-  // original data
-  const updateMyData = (rowIndex, columnId, value) => {
-    console.log("updateMyData")
-    // We also turn on the flag to not reset the page
-    skipResetRef.current = true
-    // setData(old =>
-    //   old.map((row, index) => {
-    //     if (index === rowIndex) {
-    //       return {
-    //         ...row,
-    //         [columnId]: value,
-    //       }
-    //     }
-    //     return row
-    //   })
-    // )
+  const fetchMoreData = async() =>{
+    // let mores =  await fetchMoreUsers({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
+    // let {status, data} =  mores.data.suppliers
+    // console.log("status, data :", status, data)
+   
+    if(slice === total){
+        setHasMore(false);
+    }else{
+        setTimeout(() => {
+            // let newDatas = [...datas, ...data]
+            // setDatas(newDatas)
+            // setSlice(newDatas.length);
+        }, 1000); 
+    }
   }
-  //////////////////////
 
-  return (
-    <div>
-      {
-         bankValues.loading
-         ?  <div><CircularProgress /></div> 
-         :  <TableComp
-              columns={columns}
-              data={bankValues.data.banks.data}
-              fetchData={fetchData}
-              rowsPerPage={pageOptions}
-              updateMyData={updateMyData}
-              skipReset={skipResetRef.current}
-              isDebug={false}
-            />
-      }
+  return (<div style={{flex:1}}>
+            {     
+              user?.banks.length == 0 
+              ?   <Stack>
+                    <div>
+                      <TbMoodEmptyIcon size="1.5em"/>
+                      <label>Empty data</label>
+                    </div>
+                    <Button 
+                      variant="contained"
+                      onClick={(e)=>{ 
+                        navigate("/bank", {state: {from: "/", mode: "new"} })
+                      }}>เพิ่ม บัญชีธนาคารใหม่</Button>
+                  </Stack>
+              :   <InfiniteScroll
+                    dataLength={slice}
+                    next={fetchMoreData}
+                    hasMore={false}
+                    loader={<h4>Loading...</h4>}>
+                    { 
+                      _.map(user?.banks, (item, index) => {   
+                         
+                        let _id = item._id;              
+                        let bankNumber = item.bankNumber;
+                        let bankId = item.bankId;
 
-      {openDialogDelete.isOpen && (
-        <Dialog
-          open={openDialogDelete.isOpen}
-          onClose={handleClose}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">{t("confirm_delete")}</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">{openDialogDelete.description}</DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              variant="outlined"
-              onClick={() => {
-                handleDelete(openDialogDelete.id);
+                        const { loading: loadingBankById, 
+                                data: dataBankById, 
+                                error: errorBankById,
+                                refetch: refetchBankById} = useQuery(queryBankById, {
+                                                          context: { headers: getHeaders(location) }, 
+                                                          variables: {id: bankId},
+                                                          fetchPolicy: 'cache-first', // Used for first execution
+                                                          nextFetchPolicy: 'network-only', // Used for subsequent executions
+                                                          notifyOnNetworkStatusChange: true,
+                                                        });
 
-                setOpenDialogDelete({ isOpen: false, id: "", description: "" });
-              }}
-            >{t("delete")}</Button>
-            <Button variant="contained" onClick={handleClose} autoFocus>{t("close")}</Button>
-          </DialogActions>
-        </Dialog>
-      )}
+                    
+                        return  <Stack ke={index} direction="row" spacing={2} >
+                                  <Box sx={{ width: '30%' }}>{bankNumber}</Box>
+                                  {
+                                    loadingBankById 
+                                    ? <LinearProgress />
+                                    : <Box sx={{ width: '30%' }}>{dataBankById?.bankById?.data?.name}</Box>
+                                  }
+                                  <Box sx={{ width: '40%' }}>
+                                    <div className="Btn--posts">
+                                      <button onClick={(evt)=>{
+                                        navigate("/bank", {state: {from: "/", mode: "edit", id: _id} })
+                                      }}><EditIcon/>{t("edit")}</button>
+                                      <button onClick={(e)=>{
+                                        setOpenDialogDelete({ isOpen: true, id: _id });
+                                      }}><DeleteForeverIcon/>{t("delete")}</button>
+                                    </div>
+                                  </Box>
+                                </Stack>
+                              
+                      })
+                    }
+                  </InfiniteScroll>
+            }
+            {openDialogDelete.isOpen && (
+              <Dialog
+                open={openDialogDelete.isOpen}
+                onClose={handleClose}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+              >
+                <DialogTitle id="alert-dialog-title">{t("confirm_delete")}</DialogTitle>
+                <DialogContent>
+                  <DialogContentText id="alert-dialog-description">
+                    {openDialogDelete.description}
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      // let newInput = _.find(datas, (item)=>openDialogDelete.id == item._id.toString())
 
-      <SpeedDial
-        ariaLabel="SpeedDial basic example"
-        sx={{ position: 'absolute', bottom: 16, right: 16 }}
-        icon={<SpeedDialIcon />}
-        onClick={(e)=>{
+                      // newInput = _.omitDeep(newInput, ['__v', 'createdAt', 'updatedAt', 'userIdRequest'])
+                      // newInput = {...newInput, mode:"DELETE",  balance: parseInt(newInput.balance), dateTranfer:new Date(newInput.dateTranfer)}
 
-          // history.push({ 
-          //   pathname: "/bank", 
-          //   state: {from: "/", mode: "new"} 
-          // });
-          navigate("/bank", {state: {from: "/", mode: "new"} })
-        }}
-      />
-    </div>
-  );
+                      // console.log("newInput :", newInput)
+                      // onMutationWithdraw({ variables: { input: newInput } });
+
+                      console.log("openDialogDelete : ", openDialogDelete.id)
+                    }}
+                  >{t("delete")}</Button>
+                  <Button variant="contained" onClick={handleClose} autoFocus>{t("close")}</Button>
+                </DialogActions>
+              </Dialog>
+            )}
+
+            <SpeedDial
+              ariaLabel=""
+              sx={{ position: 'absolute', bottom: 16, right: 16 }}
+              icon={<SpeedDialIcon />}
+              onClick={(e)=>{ navigate("/bank", {state: {from: "/", mode: "new"} }) }}>
+            </SpeedDial>
+          </div>);
+}
+
+const mapStateToProps = (state, ownProps) => {
+    return { }
 };
 
-export default BanksPage;
+const mapDispatchToProps = { }
+export default connect( mapStateToProps, mapDispatchToProps )(BanksPage);

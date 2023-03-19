@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import MuiLink from "@material-ui/core/Link";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -5,20 +6,16 @@ import { Breadcrumbs, Typography, LinearProgress } from "@mui/material";
 import queryString from 'query-string';
 import { useQuery } from "@apollo/client";
 import _ from "lodash"
-
-import { AiFillHome as HomeIcon} from 'react-icons/ai';
+import { 
+  AiFillHome as HomeIcon
+} from 'react-icons/ai';
 import {
   MdCircleNotifications as MdCircleNotificationsIcon,
 } from 'react-icons/md';
 
-import {
-  BiWalletAlt as AccountBalanceWalletIcon,
-} from 'react-icons/bi';
-
-import { AMDINISTRATOR, AUTHENTICATED } from "../constants";
 import { getHeaders, checkRole } from "../util"
 import { queryProfile } from "../gqlQuery"
-import { useEffect, useState } from "react";
+import * as Constants from "../constants"
 
 const BreadcsComp = (props) => {
   const location = useLocation();
@@ -64,36 +61,36 @@ const BreadcsComp = (props) => {
       case "/d":{
         return [  
                   <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18}/> {t("home")}</MuiLink>,
-                  <Typography key="1" color="text.primary">Detail</Typography>
+                  <Typography key="1" color="text.primary">รายละเอียดสินค้า</Typography>
                 ]
       }
 
       case "/withdraws":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18} /> {t("home")}</MuiLink>,
-          <Typography key="1" color="text.primary">รายการ ถอดเงินรออนุมัติ</Typography>
+          <Typography key="1" color="text.primary">รายการถอดเงินรออนุมัติ</Typography>
         ]
       }
 
       case "/deposits":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-          <Typography key="1" color="text.primary">รายการ ฝากเงินรออนุมัติ</Typography>
+          <Typography key="1" color="text.primary">รายการฝากเงินรออนุมัติ</Typography>
         ]
       }
 
       case "/suppliers":{
         switch(checkRole(user)){
-          case AMDINISTRATOR:{
+          case Constants.AMDINISTRATOR:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">รายการ สินค้าทั้งหมด</Typography>
+              <Typography key="1" color="text.primary">รายการสินค้าทั้งหมด</Typography>
             ]
           }
-          case AUTHENTICATED:{
+          case Constants.AUTHENTICATED:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">รายการ สินค้า</Typography>
+              <Typography key="1" color="text.primary">รายการสินค้า</Typography>
             ]
           }
         }
@@ -101,6 +98,7 @@ const BreadcsComp = (props) => {
       }
 
       case "/users":{
+        // let [total, setTotal] = useState(0)
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายชื่อบุคคลทั้งหมด</Typography>
@@ -109,14 +107,17 @@ const BreadcsComp = (props) => {
 
       case "/user":{
         switch(checkRole(user)){
-          case AMDINISTRATOR:{
+          case Constants.AMDINISTRATOR:{
+
+            const { mode, id } = location.state
+
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
               <MuiLink key="1" component={Link} to="/users">{t("รายชื่อบุคคลทั้งหมด")}</MuiLink>,
-              <Typography key="2" color="text.primary">Profile</Typography>
+              <Typography key="2" color="text.primary">{ _.isEqual(mode, "edit") ? "แก้ไข" : "" } โปรไฟล์</Typography>
             ]
           }
-          case AUTHENTICATED:{
+          case Constants.AUTHENTICATED:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
               <Typography key="1" color="text.primary">Profile</Typography>
@@ -125,7 +126,7 @@ const BreadcsComp = (props) => {
         }
       }
 
-      case "/banks":{
+      case "/taxonomy-banks":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายชื่อธนาคารทั้งหมด</Typography>
@@ -138,16 +139,16 @@ const BreadcsComp = (props) => {
           case "new":{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/suppliers">{t("รายการ สินค้าทั้งหมด")}</MuiLink>,
-              <Typography key="2" color="text.primary">สร้าง supplier ใหม่</Typography>
+              <MuiLink key="1" component={Link} to="/suppliers">{t("รายการสินค้าทั้งหมด")}</MuiLink>,
+              <Typography key="2" color="text.primary">เพิ่มสินค้าใหม่</Typography>
             ]
           }
 
           case "edit":{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/suppliers"> {t("รายการ สินค้าทั้งหมด")}</MuiLink>,
-              <Typography key="2" color="text.primary">แก้ไข supplier</Typography>
+              <MuiLink key="1" component={Link} to="/suppliers"> {t("รายการสินค้าทั้งหมด")}</MuiLink>,
+              <Typography key="2" color="text.primary">แก้ไขสินค้า</Typography>
             ]
           }
         }
@@ -168,22 +169,33 @@ const BreadcsComp = (props) => {
       }
 
       case "/p":{
-        return [  
-          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-          <Typography key="1" color="text.primary">{loadingProfile ? <LinearProgress/> : profile?.displayName}</Typography>
-        ]
+        switch(checkRole(user)){
+          case Constants.AMDINISTRATOR:{
+            return [  
+              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18}/>{t("home")}</MuiLink>,
+              <MuiLink key="1" component={Link} to="/users">รายชื่อบุคคลทั้งหมด</MuiLink>,
+              <Typography key="2" color="text.primary">โปรไฟล์ {loadingProfile ? <LinearProgress/> : profile?.displayName}</Typography>
+            ]
+          }
+          case Constants.AUTHENTICATED:{
+            return [  
+              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+              <Typography key="1" color="text.primary">โปรไฟล์ {loadingProfile ? <LinearProgress/> : profile?.displayName}</Typography>
+            ]
+          }
+        }
       }
 
       case "/deposit":{
         switch(checkRole(user)){
-          case AMDINISTRATOR:{
+          case Constants.AMDINISTRATOR:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
               <MuiLink key="1" component={Link} to="/deposits">{t("รายการ แจ้งฝากเงิน")}</MuiLink>,
               <Typography key="2" color="text.primary">แจ้งฝากเงิน</Typography>
             ]
           }
-          case AUTHENTICATED:{
+          case Constants.AUTHENTICATED:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
               <Typography key="1" color="text.primary">แจ้งฝากเงิน</Typography>
@@ -194,14 +206,14 @@ const BreadcsComp = (props) => {
 
       case "/withdraw":{
         switch(checkRole(user)){
-          case AMDINISTRATOR:{
+          case Constants.AMDINISTRATOR:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
               <MuiLink key="1" component={Link} to="/withdraws">{t("รายการ แจ้งถอดเงิน")}</MuiLink>,
               <Typography key="2" color="text.primary">แจ้งถอดเงิน</Typography>
             ]
           }
-          case AUTHENTICATED:{
+          case Constants.AUTHENTICATED:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
               <Typography key="1" color="text.primary">แจ้งถอดเงิน</Typography>
@@ -223,17 +235,17 @@ const BreadcsComp = (props) => {
         ]
       }
 
-      case "/me+banks":{
+      case "/banks":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายการ บัญชีธนาคาร</Typography>
         ]
       }
 
-      case "/me+bank":{
+      case "/bank":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-          <MuiLink key="0" component={Link} to="/me+banks"><AccountBalanceWalletIcon size="1.5em" />รายการ บัญชีธนาคาร</MuiLink>,
+          <MuiLink key="0" component={Link} to="/banks">รายการ บัญชีธนาคาร</MuiLink>,
           <Typography key="1" color="text.primary">บัญชีธนาคาร</Typography>
         ]
       }

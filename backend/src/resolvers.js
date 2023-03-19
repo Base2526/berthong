@@ -68,27 +68,22 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      let { status, code, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
+      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Administrator only!')
 
-      let users = await User.find({})
-      users = _.filter( await Promise.all(_.map(users, async(user)=>{
-                if(_.isEqual(user._id, current_user?._id)) return null
+      let { OFF_SET, LIMIT } = args?.input
 
-                let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
-                  return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
-                }))            
-                
-                let newUser = {...user._doc, roles: _.filter(roles, (role)=>role!=undefined)};
-                return _.omit(newUser, ['password']);
-              })), i => !_.isEmpty(i))
-
+      let users = await User.find({roles: {$nin:[AMDINISTRATOR]}}, 
+                                  { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 })
+                                  .limit(LIMIT)
+                                  .skip(OFF_SET); 
       return { 
-              status:true,
+              status: true,
               data: users,
+              total: (await User.find({roles: {$nin:[AMDINISTRATOR]}}) ).length,
               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
-              }
+            }
     },
 
     async userById(parent, args, context, info){
@@ -117,11 +112,27 @@ export default {
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
       if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
 
-      let data = await Role.find();
+      let data = await Role.find({});
       if(_.isNull(data)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
       return {
         status:true,
+        data,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+    },
+
+    async roleByIds(parent, args, context, info) {
+      let start = Date.now()
+      let { req } = context
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
+
+      let data = await Role.find({_id: {$in: args?.input }})
+      return {
+        status: true,
         data,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
@@ -574,9 +585,9 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      console.log("adminHome: ")
-
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
+
+      console.log("adminHome: ", current_user)
       if( !status && code == FORCE_LOGOUT ) throw new AppError(FORCE_LOGOUT, 'Expired!')
       if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Administrator only!')
 
@@ -628,9 +639,6 @@ export default {
     async login(parent, args, context, info) {
       let start = Date.now()
       let {input} = args
-
-      // throw new AppError(USER_NOT_FOUND, 'User not found.')
-
       console.log("params login : ", input)
 
       let user = emailValidate().test(input.username) ?  await User.findOne({email: input.username}) : await User.findOne({username: input.username})
@@ -639,8 +647,12 @@ export default {
 
       await User.updateOne({ _id: user?._id }, { lastAccess : Date.now() });
       user = await User.findById(user?._id)
+      // let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
+      //   return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
+      // }))  
 
       user = {...user._doc, 
+              // roles,
               balance: (await checkBalance(user?._id)).balance,
               balanceBook: await checkBalanceBook(user?._id)}
 
@@ -1043,8 +1055,10 @@ export default {
       let { input } = args
       let { req } = context
 
+      if(input?.roles) throw new AppError(ERROR, 'Error cannot update roles!')
+      
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
-      if(!status && code == FORCE_LOGOUT) return { status: false, code: FORCE_LOGOUT}
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
       // image
       let newFiles = [];
@@ -1100,13 +1114,23 @@ export default {
       }
 
       let newInput = {...input, image:newFiles, lastAccess : Date.now()}
+      // newInput = _.omitDeep(newInput, ['roles'])
 
+      /*
       if( checkRole(current_user) == AMDINISTRATOR ){
-        let user = await User.findOneAndUpdate({ _id: input.uid }, newInput , { new: true })
-        let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
+        // let user = await User.findOneAndUpdate({ _id: input.uid }, newInput , { new: true })
+        // let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
+        //   return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
+        // }))  
+        // user = {...user._doc, roles}
+
+        await User.updateOne({ _id: input._id }, newInput );
+        let user = await User.findById(input._id)
+        let roles = await Promise.all(_.map(user?.roles, async(_id)=>{     
           return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
         }))  
         user = {...user._doc, roles}
+
         user = _.omit(user, ['password'])
 
         pubsub.publish("ME", {
@@ -1119,22 +1143,25 @@ export default {
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
       }else{
-        let user = await User.findOneAndUpdate({ _id: current_user?._id }, newInput , { new: true })
-        let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
-          return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
-        }))  
-        user = {...user._doc, roles}
-        user = _.omit(user, ['password'])
+        */
+        // let user = await User.findOneAndUpdate({ _id: current_user?._id }, newInput , { new: true })
+        // let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
+        //   return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
+        // }))  
+        // user = {...user._doc, roles}
 
-        pubsub.publish("ME", {
-          me: { mutation: "UPDATE", data: user },
-        });
+      await User.updateOne({ _id: current_user?._id }, newInput );
+      let user = await User.findById(current_user?._id)
+      user = _.omit(user, ['password'])
+      
+      pubsub.publish("ME", {
+        me: { mutation: "UPDATE", data: user },
+      });
 
-        return {
-          status: true,
-          data: user,
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-        }
+      return {
+        status: true,
+        data: user,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
 
@@ -1873,7 +1900,9 @@ export default {
             let authorization = await checkAuthorizationWithSessionId(sessionId);
             let { status, code, current_user } =  authorization
 
-            return data.userId.toString() == current_user?._id.toString() ? true : false;
+            console.log( "Subscription : ME ", data?._id, current_user?._id, _.isEqual(data?._id, current_user?._id) )  
+
+            return _.isEqual(data?._id, current_user?._id) ? true : false;
           } catch(err) {
             console.log("Subscription : ME #ERROR =", err.toString())           
             return false;

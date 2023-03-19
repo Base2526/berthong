@@ -1,13 +1,11 @@
-import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { useQuery, useMutation } from "@apollo/client";
+import React, { useState, useEffect } from "react";
+import { useQuery } from "@apollo/client";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import _ from "lodash"
 import { connect } from "react-redux";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 import { useTranslation } from "react-i18next";
-import CardActionArea from "@material-ui/core/CardActionArea";
-
 import {
   Box,
   Stack,
@@ -20,27 +18,24 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  CircularProgress
+  CircularProgress,
+  LinearProgress
 } from "@mui/material";
 import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
 
 import { getHeaders, checkRole } from "./util"
 import { querySuppliers } from "./gqlQuery"
-import ReadMoreMaster from "./helpers/ReadMoreMaster"
-import TableComp from "./components/TableComp"
+import UserComp from "./components/UserComp"
 
 import * as Constants from "./constants"
-
 
 const SuppliersPage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
   let { user, onLightbox } = props
-  // const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
-  // const [pageIndex, setPageIndex]     = useState(0);  
-  // const [pageSize, setPageSize]       = useState(pageOptions[0])
+
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
   let [datas, setDatas] = useState([]);
@@ -94,12 +89,6 @@ const SuppliersPage = (props) => {
     }
   }, [dataSuppliers, loadingSuppliers])
 
-  ///////////////
-  // const fetchData = useCallback(({ pageSize, pageIndex }) => {
-  //   setPageSize(pageSize)
-  //   setPageIndex(pageIndex)
-  // })
-  ///////////////
 
   const handleClose = () => {
     setOpenDialogDelete({ ...openDialogDelete, isOpen: false, description: "" });
@@ -108,373 +97,6 @@ const SuppliersPage = (props) => {
   const handleDelete = (id) => {
     // onDeletePhone({ variables: { id } });
   };
-
-  ///////////////////////
-  const columns = useMemo(
-    () =>{
-      switch(checkRole(user)){
-        case Constants.AMDINISTRATOR:{
-          return [
-            {
-              Header: 'รูป',
-              accessor: 'files',
-              Cell: props =>{
-                if(props.value.length < 1){
-                  return <div />
-                }
-    
-                console.log("files :", props.value)
-                
-                return (
-                  <div style={{ position: "relative" }}>
-                    <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
-                      <Avatar
-                        sx={{
-                          height: 100,
-                          width: 100
-                        }}
-                        variant="rounded"
-                        alt="Example Alt"
-                        src={props.value[0].url}
-                        onClick={(e) => {
-                          onLightbox({ isOpen: true, photoIndex: 0, images:props.value })
-                        }}
-                      />
-                    </CardActionArea>
-                    <div
-                        style={{
-                            position: "absolute",
-                            bottom: "5px",
-                            right: "5px",
-                            padding: "5px",
-                            backgroundColor: "#e1dede",
-                            color: "#919191"
-                        }}
-                        >{(_.filter(props.value, (v)=>v.url)).length}</div>
-                  </div>
-                );
-              }
-            },
-            {
-              Header: 'ชื่อ',
-              accessor: 'title',
-              Cell: props =>{
-                  let {_id, title} = props.row.original
-                  return ( <div style={{ position: "relative" }} 
-                            onClick={()=>{
-                              // history.push({
-                              //   pathname: "/p",
-                              //   search: `?id=${_id}`,
-                              //   state: { id: _id }
-                              // });
-                              navigate({
-                                pathname: "/d",
-                                search: `?${createSearchParams({ id: _id})}`,
-                                state: { id: _id }
-                              })
-                            }}>{title}</div> );
-              }
-            },
-            {
-              Header: 'Detail',
-              accessor: 'description',
-              Cell: props => {
-                return <Box
-                        sx={{
-                          maxHeight: "inherit",
-                          width: "100%",
-                          whiteSpace: "initial",
-                          lineHeight: "16px"
-                        }}>
-                        <ReadMoreMaster
-                          byWords={true}
-                          length={10}
-                          ellipsis="...">{props.value}
-                        </ReadMoreMaster>
-                      </Box>
-              }
-            },
-            {
-              Header: 'จำนวนที่จอง',
-              // accessor: 'buys',
-              Cell: props => {
-                let {buys} = props.row.original
-
-                buys = _.filter(buys, (buy)=>buy.selected == 0)
-                console.log("จำนวนที่จอง : ", props.row.original)
-                return <div>{buys.length}</div>
-              }
-            },
-            {
-              Header: 'จำนวนที่ขายได้',
-              accessor: 'buys',
-              Cell: props => {
-                let {buys} = props.row.original
-
-                buys = _.filter(buys, (buy)=>buy.selected == 1)
-                return <div>{buys.length}</div>
-              }
-            },
-            {
-              Header: 'Owner name',
-              accessor: 'ownerName',
-              Cell: props => {
-                let {ownerId, ownerName} = props.row.original
-
-                console.log("props.row.original",  props.row.original)
-                return <div onClick={()=>{
-                  // history.push({ 
-                  //   pathname: "/profile", 
-                  //   search: `?u=${ownerId}`,
-                  //   // state: {from: "/", mode: "edit", id: _id } 
-                  // });
-
-                  navigate({
-                    pathname: "/profile",
-                    search: `?${createSearchParams({ u: ownerId})}`
-                  })
-                }}>{ownerName}</div>
-              }
-            },
-            {
-              Header: 'Follows',
-              accessor: 'follows',
-              Cell: props => {
-                let {follows} = props.row.original
-    
-                console.log("follows :", follows)
-    
-                return <div>{follows.length}</div>
-              }
-            },
-            {
-              Header: 'Created at',
-              accessor: 'createdAt',
-              Cell: props => {
-                let {createdAt} = props.row.values
-                createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-      
-                return <div>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
-              }
-            },
-            {
-              Header: 'Action',
-              Cell: props => {
-                let {_id, description} = props.row.original
-                return  <Stack
-                          direction="row"
-                          spacing={0.5}
-                          justifyContent="center"
-                          alignItems="center">
-                            <button onClick={(evt)=>{
-                              // history.push({ 
-                              //   pathname: "/supplier", 
-                              //   state: {from: "/", mode: "edit", id: _id } 
-                              // });
-                              navigate("/supplier", {state: {from: "/", mode: "edit", id: _id} })
-                            }}><EditIcon/>{t("edit")}</button>
-                            <button onClick={(e)=>{
-                              setOpenDialogDelete({ isOpen: true, id: _id, description });
-                            }}><DeleteForeverIcon/>{t("delete")}</button>
-                        </Stack>
-              }
-            },
-          ] 
-        }
-  
-        case Constants.AUTHENTICATED:{
-          return [
-            {
-              Header: 'รูป',
-              accessor: 'files',
-              Cell: props =>{
-                if(props.value.length < 1){
-                  return <div />
-                }
-    
-                console.log("files :", props.value)
-                
-                return (
-                  <div style={{ position: "relative" }}>
-                    <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
-                      <Avatar
-                        sx={{
-                          height: 100,
-                          width: 100
-                        }}
-                        variant="rounded"
-                        alt="Example Alt"
-                        src={props.value[0].url}
-                        onClick={(e) => {
-                          console.log("files props: ", props.value)
-                          onLightbox({ isOpen: true, photoIndex: 0, images:props.value })
-                        }}
-                      />
-                    </CardActionArea>
-                    <div
-                        style={{
-                            position: "absolute",
-                            bottom: "5px",
-                            right: "5px",
-                            padding: "5px",
-                            backgroundColor: "#e1dede",
-                            color: "#919191"
-                        }}
-                        >{(_.filter(props.value, (v)=>v.url)).length}</div>
-                  </div>
-                );
-              }
-            },
-            {
-              Header: 'ชื่อ',
-              accessor: 'title',
-              Cell: props =>{
-                  let {_id, title} = props.row.original
-                  return ( <div style={{ position: "relative" }} 
-                            onClick={()=>{
-                              // history.push({
-                              //   pathname: "/p",
-                              //   search: `?id=${_id}`,
-                              //   // hash: "#react",
-                              //   state: { id: _id }
-                              // });
-                              navigate({
-                                pathname: "/d",
-                                search: `?${createSearchParams({ id: _id})}`,
-                                state: { id: _id }
-                              })
-                            }}>{title}</div> );
-              }
-            },
-            {
-              Header: 'Detail',
-              accessor: 'description',
-              Cell: props => {
-                return <Box
-                        sx={{
-                          maxHeight: "inherit",
-                          width: "100%",
-                          whiteSpace: "initial",
-                          lineHeight: "16px"
-                        }}>
-                        <ReadMoreMaster
-                          byWords={true}
-                          length={10}
-                          ellipsis="...">{props.value}
-                        </ReadMoreMaster>
-                      </Box>
-              }
-            },
-            {
-              Header: 'บน/ล่าง',
-              accessor: 'type',
-              Cell: props => {
-                let {type} = props.row.original    
-                return <div>{type}</div>
-              }
-            },
-            {
-              Header: 'หมวดหมู่',
-              accessor: 'category',
-              Cell: props => {
-                let {category} = props.row.original    
-                return <div>{category}</div>
-              }
-            },
-            {
-              Header: 'ขั้นตอนการขาย',
-              accessor: 'condition',
-              Cell: props => {
-                let {condition} = props.row.original    
-                return <div>{condition}</div>
-              }
-            },
-            {
-              Header: 'จำนวนที่ขายได้',
-              accessor: 'buys',
-              Cell: props => {
-                let {buys} = props.row.original
-    
-                console.log("buys :", buys)
-    
-    
-                return <div>{buys.length}</div>
-              }
-            },
-            {
-              Header: 'Follows',
-              accessor: 'follows',
-              Cell: props => {
-                let {follows} = props.row.original
-    
-                console.log("follows :", follows)
-    
-                return <div>{follows.length}</div>
-              }
-            },
-            {
-              Header: 'Created at',
-              accessor: 'createdAt',
-              Cell: props => {
-                let {createdAt} = props.row.values
-                createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-      
-                return <div>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
-              }
-            },
-            
-            {
-              Header: 'Action',
-              Cell: props => {
-                let {_id, description} = props.row.original
-                return  <div className="Btn--posts">
-                            <button onClick={(evt)=>{
-                              // history.push({ 
-                              //   pathname: "/supplier", 
-                              //   state: {from: "/", mode: "edit", id: _id } 
-                              // });
-                              navigate("/supplier", {state: {from: "/", mode: "edit", id: _id} })
-                            }}><EditIcon/>{t("edit")}</button>
-                            <button onClick={(e)=>{
-                              setOpenDialogDelete({ isOpen: true, id: _id, description });
-                            }}><DeleteForeverIcon/>{t("delete")}</button>
-                        </div>
-              }
-            },
-          ] 
-        }
-      }
-    } ,
-    []
-  )
-
-  // const [data, setData] = useState(() => makeData(10000))
-  // const [originalData] = useState(data)
-
-  // We need to keep the table from resetting the pageIndex when we
-  // Update data. So we can keep track of that flag with a ref.
-  // const skipResetRef = useRef(false)
-
-  // When our cell renderer calls updateMyData, we'll use
-  // the rowIndex, columnId and new value to update the
-  // original data
-  // const updateMyData = (rowIndex, columnId, value) => {
-  //   console.log("updateMyData")
-  //   // We also turn on the flag to not reset the page
-  //   skipResetRef.current = true
-  //   // setData(old =>
-  //   //   old.map((row, index) => {
-  //   //     if (index === rowIndex) {
-  //   //       return {
-  //   //         ...row,
-  //   //         [columnId]: value,
-  //   //       }
-  //   //     }
-  //   //     return row
-  //   //   })
-  //   // )
-  // }
-  //////////////////////
 
   const fetchMoreData = async() =>{
     // let mores =  await fetchMoreNotifications({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
@@ -521,7 +143,7 @@ const SuppliersPage = (props) => {
                               let createdAt = new Date(item.createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
                     
                               return <Stack direction="row" spacing={2} >
-                                       <Box sx={{ width: '10%' }}>
+                                      <Box sx={{ width: '10%' }}>
                                         <Avatar
                                           alt="Example avatar"
                                           variant="rounded"
@@ -532,8 +154,17 @@ const SuppliersPage = (props) => {
                                           sx={{ width: 56, height: 56 }}
                                         />
                                       </Box>
-                                      <Box sx={{ width: '10%' }}>{title}</Box>
+                                      <Box 
+                                        sx={{ width: '10%' }}
+                                        onClick={()=>{
+                                          navigate({
+                                          pathname: "/d",
+                                          search: `?${createSearchParams({ id: item._id})}`,
+                                          state: { id: item._id }
+                                        })}}
+                                      >{title}</Box>
                                       <Box sx={{ width: '20%' }}>{description}</Box>
+                                      <Box sx={{ width: '20%' }}><UserComp userId={item?.ownerId} /></Box>
                                       <Box sx={{ width: '5%' }}>{type}</Box>
                                       <Box sx={{ width: '5%' }}>{category}</Box>
                                       <Box sx={{ width: '5%' }}>{condition}</Box>
@@ -548,7 +179,6 @@ const SuppliersPage = (props) => {
                                         <button onClick={(e)=>{
                                           setOpenDialogDelete({ isOpen: true, id: item?._id, description: item?.description });
                                         }}><DeleteForeverIcon/>{t("delete")}</button>
-
                                       </Box>
                                     </Stack>
                             })
@@ -598,11 +228,7 @@ const SuppliersPage = (props) => {
             </Box>
           </div>);
 };
-
-
-
 const mapStateToProps = (state, ownProps) => {
   return {}
 };
-
 export default connect( mapStateToProps, null )(SuppliersPage);

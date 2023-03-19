@@ -26,8 +26,8 @@ import {  FORCE_LOGOUT,
           WS_SHOULD_RETRY } from "./constants";
 
 import { queryAdminHome, subscriptionSuppliers } from "./gqlQuery";
-import { login, logout } from "./redux/actions/auth";
-import { getHeaders } from "./util";
+import { logout } from "./redux/actions/auth";
+import { getHeaders, showToast } from "./util";
 import AdminHomeItem from "./item/AdminHomeItem"
 import SearchComp from "./components/SearchComp"
 import SkeletonComp from "./components/SkeletonComp"
@@ -109,7 +109,6 @@ const AdminHomePage = (props) => {
 
   let { logout, ws, onLogin } = props
 
-  
   const { loading: loadingAdminHome, 
           data: dataAdminHome, 
           error: errorAdminHome, 
@@ -125,18 +124,19 @@ const AdminHomePage = (props) => {
                                       }
                                     );
 
-  /*
-  if(!_.isEmpty(errorSuppliers)){
-    _.map(errorSuppliers?.graphQLErrors, (e)=>{
+  
+  if(!_.isEmpty(errorAdminHome)){
+    _.map(errorAdminHome?.graphQLErrors, (e)=>{
       switch(e?.extensions?.code){
-        case FORCE_LOGOUT:{
-          logout()
+        case Constants.UNAUTHENTICATED:{
+          showToast("error", e.message)
           break;
         }
       }
     })
   }
   
+  /*
   useEffect(()=>{
     return () => {
       unsubscribeSuppliers && unsubscribeSuppliers()
@@ -364,5 +364,5 @@ const mapStateToProps = (state, ownProps) => {
   return { user:state.auth.user, ws: state.ws }
 };
 
-const mapDispatchToProps = { login, logout }
+const mapDispatchToProps = { logout }
 export default connect( mapStateToProps, mapDispatchToProps )(AdminHomePage);

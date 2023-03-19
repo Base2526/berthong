@@ -1,176 +1,145 @@
-import React , {useEffect, useState} from "react";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useQuery, useMutation } from "@apollo/client";
-import CircularProgress from '@mui/material/CircularProgress';
-
-import Editor from "./editor/Editor";
-import { mutationBank, queryBankById, queryBanks } from "./gqlQuery"
+import { connect } from "react-redux";
+import { useTranslation } from "react-i18next";
 import _ from "lodash";
+import deepdash from "deepdash";
+import { useMutation } from "@apollo/client";
+import mongoose from "mongoose";
 
-let editValues = undefined;
-let initValues =  { mode: "NEW",  name : "",  description: "" }
+import {
+  Button,
+  Stack
+} from "@mui/material"
+
+import { getHeaders } from "./util"
+import { mutationMe, queryMe } from "./gqlQuery"
+import BankInputField from "./fields/BankInputField"
+
+deepdash(_);
 
 const BankPage = (props) => {
-  const location = useLocation();
   const navigate = useNavigate();
-  let [input, setInput] = useState(initValues)
-  let [data, setData] = useState(initValues)
-  const { mode, _id } = location.state
+  const location = useLocation();
+  const { t } = useTranslation();
+  const initValues = {_id: "", bankNumber: "", bankId: ""}
 
-  console.log("mode, id :", mode, _id)
+  const { user } = props
 
-  const { loading: loadingBankById, 
-          data: dataBankById, 
-          error: errorBankById,
-          refetch: refetchBankById} = useQuery(queryBankById, {
-                                    // variables: {id: _id},
-                                    notifyOnNetworkStatusChange: true,
-                                  });
+  let [input, setInput]       = useState([]);
 
-  const [onMutationBank, resultMutationBankValues] = useMutation(mutationBank
-    , {
-        update: (cache, {data: {bank}}) => {
+  let { mode, id } = location?.state
 
-          ////////// udpate cache Banks ///////////
-          let banksValue = cache.readQuery({ query: queryBanks });
-          let { status, mode, data } = bank
-          if(status && banksValue){
-            switch(mode){
-              case "new":{
-                cache.writeQuery({
-                  query: queryBanks,
-                  data: { banks: {...banksValue.banks, data: [...banksValue.banks.data, data]} },
-                });
-                break;
-              }
+  console.log("mode, id :", mode, id, user )
 
-              case "edit":{
-                let newData = _.map(banksValue.banks.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
-                cache.writeQuery({
-                  query: queryBanks,
-                  data: { banks: {...banksValue.banks, data: newData} },
-                });
-                break;
-              }
-            }
-          }
-          ////////// udpate cache Banks ///////////
-
-          ////////// update cache queryBankById ///////////
-          let bankByIdValue = cache.readQuery({ query: queryBankById, variables: {id: data._id}});
-          if(status && bankByIdValue){
-            cache.writeQuery({
-              query: queryBankById,
-              data: { bankById: {...bankByIdValue.bankById, data} },
-              variables: {id: data._id}
-            });
-          }
-          ////////// update cache queryBankById ///////////
-        },
-        onCompleted({ data }) {
-          navigate(-1)
+  const [onMutationMe, resultMutationMe] = useMutation(mutationMe, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {me}}) => {
+      if(me.status){
+        const queryMeValue = cache.readQuery({ query: queryMe });
+        if(!_.isNull(queryMeValue)){
+          cache.writeQuery({
+            query: queryMe,
+            data: { me: {...queryMeValue.me, data: me.data} }
+          });
         }
       }
-  );
-  // console.log("resultMutationBankValues :", resultMutationBankValues)
-
-  useEffect(()=>{
-    if(mode == "edit" && _id){
-      refetchBankById({id: _id});
+    },
+    onCompleted({ data }) {
+      navigate(-1)
+    },
+    onError(error){
+      console.log("onError :", error)
     }
-  }, [_id])
+  });
 
   useEffect(()=>{
-    if(mode == "edit"){
-      if (dataBankById) {
-        let { status, data } = dataBankById.bankById
-        if(status){
-          setData(data)
+    switch(mode){
+      case "new":{
+        setInput([initValues])
+        break;
+      }
+
+      case "edit":{
+        let bank = _.find(user?.banks, (b)=> _.isEqual( b._id, id))
+        if(!_.isEmpty(bank)) {
+          setInput([bank])
         }
       }
     }
-  }, [dataBankById])
+  }, [mode])
 
-  switch(mode){
-    case "new":{
-      editValues = undefined
-      break;
-    }
+  const submitForm = async(event) => {
+    switch(mode){
+      case "new":{
+        let newInput = {...user, banks:[...user.banks, input[0]]}
 
-    case "edit":{
-      // editValues = useQuery(queryBankById, {
-      //   variables: {id: _id},
-      //   notifyOnNetworkStatusChange: true,
-      // });
-     
-      // console.log("editValues : ", editValues, input)
+        delete newInput?._id;
+        delete newInput?.createdAt;
+        delete newInput?.updatedAt;
+        delete newInput?.__v;
+        delete newInput?.roles;
 
-      // if(_.isEqual(input, initValues)) {
-      //   if(!_.isEmpty(editValues)){
-      //     let {loading}  = editValues
-          
-      //     if(!loading){
-      //       let {status, data} = editValues.data.bankById
-      //       if(status){
-      //         setInput({
-      //           name: data.name,
-      //           description: data.description
-      //         })
-      //       }
-      //     }
-      //   }
-      // }
-
-      if(!loadingBankById){
-        setInput({ name: data.name, description: data.description })
+        onMutationMe({ variables: { input: newInput } });
+        break;
       }
-      break;
+      case "edit":{
+        let banks = _.map(user.banks, (m)=>_.isEqual(m._id, input[0]?._id) ? input[0] : m)
+        let newInput = {...user, banks}
+
+        delete newInput?._id;
+        delete newInput?.createdAt;
+        delete newInput?.updatedAt;
+        delete newInput?.__v;
+        delete newInput?.roles;
+
+        onMutationMe({ variables: { input: newInput } });
+        break;
+      }
     }
   }
 
-  const submitForm = (event) => {
-    event.preventDefault();
-    let newInput = { mode: mode.toUpperCase(),  name: input.name, description: input.description }
-    if(mode == "edit"){
-      newInput = {...newInput, _id: editValues.data.bankById.data._id}
-    }
-    onMutationBank({ variables: { input: newInput } })
-  };
+  const isDisabled = () =>{
+    return _.isEmpty(_.filter(input, (b)=>b.bankId == "" || b.bankNumber == "")) ? false : true;
+  }
+                    
+  return  <Stack
+            direction="column"
+            justifyContent="center"
+            alignItems="flex-start">
+            {
+              _.isEqual(mode, "new") && !_.isEmpty(input)
+              ? <BankInputField
+                label={t("search_by_id_bank")}
+                multiple={false}
+                values={input}
+                onChange={(val) => {
+                  let newVal = _.map(val, (v)=>v?._id ? v : {...v, _id:new mongoose.Types.ObjectId()} )
+                  setInput(newVal)
+                }}/>
+              : _.isEqual(mode, "edit") && !_.isEmpty(input)
+                ? <BankInputField
+                  label={t("search_by_id_bank")}
+                  multiple={false}
+                  values={input}
+                  onChange={(val) => {
+                    let newVal = _.map(val, (v)=>v?._id ? v : {...v, _id:new mongoose.Types.ObjectId()} )
+                    setInput(newVal)
+                  }}/>
+                : <div />
+            }
+            
+            <Button 
+              variant="contained" 
+              color="primary"  
+              size="small"
+              disabled={isDisabled()}
+              onClick={(evt)=>submitForm()}>{t("save")}</Button>
+          </Stack>
+}
 
-  return (
-    <div>
-      {
-        editValues != null && editValues.loading
-        ?<CircularProgress />
-        :<Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }} onSubmit={submitForm} >
-            <TextField
-              id="filled-basic"
-              name="name"
-              label="Name"
-              variant="filled"
-              value={input.name}
-              required
-              onChange={(e) => {
-                console.log("name : ", e.target.value)
-                setInput({...input, name:e.target.value})
-              }}
-            />
-            <Editor 
-              name="description" 
-              label={"Description"}  
-              initData={input.description}
-              onEditorChange={(newValue)=>{
-                setInput({...input, description:newValue})
-              }}/>
-
-            <Button type="submit" variant="contained" color="primary">{mode === 'new' ? "CREATE" : "UPDATE"} </Button>
-          </Box>
-      }
-      </div>
-  );
-};
-
-export default BankPage;
+const mapStateToProps = (state, ownProps) => {
+  return {}
+}
+const mapDispatchToProps = { }
+export default connect( mapStateToProps, mapDispatchToProps )(BankPage);

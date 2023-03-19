@@ -1,4 +1,4 @@
-export const LOGIN = "LOGIN";
+export const UPDATED_PROFILE = "UPDATED_PROFILE";
 export const LOGOUT = "LOGOUT";
 
 export const ADDED_CONVERSATIONS    = "ADDED_CONVERSATIONS";

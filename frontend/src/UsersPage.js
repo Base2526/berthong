@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import { DeleteForever as DeleteForeverIcon, 
         Edit as EditIcon, 
@@ -21,24 +21,25 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import _ from "lodash";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, createSearchParams } from "react-router-dom";
+
 import { queryUsers } from "./gqlQuery";
-import TableComp from "./components/TableComp"
 import { getHeaders, showToast } from "./util";
-import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants";
+import RolesComp from "./components/RolesComp"
+import * as Constants from "./constants";
 
 const UsersPage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
-  const [pageIndex, setPageIndex] = useState(0);  
-  const [pageSize, setPageSize] = useState(pageOptions[0])
+
+  let [input, setInput] = useState({ OFF_SET: 0, LIMIT: 20 })
 
   let [datas, setDatas] = useState([]);
   let [total, setTotal] = useState(0)
   let [slice, setSlice] = useState(20);
   let [hasMore, setHasMore] = useState(true)
+  const [loading, setLoading] = useState(true);
 
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
@@ -49,6 +50,7 @@ const UsersPage = (props) => {
           fetchMore: fetchMoreUsers } = useQuery(queryUsers, 
                                       { 
                                         context: { headers: getHeaders(location) }, 
+                                        variables: {input},
                                         fetchPolicy: 'network-only', // Used for first execution
                                         nextFetchPolicy: 'cache-first', // Used for subsequent executions
                                         notifyOnNetworkStatusChange: true
@@ -58,7 +60,7 @@ const UsersPage = (props) => {
   if(!_.isEmpty(errorUsers)){
     _.map(errorUsers?.graphQLErrors, (e)=>{
       switch(e?.extensions?.code){
-        case UNAUTHENTICATED:{
+        case Constants.UNAUTHENTICATED:{
           showToast("error", e?.message)
           break;
         }
@@ -69,8 +71,13 @@ const UsersPage = (props) => {
   useEffect(() => {
     if(!loadingUsers){
       if(!_.isEmpty(dataUsers?.users)){
-        let { status, data } = dataUsers?.users
-        if(status)setDatas(data)
+        let { status, total, data } = dataUsers?.users
+        if(status){
+          setDatas(data)
+          setTotal(total)
+        }
+
+        setLoading(false)
       }
     }
   }, [dataUsers, loadingUsers])
@@ -100,10 +107,6 @@ const UsersPage = (props) => {
   // );
   // console.log("resultDeleteUser :", resultDeleteUser)
 
-  const fetchData = useCallback(({ pageSize, pageIndex }) => {
-    setPageSize(pageSize)
-    setPageIndex(pageIndex) })
-
   const handleDelete = (id) => {
   };
 
@@ -111,141 +114,28 @@ const UsersPage = (props) => {
     setOpenDialogDelete({ ...openDialogDelete, isOpen: false, description: "" });
   };
 
-  const columns = useMemo(
-                          () => [
-                            {
-                              Header: 'Avatar',
-                              accessor: 'avatar',
-                              Cell: props =>{
-                                let { avatar } = props.row.original
-                                return (<Avatar sx={{ height: 100, width: 100 }} variant="rounded" src={ avatar?.url } />);
-                              }
-                            },
-                            {
-                              Header: 'Display name',
-                              accessor: 'displayName',
-                              Cell: props => {
-                                let {_id, displayName} = props.row.original
-                                return  <div onClick={()=>{
-                                            navigate({
-                                              pathname: "/user",
-                                              state: {from: "/", mode: "edit", id: _id } 
-                                            })
-                                          }}>{displayName}</div>
-                              }
-                            },
-                            {
-                              Header: 'Username',
-                              accessor: 'username',
-                              Cell: props => {
-                                let {_id, username} = props.row.original
-                                return  <div onClick={()=>{
-                                            navigate({
-                                              pathname: "/user",
-                                              state: {from: "/", mode: "edit", id: _id } 
-                                            })
-                                          }}>{username}</div>
-                              }
-                            },
-                           
-                            {
-                              Header: 'Email',
-                              accessor: 'email',
-                            },
-                            {
-                              Header: 'Roles',
-                              accessor: 'roles',
-                              Cell: props => {
-                                let {roles} = props.row.values
-                                return <div>{roles.join(',')}</div>
-                              }
-                            },
-                            {
-                              Header: 'Last access',
-                              accessor: 'lastAccess',
-                              Cell: props =>{
-                                let {lastAccess} = props.row.values 
-                                return <div>{ (moment(lastAccess, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</div>
-                              }
-                            },
-                            {
-                              Header: 'Action',
-                              Cell: props => {
-                                let {_id, displayName} = props.row.original
-                                return  <Stack
-                                          direction="row"
-                                          spacing={0.5}
-                                          justifyContent="center"
-                                          alignItems="center">
-                                          <button onClick={(e)=>{
-                                            console.log("Force logout")
-                                          }}><ExitToAppIcon />Force logout</button>
-                                          <button onClick={()=>{
-                                            navigate("/user", {state: {from: "/", mode: "edit", id: _id } } )
-                                          }}><EditIcon/>{t("edit")}</button>
-                                          <button onClick={(e)=>{
-                                            setOpenDialogDelete({ isOpen: true, id: _id, description: displayName });
-                                          }}><DeleteForeverIcon/>{t("delete")}</button>
-                                        </Stack>
-                              }
-                            },
-                          ],
-                          []
-                        )
-
-  const skipResetRef = useRef(false)
-  const updateMyData = (rowIndex, columnId, value) => {
-    console.log("updateMyData")
-    // We also turn on the flag to not reset the page
-    skipResetRef.current = true
-    // setData(old =>
-    //   old.map((row, index) => {
-    //     if (index === rowIndex) {
-    //       return {
-    //         ...row,
-    //         [columnId]: value,
-    //       }
-    //     }
-    //     return row
-    //   })
-    // )
-  }
-
   const fetchMoreData = async() =>{
-    // let mores =  await fetchMoreUsers({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
-    // let {status, data} =  mores.data.suppliers
+    let mores =  await fetchMoreUsers({ variables: { input: {...input, OFF_SET:input.OFF_SET + 1} } })
+    let {status, data} =  mores.data.users
     // console.log("status, data :", status, data)
    
     if(slice === total){
-        setHasMore(false);
+      setHasMore(false);
     }else{
-        setTimeout(() => {
-            // let newDatas = [...datas, ...data]
-            // setDatas(newDatas)
-            // setSlice(newDatas.length);
-        }, 1000); 
+      setTimeout(() => {
+        let newDatas = [...datas, ...data]
+        setDatas(newDatas)
+        setSlice(newDatas.length);
+      }, 1000); 
     }
   }
 
   return (
     <div className="pl-2 pr-2">
-        {/* {
-          loadingUsers
-          ? <div><CircularProgress /></div> 
-          : <TableComp
-              columns={columns}
-              data={datas}
-              fetchData={fetchData}
-              rowsPerPage={pageOptions}
-              updateMyData={updateMyData}
-              skipReset={skipResetRef.current}
-              isDebug={false}
-            />
-        } */}
         {
-          loadingUsers
+          loading
           ?  <CircularProgress />
-          :  datas.length == 0 
+          :  datas?.length == 0 
               ?   <label>Empty data</label>
               :   <InfiniteScroll
                       dataLength={slice}
@@ -254,16 +144,16 @@ const UsersPage = (props) => {
                       loader={<h4>Loading...</h4>}>
                       { 
                       _.map(datas, (item, index) => {                       
-                        let _id = item._id;
-                        let avatar = item.avatar;
+                        let _id         = item._id;
+                        let avatar      = item.avatar;
                         let displayName = item.displayName;
-                        let username = item.username;
-                        let email   = item.email;
-                        let roles  = item.roles;
-                        let lastAccess = item.lastAccess;
+                        let username    = item.username;
+                        let email       = item.email;
+                        let roles       = item.roles;
+                        let lastAccess  = item.lastAccess;
 
                         return <Stack direction="row" spacing={2} >
-                                  <Box sx={{ width: '10%' }}>
+                                  <Box sx={{ width: '8%' }}>
                                     <Avatar
                                       alt="Example avatar"
                                       variant="rounded"
@@ -274,24 +164,21 @@ const UsersPage = (props) => {
                                       sx={{ width: 56, height: 56 }}
                                     />
                                   </Box>
-                                  <Box sx={{ width: '8%' }}>{displayName}</Box>
+                                  <Box 
+                                    sx={{ width: '8%' }}
+                                    onClick={()=>{
+                                      navigate({ pathname: `/p`, search: `?${createSearchParams({ id: _id })}` })
+                                    }}>{displayName}</Box>
                                   <Box sx={{ width: '10%' }}>{username}</Box>
                                   <Box sx={{ width: '20%' }}>{email}</Box>
-                                  <Box sx={{ width: '15%' }}>{roles.join(',')}</Box>
+                                  <Box sx={{ width: '15%' }}> {/*{roles.join(',')}*/} <RolesComp Ids={roles}/> </Box>
                                   <Box sx={{ width: '5%' }}>{ (moment(lastAccess, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</Box>
                                   <Box sx={{ width: '20%' }}>
-                                    <button onClick={(e)=>{
-                                      console.log("Force logout")
-                                    }}><ExitToAppIcon />Force logout</button>
-                                    <button onClick={()=>{
-                                      navigate("/user", {state: {from: "/", mode: "edit", id: _id } } )
-                                    }}><EditIcon/>{t("edit")}</button>
-                                    <button onClick={(e)=>{
-                                      setOpenDialogDelete({ isOpen: true, id: _id, description: displayName });
-                                    }}><DeleteForeverIcon/>{t("delete")}</button>
+                                    <button onClick={(e)=>{ console.log("Force logout") }}><ExitToAppIcon />Force logout</button>
+                                    <button onClick={()=>{ navigate("/user", {state: {from: "/", mode: "edit", id: _id}}) }}><EditIcon/>{t("edit")}</button>
+                                    <button onClick={(e)=>{ setOpenDialogDelete({ isOpen: true, id: _id, description: displayName }) }}><DeleteForeverIcon/>{t("delete")}</button>
                                   </Box>
                               </Stack>
-                              
                       })
                     }
                   </InfiniteScroll>
@@ -327,12 +214,7 @@ const UsersPage = (props) => {
           ariaLabel="SpeedDial basic example"
           sx={{ position: 'absolute', bottom: 16, right: 16 }}
           icon={<SpeedDialIcon />}
-          onClick={(e)=>{
-            navigate({
-              pathname: "/user",
-              state: {from: "/", mode: "new" } 
-            })
-          }}/>
+          onClick={(e)=>{ navigate({ pathname: "/user", state: {from: "/", mode: "new" } }) }}/>
     </div>
   );
 };

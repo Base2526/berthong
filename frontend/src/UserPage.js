@@ -5,12 +5,11 @@ import { useTranslation } from "react-i18next";
 import { styled } from "@mui/material/styles";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import _ from "lodash"
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { IconButton, Avatar } from "@mui/material";
 
-import { getHeaders, checkRole } from "./util"
-import { queryRoles, queryUserById, mutationMe, queryUsers } from "./gqlQuery"
-import { AMDINISTRATOR, AUTHENTICATED } from "./constants"
+import { getHeaders } from "./util"
+import { queryUserById } from "./gqlQuery"
 
 const Input = styled("input")({ display: "none" });
 
@@ -33,7 +32,6 @@ const UserPage = (props) => {
   let [error, setError]       = useState(initValues);
   
   const { mode, id } = location.state
-  // let rolesValue = useQuery(queryRoles, { notifyOnNetworkStatusChange: true });
   const { loading: loadingUserById, 
           data: dataUserById, 
           error: errorUserById,
@@ -254,6 +252,7 @@ const UserPage = (props) => {
               <input 
                 type="text" 
                 name="username"
+                disabled={true}
                 value={ _.isEmpty(input.username) ? "" : input.username }
                 onChange={ onInputChange }
                 onBlur={ validateInput } />
@@ -264,6 +263,7 @@ const UserPage = (props) => {
               <input 
                 type="text" 
                 name="email"
+                disabled={true}
                 value={ _.isEmpty(input.email) ? "" : input.email }
                 onChange={ onInputChange }
                 onBlur={ validateInput } />

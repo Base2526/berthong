@@ -32,7 +32,7 @@ const DialogLoginComp = (props) => {
   const navigate = useNavigate();
   const deviceData = useDeviceData();
 
-  let { onComplete, onClose, open } = props;
+  let { onComplete, onClose, open, updateProfile } = props;
 
   let [input, setInput]   = useState({ username: "",  password: ""});
   
@@ -42,7 +42,7 @@ const DialogLoginComp = (props) => {
       if(status){
         localStorage.setItem('token', sessionId)
 
-        props.login(data)
+        updateProfile(data)
         onComplete()
       }
     },

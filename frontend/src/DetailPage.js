@@ -30,7 +30,7 @@ import DialogBuy from "./DialogBuy";
 import { mutationBook, mutationBuy, querySupplierById, querySuppliers, subscriptionSupplierById } from "./gqlQuery";
 import ItemFollow from "./item/ItemFollow";
 import ItemShare from "./item/ItemShare";
-import { login, logout } from "./redux/actions/auth";
+import { logout } from "./redux/actions/auth";
 import { bookView, getHeaders, sellView, showToast } from "./util";
 
 let unsubscribeSupplierById = null;
@@ -490,6 +490,6 @@ const mapStateToProps = (state, ownProps) => {
   return {user: state.auth.user, ws: state.ws}
 };
 
-const mapDispatchToProps = { login, logout }
+const mapDispatchToProps = { logout }
 
 export default connect( mapStateToProps, mapDispatchToProps )(DetailPage);

@@ -12,17 +12,20 @@ import {
     Stack,
     Avatar,
     CircularProgress,
-    IconButton
+    IconButton,
+    LinearProgress
 } from '@mui/material';
 
 import {
     SlUserFollow
 } from "react-icons/sl"
+import InfiniteScroll from "react-infinite-scroll-component";
+import moment from "moment";
 
 import { getHeaders } from "./util"
 import { queryProfile } from "./gqlQuery"
-import { login, logout } from "./redux/actions/auth"
-import TableComp from "./components/TableComp"
+import { logout } from "./redux/actions/auth"
+// import TableComp from "./components/TableComp"
 import ReadMoreMaster from "./helpers/ReadMoreMaster"
 
 const ProfilePage = (props) => {
@@ -31,11 +34,11 @@ const ProfilePage = (props) => {
     const { t } = useTranslation();
 
     const { onLightbox } = props
-    
-    let [pageOptions, setPageOptions] = useState([30, 50, 100]);  
-    let [pageIndex, setPageIndex]     = useState(0);  
-    let [pageSize, setPageSize]       = useState(pageOptions[0])
+
     let [data, setData] = useState([]);
+    let [total, setTotal] = useState(0)
+    let [slice, setSlice] = useState(20);
+    let [hasMore, setHasMore] = useState(true)
       
     let params = queryString.parse(location.search)
     if(_.isEmpty(params?.id)){
@@ -65,114 +68,37 @@ const ProfilePage = (props) => {
     }, [dataProfile, loadingProfile])
 
     ///////////////////////
-    const fetchData = useCallback(({ pageSize, pageIndex }) => {
-        setPageSize(pageSize)
-        setPageIndex(pageIndex)
-    })
+  
 
-    const columns = useMemo(
-        () =>{
-            return [
-                {
-                    Header: 'รูป',
-                    accessor: 'files',
-                    Cell: props =>{
-                        if(props.value.length < 1){
-                            return <div />
-                        }
-                        
-                        return (
-                        <div style={{ position: "relative" }}>
-                            <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
-                            <Avatar
-                                sx={{
-                                height: 100,
-                                width: 100
-                                }}
-                                variant="rounded"
-                                alt="Example Alt"
-                                src={props.value[0].url}
-                                onClick={(e) => {
-                                    onLightbox({ isOpen: true, photoIndex: 0, images:props.value })
-                                }}
-                            />
-                            </CardActionArea>
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    bottom: "5px",
-                                    right: "5px",
-                                    padding: "5px",
-                                    backgroundColor: "#e1dede",
-                                    color: "#919191"
-                                }}
-                                >{(_.filter(props.value, (v)=>v.url)).length}</div>
-                        </div>
-                        );
-                    }
-                },
-                {
-                    Header: 'ชื่อ',
-                    accessor: 'title',
-                    Cell: props =>{
-                        let {_id, title} = props.row.original
-                        return ( <div 
-                                    className="card-title" 
-                                    style={{ position: "relative" }} 
-                                    onClick={()=>{
-                                        navigate({
-                                            pathname: "/d",
-                                            search: `?${createSearchParams({ id: _id})}`,
-                                            state: { id: _id }
-                                        })
-                                    }}>{title}</div> );
-                    }
-                },
-                {
-                    Header: 'Detail',
-                    accessor: 'description',
-                    Cell: props => {
-                        return <Box
-                                sx={{
-                                maxHeight: "inherit",
-                                width: "100%",
-                                whiteSpace: "initial",
-                                lineHeight: "16px"
-                                }}>
-                                <ReadMoreMaster
-                                byWords={true}
-                                length={10}
-                                ellipsis="...">{props.value}
-                                </ReadMoreMaster>
-                            </Box>
-                    }
-                },
-                {
-                    Header: 'จำนวนที่ จอง-ขายได้',
-                    accessor: 'buys',
-                    Cell: props => {
-                        let {buys} = props.row.original      
-                        return <div>{(_.filter(buys, (buy)=>buy.selected == 0)).length}-{(_.filter(buys, (buy)=>buy.selected == 1)).length}</div>
-                    }
-                }
-            ] 
-        } ,
-        []
-    )
+    // // We need to keep the table from resetting the pageIndex when we
+    // // Update data. So we can keep track of that flag with a ref.
+    // const skipResetRef = useRef(false)
 
-    // We need to keep the table from resetting the pageIndex when we
-    // Update data. So we can keep track of that flag with a ref.
-    const skipResetRef = useRef(false)
-
-    // When our cell renderer calls updateMyData, we'll use
-    // the rowIndex, columnId and new value to update the
-    // original data
-    const updateMyData = (rowIndex, columnId, value) => {
-        skipResetRef.current = true
-    }
+    // // When our cell renderer calls updateMyData, we'll use
+    // // the rowIndex, columnId and new value to update the
+    // // original data
+    // const updateMyData = (rowIndex, columnId, value) => {
+    //     skipResetRef.current = true
+    // }
     
     if( loadingProfile ){
         return <CircularProgress />
+    }
+
+    const fetchMoreData = async() =>{
+        // let mores =  await fetchMoreNotifications({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
+        // let {status, data} =  mores.data.suppliers
+        // console.log("status, data :", status, data)
+       
+        if(slice === total){
+            setHasMore(false);
+        }else{
+            setTimeout(() => {
+                // let newDatas = [...datas, ...data]
+                // setDatas(newDatas)
+                // setSlice(newDatas.length);
+            }, 1000); 
+        }
     }
 
     return (<div style={{flex:1}}>
@@ -188,19 +114,91 @@ const ProfilePage = (props) => {
                     <div> Name : {data?.displayName}</div>    
                     <SlUserFollow size={"20px"} />
                 </Stack>
-                <TableComp
+                {/* <TableComp
                     columns={columns}
                     data={_.isEmpty( data?.suppliers ) ? [] :  data?.suppliers }
                     fetchData={fetchData}
                     rowsPerPage={pageOptions}
                     updateMyData={updateMyData}
                     skipReset={skipResetRef.current}
-                    isDebug={false}/>
+                    isDebug={false}/> */}
+
+                {
+                    data?.suppliers?.length == 0 
+                    ?   <label>Empty data</label>
+                    :   <div>
+                            <div>สินค้าทั้งหมด</div>
+                            <InfiniteScroll
+                                dataLength={slice}
+                                next={fetchMoreData}
+                                hasMore={false}
+                                loader={<h4>Loading...</h4>}>
+                                { 
+                                _.map(data?.suppliers, (item, index) => {
+                                    console.log("suppliers :", item)
+
+                                    let title         = item?.title;
+                                    let description   = item?.description;
+                                    let files         = item?.files;
+                                    let price         = item.price;
+                                    let priceUnit     = item.priceUnit;
+                                    let buys          = item.buys;
+                                    //   let follows = item.follows;
+                                    //   let files   = item?.files
+                                    
+                                    let updatedAt = new Date(item.updatedAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+                            
+                                    return <Stack direction="row" spacing={2} >
+                                            <Box sx={{ width: '10%' }}>
+                                                <Avatar
+                                                    alt=""
+                                                    variant="rounded"
+                                                    src={files[0]?.url}
+                                                    onClick={(e) => {
+                                                        onLightbox({ isOpen: true, photoIndex: 0, images:files })
+                                                    }}
+                                                    sx={{ width: 56, height: 56 }} />
+                                            </Box>
+                                            <Box 
+                                                sx={{ width: '10%' }}
+                                                onClick={()=>{
+                                                    navigate({
+                                                        pathname: "/d",
+                                                        search: `?${createSearchParams({ id: item._id})}`,
+                                                        state: { id: item._id }
+                                                    })
+                                                }}
+                                            >{title}</Box>
+                                            <Box sx={{ width: '20%' }}>{description}</Box>
+                                            <Box sx={{ width: '5%' }}>{priceUnit}/{price}</Box>
+                                            <Box sx={{ width: '15%' }}>ยอดจอง { _.filter(buys, (buy)=> buy.selected == 0 )?.length }, ขายไปแล้ว { _.filter(buys, (buy)=> buy.selected == 1 )?.length }</Box>
+                                            <Box sx={{ width: '10%' }}>{(moment(updatedAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</Box>
+                                            {/*
+                                            <Box sx={{ width: '5%' }}>{condition}</Box>
+                                            <Box sx={{ width: '5%' }}>{buys.length}</Box>
+                                            <Box sx={{ width: '5%' }}>{follows.length}</Box>
+                                            <Box sx={{ width: '20%' }}>
+                                                <button onClick={(evt)=>{
+                                                navigate("/supplier", {state: {from: "/", mode: "edit", id: item?._id} })
+                                                }}><EditIcon/>{t("edit")}
+                                                </button>
+                                                <button onClick={(e)=>{
+                                                setOpenDialogDelete({ isOpen: true, id: item?._id, description: item?.description });
+                                                }}><DeleteForeverIcon/>{t("delete")}</button>
+                                            </Box> 
+                                            */}
+                                            </Stack>
+
+                                })
+                            }
+                            </InfiniteScroll>
+                        </div>
+                }
             </div>);
     }
 
 const mapStateToProps = (state, ownProps) => {
     return { user:state.auth.user }
 }
-const mapDispatchToProps = { login, logout }
+const mapDispatchToProps = { logout }
 export default connect( mapStateToProps, mapDispatchToProps )(ProfilePage);

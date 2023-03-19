@@ -4,6 +4,7 @@ const Schema = mongoose.Schema
 
 import { AMDINISTRATOR, AUTHENTICATED } from "../constants"
 
+// username, email, displayName, banks, roles, avatar, lastAccess
 const userSchema = new Schema({
   username: { type: String, required:[true, "Username Request is a required field"] },
   password: { type: String, required:[true, "Password Request is a required field"] },

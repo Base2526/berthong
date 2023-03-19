@@ -16,7 +16,7 @@ import {  FORCE_LOGOUT,
           WS_SHOULD_RETRY } from "./constants";
 
 import { querySuppliers, subscriptionSuppliers } from "./gqlQuery";
-import { login, logout } from "./redux/actions/auth";
+import { logout } from "./redux/actions/auth";
 import { getHeaders } from "./util";
 import HomeItem from "./item/HomeItem"
 import SearchComp from "./components/SearchComp"
@@ -353,8 +353,8 @@ const HomePage = (props) => {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  return { /*user:state.auth.user, ws: state.ws*/ }
+  return { }
 };
 
-const mapDispatchToProps = { login, logout }
+const mapDispatchToProps = { logout }
 export default connect( mapStateToProps, mapDispatchToProps )(HomePage);

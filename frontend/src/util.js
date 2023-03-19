@@ -81,7 +81,7 @@ export const getCurrentDate =(separator='')=>{
 
 export const checkRole = (user) =>{
     if(user?.roles){
-        if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a2")){
+        if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a2") || _.includes( user?.roles, "administrator")){
             return AMDINISTRATOR;
         }
         // else if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a6")){

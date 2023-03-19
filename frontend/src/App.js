@@ -24,7 +24,6 @@ import {
   Menu as MenuIcon
 } from "@material-ui/icons";
 import {
-  // AccountBalanceWallet as AccountBalanceWalletIcon,
   AccountTree as AccountTreeIcon,
   AddRoad as AddRoadIcon,
   Adjust as AdjustIcon,
@@ -67,8 +66,8 @@ import {
 } from "@mui/material";
 import _ from "lodash"
 
-import BankPage from "./BankPage";
-import BanksPage from "./BanksPage";
+import TaxonomyBankPage from "./TaxonomyBankPage";
+import TaxonomyBanksPage from "./TaxonomyBanksPage";
 import MeBookBuysPage from "./MeBookBuysPage";
 import DateLotteryPage from "./DateLotteryPage";
 import DateLotterysPage from "./DateLotterysPage";
@@ -81,8 +80,8 @@ import HomePage from "./HomePage";
 import AdminHomePage from "./AdminHomePage";
 import LoginPage from "./LoginPage";
 import MePage from "./MePage";
-import MeBankPage from "./MeBankPage";
-import MeBanksPage from "./MeBanksPage";
+import BankPage from "./BankPage";
+import BanksPage from "./BanksPage";
 import { editedUserBalace, editedUserBalaceBook } from "./redux/actions/auth";
 import SupplierPage from "./SupplierPage";
 import ProfilePage from "./ProfilePage";
@@ -93,7 +92,7 @@ import { checkRole, getHeaders } from "./util";
 import WithdrawPage from "./WithdrawPage";
 import WithdrawsPage from "./WithdrawsPage";
 import BreadcsComp from "./components/BreadcsComp";
-import DialogLogout from "./DialogLogout";
+import DialogLogoutComp from "./components/DialogLogoutComp";
 import NotificationsPage from "./NotificationsPage";
 
 import LightboxComp from "./components/LightboxComp"
@@ -101,7 +100,7 @@ import DialogLoginComp from "./components/DialogLoginComp"
 
 import { queryNotifications } from "./gqlQuery"
 import * as Constants from "./constants"
-import { login, logout } from "./redux/actions/auth";
+import { update_profile as updateProfile, logout } from "./redux/actions/auth";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme) => ({
@@ -203,7 +202,7 @@ const App =(props) =>{
 
   let [notifications, setNotifications] =useState([])
 
-  let { ws, user, editedUserBalace, editedUserBalaceBook } = props
+  let { ws, user, updateProfile, editedUserBalace, editedUserBalaceBook } = props
 
   const { loading: loadingNotifications, 
           data: dataNotifications, 
@@ -251,6 +250,11 @@ const App =(props) =>{
 
           case "BOOK":{
             editedUserBalaceBook(data)
+            break;
+          }
+
+          case "UPDATE":{
+            updateProfile(data)
             break;
           }
         }
@@ -340,9 +344,9 @@ const App =(props) =>{
                 {id: 2, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/deposits"},
                 {id: 3, title:"รายการสินค้าทั้งหมด", icon: <AdjustIcon />, path: "/suppliers"},
                 {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
-                {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/banks"},
+                {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
                 {id: 6, title:"วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/date-lotterys"},
-                {id: 7, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/me+banks"},
+                {id: 7, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/banks"},
                 {id: 8, title:"Logout", icon: <LogoutIcon size="1.5em"/>, path: "/logout"}]
       }
       case Constants.AUTHENTICATED:{
@@ -351,7 +355,7 @@ const App =(props) =>{
                 {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
                 {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"},
-                {id: 5, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/me+banks"},
+                {id: 5, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/banks"},
                 {id: 6, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
       }
       default:{
@@ -367,7 +371,7 @@ const App =(props) =>{
       <ToastContainer />
       {
         openDialogLogout 
-        && <DialogLogout open={openDialogLogout} onClose={()=>setOpenDialogLogout(false)}/>
+        && <DialogLogoutComp {...props} open={openDialogLogout} onClose={()=>setOpenDialogLogout(false)}/>
       }
 
       {
@@ -428,7 +432,6 @@ const App =(props) =>{
                               <MdCircleNotificationsIcon color="white" size="1.2em"/>
                             </Badge>
                           </IconButton>
-
                           <IconButton 
                             size={'small'}
                             onClick={()=>{
@@ -515,17 +518,17 @@ const App =(props) =>{
           <Routes>
             <Route path="/" exact element={ _.isEqual(checkRole(user), Constants.AMDINISTRATOR) ? <AdminHomePage user={user} ws={ws} onLogin={()=>setDialogLogin(true)} /> : <HomePage user={user} ws={ws} onLogin={()=>setDialogLogin(true)} />} />
             <Route path="/d" element={<DetailPage onLogin={()=>setDialogLogin(true)} onLightbox={(value)=>setLightbox(value)} />} />
-            <Route path="/user/login" element={<LoginPage />} />
+            <Route path="/user/login" element={<LoginPage {...props} />} />
             <Route path="/suppliers" element={<SuppliersPage user={user} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/supplier" element={<SupplierPage />} />
             <Route path="/p" element={<ProfilePage onLightbox={(value)=>setLightbox(value)} />}/>
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
-              <Route path="/me" element={<MePage />} />
+              <Route path="/me" element={<MePage  {...props} />} />
               <Route path="/deposit" element={<DepositPage user={user} />} />
               <Route path="/withdraw" element={<WithdrawPage user={user} />} />
               <Route path="/history-transitions" element={<HistoryTransitionsPage user={user} />} />
-              <Route path="/me+bank" element={<MeBankPage user={user} />} />
-              <Route path="/me+banks" element={<MeBanksPage user={user} />} />
+              <Route path="/bank" element={<BankPage user={user} />} />
+              <Route path="/banks" element={<BanksPage user={user} />} />
               <Route path="/me+book+buys" element={<MeBookBuysPage user={user} />} />
               <Route path="/notifications" element={<NotificationsPage user={user} />} />
             </Route>
@@ -536,8 +539,8 @@ const App =(props) =>{
               <Route path="/date-lottery" element={<DateLotteryPage />} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/user" element={<UserPage />} />
-              <Route path="/banks" element={<BanksPage />} />
-              <Route path="/bank" element={<BankPage />} />
+              <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
+              <Route path="/taxonomy-bank" element={<TaxonomyBankPage />} />
             </Route>
             <Route path="*" element={<p>There's nothing here: 404!</p>} />
           </Routes>
@@ -554,7 +557,8 @@ const mapStateToProps = (state, ownProps) => {
 const mapDispatchToProps = {
   editedUserBalace,
   editedUserBalaceBook,
-  login
+  updateProfile,
+  logout
 }
 
 export default connect( mapStateToProps, mapDispatchToProps )(App);

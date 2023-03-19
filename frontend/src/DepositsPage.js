@@ -2,22 +2,15 @@ import React, { useState, useEffect, useMemo, useRef, useCallback  } from "react
 import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
-import CircularProgress from '@mui/material/CircularProgress';
 import _ from "lodash";
 import deepdash from "deepdash";
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 import CardActionArea from "@material-ui/core/CardActionArea";
-import Avatar from "@mui/material/Avatar";
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import EditIcon from '@mui/icons-material/Edit';
-// import Button from "@mui/material/Button";
-// import Dialog from "@mui/material/Dialog";
-// import DialogActions from "@mui/material/DialogActions";
-// import DialogContent from "@mui/material/DialogContent";
-// import DialogContentText from "@mui/material/DialogContentText";
-// import DialogTitle from "@mui/material/DialogTitle";
+import {
+  Edit as EditIcon,
+  DeleteForever as DeleteForeverIcon
+} from '@mui/icons-material'
 import moment from "moment";
-
 import {
         Button,
         Dialog,
@@ -26,11 +19,14 @@ import {
         DialogContentText,
         DialogTitle,
         Box,
-        Stack
+        Stack,
+        Avatar,
+        CircularProgress
       } from '@mui/material';
 import InfiniteScroll from "react-infinite-scroll-component";
+
 import { getHeaders, checkRole, showToast } from "./util"
-import { queryDeposits, mutationDeposit, queryBanks } from "./gqlQuery"
+import { queryDeposits, mutationDeposit } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
 import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants"
 import TableComp from "./components/TableComp"
@@ -373,8 +369,8 @@ const DepositsPage = (props) => {
                               dateTranfer = new Date(dateTranfer).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
                               createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
   
-                              return <Stack direction="row" spacing={2} >
-                                       <Box sx={{ width: '10%' }}>
+                              return  <Stack direction="row" spacing={2} >
+                                        <Box sx={{ width: '7%' }}>
                                         <Avatar
                                           alt="Example avatar"
                                           variant="rounded"
@@ -384,24 +380,24 @@ const DepositsPage = (props) => {
                                           }}
                                           sx={{ width: 56, height: 56 }}
                                         />
-                                      </Box>
-                                      <Box sx={{ width: '10%' }}>{balance}</Box>
-                                      <Box sx={{ width: '20%' }}>{bank.bankNumber} - {bank.bankName}</Box>
-                                      <Box sx={{ width: '5%' }}>{(moment(dateTranfer, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</Box>
-                                      <Box sx={{ width: '5%' }}>{status}</Box>
-                                      <Box sx={{ width: '5%' }}>{(moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</Box>
+                                        </Box>
+                                        <Box sx={{ width: '5%' }}>{balance}</Box>
+                                        <Box sx={{ width: '20%' }}>{bank.bankNumber} - {bank.bankName}</Box>
+                                        <Box sx={{ width: '15%' }}>{(moment(dateTranfer, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</Box>
+                                        <Box sx={{ width: '5%' }}>{status}</Box>
+                                        <Box sx={{ width: '15%' }}>{(moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</Box>
                                     
-                                      <Box sx={{ width: '20%' }}>
-                                        <button onClick={(evt)=>{
-                                          navigate("/supplier", {state: {from: "/", mode: "edit", id: item?._id} })
-                                        }}><EditIcon/>{t("edit")}
-                                        </button>
-                                        <button onClick={(e)=>{
-                                          setOpenDialogDelete({ isOpen: true, id: item?._id, description: item?.description });
-                                        }}><DeleteForeverIcon/>{t("delete")}</button>
+                                        <Box sx={{ width: '15%' }}>
+                                          <button onClick={(evt)=>{
+                                            navigate("/supplier", {state: {from: "/", mode: "edit", id: item?._id} })
+                                          }}><EditIcon/>{t("edit")}
+                                          </button>
+                                          <button onClick={(e)=>{
+                                            setOpenDialogDelete({ isOpen: true, id: item?._id, description: item?.description });
+                                          }}><DeleteForeverIcon/>{t("delete")}</button>
 
-                                      </Box>
-                                    </Stack>
+                                        </Box>
+                                      </Stack>
                             })
                           }
                         </InfiniteScroll>

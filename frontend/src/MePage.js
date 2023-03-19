@@ -7,7 +7,6 @@ import { createSearchParams, useLocation, useNavigate } from "react-router-dom";
 
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants";
 import { queryMe } from "./gqlQuery";
-import { login, logout } from "./redux/actions/auth";
 import { checkRole, getHeaders } from "./util";
 
 import AutoGenerationContent from "./AutoGenerationContent";
@@ -19,7 +18,7 @@ const MePage = (props) => {
 
     let params = queryString.parse(location.search)
     
-    let { user, login,  logout } = props
+    let { user, updateProfile,  logout } = props
 
     console.log("params :", params)
 
@@ -33,7 +32,7 @@ const MePage = (props) => {
     if(!meValues.loading){
         let { status, data } = meValues.data.me
         if(status){
-            login(data)
+            updateProfile(data)
         }
     }
 
@@ -77,7 +76,7 @@ const MePage = (props) => {
 
                                 <div>
                                     <button onClick={()=>{ 
-                                        navigate("/me+bank");
+                                        navigate("/bank");
                                     }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
                                 </div>
                             </div>
@@ -103,7 +102,7 @@ const MePage = (props) => {
                             </div>
                             <div>
                                 <button onClick={()=>{ 
-                                    navigate("/me+bank"); 
+                                    navigate("/bank"); 
                                 }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
                             </div>
                             <div>
@@ -142,9 +141,9 @@ const MePage = (props) => {
 }
 
 const mapStateToProps = (state, ownProps) => {
-    return { user:state.auth.user }
+    return { }
 };
 
-const mapDispatchToProps = { login, logout }
+const mapDispatchToProps = {}
 
 export default connect( mapStateToProps, mapDispatchToProps )(MePage);

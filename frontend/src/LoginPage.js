@@ -1,23 +1,11 @@
 import React , {useState, useEffect} from "react";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import { useNavigate, useParams } from "react-router-dom";
-import { useQuery, useMutation, useApolloClient } from "@apollo/client";
-import CircularProgress from '@mui/material/CircularProgress';
-import LinearProgress from '@mui/material/LinearProgress';
+import { useNavigate } from "react-router-dom";
+import { useMutation, useApolloClient } from "@apollo/client";
 import { useDeviceData } from "react-device-detect";
-import Typography from "@material-ui/core/Typography";
 import { connect } from "react-redux";
 import _ from "lodash";
-import axios from "axios";
-import GitHubIcon from '@mui/icons-material/GitHub';
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import LockIcon from '@mui/icons-material/Lock';
-import utf8 from "utf8";
-import base64 from 'base-64';
-
-import { login } from "./redux/actions/auth"
 
 import { mutationLogin } from "./gqlQuery"
 
@@ -26,30 +14,22 @@ const LoginPage = (props) => {
     let deviceData = useDeviceData();
     let client = useApolloClient();
 
-    let { user, login } = props
-
-    // console.log("user :", user)
+    let { user, updateProfile } = props
 
     if(!_.isEmpty(user)){
-        // history.push("/me");
         navigate("/me")
     }
 
     let [input, setInput]   = useState({ username: "",  password: ""});
-    const [onLogin, resultLogin] = useMutation(mutationLogin, {
-        // refetchQueries: [ {query: gqlPosts}, {query : gqlHomes} ],     
+    const [onLogin, resultLogin] = useMutation(mutationLogin, { 
         onCompleted: async(datas)=>{
             console.log("onCompleted :", datas)
             let {status, data, sessionId} = datas.login
             if(status){
                 localStorage.setItem('token', sessionId)
-                login(data)
+                updateProfile(data)
             }
 
-            // await client.cache.reset();
-            // await client.resetStore();
-
-            // history.push("/");
             navigate("/")
         },
         onError(err){
@@ -100,9 +80,9 @@ const LoginPage = (props) => {
 };
 
 const mapStateToProps = (state, ownProps) => {
-    return { user:state.auth.user }
+    return { }
 };
 
-const mapDispatchToProps = { login }
+const mapDispatchToProps = { }
   
 export default connect( mapStateToProps, mapDispatchToProps )(LoginPage);  
