@@ -389,7 +389,7 @@ const DepositsPage = (props) => {
                                     
                                         <Box sx={{ width: '15%' }}>
                                           <button onClick={(evt)=>{
-                                            navigate("/supplier", {state: {from: "/", mode: "edit", id: item?._id} })
+                                            navigate("/deposit", {state: {from: "/", mode: "edit", id: item?._id} })
                                           }}><EditIcon/>{t("edit")}
                                           </button>
                                           <button onClick={(e)=>{

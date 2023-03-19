@@ -11,7 +11,8 @@ import {
   Button,
   LinearProgress,
   TextField,
-  Autocomplete
+  Autocomplete,
+  Box
 } from "@mui/material";
 
 import { getHeaders, checkRole } from "./util"
@@ -36,7 +37,7 @@ const DepositPage = (props) => {
   let [error, setError]       = useState(initValues);
   const [data, setData]       = useState({});
 
-  let [banks, setBanks]       = useState([]);
+  let [ banks, setBanks ]       = useState([]);
   let { user, logout } = props
   let { mode, id } = location?.state
 
@@ -44,7 +45,7 @@ const DepositPage = (props) => {
           data: dataBanks, 
           error: errorBanks} = useQuery(queryBanks, { 
                                         context: { headers: getHeaders(location) }, 
-                                        variables: {isAdmin: true},
+                                        variables: {is_admin: true},
                                         fetchPolicy: 'network-only', // Used for first execution
                                         nextFetchPolicy: 'cache-first', // Used for subsequent executions
                                         notifyOnNetworkStatusChange: true });
@@ -135,18 +136,14 @@ const DepositPage = (props) => {
   useEffect(()=>{
     if(!loadingBanks){
       if(!_.isEmpty(dataBanks?.banks)){
-        let { status, data } = dataBanks.banks
+        let { status, data } = dataBanks?.banks
         if(status) setBanks(data)
       }
     }
   }, [dataBanks, loadingBanks])
 
   const submitForm = async(event) => {
-
-
-
     /*
-
     switch(mode){
       case "new":{
         let newInput =  {
@@ -170,10 +167,6 @@ const DepositPage = (props) => {
     // onMutationDeposit({ variables: { input: newInput } });
     */
   }
-
-  const onBankIdChange = (e, bank) => {
-    setInput({...input, bank})
-  };
 
   const onInputChange = (e) => {
     const { name, value } = e.target;
@@ -217,42 +210,35 @@ const DepositPage = (props) => {
               {
                 loadingBanks
                 ? <LinearProgress /> 
-                : <Stack alignItems="stretch">
-                    {/* <label>เลือกธนาคารที่โอน :</label>
-                    <select 
-                      name="bank" 
-                      id="bank" 
-                      value={input?.bank?._id}
-                      onChange={ onInputChange }
-                      onBlur={ validateInput }>
-                      <option value={""}>ไม่เลือก</option>
-                      { _.map(banks, (value)=><option key={value?._id} value={value?._id}>{value?.bankNumber} - {value?.bankName}</option> )}
-                    </select>  */}
-
+                : <Box alignItems="stretch">
                     <Autocomplete
                       label={"เลือกธนาคารที่โอน *"}
                       disablePortal
                       id="bank"
+                      sx={{ width: 300 }}
                       options={banks}
-                      getOptionLabel={(option) => option.name}
+                      getOptionLabel={(option)=>`${option.bankNumber} (${option.name})`}
                       defaultValue={ _.find(banks, (v)=>input?.bank?._id === v._id) }
-                      renderInput={(params) => <TextField {...params} label={t("bank_account_name")} required={_.isEmpty(input?.bank?._id) ? true : false} />}
-                      onChange={(event, values) => onBankIdChange(event, values)}
+                      renderInput={(params) =>{
+                        return  <TextField {...params} label={t("bank_account_name")} required={_.isEmpty(input?.bank?._id) ? true : false} />
+                      } }
+                      onChange={(event, bank) => setInput({...input, bank})}
                     />
                     <p className="text-red-500"> {_.isEmpty(error.bank) ? "" : error.bank} </p>  
-                  </Stack>  
+                  </Box>  
               }
-              <Stack>
+              <Box>
                 <TextField 
                   type="number" 
                   name="balance"
                   label={"ยอดเงิน *"}
                   value={ input.balance }
+                  sx={{ width: 300 }}
                   onChange={ onInputChange }
                   onBlur={ validateInput } />
                 <p className="text-red-500"> {_.isEmpty(error.balance) ? "" : error.balance} </p>
-              </Stack>
-              <Stack>
+              </Box>
+              <Box>
                 <DatePicker
                   label={t("date_tranfer")}
                   placeholderText={t("date_tranfer")}
@@ -264,7 +250,7 @@ const DepositPage = (props) => {
                   timeInputLabel="Time:"
                   dateFormat="MM/dd/yyyy h:mm aa"
                   showTimeInput/>
-              </Stack>
+              </Box>
               <AttackFileField
                 label={t("attack_file")}
                 values={input.files}

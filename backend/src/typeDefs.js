@@ -474,7 +474,7 @@ export default gql`
     withdraws: JSON
     withdrawById(_id: ID!): JSON
 
-    banks(isAdmin: Boolean = false): JSON
+    banks(is_admin: Boolean = false): JSON
     bankById(_id: ID!): JSON
 
     bookBuyTransitions: JSON

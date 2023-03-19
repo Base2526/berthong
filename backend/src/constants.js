@@ -10,3 +10,5 @@ export const DATA_NOT_FOUND = "DATA_NOT_FOUND";
 export const USER_NOT_FOUND = "USER_NOT_FOUND";
 export const UNAUTHENTICATED= "UNAUTHENTICATED";
 export const BAD_USER_INPUT = "BAD_USER_INPUT";
+
+export const _ID_AMDINISTRATOR = "63ff2dd554645f028e66fbdd";

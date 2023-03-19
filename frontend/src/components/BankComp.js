@@ -4,27 +4,26 @@ import _ from "lodash"
 import { useQuery } from "@apollo/client";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 
-import { queryRoleByIds } from "../gqlQuery"
+import { queryBankById } from "../gqlQuery"
 import { getHeaders } from "../util"
 
-const RolesComp = (props) => {
+const BankComp = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
     let [data, setData] = useState();
-    
-    let { Ids } = props
+    let { bankId } = props
 
-    const { loading: loadingRoleByIds, 
-            data: dataRoleByIds, 
-            error: errorRoleByIds} = useQuery(queryRoleByIds, { 
+    const { loading: loadingBankById, 
+            data: dataBankById, 
+            error: errorBankById} = useQuery(queryBankById, { 
                                                                 context: { headers: getHeaders(location) },
-                                                                variables: {input: Ids},
+                                                                variables: { id: bankId },
                                                                 fetchPolicy: 'cache-first', // Used for first execution
                                                                 nextFetchPolicy: 'network-only', // Used for subsequent executions
                                                                 notifyOnNetworkStatusChange: true 
                                                             });
-    if(!_.isEmpty(errorRoleByIds)){
-        _.map(errorRoleByIds?.graphQLErrors, (e)=>{
+    if(!_.isEmpty(errorBankById)){
+        _.map(errorBankById?.graphQLErrors, (e)=>{
             console.log("e :", e)
             // switch(e?.extensions?.code){
             //     case UNAUTHENTICATED:{
@@ -36,17 +35,17 @@ const RolesComp = (props) => {
     }
 
     useEffect(() => {
-        if(!loadingRoleByIds){
-            if (dataRoleByIds?.roleByIds) {
-                let { status, data } = dataRoleByIds?.roleByIds
+        if(!loadingBankById){
+            if (dataBankById?.bankById) {
+                let { status, data } = dataBankById?.bankById
                 if(status){
                     setData(data)
                 }
             }
         }
-    }, [dataRoleByIds, loadingRoleByIds])
+    }, [dataBankById, loadingBankById])
 
-    return  <div>{ loadingRoleByIds ? <LinearProgress /> : _.map(data, e=>e.name).join(', ') }</div>
+    return  <div>{ loadingBankById ? <LinearProgress /> : data?.name }</div>
 };
 
-export default RolesComp;
+export default BankComp;

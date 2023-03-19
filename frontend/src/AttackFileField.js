@@ -1,22 +1,19 @@
-import React, { useState, useEffect, withStyles } from "react";
-import Typography from "@mui/material/Typography";
-import Link from "@mui/material/Link";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
+import React from "react";
 import { styled } from "@mui/material/styles";
-import IconButton from "@mui/material/IconButton";
-import PhotoCamera from "@mui/icons-material/PhotoCamera";
-import Avatar from "@mui/material/Avatar";
-import Stack from "@mui/material/Stack";
-import CloseIcon from "@mui/icons-material/Close";
-import AddBoxIcon from '@mui/icons-material/AddBox';
-import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import {
+  Stack,
+  Box,
+  Avatar,
+  IconButton,
+  Typography
+} from "@mui/material"
+import {
+  RemoveCircle as RemoveCircleIcon,
+  AddBox as AddBoxIcon
+} from '@mui/icons-material'
 import _ from "lodash";
 
-const Input = styled("input")({
-  display: "none"
-});
+const Input = styled("input")({ display: "none" });
 
 const AttackFileField = (props) => {
   let { label, values, multiple, onChange, onSnackbar } = props
@@ -32,10 +29,8 @@ const AttackFileField = (props) => {
   };
 
   return (
-    <div>
-      <Typography variant="overline" display="block" gutterBottom>
-        {label}
-      </Typography>
+    <Stack>
+      <Typography variant="overline" display="block" gutterBottom>{label}</Typography>
       <label htmlFor="contained-button-file">
         <Input
           accept="image/*"
@@ -55,7 +50,9 @@ const AttackFileField = (props) => {
           <AddBoxIcon />
         </IconButton>
       </label>
-      <Stack direction="row">
+      <Stack 
+        direction="row"
+        spacing={2}>
         {_.map(
           _.filter(values, (v, key) => !v.delete),
           (file, index) => {
@@ -63,13 +60,14 @@ const AttackFileField = (props) => {
               // new file
               try {
                 return (
-                  <div style={{ position: "relative" }} key={index}>
+                  <Box style={{ position: "relative" }} key={index}>
                     <Avatar
                       sx={{
                         height: 80,
                         width: 80,
                         border: "1px solid #cccccc",
-                        padding: "5px"
+                        padding: "5px",
+                        marginBottom: "5px"
                       }}
                       variant="rounded"
                       alt="Example Alt"
@@ -97,7 +95,7 @@ const AttackFileField = (props) => {
                     >
                       <RemoveCircleIcon />
                     </IconButton>
-                  </div>
+                  </Box>
                 );
               } catch (e) {
                 console.log('Error :', e)
@@ -107,13 +105,14 @@ const AttackFileField = (props) => {
             } else {
               // old file
               return (
-                <div style={{ position: "relative" }} key={index}>
+                <Box style={{ position: "relative" }} key={index}>
                   <Avatar
                     sx={{
                       height: 80,
                       width: 80,
                       border: "1px solid #cccccc",
-                      padding: "5px"
+                      padding: "5px",
+                      marginBottom: "10px"
                     }}
                     variant="rounded"
                     alt="Example Alt"
@@ -148,13 +147,13 @@ const AttackFileField = (props) => {
                   >
                     <RemoveCircleIcon />
                   </IconButton>
-                </div>
+                </Box>
               );
             }
           }
         )}
       </Stack>
-    </div>
+    </Stack>
   );
 };
 

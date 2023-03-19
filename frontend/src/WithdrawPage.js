@@ -7,14 +7,18 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { 
   Stack,
+  Box,
   Button,
   LinearProgress,
+  Autocomplete,
+  TextField
 } from "@mui/material";
 
 import { mutationWithdraw, queryBanks, queryWithdrawById, queryWithdraws } from "./gqlQuery";
 import { logout } from "./redux/actions/auth";
 import { getHeaders, checkRole } from "./util";
 import  * as Constants from "./constants";
+import BankComp from "./components/BankComp"
 
 let initValues = { bank: null,  balance: "", status: "" }
 
@@ -27,15 +31,17 @@ const WithdrawPage = (props) => {
 
   const [banks, setBanks] = useState([]);
 
-  let { user, logout } = props
+  let { user } = props
   let { mode, id } = location.state
+
+  console.log("WithdrawPage :", mode, id, user)
 
   const { loading: loadingBanks, 
           data: dataBanks, 
           error: errorBanks} = useQuery(queryBanks, { context: { headers: getHeaders(location) },
                                                       notifyOnNetworkStatusChange: true, 
-                                                      fetchPolicy: 'network-only', // Used for first execution
-                                                      nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                                      fetchPolicy: 'cache-first', // Used for first execution
+                                                      nextFetchPolicy:  'network-only', // Used for subsequent executions
                                                     });
 
   let { loading: loadingWithdrawById, 
@@ -233,68 +239,80 @@ const WithdrawPage = (props) => {
     });
   };
 
-  const bankView = () =>{
-    switch(mode){
-      case "new":{
-        <div>
-          <label>{t("bank")}</label>
-          <select 
-            name="bank" 
-            id="bank" 
-            value={ input.bank }
-            onChange={ onInputChange }
-            onBlur={ validateInput }>
-            <option value={""}>ไม่เลือก</option>
-            { _.map(user.banks, (value)=>{
-              let f = _.find(banks, (bank)=>_.isEqual(bank._id, value.bankId) )
-              return <option key={value?._id} value={value?._id}>{value?.bankNumber} - {f?.name}</option>
-            } )}
-          </select> 
-          <p className="text-red-500"> {_.isEmpty(error.bank) ? "" : error.bank} </p>  
-        </div>
-      }
 
-      case "edit":{
-        let f = _.find(banks, (bank)=>_.isEqual(bank._id, input?.bank?.bankId) )
-        return <div>เลือกเลขที่บัญชี : {input?.bank?.bankNumber} - {f?.name}</div>
-      }
-    }
-  }
-
-  const balanceView = () =>{
-    switch(mode){
-      case "new":{
-        <div>
-          <label>ยอดเงิน * :</label>
-          <input 
-            type="number" 
-            name="balance"
-            value={ input.balance }
-            onChange={ onInputChange }
-            onBlur={ validateInput } />
-          <p className="text-red-500"> {_.isEmpty(error.balance) ? "" : error.balance} </p>
-        </div>
-      }
-
-      case "edit":{
-        return <div>ยอดเงิน : {input.balance}</div>
-      }
-    }
-  }
- 
+   {/* <label>เลือกบัญชี</label>
+                      <select 
+                        name="bank" 
+                        id="bank" 
+                        value={ input.bank }
+                        onChange={ onInputChange }
+                        onBlur={ validateInput }>
+                        <option value={""}>ไม่เลือก</option>
+                        { _.map(user.banks, (value)=>{
+                          let f = _.find(banks, (bank)=>_.isEqual(bank._id, value.bankId) )
+                          return <option key={value?._id} value={value?._id}>{value?.bankNumber} - {f?.name}</option>
+                        } )}
+                      </select> 
+                      <p className="text-red-500"> {_.isEmpty(error.bank) ? "" : error.bank} </p>   */}
   return  <Stack
             direction="column"
             justifyContent="center"
-            alignItems="flex-start">
-            <div>
+            alignItems="flex-start"
+            spacing={2}>
               {
                 loadingBanks
                 ? <LinearProgress /> 
-                : bankView()
+                : _.isEqual(mode, 'new')
+                  ? <Box> 
+                      <Autocomplete
+                        label={"เลือกบัญชี *"}
+                        disablePortal
+                        id="bank"
+                        sx={{ width: 300 }}
+                        options={ user.banks }
+                        getOptionLabel={(option)=>`${option.bankNumber} (${option.name})`}
+                        // defaultValue={ _.find(banks, (v)=>input?.bank?._id === v._id) }
+                        renderInput={(params) =>{
+                          return  <TextField {...params} label={t("bank_account_name")}  /*required={_.isEmpty(input?.bank?._id) ? true : false} */ />
+                        } }
+                        onChange={(event, val) => setInput({...input, bank: val}) }
+                      />
+                    </Box>
+                  : _.isEqual(mode, 'edit')
+                    ? <div>เลือกเลขที่บัญชี : {input?.bank?.bankNumber} - {(_.find(banks, (bank)=>_.isEqual(bank._id, input?.bank?.bankId) ))?.name}</div>
+                    : ""
               }
-              {balanceView()}
               {
-                  mode == "edit" && checkRole(user) == Constants.AMDINISTRATOR 
+                _.isEqual(mode, 'new')
+                ? <Box> 
+                    <TextField 
+                    type="number" 
+                    name="balance"
+                    label={"ยอดเงิน *"}
+                    value={ input.balance }
+                    sx={{ width: 300 }}
+                    // onChange={ onInputChange }
+                    // onBlur={ validateInput } 
+                    /> 
+                  </Box>
+                
+                  /*<div>
+                    <label>ยอดเงิน * :</label>
+                    <input 
+                      type="number" 
+                      name="balance"
+                      value={ input.balance }
+                      onChange={ onInputChange }
+                      onBlur={ validateInput } />
+                    <p className="text-red-500"> {_.isEmpty(error.balance) ? "" : error.balance} </p>
+                  </div>*/
+
+                :  _.isEqual(mode, 'edit')
+                   ? <div>ยอดเงิน : {input.balance}</div>
+                   : ""
+              }
+              {
+                   _.isEqual(mode, 'edit') &&  _.isEqual( checkRole(user),  Constants.AMDINISTRATOR )
                   &&  <div>
                         <label>{t("status")} </label>
                         <select 
@@ -309,14 +327,13 @@ const WithdrawPage = (props) => {
                         <p className="text-red-500"> {_.isEmpty(error.status) ? "" : error.status} </p>  
                       </div>   
                 }
-            </div>
-            <div>ยอดที่สามารถถอดได้ { user.balance - input.balance - user.balanceBook } บาท</div>
+            <Box>
+              <div>ยอดที่สามารถถอดได้ { user.balance - input.balance - user.balanceBook } บาท</div>
+            </Box>
             <Button 
               variant="contained" 
               color="primary"
-              onClick={(evt)=>{
-                submitForm(evt)
-              }}>{t("withdraw")}</Button>
+              onClick={(evt)=>{ submitForm(evt) }}>{t("withdraw")}</Button>
           </Stack>
 }
 

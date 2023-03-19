@@ -11,7 +11,9 @@ import { User, Supplier, Bank, Role, Deposit, Withdraw, DateLottery, Transition 
 import pubsub from './pubsub'
 import { emailValidate, checkBalance, checkBalanceBook, fileRenamer, 
         checkAuthorization, checkAuthorizationWithSessionId, getSessionId, checkRole} from "./utils"
-import { BAD_USER_INPUT, ERROR, FORCE_LOGOUT, DATA_NOT_FOUND, USER_NOT_FOUND, UNAUTHENTICATED, AMDINISTRATOR, AUTHENTICATED } from "./constants"
+import { BAD_USER_INPUT, ERROR, FORCE_LOGOUT, DATA_NOT_FOUND, 
+        USER_NOT_FOUND, UNAUTHENTICATED, AMDINISTRATOR, AUTHENTICATED,
+        _ID_AMDINISTRATOR } from "./constants"
 import AppError from "./utils/AppError"
 import fetch from "node-fetch";
 import { GraphQLUpload } from 'graphql-upload';
@@ -128,8 +130,9 @@ export default {
 
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
+      // if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
 
+      
       let data = await Role.find({_id: {$in: args?.input }})
       return {
         status: true,
@@ -377,21 +380,21 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { isAdmin } = args
+      let { is_admin } = args
 
-      if(!_.isBoolean( isAdmin )) throw new AppError(BAD_USER_INPUT, 'Is-admin true or false only!')
+      // if(!_.isBoolean( isAdmin )) throw new AppError(BAD_USER_INPUT, 'Is-admin true or false only!')
 
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      if(isAdmin){
-        let user  = await User.findById(mongoose.Types.ObjectId("62a2c0cecf7946010d3c743f"))
+      if(is_admin){
+        let user  = await User.findById(mongoose.Types.ObjectId(_ID_AMDINISTRATOR))
         if(_.isNull(user)) throw new AppError(DATA_NOT_FOUND, 'User not found.')
   
         let banks =_.filter(await Promise.all(_.map(user?.banks, async(item)=>{
                           let bank = await Bank.findById(item.bankId)
-                          return _.isNull(bank) ? null : {...item._doc, bankName:bank?.name}
-                        })), item=>!_.isNull(item) ) 
+                          return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
+                        })), e=>!_.isNull(e) ) 
 
         return {  status: true,
                   data: banks,
@@ -639,26 +642,30 @@ export default {
     async login(parent, args, context, info) {
       let start = Date.now()
       let {input} = args
-      console.log("params login : ", input)
 
       let user = emailValidate().test(input.username) ?  await User.findOne({email: input.username}) : await User.findOne({username: input.username})
       
       if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
       await User.updateOne({ _id: user?._id }, { lastAccess : Date.now() });
-      user = await User.findById(user?._id)
+      user = await User.findOne({ _id: user?._id}, 
+                                { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 })
       // let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
       //   return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
       // }))  
+      let banks = _.filter(await Promise.all(_.map(user?.banks, async(item)=>{
+                    let bank = await Bank.findById(item.bankId)
+                    return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
+                  })), e=>!_.isNull(e) ) 
 
       user = {...user._doc, 
-              // roles,
+              banks,
               balance: (await checkBalance(user?._id)).balance,
               balanceBook: await checkBalanceBook(user?._id)}
 
       return {
         status: true,
-        data: _.omit(user, ["password", "__v"]),
+        data: user,
         sessionId: await getSessionId(user?._id, input),
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
