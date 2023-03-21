@@ -5,50 +5,38 @@ import { useTranslation } from "react-i18next";
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
 import { getHeaders } from "./util"
-import { gqlSupplier, queryDateLotterys } from "./gqlQuery"
+import { mutationSupplier, queryDateLotterys, mutationRegister, queryUsers } from "./gqlQuery"
 
 const { faker } = require("@faker-js/faker");
 
 const AutoGenerationContent = (props) => {
-    let location = useLocation();
+    const location              = useLocation();
+    const [users, setUsers]     = useState([]); 
+    const [dateLotterys, setDateLotterys] = useState([]); 
+ 
+    const { loading: loadingUsers, 
+            data: dataUsers, 
+            error: errorUsers,
+            networkStatus } = useQuery(queryUsers, 
+                                        { 
+                                        context: { headers: getHeaders(location) }, 
+                                        fetchPolicy: 'network-only', // Used for first execution
+                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        notifyOnNetworkStatusChange: true
+                                        }
+                                    );
 
-    let dateLotterysValue = useQuery(queryDateLotterys, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
+    const { loading: loadingDateLotterys, 
+            data: dataDateLotterys, 
+            error: errorDateLotterys,
+            networkStatus: networkStatusDateLotterys } = useQuery(queryDateLotterys, { 
+                                                                        context: { headers: getHeaders(location) }, 
+                                                                        notifyOnNetworkStatusChange: true }
+                                                                    );
 
-    console.log("dateLotterysValue :", dateLotterysValue)
-
-    const [onSupplier, resultSupplier] = useMutation(gqlSupplier, {
+    const [onSupplier, resultSupplier] = useMutation(mutationSupplier, {
         context: { headers: getHeaders(location) },
-        update: (cache, {data: {supplier}}) => {
-    
-        //   let { data, mode, status } = supplier
-    
-        //   if(status){
-        //     switch(mode){
-        //       case "new":{
-        //         const querySuppliersValue = cache.readQuery({ query: querySuppliers });
-        //         let newData = [...querySuppliersValue.suppliers.data, supplier.data];
-    
-        //         cache.writeQuery({
-        //           query: querySuppliers,
-        //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-        //         });
-        //         break;
-        //       }
-    
-        //       case "edit":{
-        //         const querySuppliersValue = cache.readQuery({ query: querySuppliers });
-        //         let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == supplier.data._id ? supplier.data : item ) 
-    
-        //         cache.writeQuery({
-        //           query: querySuppliers,
-        //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-        //         });
-                
-        //         break;
-        //       }
-        //     }
-        //   }
-        },
+        update: (cache, {data: {supplier}}) => { },
         onCompleted({ data }) {
         //   history.goBack()
         },
@@ -56,7 +44,36 @@ const AutoGenerationContent = (props) => {
           console.log("onError :")
         }
     });
-    console.log("resultSupplier :", resultSupplier)
+
+    // 
+    const [onRegister, resultRegister] = useMutation(mutationRegister, {
+        context: { headers: getHeaders(location) },
+        update: (cache, {data: {register}}) => { },
+        onCompleted({ data }) {
+        //   history.goBack()
+        },
+        onError(error){
+          console.log("onRegister onError :", error)
+        }
+    });
+
+    useEffect(() => {
+        if(!loadingDateLotterys){
+          if(!_.isEmpty(dataUsers?.users)){
+            let { status, data } = dataUsers?.users
+            if(status)setUsers(data)
+          }
+        }
+    }, [dataUsers, loadingDateLotterys])
+
+    useEffect(() => {
+        if(!loadingUsers){
+          if(!_.isEmpty(dataDateLotterys?.dateLotterys)){
+            let { status, data } = dataDateLotterys?.dateLotterys
+            if(status)setDateLotterys(data)
+          }
+        }
+    }, [dataDateLotterys, loadingUsers])
 
     const makeFile = (length) =>{
         let files = []
@@ -69,13 +86,6 @@ const AutoGenerationContent = (props) => {
                         })
         }
         return files
-
-        /*
-            url: { type: String },
-    filename: { type: String },
-    mimetype: { type: String },
-    encoding: { type: String },
-        */
     }
 
     const makeNumber = (length)=> {
@@ -88,25 +98,58 @@ const AutoGenerationContent = (props) => {
         return result;
     }
 
+    const randomNumberInRange = (min, max) => {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
     return(<div className="div-management">
                 <div>Auto-Generation</div>
                 <div>
                     <button onClick={()=>{
-                        let { data } = dateLotterysValue.data.dateLotterys
-                        for ( var i = 0; i < 20; i++ ) {
+                        // let { data } = dateLotterysValue.data.dateLotterys
+                        for ( var i = 0; i < 95; i++ ) {
                             let newInput =  {
                                 mode: "NEW",
                                 title: faker.lorem.lines(1),
                                 price: parseInt(makeNumber(3)),
                                 priceUnit: parseInt(makeNumber(2)),
                                 description: faker.lorem.paragraph(),
-                                dateLottery: data[i % 2]?._id,
+                                dateLottery: dateLotterys[randomNumberInRange(0, dateLotterys.length - 1)]?._id,
                                 files: makeFile(5),
-                                auto: true
+                                condition: parseInt(randomNumberInRange(11, 100)),    // 11-100
+                                category: parseInt(randomNumberInRange(0, 3)),        // money, gold, things, etc
+                                type: parseInt(randomNumberInRange(0, 1)),            // bon, lang
+                                ownerId: users[randomNumberInRange(0, users.length - 1)]?._id,
+                                test: true,
                             }
+                            // console.log("newInput : ", newInput)
                             onSupplier({ variables: { input: newInput } });
                         }
-                    }}>สร้าง สินค้า</button>
+
+                        // console.log("users :", users[randomNumberInRange(0, users.length - 1)]?._id, users.length)
+                    }}>Auto สร้าง สินค้า</button>
+                </div>
+
+                <div>
+                    <button onClick={()=>{
+                        for ( var i = 0; i < 100; i++ ) {
+                            let newInput =  {
+                                username: faker.name.firstName(),
+                                password: faker.name.firstName(),
+                                email: faker.internet.email(),
+                                displayName: faker.name.firstName(),
+                                avatar: {
+                                    url: faker.image.avatar(),
+                                    filename: faker.name.firstName(),
+                                    encoding: '7bit',
+                                    mimetype: 'image/png'
+                                }
+                            }
+
+                            console.log("newInput :", newInput)
+                            onRegister({ variables: { input: newInput } });
+                        }
+                    }}>Auto สร้าง USER</button>
                 </div>
             </div>)
 }

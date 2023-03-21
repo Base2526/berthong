@@ -13,7 +13,9 @@
     "@material-ui/core": "4.12.3",
     "@material-ui/data-grid": "4.0.0-alpha.37",
     "@material-ui/icons": "4.11.2",
+    "@material-ui/lab": "^4.0.0-alpha.61",
     "@mui/icons-material": "5.8.0",
+    "@mui/joy": "latest",
     "@mui/lab": "^5.0.0-alpha.85",
     "@mui/material": "5.8.0",
     "@mui/x-data-grid": "5.11.1",
@@ -27,6 +29,7 @@
     "axios": "^0.27.2",
     "base-64": "^1.0.0",
     "canvas": "^2.9.3",
+    "cdbreact": "1.5.1",
     "ckeditor4-react": "3.1.0",
     "classnames": "^2.3.2",
     "crypto-js": "^4.1.1",
@@ -43,12 +46,16 @@
     "lodash": "4.17.21",
     "lorem-ipsum": "^1.0.4",
     "match-sorter": "^4.2.1",
+    "material-ui": "0.20.2",
     "moment": "^2.29.3",
     "moment-timezone": "^0.5.40",
+    "mongoose": "^7.0.2",
     "namor": "^2.0.3",
     "query-string": "^7.1.1",
     "react": "^18.2.0",
+    "react-bootstrap": "2.2.3",
     "react-chat-elements": "^11.0.1",
+    "react-date-object": "^2.1.7",
     "react-datepicker": "^4.8.0",
     "react-device-detect": "^2.2.2",
     "react-dom": "^18.2.0",
@@ -56,11 +63,14 @@
     "react-ga4": "^1.4.1",
     "react-google-login": "5.2.2",
     "react-i18next": "^12.0.0",
-    "react-icons": "^2.2.5",
+    "react-icons": "^4.8.0",
     "react-image-lightbox": "5.1.4",
+    "react-infinite-scroll-component": "6.1.0",
     "react-login-github": "^1.0.8",
     "react-masonry-css": "^1.0.16",
+    "react-multi-date-picker": "^3.3.4",
     "react-redux": "^7.2.0",
+    "react-router-bootstrap": "0.26.1",
     "react-router-dom": "^6.8.1",
     "react-scripts": "5.0.1",
     "react-share": "4.4.0",
@@ -90,7 +100,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "jest",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -117,5 +127,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "jest": "^27.5.1"
   }
 }

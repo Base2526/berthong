@@ -1,4 +1,4 @@
-import {LOGIN, 
+import {UPDATED_PROFILE, 
         LOGOUT, 
         ADDED_CONVERSATIONS, 
         ADDED_CONVERSATION, 
@@ -17,7 +17,7 @@ import {LOGIN,
     
         TERMS_AND_CONDITIONS} from "../../constants"
 
-const _login = (data) => ({ type: LOGIN, data });
+const _update_profile = (data) => ({ type: UPDATED_PROFILE, data });
 const _logout = (data) => ({ type: LOGOUT, data });
 
 const _addedConversations = (data) => ({ type: ADDED_CONVERSATIONS, data });
@@ -40,8 +40,8 @@ const _editedUserBalace = (data) => ({ type: EDITED_USER_BALANCE, data });
 
 const _editedUserBalaceBook = (data) => ({ type: EDITED_USER_BALANCE_BOOK, data });
 
-export const login = (data) => (dispatch) => {
-    dispatch(_login(data));
+export const update_profile = (data) => (dispatch) => {
+    dispatch(_update_profile(data));
 }
 
 export const logout = (data) => (dispatch) => {

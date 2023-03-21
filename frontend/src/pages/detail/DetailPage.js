@@ -4,36 +4,40 @@ import { useLocation } from "react-router-dom";
 import { toast } from 'react-toastify';
 import { useMutation, useQuery, NetworkStatus } from "@apollo/client";
 import CardActionArea from "@material-ui/core/CardActionArea";
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import Avatar from "@mui/material/Avatar";
-import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from "@mui/material/IconButton";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
+import { 
+  MoreVert as MoreVertIcon, 
+  ContentCopy as ContentCopyIcon
+} from "@mui/icons-material";
+import {
+  Avatar,
+  CircularProgress,
+  IconButton,
+  Menu,
+  MenuItem
+} from "@mui/material";
 import _ from "lodash";
 import queryString from 'query-string';
-import Lightbox from "react-image-lightbox";
-import "react-image-lightbox/style.css";
 import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
 
-import { DATA_NOT_FOUND, ERROR, FORCE_LOGOUT, UNAUTHENTICATED, 
-         WS_CLOSED, WS_CONNECTED, WS_SHOULD_RETRY } from "./constants";
-import DialogBuy from "./DialogBuy";
-import DialogLogin from "./DialogLogin";
-import { gqlBook, gqlBuy, querySupplierById, querySuppliers, subscriptionSupplierById } from "./gqlQuery";
-import ItemFollow from "./ItemFollow";
-import ItemShare from "./ItemShare";
-import { login, logout } from "./redux/actions/auth";
-import { bookView, getHeaders, sellView, showToast } from "./util";
+import {  DATA_NOT_FOUND, 
+          ERROR, 
+          FORCE_LOGOUT, 
+          UNAUTHENTICATED, 
+          WS_CLOSED, 
+          WS_CONNECTED, 
+          WS_SHOULD_RETRY } from "../../constants";
+import DialogBuy from "../../DialogBuy";
+import { mutationBook, mutationBuy, querySupplierById, querySuppliers, subscriptionSupplierById } from "../../gqlQuery";
+import ItemFollow from "../../item/ItemFollow";
+import ItemShare from "../../item/ItemShare";
+import { logout } from "../../redux/actions/auth";
+import { bookView, getHeaders, sellView, showToast } from "../../util";
 
 let unsubscribeSupplierById = null;
 const DetailPage = (props) => {
   const location = useLocation();
   const toastIdRef = useRef(null)
-  let [lightbox, setLightbox] = useState({ isOpen: false, photoIndex: 0, images: [] });
   let [datas, setDatas] = useState([])
-  let [dialogLogin, setDialogLogin] = useState(false);
   let [dialogBuy, setDialogBuy] = useState(false);
   let [openMenuSetting, setOpenMenuSetting] = useState(null);
   let [openMenuShare, setOpenMenuShare] = useState(null);
@@ -41,11 +45,11 @@ const DetailPage = (props) => {
   let params = queryString.parse(location.search)
 
   let { id } = params; 
-  let { user, ws, logout } = props;
+  let { user, ws, logout, onLightbox, onLogin } = props;
 
   let [datasSupplierById, setDatasSupplierById] = useState([]);
 
-  const [onBook, resultBookValues] = useMutation(gqlBook,{
+  const [onBook, resultBookValues] = useMutation(mutationBook,{
     context: { headers: getHeaders(location) },
     update: (cache, {data: {book}}) => {
       let { status, action, data } = book
@@ -95,7 +99,7 @@ const DetailPage = (props) => {
           case DATA_NOT_FOUND:
           case UNAUTHENTICATED:
           case ERROR:{
-            showToast("error", error?.message)
+            showToast("error", e?.message)
             break;
           }
         }
@@ -103,7 +107,7 @@ const DetailPage = (props) => {
     }
   });
 
-  const [onBuy, resultBuyValues] = useMutation(gqlBuy,{
+  const [onBuy, resultBuyValues] = useMutation(mutationBuy,{
     context: { headers: getHeaders(location) },
     update: (cache, {data: {buy}}) => {
       let { status, data } = buy
@@ -273,7 +277,7 @@ const DetailPage = (props) => {
             alt="Example Alt"
             src={_.isEmpty(datasSupplierById?.files) ? "" : datasSupplierById?.files[0].url}
             onClick={(e) => {
-              setLightbox({ isOpen: true, photoIndex: 0, images: datasSupplierById?.files })
+              onLightbox({ isOpen: true, photoIndex: 0, images: datasSupplierById?.files })
             }}
           />
         </CardActionArea>
@@ -411,6 +415,9 @@ const DetailPage = (props) => {
                 <div>ชื่อ :{datasSupplierById.title},  ราคา : {datasSupplierById?.price}</div>
                 <div>จอง :{bookView(datasSupplierById)}</div>
                 <div>ขายไปแล้ว :{sellView(datasSupplierById)}</div>
+                <div>
+                  <p className="card-text">{datasSupplierById?.description}</p>
+                </div>
               </div>
             
               {menuShareView(datasSupplierById, 1)}
@@ -421,7 +428,7 @@ const DetailPage = (props) => {
                   {...props} 
                   item={datasSupplierById} 
                   onDialogLogin={(e)=>{
-                    setDialogLogin(true)
+                    onLogin(true)
                   }}/>
                 <ItemShare 
                   {...props}  
@@ -451,7 +458,7 @@ const DetailPage = (props) => {
                             // disabled={ !_.isEmpty(fn) && (fn?.selected == 0 || fn?.selected == 1 )? true : false }
                             onClick={(evt)=>{
                               if(_.isEmpty(user)){
-                                setDialogLogin(true)
+                                onLogin(true)
                               }else{
                                 onSelected(evt, key)
                               }
@@ -459,16 +466,7 @@ const DetailPage = (props) => {
                           </div>  
                 })
               }
-              </div>  
-              {dialogLogin && (
-                <DialogLogin
-                  {...props}
-                  open={dialogLogin}
-                  onComplete={async(data)=>{ setDialogLogin(false) }}
-                  onClose={() => { setDialogLogin(false) }}
-                />
-              )}
-
+              </div> 
               {
                 dialogBuy && (
                   <DialogBuy 
@@ -481,31 +479,6 @@ const DetailPage = (props) => {
                     onClose={()=>setDialogBuy(false)} />
                 )
               }
-              {lightbox.isOpen && (
-                <Lightbox
-                  mainSrc={lightbox.images[lightbox.photoIndex].url}
-                  nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
-                  prevSrc={
-                    lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
-                  }
-                  onCloseRequest={() => {
-                    setLightbox({ ...lightbox, isOpen: false });
-                  }}
-                  onMovePrevRequest={() => {
-                    setLightbox({
-                      ...lightbox,
-                      photoIndex:
-                        (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
-                    });
-                  }}
-                  onMoveNextRequest={() => {
-                    setLightbox({
-                      ...lightbox,
-                      photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
-                    });
-                  }}
-                />
-              )}
             </div>
   }
 
@@ -514,9 +487,9 @@ const DetailPage = (props) => {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  return {user: state.auth.user, ws: state.ws}
+  return {}
 };
 
-const mapDispatchToProps = { login, logout }
+const mapDispatchToProps = { logout }
 
 export default connect( mapStateToProps, mapDispatchToProps )(DetailPage);

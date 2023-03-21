@@ -33,8 +33,8 @@ const wsLink = new GraphQLWsLink(createClient({
     // reconnect: true,
     disablePong: false,
     connectionAckWaitTimeout: 0,
-    retryAttempts: 5,
-    keepAlive: 10_000,
+    retryAttempts: 50,
+    keepAlive: 50_000,
     reconnect: true,
     retryWait: async function randomisedExponentialBackoff(retries) {
 
@@ -135,7 +135,7 @@ const wsLink = new GraphQLWsLink(createClient({
 
             store.dispatch(ws_status(WS_CONNECTED));
         },
-        keepAlive: 10, // ping server every 10 seconds
+        keepAlive: 50, // ping server every 10 seconds
         ping: (received) => {
             console.log("ping #0")
 

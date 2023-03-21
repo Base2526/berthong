@@ -20,7 +20,7 @@ export const TRANSLATIONS_TH = {
 
     login: "เข้าสู่ระบบ",
 
-    attack_file: "ไฟล์แนบ",
+    attack_file: "ไฟล์แนบ *",
 
     posts: "โพส",
     new_post: "สร้างโพสใหม่",

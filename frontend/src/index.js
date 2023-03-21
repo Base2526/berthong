@@ -1,6 +1,7 @@
 import './App.css';
-// import './index.css';
-import 'react-toastify/dist/ReactToastify.css';
+import "./skeleton.scss";
+import "react-toastify/dist/ReactToastify.css";
+import "react-image-lightbox/style.css";
 
 import { ApolloProvider } from "@apollo/client";
 import { StrictMode } from "react";
@@ -9,6 +10,7 @@ import ReactGA4 from "react-ga4";
 import { Provider } from "react-redux";
 import { BrowserRouter as Router } from "react-router-dom";
 import { PersistGate } from "redux-persist/integration/react";
+import { CssVarsProvider } from "@mui/joy/styles";
 
 import { client } from "./Apollo";
 import App from "./App";
@@ -24,6 +26,11 @@ if (REACT_APP_NODE_ENV === 'production') {
   console.debug = () => {}
 }
 
+const styleLink = document.createElement("link");
+styleLink.rel = "stylesheet";
+styleLink.href = "https://use.fontawesome.com/releases/v5.15.3/css/all.css";
+document.head.appendChild(styleLink);
+
 ReactGA4.initialize(REACT_APP_GOOGLE_ANALYTICS4)
 ReactDOM.render(
   <Provider store={store}>
@@ -32,7 +39,9 @@ ReactDOM.render(
         <ApolloProvider client={client}>
           <Router>
             <Store>
-              <App />
+              {/* <CssVarsProvider> */}
+                <App />
+              {/* </CssVarsProvider> */}
             </Store>
           </Router>
         </ApolloProvider>

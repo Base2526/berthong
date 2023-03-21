@@ -2,30 +2,34 @@ import React, { useState, useEffect, useMemo, useRef, useCallback  } from "react
 import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
-import CircularProgress from '@mui/material/CircularProgress';
 import _ from "lodash";
 import deepdash from "deepdash";
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 import CardActionArea from "@material-ui/core/CardActionArea";
-import Avatar from "@mui/material/Avatar";
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import EditIcon from '@mui/icons-material/Edit';
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+import {
+  Edit as EditIcon,
+  DeleteForever as DeleteForeverIcon
+} from '@mui/icons-material'
 import moment from "moment";
-import LinearProgress from '@mui/material/LinearProgress';
-import Lightbox from "react-image-lightbox";
-import "react-image-lightbox/style.css";
+import {
+        Button,
+        Dialog,
+        DialogActions,
+        DialogContent, 
+        DialogContentText,
+        DialogTitle,
+        Box,
+        Stack,
+        Avatar,
+        CircularProgress
+      } from '@mui/material';
+import InfiniteScroll from "react-infinite-scroll-component";
 
-import { getHeaders, checkRole } from "./util"
-import { queryDeposits, mutationDeposit, queryBanks } from "./gqlQuery"
+import { getHeaders, checkRole, showToast } from "./util"
+import { queryDeposits, mutationDeposit } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
-import { AMDINISTRATOR } from "./constants"
-import Table from "./TableContainer"
+import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants"
+import TableComp from "./components/TableComp"
 
 deepdash(_);
 
@@ -34,19 +38,39 @@ const DepositsPage = (props) => {
   const location = useLocation();
   const { t } = useTranslation();
 
-  let { user, logout } = props
+  let { user, logout, onLightbox } = props
 
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
   const [pageIndex, setPageIndex]     = useState(0);  
   const [pageSize, setPageSize]       = useState(pageOptions[0])
-  const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
-  const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
+  const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" }); 
+  const [datas, setDatas]             = useState([]);  
+  let [total, setTotal] = useState(0)
+  let [slice, setSlice] = useState(20);
+  let [hasMore, setHasMore] = useState(true)
 
-  console.log("user :", user)
+  const { loading: loadingDeposits, 
+          data: dataDeposits, 
+          error: errorDeposits,
+          networkStatus } = useQuery(queryDeposits, 
+                                      { 
+                                        context: { headers: getHeaders(location) }, 
+                                        fetchPolicy: 'network-only', // Used for first execution
+                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        notifyOnNetworkStatusChange: true
+                                      }
+                                    );
 
-  const depositsValue = useQuery(queryDeposits, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
-
-  console.log("depositsValue :", depositsValue)
+  if(!_.isEmpty(errorDeposits)){
+    _.map(errorDeposits?.graphQLErrors, (e)=>{
+      switch(e?.extensions?.code){
+        case UNAUTHENTICATED:{
+          showToast("error", e?.message)
+          break;
+        }
+      }
+    })
+  }
 
   const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
     context: { headers: getHeaders(location) },
@@ -77,22 +101,15 @@ const DepositsPage = (props) => {
       console.log("onError :")
     }
   });
-  console.log("resultMutationDeposit :", resultMutationDeposit)
-
-  // 
-
-  /*
-  ฝาก
-  - จำนวนเงิน
-  - วันที่โอนเงิน ชม/นาที
-  - สลิปการโอน
-  */
-
-  /*
-  ถอน 
-  - ชือบัญชี
-  - ยอดเงิน
-  */
+  
+  useEffect(() => {
+    if(!loadingDeposits){
+      if(!_.isEmpty(dataDeposits?.deposits)){
+        let { status, code, data } = dataDeposits.deposits
+        if(status)setDatas(data)
+      }
+    }
+  }, [dataDeposits, loadingDeposits])
 
   const handleClose = () => {
     setOpenDialogDelete({ ...openDialogDelete, isOpen: false, description: "" });
@@ -104,6 +121,7 @@ const DepositsPage = (props) => {
     setPageSize(pageSize)
     setPageIndex(pageIndex)
   })
+
   ///////////////
   const columns = useMemo(
       () => 
@@ -129,7 +147,7 @@ const DepositsPage = (props) => {
                       src={props.value[0].url}
                       onClick={(e) => {
                         console.log("files props: ", props.value)
-                        setLightbox({ isOpen: true, photoIndex: 0, images:props.value })
+                        onLightbox({ isOpen: true, photoIndex: 0, images:props.value })
                       }}
                     />
                   </CardActionArea>
@@ -160,19 +178,7 @@ const DepositsPage = (props) => {
             accessor: 'bank',
             Cell: props =>{
                 let {bank} = props.row.values
-    
-                console.log("bank :", bank)
-
-                if(_.isEmpty(bank)){
-                  return <div>Not set</div>
-                }
-
-                let valueBanks = useQuery(queryBanks, { notifyOnNetworkStatusChange: true, });
-                if(valueBanks.loading){
-                  return <LinearProgress /> 
-                }
-                let find = _.find(valueBanks.data.banks.data, (item)=>item._id.toString() == bank[0].bankId.toString() )            
-                return <div style={{ position: "relative" }}>{bank[0].bankId} : {find.name}</div>
+                return <div>{bank.bankNumber} - {bank.bankName}</div>
             }
           },
           {
@@ -180,10 +186,7 @@ const DepositsPage = (props) => {
             accessor: 'dateTranfer',
             Cell: props => {
                 let {dateTranfer} = props.row.values
-                // return <div>{dateTranfer}</div>
-
                 dateTranfer = new Date(dateTranfer).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-
                 return <div>{ (moment(dateTranfer, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
             }
           },
@@ -222,49 +225,43 @@ const DepositsPage = (props) => {
               let {_id, status, description} = props.row.original
               switch(status){
                 case "wait":{
-                  return  <div className="Btn--posts">
+                  return  <Stack
+                            direction="row"
+                            spacing={0.5}
+                            justifyContent="center"
+                            alignItems="center">
                               <button onClick={(evt)=>{
-                                // history.push({ 
-                                //   pathname: "/deposit", 
-                                //   state: {from: "/", mode: "edit", id: _id } 
-                                // });
                                 navigate("/deposit", {state: {from: "/", mode: "edit", id: _id }} )
                               }}><EditIcon/>{t("edit")}</button>
                               <button onClick={(e)=>{
                                 setOpenDialogDelete({ isOpen: true, id: _id, description });
                               }}><DeleteForeverIcon/>{t("delete")}</button>
-                          </div>
-                  break;
+                          </Stack>
                 }
                 case "approved":{
-                  return  <div className="Btn--posts">
-                            {/* <button onClick={(evt)=>{
-                              history.push({ 
-                                pathname: "/deposit", 
-                                state: {from: "/", mode: "edit", id: _id } 
-                              });
-                            }}><EditIcon/>{t("edit")}</button> */}
-                            <button onClick={(e)=>{
-                              setOpenDialogDelete({ isOpen: true, id: _id, description });
-                            }}><DeleteForeverIcon/>{t("delete")}</button>
-                        </div>
-                  break;
+                  return  <Stack
+                            direction="row"
+                            spacing={0.5}
+                            justifyContent="center"
+                            alignItems="center">
+                              <button onClick={(e)=>{
+                                setOpenDialogDelete({ isOpen: true, id: _id, description });
+                              }}><DeleteForeverIcon/>{t("delete")}</button>
+                          </Stack>
                 }
                 case "reject":{
-                  return  <div className="Btn--posts">
+                  return  <Stack
+                            direction="row"
+                            spacing={0.5}
+                            justifyContent="center"
+                            alignItems="center">
                             <button onClick={(evt)=>{
-                              // history.push({ 
-                              //   pathname: "/deposit", 
-                              //   state: {from: "/", mode: "edit", id: _id } 
-                              // });
-
                               navigate("/deposit", {state: {from: "/", mode: "edit", id: _id }} )
                             }}><EditIcon/>{t("edit")}</button>
                             <button onClick={(e)=>{
                               setOpenDialogDelete({ isOpen: true, id: _id, description });
                             }}><DeleteForeverIcon/>{t("delete")}</button>
-                          </div>
-                  break;
+                          </Stack>
                 }
 
                 default:{
@@ -289,26 +286,42 @@ const DepositsPage = (props) => {
   // the rowIndex, columnId and new value to update the
   // original data
   const updateMyData = (rowIndex, columnId, value) => {
-  console.log("updateMyData")
-  // We also turn on the flag to not reset the page
-  skipResetRef.current = true
-  // setData(old =>
-  //   old.map((row, index) => {
-  //     if (index === rowIndex) {
-  //       return {
-  //         ...row,
-  //         [columnId]: value,
-  //       }
-  //     }
-  //     return row
-  //   })
-  // )
+    console.log("updateMyData")
+    // We also turn on the flag to not reset the page
+    skipResetRef.current = true
+    // setData(old =>
+    //   old.map((row, index) => {
+    //     if (index === rowIndex) {
+    //       return {
+    //         ...row,
+    //         [columnId]: value,
+    //       }
+    //     }
+    //     return row
+    //   })
+    // )
   }
   //////////////////////
 
+  const fetchMoreData = async() =>{
+    // let mores =  await fetchMoreNotifications({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
+    // let {status, data} =  mores.data.suppliers
+    // console.log("status, data :", status, data)
+   
+    if(slice === total){
+        setHasMore(false);
+    }else{
+        setTimeout(() => {
+            // let newDatas = [...datas, ...data]
+            // setDatas(newDatas)
+            // setSlice(newDatas.length);
+        }, 1000); 
+    }
+  }
+
   return (<div style={{flex:1}}>
-         {
-            depositsValue.loading
+         {/* {
+            loadingDeposits
             ? <CircularProgress /> 
             : <div>
                 {
@@ -319,16 +332,76 @@ const DepositsPage = (props) => {
                     }}>เพิ่ม แจ้งฝากเงิน</button>
                   : ""
                   }
-                <Table
+                <TableComp
                   columns={columns}
-                  data={depositsValue.data.deposits.data}
+                  data={datas}
                   fetchData={fetchData}
                   rowsPerPage={pageOptions}
                   updateMyData={updateMyData}
                   skipReset={skipResetRef.current}
                   isDebug={false}/>
               </div>
-          }
+          } */}
+
+              {
+                loadingDeposits
+                ?  <CircularProgress />
+                :  datas.length == 0 
+                    ?   <label>Empty data</label>
+                    :   <InfiniteScroll
+                            dataLength={slice}
+                            next={fetchMoreData}
+                            hasMore={hasMore}
+                            loader={<h4>Loading...</h4>}>
+                            { 
+                            _.map(datas, (item, index) => {
+
+                              console.log("item :", item)
+                              // return  <Stack direction="row" spacing={2}>{index} : {i.title}</Stack>
+
+                              let files   = item?.files;
+                              let balance = item.balance;
+                              let bank = item.bank;
+                              let dateTranfer   = item.dateTranfer;
+                              let status  = item.status;
+                              let createdAt = item.createdAt;
+
+                              dateTranfer = new Date(dateTranfer).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+                              createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+  
+                              return  <Stack direction="row" spacing={2} >
+                                        <Box sx={{ width: '7%' }}>
+                                        <Avatar
+                                          alt="Example avatar"
+                                          variant="rounded"
+                                          src={files[0]?.url}
+                                          onClick={(e) => {
+                                            onLightbox({ isOpen: true, photoIndex: 0, images:files })
+                                          }}
+                                          sx={{ width: 56, height: 56 }}
+                                        />
+                                        </Box>
+                                        <Box sx={{ width: '5%' }}>{balance}</Box>
+                                        <Box sx={{ width: '20%' }}>{bank.bankNumber} - {bank.bankName}</Box>
+                                        <Box sx={{ width: '15%' }}>{(moment(dateTranfer, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</Box>
+                                        <Box sx={{ width: '5%' }}>{status}</Box>
+                                        <Box sx={{ width: '15%' }}>{(moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</Box>
+                                    
+                                        <Box sx={{ width: '15%' }}>
+                                          <button onClick={(evt)=>{
+                                            navigate("/deposit", {state: {from: "/", mode: "edit", id: item?._id} })
+                                          }}><EditIcon/>{t("edit")}
+                                          </button>
+                                          <button onClick={(e)=>{
+                                            setOpenDialogDelete({ isOpen: true, id: item?._id, description: item?.description });
+                                          }}><DeleteForeverIcon/>{t("delete")}</button>
+
+                                        </Box>
+                                      </Stack>
+                            })
+                          }
+                        </InfiniteScroll>
+              }
           {openDialogDelete.isOpen && (
             <Dialog
               open={openDialogDelete.isOpen}
@@ -346,7 +419,7 @@ const DepositsPage = (props) => {
                 <Button
                   variant="outlined"
                   onClick={() => {
-                    let newInput = _.find(depositsValue.data.deposits.data, (item)=>openDialogDelete.id == item._id.toString())
+                    let newInput = _.find(datas, (item)=>openDialogDelete.id == item._id.toString())
 
                     newInput = _.omitDeep(newInput, ['__v', 'createdAt', 'updatedAt', 'userIdRequest'])
                     newInput = {...newInput, mode:"DELETE",  balance: parseInt(newInput.balance), dateTranfer:new Date(newInput.dateTranfer)}
@@ -359,38 +432,12 @@ const DepositsPage = (props) => {
             </Dialog>
           )}
 
-          {lightbox.isOpen && (
-              <Lightbox
-                mainSrc={lightbox.images[lightbox.photoIndex].url}
-                nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
-                prevSrc={
-                  lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
-                }
-                onCloseRequest={() => {
-                  setLightbox({ ...lightbox, isOpen: false });
-                }}
-                onMovePrevRequest={() => {
-                  setLightbox({
-                    ...lightbox,
-                    photoIndex:
-                      (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
-                  });
-                }}
-                onMoveNextRequest={() => {
-                  setLightbox({
-                    ...lightbox,
-                    photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
-                  });
-                }}
-              />
-            )}
           </div>);
 }
 
 const mapStateToProps = (state, ownProps) => {
-    return { user:state.auth.user }
+    return { }
 };
 
 const mapDispatchToProps = { logout }
-
 export default connect( mapStateToProps, mapDispatchToProps )(DepositsPage);

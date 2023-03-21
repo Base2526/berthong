@@ -1,5 +1,4 @@
 import React, {useEffect} from "react";
-import styled from 'styled-components'
 import {
   useTable,
   usePagination,
@@ -54,7 +53,7 @@ const IndeterminateCheckbox = React.forwardRef(
 
   
 // Be sure to pass our updateMyData and the skipReset option
-const Table = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipReset, isDebug = false }) => {
+const TableComp = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipReset, isDebug = false }) => {
     const filterTypes = React.useMemo(
       () => ({
         // Add a new fuzzyTextFilterFn filter type.
@@ -169,7 +168,7 @@ const Table = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipReset,
 
     useEffect(() => {
 
-      console.log("fetchData is being called #2 : ", pageIndex, pageSize)
+      // console.log("fetchData is being called #2 : ", pageIndex, pageSize)
       fetchData && fetchData({ pageIndex, pageSize });
     }, [fetchData, pageIndex, pageSize]);
   
@@ -208,8 +207,11 @@ const Table = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipReset,
               </tr>
             ))}
           </thead>
-          <tbody {...getTableBodyProps()}>
-            {page.map(row => {
+          <tbody {...getTableBodyProps()}> 
+            {
+            page.length == 0
+            ? <div>Empty data</div>
+            : page.map(row => {
               prepareRow(row)
               return (
                 <tr {...row.getRowProps()}>
@@ -325,4 +327,4 @@ const Table = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipReset,
     )
 }
 
-export default Table
+export default TableComp

@@ -28,9 +28,15 @@ const depositSchema = new Schema({
         enum : ['wait','approved', 'reject'],
         default: 'wait'
     }, 
-    bank: [{ 
-        bankId: { type: String, required:[true, "Bank-Id Request is a required field"] },
-    }],
+    // bank: { type: String, required:[true, "Bank Request is a required field"] },
+    // // bank: [{ 
+    // //     bankId: { type: String, required:[true, "Bank-Id Request is a required field"] },
+    // // }],
+    bank:{
+        _id: { type: Schema.Types.ObjectId, required:[true, "Bank-id Request is a required field"] },
+        bankId: { type: Schema.Types.ObjectId, required:[true, "Bank-id Request is a required field"] },
+        bankNumber:  { type: String, required:[true, "Bank account number Request is a required field"] }
+    }
 },
 {
     timestamps: true

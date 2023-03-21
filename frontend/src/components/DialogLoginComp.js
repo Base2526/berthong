@@ -1,13 +1,17 @@
 import { useMutation } from "@apollo/client";
 import AccountCircle from "@material-ui/icons/AccountCircle";
-import FacebookIcon from '@mui/icons-material/Facebook';
-import GoogleIcon from '@mui/icons-material/Google';
-import LockIcon from '@mui/icons-material/Lock';
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import Typography from "@mui/material/Typography";
+import { 
+  Lock as LockIcon,
+  Google as GoogleIcon,
+  Facebook as FacebookIcon
+}from '@mui/icons-material';
+import {
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogTitle, 
+  Typography
+} from "@mui/material";
 import { gapi } from "gapi-script";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
@@ -17,29 +21,28 @@ import { GoogleLogin } from "react-google-login";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-import { mutationLogin, mutationLoginWithSocial } from "./gqlQuery";
+import { mutationLogin, mutationLoginWithSocial } from "../gqlQuery";
+import { USER_NOT_FOUND } from "../constants";
+import { showToast } from "../util";
 
-import { USER_NOT_FOUND } from "./constants";
-import { showToast } from "./util";
-
-const DialogLogin = (props) => {
+const DialogLoginComp = (props) => {
   const { t } = useTranslation();
   const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
   const facebookAppId =  process.env.REACT_APP_FACEBOOK_APPID
   const navigate = useNavigate();
   const deviceData = useDeviceData();
 
-  let { login, onComplete, onClose, open } = props;
+  let { onComplete, onClose, open, updateProfile } = props;
 
   let [input, setInput]   = useState({ username: "",  password: ""});
   
   const [onLogin, resultLogin] = useMutation(mutationLogin, {
-    update: (cache, {result}) => {
-      let {status, data, sessionId} = result.login
+    update: (cache, {data:{login}}) => {
+      let {status, data, sessionId} = login
       if(status){
         localStorage.setItem('token', sessionId)
 
-        login(data)
+        updateProfile(data)
         onComplete()
       }
     },
@@ -119,7 +122,7 @@ const DialogLogin = (props) => {
 
   const handleSubmit = (event, type) =>{
     event.preventDefault();
-    onLogin({ variables: { input: { username: input.username,  password: input.password, deviceAgent: JSON.stringify(deviceData) }} })
+    onLogin({ variables: { input: { username: _.trim(input.username),  password: _.trim(input.password), deviceAgent: JSON.stringify(deviceData) }} })
   }
 
   const onInputChange = (e) => {
@@ -214,4 +217,4 @@ const DialogLogin = (props) => {
   );
 };
 
-export default DialogLogin;
+export default DialogLoginComp;

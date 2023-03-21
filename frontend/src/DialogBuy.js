@@ -1,16 +1,20 @@
 import React, { forwardRef } from "react";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import Typography from "@mui/material/Typography";
+
 import _ from "lodash";
 import { useTranslation } from "react-i18next";
-import Slide from '@mui/material/Slide';
-import Button from '@mui/material/Button';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import TextField from '@mui/material/TextField';
+
+import {
+  Slide,
+  Button,
+  AppBar,
+  Toolbar,
+  IconButton,
+  TextField,
+  Dialog,
+  DialogContent,
+  Typography
+} from "@mui/material";
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;

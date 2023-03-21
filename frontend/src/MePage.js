@@ -7,7 +7,6 @@ import { createSearchParams, useLocation, useNavigate } from "react-router-dom";
 
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants";
 import { queryMe } from "./gqlQuery";
-import { login, logout } from "./redux/actions/auth";
 import { checkRole, getHeaders } from "./util";
 
 import AutoGenerationContent from "./AutoGenerationContent";
@@ -19,7 +18,7 @@ const MePage = (props) => {
 
     let params = queryString.parse(location.search)
     
-    let { user, login,  logout } = props
+    let { user, updateProfile,  logout } = props
 
     console.log("params :", params)
 
@@ -33,7 +32,7 @@ const MePage = (props) => {
     if(!meValues.loading){
         let { status, data } = meValues.data.me
         if(status){
-            login(data)
+            updateProfile(data)
         }
     }
 
@@ -45,46 +44,39 @@ const MePage = (props) => {
                                 <div>Management</div>
                                 <div>
                                     <button onClick={()=>{ 
-                                        // history.push("/withdraws");
                                         navigate("/withdraws");
                                     }}>รายการถอดเงิน รออนุมัติ</button>
                                 </div>
                                 <div>
                                     <button onClick={()=>{ 
-                                        // history.push("/deposits"); 
                                         navigate("/deposits");
                                     }}>รายการฝากเงิน รออนุมัติ</button>
                                 </div>
                                 <div>
                                     <button onClick={()=>{ 
-                                        // history.push("/suppliers"); 
                                         navigate("/suppliers");
                                     }}>จัดการ Suppliers ทั้งหมด</button>
                                 </div>
 
                                 <div>
                                     <button onClick={()=>{ 
-                                        // history.push("/users"); 
                                         navigate("/users");
                                     }}>จัดการ รายชือบุคคลทั้งหมด</button>
                                 </div>
                                 <div>
                                     <button onClick={()=>{ 
-                                        // history.push("/banks"); 
                                         navigate("/banks");
                                     }}>จัดการ รายชือธนาคารทั้งหมด</button>
                                 </div>
                                 <div>
-                                    <button onClick={()=>{ 
-                                        // history.push("/date-lotterys"); 
+                                    <button onClick={()=>{
                                         navigate("/date-lotterys");
                                     }}>จัดการ วันออกหวยทั้งหมด</button>
                                 </div>
 
                                 <div>
                                     <button onClick={()=>{ 
-                                        // history.push("/me+bank"); 
-                                        navigate("/me+bank");
+                                        navigate("/bank");
                                     }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
                                 </div>
                             </div>
@@ -95,40 +87,32 @@ const MePage = (props) => {
                 return  <div>
                             <div>
                                 <button onClick={()=>{ 
-                                    // history.push("/book+buys"); 
                                     navigate("/book+buys");
                                 }}>รายการ จอง-ซื้อ</button>
                             </div>
                             <div>
                                 <button onClick={()=>{ 
-                                    // history.push("/deposits"); 
-                                    // navigate("/deposits");
                                     navigate("/deposit", {state: {from: "/", mode: "new"}} )
                                 }}>รายการ แจ้งฝากเงิน</button>
                             </div>
                             <div>
                                 <button onClick={()=>{ 
-                                    // history.push("/withdraws"); 
-                                    // navigate("/withdraws");
                                     navigate("/withdraw", {state: {from: "/", mode: "new"}} )
                                 }}>รายการ แจ้งถอนเงิน</button>
                             </div>
                             <div>
                                 <button onClick={()=>{ 
-                                    // history.push("/me+bank"); 
-                                    navigate("/me+bank"); 
+                                    navigate("/bank"); 
                                 }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
                             </div>
                             <div>
                                 <button onClick={()=>{
-                                    // history.push("/suppliers"); 
                                     navigate("/suppliers"); 
                                 }}>Supplier list</button>
                             </div>
 
                             <div>
                                 <button onClick={()=>{
-                                    // history.push("/history-transitions"); 
                                     navigate("/history-transitions"); 
                                 }}>History-Transitions</button>
                             </div>
@@ -157,9 +141,9 @@ const MePage = (props) => {
 }
 
 const mapStateToProps = (state, ownProps) => {
-    return { user:state.auth.user }
+    return { }
 };
 
-const mapDispatchToProps = { login, logout }
+const mapDispatchToProps = {}
 
 export default connect( mapStateToProps, mapDispatchToProps )(MePage);

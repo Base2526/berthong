@@ -55,14 +55,35 @@ export default gql`
   }
 
   input SearchInput{
-    type: String!
-    q: String!
+    OFF_SET: Int
+    LIMIT: Int
+    NUMBER: String
+    TITLE: String
+    DETAIL: String
+    PRICE: Int
+    CHK_BON: Boolean
+    CHK_LAND: Boolean
+    CHK_MONEY: Boolean
+    CHK_GOLD: Boolean
+  }
+
+  input PagingInput{
+    OFF_SET: Int!
+    LIMIT: Int!
   }
 
   input LoginInput {
     username: String!
     password: String!
     deviceAgent: String
+  }
+
+  input RegisterInput {
+    username: String!
+    password: String!
+    email: String!
+    displayName: String
+    avatar: FileInput
   }
 
   enum AuthType {
@@ -96,9 +117,9 @@ export default gql`
   }
 
   type UsersPayLoad {
-    status:Boolean
-    executionTime:String
-    data:[User]
+    status: Boolean
+    executionTime: String
+    data: [User]
     total: Int
   }
 
@@ -174,7 +195,6 @@ export default gql`
     postId: ID!
     destination: String
   }
-
 
   type Dblog {
     _id: ID!
@@ -438,13 +458,14 @@ export default gql`
     ping: JSON
 
     me: JSON
-    users: JSON
+    users(input: PagingInput): JSON
     userById(_id: ID): JSON
     roles: JSON
+    roleByIds(input: [String]): JSON
 
     homes: JSON
 
-    suppliers: JSON
+    suppliers(input: SearchInput): JSON
     supplierById(_id: ID): JSON
 
     deposits: JSON
@@ -453,21 +474,23 @@ export default gql`
     withdraws: JSON
     withdrawById(_id: ID!): JSON
 
-    banks: JSON
+    banks(is_admin: Boolean = false): JSON
     bankById(_id: ID!): JSON
-
-    bankAdmin: JSON
 
     bookBuyTransitions: JSON
 
     historyTransitions: JSON
 
-    supplierProfile(_id: ID): JSON
+    profile(_id: ID): JSON
 
     dateLotterys: JSON
     dateLotteryById(_id: ID!): JSON
 
     buys: JSON
+
+    notifications: JSON
+
+    adminHome: JSON
   }  
   
   input RoomInput {
@@ -590,11 +613,10 @@ export default gql`
   }
 
   input FileInput {
-    base64: String
-    fileName: String
-    lastModified: DATETIME
-    size: Int
-    type: String
+    url: String
+    filename: String,
+    mimetype: String,
+    encoding: String,
   }
 
   input CommentInput {
@@ -652,9 +674,13 @@ export default gql`
     description: String
     dateLottery: ID!
     files: [JSON]
+    condition: Int!
+    category: Int!
+    type: Int!
     buys: [JSON]
     publish: Boolean = false
-    auto: Boolean = false
+    test: Boolean = false
+    ownerId: ID
   }
 
   enum WithdrawModeType {
@@ -664,9 +690,8 @@ export default gql`
   }
 
   input WithdrawInput{
-    mode: WithdrawModeType
+    mode: WithdrawModeType!
     _id: ID
-    dateTranfer: DATETIME
     bank: JSON!
     balance: Int!
     status: String
@@ -681,39 +706,39 @@ export default gql`
   input DepositInput{
     mode: DepositModeType
     _id: ID
-    balance: Int
-    dateTranfer: DATETIME
+    balance: Int!
+    dateTranfer: DATETIME!
     bank: JSON!
     files: [JSON]
     status: String
   }
 
   input MeInput{
-    uid: ID
+    _id: ID
     username: String
     password: String
     email: String
     displayName: String
     banks:[JSON]
     balance: Long
-    roles: [String]
     isActive: String
-    image: [JSON]
+    avatar: FileInput
     lastAccess: Date
     isOnline: Boolean
     socialType: String, 
     socialId: String
     socialObject: String
+    balanceBook: Int
   }
 
-  enum DateLotteryModeType {
+  enum DatesLotteryModeType {
     NEW
     EDIT
     DELETE
   }
 
-  input DateLotteryInput{
-    mode: DateLotteryModeType!
+  input DatesLotteryInput{
+    mode: DatesLotteryModeType!
     _id: ID
     title: String!
     date: Date!
@@ -723,7 +748,8 @@ export default gql`
   type Mutation {
     login(input: LoginInput): JSON
     loginWithSocial(input: LoginWithSocialInput): JSON
-    loginWithGithub(code: String!):JSON
+    loginWithGithub(code: String!): JSON
+    register(input: RegisterInput): JSON
     me(input: MeInput): JSON
     book(input: BookInput): JSON
     buy(_id: ID!): JSON
@@ -731,14 +757,18 @@ export default gql`
     deposit(input: DepositInput): JSON 
     withdraw(input: WithdrawInput): JSON 
     bank(input: BankInput): JSON 
-    follow(_id: ID): JSON 
-    dateLottery(input: DateLotteryInput): JSON 
+    follow(_id: ID!): JSON 
+    datesLottery(input: [Date]): JSON 
+
+    notification(_id: ID!): JSON 
   }
 
   type Subscription {
     subscriptionMe(sessionId: ID!): JSON
     subscriptionSupplierById(supplierById: ID!): JSON
     subscriptionSuppliers(supplierIds: String!): JSON
+
+    subscriptionAdmin(supplierIds: String!): JSON
   }
 
   type PostSubscriptionPayload {

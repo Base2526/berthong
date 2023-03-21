@@ -5,28 +5,28 @@ import TextField from "@mui/material/TextField";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 import CircularProgress from '@mui/material/CircularProgress';
-
-import Editor from "./editor/Editor";
-import { mutationBank, queryBankById, queryBanks } from "./gqlQuery"
 import _ from "lodash";
+
+import { getHeaders } from "./util";
+import { mutationBank, queryBankById, queryBanks } from "./gqlQuery"
 
 let editValues = undefined;
 let initValues =  { mode: "NEW",  name : "",  description: "" }
 
-const BankPage = (props) => {
+const TaxonomyBankPage = (props) => {
   const location = useLocation();
   const navigate = useNavigate();
   let [input, setInput] = useState(initValues)
   let [data, setData] = useState(initValues)
   const { mode, _id } = location.state
 
-  console.log("mode, id :", mode, _id)
-
   const { loading: loadingBankById, 
           data: dataBankById, 
           error: errorBankById,
           refetch: refetchBankById} = useQuery(queryBankById, {
-                                    // variables: {id: _id},
+                                    context: { headers: getHeaders(location) }, 
+                                    fetchPolicy: 'network-only', // Used for first execution
+                                    nextFetchPolicy: 'cache-first', // Used for subsequent executions
                                     notifyOnNetworkStatusChange: true,
                                   });
 
@@ -75,7 +75,6 @@ const BankPage = (props) => {
         }
       }
   );
-  // console.log("resultMutationBankValues :", resultMutationBankValues)
 
   useEffect(()=>{
     if(mode == "edit" && _id){
@@ -158,19 +157,19 @@ const BankPage = (props) => {
                 setInput({...input, name:e.target.value})
               }}
             />
-            <Editor 
+            {/* <Editor 
               name="description" 
               label={"Description"}  
               initData={input.description}
               onEditorChange={(newValue)=>{
                 setInput({...input, description:newValue})
-              }}/>
+              }}/> */}
 
             <Button type="submit" variant="contained" color="primary">{mode === 'new' ? "CREATE" : "UPDATE"} </Button>
           </Box>
       }
-      </div>
+    </div>
   );
 };
 
-export default BankPage;
+export default TaxonomyBankPage;

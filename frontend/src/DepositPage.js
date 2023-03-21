@@ -2,25 +2,31 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { CircularProgress, LinearProgress } from '@mui/material';
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import Autocomplete from "@mui/material/Autocomplete";
+import { 
+  Stack,
+  Button,
+  LinearProgress,
+  TextField,
+  Autocomplete,
+  Box
+} from "@mui/material";
 
 import { getHeaders, checkRole } from "./util"
-import { queryDeposits, mutationDeposit, queryBankAdmin, queryDepositById } from "./gqlQuery"
+import { queryDeposits, mutationDeposit, queryBanks, queryDepositById } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
 import { AMDINISTRATOR } from "./constants"
 import AttackFileField from "./AttackFileField";
 
-let initValues = { balance: "", bank: null, status: "wait", dateTranfer: null, attackFiles:[] }
+let initValues = {  balance: "", 
+                    bank: null, 
+                    status: "", 
+                    dateTranfer: null, 
+                    files:[] 
+                  }
 
 const DepositPage = (props) => {
   const navigate = useNavigate();
@@ -30,47 +36,54 @@ const DepositPage = (props) => {
   let [input, setInput]       = useState(initValues);
   let [error, setError]       = useState(initValues);
   const [data, setData]       = useState({});
-  let { user, logout } = props
-  let { mode, id } = location.state
 
-  const { loading: loadingBankAdmin, 
-          data: dataBankAdmin, 
-          error: errorBankAdmin} = useQuery(queryBankAdmin, { notifyOnNetworkStatusChange: true, });
+  let [ banks, setBanks ]       = useState([]);
+  let { user, logout } = props
+  let { mode, id } = location?.state
+
+  const { loading: loadingBanks, 
+          data: dataBanks, 
+          error: errorBanks} = useQuery(queryBanks, { 
+                                        context: { headers: getHeaders(location) }, 
+                                        variables: {is_admin: true},
+                                        fetchPolicy: 'network-only', // Used for first execution
+                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        notifyOnNetworkStatusChange: true });
 
   const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
     context: { headers: getHeaders(location) },
     update: (cache, {data: {deposit}}) => {
       let { data, mode, status } = deposit
-      console.log("")
 
       if(status){
-        
         switch(mode){
-          case "new":{
-            const queryDepositsValue = cache.readQuery({ query: queryDeposits });
-            let newData = [...queryDepositsValue.deposits.data, data];
+          // case "new":{
+          //   const queryDepositsValue = cache.readQuery({ query: queryDeposits });
+          //   if(!_.isNull(queryDepositsValue)){
+          //     let newData = [...queryDepositsValue.deposits.data, data];
 
-            cache.writeQuery({
-              query: queryDeposits,
-              data: { deposits: {...queryDepositsValue.deposits, data: newData} }
-            });
-            break;
-          }
+          //     cache.writeQuery({
+          //       query: queryDeposits,
+          //       data: { deposits: {...queryDepositsValue.deposits, data: newData} }
+          //     });
+          //   }
+          //   break;
+          // }
 
           case "edit":{
             let queryDepositsValue = cache.readQuery({ query: queryDeposits });
+            if(!_.isNull(queryDepositsValue)){
+              let newData = _.map(queryDepositsValue.deposits.data, (item)=> item._id == data._id ? data : item ) 
 
-            let newData = _.map(queryDepositsValue.deposits.data, (item)=> item._id == data._id ? data : item ) 
+              if(deposit.data.status == "approved" || deposit.data.status == "reject"){
+                newData = _.filter(queryDepositsValue.deposits.data, (item)=> item._id != data._id ) 
+              }
 
-            if(deposit.data.status == "approved" || deposit.data.status == "reject"){
-              newData = _.filter(queryDepositsValue.deposits.data, (item)=> item._id != data._id ) 
+              cache.writeQuery({
+                query: queryDeposits,
+                data: { deposits: {...queryDepositsValue.deposits, data: newData} }
+              });
             }
-
-            cache.writeQuery({
-              query: queryDeposits,
-              data: { deposits: {...queryDepositsValue.deposits, data: newData} }
-            });
-            
             break;
           }
         }
@@ -80,74 +93,80 @@ const DepositPage = (props) => {
       // history.goBack()
       navigate(-1);
     },
-    onError({error}){
-      console.log("onError :")
+    onError(error){
+      console.log("onError :", error)
     }
   });
 
+  let { loading: loadingDepositById, 
+        data: dataDepositById, 
+        error: errorDepositById,
+        refetch: refetchDepositById } =  useQuery(queryDepositById, {
+                                                  context: { headers: getHeaders(location) },
+                                                  variables: {id},
+                                                  fetchPolicy: 'network-only', // Used for first execution
+                                                  nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                                  notifyOnNetworkStatusChange: true,
+                                                })
+
   useEffect(()=>{
-    if (dataBankAdmin) {
-      let { status, admin_banks, banks } = dataBankAdmin.bankAdmin
-      if(status){
-        setData({admin_banks, banks})
+    if( !loadingDepositById && mode == "edit"){
+      if(!_.isEmpty(dataDepositById?.depositById)){
+        let { status, data } = dataDepositById.depositById
+        if(status){
+          console.log("useEffect :", data)
+          setInput({
+            balance: data.balance, 
+            bank: data?.bank, 
+            status: data.status, 
+            dateTranfer: new Date(data.dateTranfer), 
+            files: data.files
+          })
+        }
       }
     }
-  }, [dataBankAdmin])
+  }, [dataDepositById, loadingDepositById])
+                                                
+  useEffect(()=>{
+    if(mode == "edit" && id){
+      refetchDepositById({id});
+    }
+  }, [id])
 
-
-  const adminView = () =>{
-    switch(checkRole(user)){
-      case AMDINISTRATOR:{
-        return  <Autocomplete
-                  disablePortal
-                  id="bank-id"
-                  options={['wait','approved', 'reject']}
-                  getOptionLabel={(option) => {
-                    return option
-                  }}
-                  defaultValue={ input.status }
-                  renderInput={(params) => 
-                  {
-                    return <TextField {...params} label={t("status")} required={ false } />
-                  }}
-                  onChange={(event, status) =>{
-                    setInput({...input, status})
-                  }}/>
+  useEffect(()=>{
+    if(!loadingBanks){
+      if(!_.isEmpty(dataBanks?.banks)){
+        let { status, data } = dataBanks?.banks
+        if(status) setBanks(data)
       }
     }
-  }
+  }, [dataBanks, loadingBanks])
 
-  /*
-  ฝาก
-  - จำนวนเงิน
-  - วันที่โอนเงิน ชม/นาที
-  - สลิปการโอน
-  */
-
-  /*
-  ถอน 
-  - ชือบัญชี
-  - ยอดเงิน
-  */
   const submitForm = async(event) => {
-    event.preventDefault();
+    /*
+    switch(mode){
+      case "new":{
+        let newInput =  {
+          mode: mode.toUpperCase(),
+          balance: parseInt(input.balance),
+          dateTranfer: input.dateTranfer,
+          bank: _.omit(_.find(banks, (b)=> _.isEqual(b?._id, input.bank)), ['bankName']),
+          files: input.files
+        }
+        // console.log("newInput :", newInput)
+        onMutationDeposit({ variables: { input: newInput } });
+        break;
+      }
 
-    let newInput =  {
-      mode: mode.toUpperCase(),
-      balance: parseInt(input.balance),
-      dateTranfer: input.dateTranfer,
-      bank: input.bank,
-      status: input.status,
-      files: input.attackFiles
+      case "edit":{
+
+        break;
+      }
     }
 
-    console.log("newInput :", newInput)
-    onMutationDeposit({ variables: { input: newInput } });
+    // onMutationDeposit({ variables: { input: newInput } });
+    */
   }
-
-  const onBankIdChange = (e, bank) => {
-    setInput({...input, bank})
-  };
 
   const onInputChange = (e) => {
     const { name, value } = e.target;
@@ -184,55 +203,42 @@ const DepositPage = (props) => {
     });
   };
 
-  return  loadingBankAdmin 
-          ? <CircularProgress />
-          : <LocalizationProvider dateAdapter={AdapterDateFns} >
-            <Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }} onSubmit={submitForm}>
-              <div >
+  return  <Stack
+            direction="column"
+            justifyContent="center"
+            alignItems="flex-start">
               {
-                  loadingBankAdmin
-                  ? <LinearProgress /> 
-                  : <Autocomplete
+                loadingBanks
+                ? <LinearProgress /> 
+                : <Box alignItems="stretch">
+                    <Autocomplete
+                      label={"เลือกธนาคารที่โอน *"}
                       disablePortal
-                      id="bank-id"
-                      options={data.admin_banks}
-                      getOptionLabel={(option) => {
-                        console.log("getOptionLabel :", option)
-                        let find = _.find(data.banks, (item)=>item._id.toString() == option.bankId.toString())   
-                        return option.bankNumber +" - "+find.name
-                      }}
-                      defaultValue={ input.bank }
-                      renderInput={(params) => 
-                      {
-                        return <TextField {...params} label={t("bank_account_name")} required={ _.isEmpty(input.bank) ? true : false } />
-                      }}
-                      onChange={(event, values) => onBankIdChange(event, values)}/>
-                }
-
-
-                <TextField
-                  id="balance"
+                      id="bank"
+                      sx={{ width: 300 }}
+                      options={banks}
+                      getOptionLabel={(option)=>`${option.bankNumber} (${option.name})`}
+                      defaultValue={ _.find(banks, (v)=>input?.bank?._id === v._id) }
+                      renderInput={(params) =>{
+                        return  <TextField {...params} label={t("bank_account_name")} required={_.isEmpty(input?.bank?._id) ? true : false} />
+                      } }
+                      onChange={(event, bank) => setInput({...input, bank})}
+                    />
+                    <p className="text-red-500"> {_.isEmpty(error.bank) ? "" : error.bank} </p>  
+                  </Box>  
+              }
+              <Box>
+                <TextField 
+                  type="number" 
                   name="balance"
-                  label={"ยอดเงิน"}
-                  variant="filled"
-                  type="number"
-                  required
-                  value={ _.isEmpty(input.balance) ? "" : input.balance}
-                  onChange={onInputChange}
-                  onBlur={validateInput}
-                  helperText={ _.isEmpty(error.balance) ? "" : error.balance }
-                  error={_.isEmpty(error.balance) ? false : true}/>
-
-                {/* <DesktopDatePicker
-                  label={t("date_tranfer")}
-                  inputFormat="dd/MM/yyyy"
-                  value={ input.dateTranfer }
-                  onChange={(newDate) => {
-                    setInput({...input, dateTranfer: newDate})
-                  }}
-                  renderInput={(params) => <TextField {...params} required={input.dateTranfer === null ? true: false} />}
-                /> */}
-
+                  label={"ยอดเงิน *"}
+                  value={ input.balance }
+                  sx={{ width: 300 }}
+                  onChange={ onInputChange }
+                  onBlur={ validateInput } />
+                <p className="text-red-500"> {_.isEmpty(error.balance) ? "" : error.balance} </p>
+              </Box>
+              <Box>
                 <DatePicker
                   label={t("date_tranfer")}
                   placeholderText={t("date_tranfer")}
@@ -244,29 +250,44 @@ const DepositPage = (props) => {
                   timeInputLabel="Time:"
                   dateFormat="MM/dd/yyyy h:mm aa"
                   showTimeInput/>
-
-                <AttackFileField
-                  label={t("attack_file")}
-                  values={input.attackFiles}
-                  onChange={(values) => {
-                      console.log("AttackFileField :", values)
-                      setInput({...input, attackFiles: values})
-                  }}
-                  onSnackbar={(data) => {
-                      setSnackbar(data);
-                  }}/>
-              </div>
-              <Button type="submit" variant="contained" color="primary">
-                  {t("deposit")}
-              </Button>
-            </Box>
-          </LocalizationProvider>;
+              </Box>
+              <AttackFileField
+                label={t("attack_file")}
+                values={input.files}
+                multiple={false}
+                onChange={(values) => {
+                    setInput({...input, files: values})
+                }}
+                onSnackbar={(data) => {
+                    setSnackbar(data);
+                }}/>
+                {
+                  checkRole(user) == AMDINISTRATOR 
+                  &&  <div>
+                        <label>{t("status")} </label>
+                        <select 
+                          name="status" 
+                          id="status" 
+                          value={input.status}
+                          onChange={ onInputChange }
+                          onBlur={ validateInput }>
+                          <option value={""}>ไม่เลือก</option>
+                          { _.map(['wait','approved', 'reject'], (name, id)=><option key={id} value={name}>{name}</option>) }
+                        </select> 
+                        <p className="text-red-500"> {_.isEmpty(error.status) ? "" : error.status} </p>  
+                      </div>   
+                }
+            <Button 
+              type="submit" 
+              variant="contained" 
+              color="primary"
+              onClick={evt=>{ submitForm(evt) }}>{t("deposit")}</Button>
+          </Stack>
 }
 
 const mapStateToProps = (state, ownProps) => {
-    return { user:state.auth.user }
+    return { }
 };
 
 const mapDispatchToProps = { logout }
-
 export default connect( mapStateToProps, mapDispatchToProps )(DepositPage);

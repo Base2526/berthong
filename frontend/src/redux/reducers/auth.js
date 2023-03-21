@@ -1,5 +1,5 @@
 
-import {LOGIN, 
+import {UPDATED_PROFILE, 
         LOGOUT, 
         ADDED_CONVERSATIONS, 
         ADDED_CONVERSATION,
@@ -31,9 +31,8 @@ const initialState = {
 }
 
 const auth = (state = initialState, action) => {
-    // console.log("auth :", action);
     switch (action.type) {
-        case LOGIN:{
+        case UPDATED_PROFILE:{
             return _.isEqual(state.user, action.data) ? state : { ...state, user: action.data }
         }
 

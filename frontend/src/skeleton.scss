@@ -1,0 +1,60 @@
+.card_container{
+    width: 300px;
+    margin: 10px auto;
+    text-align: center;
+    padding: 10px;
+  }
+  
+  $skeleton-color: #e0e0e0;
+  $skeleton-width: 300px;
+  $skeleton-offset: 100px;
+  $image-height: 100px;
+  $line-height: 16px;
+  $line-1-width: 20%;
+  $line-2-width: 80%;
+  
+  @mixin background {
+    background-image: linear-gradient(90deg, $skeleton-color 0px, lighten($skeleton-color, 5%) 30px, $skeleton-color 60px);
+    background-size: calc(#{$skeleton-width} + #{$skeleton-offset});
+  }
+  
+  .skeleton {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    width: 100%;
+    margin: 10px auto;
+    text-align: center;
+    width: $skeleton-width;
+    padding: 5px;
+  
+    .image, .line {
+      @include background;
+      animation: refresh 2s infinite ease-out;
+    }
+  
+    .image {
+      height: $image-height;
+    }
+  
+    .line {
+      height: $line-height;
+      
+      &:first-child {
+        width: $line-1-width;
+      }
+      
+      &:last-child {
+        width: $line-2-width;
+      }
+    } 
+  }
+  
+  @keyframes refresh {
+    0% {
+      background-position: calc(-#{$skeleton-offset});
+    }
+      
+    40%, 100% {
+      background-position: $skeleton-width; 
+    }
+  }
+  

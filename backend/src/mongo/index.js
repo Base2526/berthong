@@ -81,12 +81,14 @@ const modelExists =()=>{
 
   User.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found User');
     } else {
-      // console.log('Not found User, creating');
-      let newUser = new User({});
+      let newUser = new User({
+                              username: "username",
+                              password: "password",
+                              email: "email@banlist.info",
+                              displayName: "displayName",
+                            });
       await newUser.save();
-
       await User.deleteMany({})
     }
   });
@@ -225,12 +227,9 @@ const modelExists =()=>{
 
   Notification.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Notification');
     } else {
-      // console.log('Not found Notification, creating');
-      let newNotification = new Notification({});
+      let newNotification = new Notification({ user_to_notify: new mongoose.Types.ObjectId() });
       await newNotification.save();
-
       await Notification.deleteMany({})
     }
   });
@@ -279,7 +278,14 @@ const modelExists =()=>{
         // console.log('Found BasicContent');
       } else {
         // console.log('Not found BasicContent, creating');
-        let newDeposit = new Deposit({ accountNumber: "test", userIdRequest: new mongoose.Types.ObjectId(), userIdApprove: new mongoose.Types.ObjectId() });
+        let newDeposit = new Deposit({ accountNumber: "test", 
+                                       userIdRequest: new mongoose.Types.ObjectId(), 
+                                       userIdApprove: new mongoose.Types.ObjectId(),
+                                       bank: {
+                                        _id: new mongoose.Types.ObjectId(),
+                                        bankId: new mongoose.Types.ObjectId(),
+                                        bankNumber: "xx"
+                                       } });
         await newDeposit.save();
         await Deposit.deleteMany({})
       }
@@ -290,10 +296,13 @@ const modelExists =()=>{
 
   Withdraw.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found BasicContent');
     } else {
-      // console.log('Not found BasicContent, creating');
-      let newWithdraw = new Withdraw({ bankId: "test", userIdRequest: new mongoose.Types.ObjectId() });
+      let newWithdraw = new Withdraw({  bank: {
+                                          _id: new mongoose.Types.ObjectId(),
+                                          bankId: new mongoose.Types.ObjectId(),
+                                          bankNumber: "xx"
+                                        }, 
+                                        userIdRequest: new mongoose.Types.ObjectId() });
       await newWithdraw.save();
       await Withdraw.deleteMany({})
     }
@@ -314,8 +323,7 @@ const modelExists =()=>{
   DateLottery.find({}, async(err, result)=> {
     if (result.length > 0) {
     } else {
-      let newDateLottery = new DateLottery({  title: "title",
-                                              date: new Date(),
+      let newDateLottery = new DateLottery({  date: new Date(),
                                               weight: 1 });
       await newDateLottery.save();
       await DateLottery.deleteMany({})

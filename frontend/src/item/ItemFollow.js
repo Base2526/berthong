@@ -1,15 +1,14 @@
-import React, { useEffect } from "react";
-import IconButton from "@mui/material/IconButton";
 import { useMutation } from "@apollo/client";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
-import _ from "lodash"
-import { connect } from "react-redux";
-import { useHistory, useLocation } from "react-router-dom";
+import IconButton from "@mui/material/IconButton";
+import _ from "lodash";
+import React from "react";
+import { useLocation } from "react-router-dom";
 
-import { mutationFollow, querySupplierById } from "./gqlQuery"
-import { getHeaders } from "./util"
+import { UNAUTHENTICATED } from "../constants";
+import { mutationFollow, querySupplierById, querySuppliers } from "../gqlQuery";
+import { getHeaders, showToast } from "../util";
 
-let unsubscribe =null
 const ItemFollow = (props) => {
   let location = useLocation();
   
@@ -18,21 +17,16 @@ const ItemFollow = (props) => {
   const [onMutationFollow, resultMutationFollowValue] = useMutation(mutationFollow,{
     context: { headers: getHeaders(location) },
     update: (cache, {data: {follow}}) => {
-      
-      // console.log("follow :", follow)
-
       let { data, status } = follow
-
       if(status){
-        // let queryHomesValue = cache.readQuery({ query: queryHomes });
-        // if(!_.isEmpty(queryHomesValue)){
-        //   let newData = _.map(queryHomesValue.homes.data, (item)=> item._id == data._id ? data : item ) 
-          
-        //   cache.writeQuery({
-        //     query: queryHomes,
-        //     data: { homes: {...queryHomesValue.homes, data: newData} }
-        //   });
-        // }
+        let querySuppliersValue = cache.readQuery({ query: querySuppliers });
+        if(!_.isEmpty(querySuppliersValue)){
+          let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
+          cache.writeQuery({
+            query: querySuppliers,
+            data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+          });
+        }
 
         let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: { id: data._id  } });
         if(!_.isEmpty(querySupplierByIdValue)){
@@ -45,11 +39,18 @@ const ItemFollow = (props) => {
         }
       }
     },
-    onCompleted({ data }) {
+    onCompleted(data) {
       console.log("onCompleted")
     },
     onError: (err) => {
-      console.log("onError :", err)
+      _.map(err?.graphQLErrors, (e)=>{
+        switch(e?.extensions?.code){
+          case UNAUTHENTICATED:{
+            showToast("error", e?.message)
+            break;
+          }
+        }
+      })
     }
   });
 
