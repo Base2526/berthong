@@ -25,13 +25,13 @@ import {  DATA_NOT_FOUND,
           UNAUTHENTICATED, 
           WS_CLOSED, 
           WS_CONNECTED, 
-          WS_SHOULD_RETRY } from "./constants";
-import DialogBuy from "./DialogBuy";
-import { mutationBook, mutationBuy, querySupplierById, querySuppliers, subscriptionSupplierById } from "./gqlQuery";
-import ItemFollow from "./item/ItemFollow";
-import ItemShare from "./item/ItemShare";
-import { logout } from "./redux/actions/auth";
-import { bookView, getHeaders, sellView, showToast } from "./util";
+          WS_SHOULD_RETRY } from "../../constants";
+import DialogBuy from "../../DialogBuy";
+import { mutationBook, mutationBuy, querySupplierById, querySuppliers, subscriptionSupplierById } from "../../gqlQuery";
+import ItemFollow from "../../item/ItemFollow";
+import ItemShare from "../../item/ItemShare";
+import { logout } from "../../redux/actions/auth";
+import { bookView, getHeaders, sellView, showToast } from "../../util";
 
 let unsubscribeSupplierById = null;
 const DetailPage = (props) => {
@@ -487,7 +487,7 @@ const DetailPage = (props) => {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  return {user: state.auth.user, ws: state.ws}
+  return {}
 };
 
 const mapDispatchToProps = { logout }

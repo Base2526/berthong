@@ -73,7 +73,7 @@ import DateLotteryPage from "./DateLotteryPage";
 import DateLotterysPage from "./DateLotterysPage";
 import DepositPage from "./DepositPage";
 import DepositsPage from "./DepositsPage";
-import DetailPage from "./DetailPage";
+import DetailPage from "./pages/detail/Detail";
 import { queryPing, subscriptionMe } from "./gqlQuery";
 import HistoryTransitionsPage from "./HistoryTransitionsPage";
 import HomePage from "./HomePage";
@@ -517,7 +517,7 @@ const App =(props) =>{
           <BreadcsComp {...props}/>
           <Routes>
             <Route path="/" exact element={ _.isEqual(checkRole(user), Constants.AMDINISTRATOR) ? <AdminHomePage user={user} ws={ws} onLogin={()=>setDialogLogin(true)} /> : <HomePage user={user} ws={ws} onLogin={()=>setDialogLogin(true)} />} />
-            <Route path="/d" element={<DetailPage onLogin={()=>setDialogLogin(true)} onLightbox={(value)=>setLightbox(value)} />} />
+            <Route path="/d" element={<DetailPage user={user} ws={ws} onLogin={()=>setDialogLogin(true)} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/user/login" element={<LoginPage {...props} />} />
             <Route path="/suppliers" element={<SuppliersPage user={user} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/supplier" element={<SupplierPage />} />
