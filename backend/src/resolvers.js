@@ -19,13 +19,15 @@ import fetch from "node-fetch";
 import { GraphQLUpload } from 'graphql-upload';
 import logger from "./utils/logger";
 
+import * as cache from "./cache"
+
 export default {
   Query: {
     async ping(parent, args, context, info){
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
-      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      // let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      // if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
       //  return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
 
@@ -36,11 +38,20 @@ export default {
 
       // console.log("ping suppliers :", suppliers)
 
-      if(status && code == 1){
-        console.log("ping ok : ", current_user?._id)
-      }else{
-        console.log("ping other")
-      }
+      // let v = {
+      //             "myKeyA": { my: "Special", variable: 123 },
+      //             "myKeyB": { the: "Glory", answer: 42 }
+      //         }
+
+      // cache.ca_save("A", v)
+
+      // console.log("AAAAA :", cache.ca_get("A"))
+
+      // if(status && code == 1){
+      //   console.log("ping ok : ", current_user?._id)
+      // }else{
+      //   console.log("ping other")
+      // }
 
       return { status:true }
     },
@@ -96,7 +107,7 @@ export default {
 
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
+      // if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
 
       let user = await User.findById(_id)
       if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')

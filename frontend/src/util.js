@@ -59,6 +59,10 @@ export const numberCurrency = (number) =>{
     return THBBaht.format(number)
 }
 
+export const currencyFormat = (num) => {
+    return "$" + num.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+};
+
 export const getCurrentLanguage = () => i18n.language || localStorage.getItem("i18n")
 
 export const getHeaders = (params) =>{
