@@ -8,7 +8,7 @@ import { checkBalance, checkBalanceBook } from './utils'
 const _ = require('lodash');
 const moment = require('moment');
 
-cron.schedule('*/2 * * * *', async() => {
+cron.schedule('*/60 * * * *', async() => {
   console.log('Run task every minute #1 :', new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
   try{
     // let users = await User.find({})

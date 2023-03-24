@@ -88,7 +88,7 @@ import ProfilePage from "./ProfilePage";
 import SuppliersPage from "./SuppliersPage";
 import UserPage from "./UserPage";
 import UsersPage from "./UsersPage";
-import { checkRole, getHeaders } from "./util";
+import { checkRole, getHeaders, numberCurrency} from "./util";
 import WithdrawPage from "./WithdrawPage";
 import WithdrawsPage from "./WithdrawsPage";
 import BreadcsComp from "./components/BreadcsComp";
@@ -422,7 +422,7 @@ const App =(props) =>{
                           <Typography variant="h6" noWrap>
                             {"[  Name :" + user?.displayName +", Email :"+ user?.email + " ]"}
                           </Typography>
-                          <div>Balance : {user?.balance} [-{user?.balanceBook}]</div>
+                          <div>Balance : {numberCurrency(user?.balance)} [-{numberCurrency(user?.balanceBook)}]</div>
                           <IconButton 
                             size={'small'}
                             onClick={()=>{
@@ -434,9 +434,7 @@ const App =(props) =>{
                           </IconButton>
                           <IconButton 
                             size={'small'}
-                            onClick={()=>{
-                              navigate("/me+book+buys")
-                            }}>
+                            onClick={()=>{ navigate("/me+book+buys") }}>
                             <Badge badgeContent={1} color="primary">
                               <FiShoppingCart color="white" size="1.2em"/>
                             </Badge>
@@ -529,7 +527,7 @@ const App =(props) =>{
               <Route path="/history-transitions" element={<HistoryTransitionsPage user={user} />} />
               <Route path="/bank" element={<BankPage user={user} />} />
               <Route path="/banks" element={<BanksPage user={user} />} />
-              <Route path="/me+book+buys" element={<MeBookBuysPage user={user} />} />
+              <Route path="/me+book+buys" element={<MeBookBuysPage user={user} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/notifications" element={<NotificationsPage user={user} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>

@@ -3,6 +3,7 @@ import { LinearProgress } from "@material-ui/core";
 import _ from "lodash"
 import { useQuery } from "@apollo/client";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
+import { Avatar } from "@mui/material"
 
 import { queryUserById } from "../gqlQuery"
 import { getHeaders } from "../util"
@@ -23,6 +24,19 @@ const UserComp = (props) => {
                                                                 nextFetchPolicy: 'network-only', // Used for subsequent executions
                                                                 notifyOnNetworkStatusChange: true 
                                                             });
+
+    if(!_.isEmpty(errorUserById)){
+        _.map(errorUserById?.graphQLErrors, (e)=>{
+
+            console.log("")
+            // switch(e?.extensions?.code){
+            //     case UNAUTHENTICATED:{
+            //     showToast("error", e?.message)
+            //     break;
+            //     }
+            // }
+        })
+    }
     useEffect(() => {
         if(!loadingUserById){
             if (dataUserById?.userById) {
@@ -38,7 +52,20 @@ const UserComp = (props) => {
                 onClick={()=>{
                     navigate({ pathname: `/p`, search: `?${createSearchParams({ id: userId })}` })
                 }}>
-                { loadingUserById ? <LinearProgress /> : data?.displayName }
+                {   loadingUserById 
+                    ? <LinearProgress /> 
+                    : <div>
+                        <Avatar
+                            alt="Example avatar"
+                            variant="rounded"
+                            src={data?.avatar?.url}
+                            onClick={(e) => {
+                                // onLightbox({ isOpen: true, photoIndex: 0, images:files })
+                            }}
+                            sx={{ width: 56, height: 56 }}
+                        />
+                        <>{data?.displayName}</>
+                    </div>  }
             </div>
 };
 

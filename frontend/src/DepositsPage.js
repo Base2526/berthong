@@ -29,7 +29,9 @@ import { getHeaders, checkRole, showToast } from "./util"
 import { queryDeposits, mutationDeposit } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
 import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants"
-import TableComp from "./components/TableComp"
+// import TableComp from "./components/TableComp"
+
+import UserComp from "./components/UserComp"
 
 deepdash(_);
 
@@ -101,7 +103,7 @@ const DepositsPage = (props) => {
       console.log("onError :")
     }
   });
-  
+
   useEffect(() => {
     if(!loadingDeposits){
       if(!_.isEmpty(dataDeposits?.deposits)){
@@ -320,29 +322,6 @@ const DepositsPage = (props) => {
   }
 
   return (<div style={{flex:1}}>
-         {/* {
-            loadingDeposits
-            ? <CircularProgress /> 
-            : <div>
-                {
-                  checkRole(user) !== AMDINISTRATOR 
-                  ? <button onClick={()=>{  
-                      // history.push({ pathname: "/deposit", state: {from: "/", mode: "new"}  });
-                      navigate("/deposit", {state: {from: "/", mode: "new"}} )
-                    }}>เพิ่ม แจ้งฝากเงิน</button>
-                  : ""
-                  }
-                <TableComp
-                  columns={columns}
-                  data={datas}
-                  fetchData={fetchData}
-                  rowsPerPage={pageOptions}
-                  updateMyData={updateMyData}
-                  skipReset={skipResetRef.current}
-                  isDebug={false}/>
-              </div>
-          } */}
-
               {
                 loadingDeposits
                 ?  <CircularProgress />
@@ -359,17 +338,19 @@ const DepositsPage = (props) => {
                               console.log("item :", item)
                               // return  <Stack direction="row" spacing={2}>{index} : {i.title}</Stack>
 
+                              let userId  = item?.userIdRequest;
                               let files   = item?.files;
-                              let balance = item.balance;
-                              let bank = item.bank;
-                              let dateTranfer   = item.dateTranfer;
-                              let status  = item.status;
-                              let createdAt = item.createdAt;
+                              let balance = item?.balance;
+                              let bank    = item?.bank;
+                              let dateTranfer   = item?.dateTranfer;
+                              let status  = item?.status;
+                              let createdAt = item?.createdAt;
 
                               dateTranfer = new Date(dateTranfer).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
                               createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
   
                               return  <Stack direction="row" spacing={2} >
+                                        <Box sx={{ width: '10%' }}><UserComp userId={userId} /></Box>
                                         <Box sx={{ width: '7%' }}>
                                         <Avatar
                                           alt="Example avatar"

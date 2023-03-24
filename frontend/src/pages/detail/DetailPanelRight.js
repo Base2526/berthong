@@ -15,7 +15,7 @@ import {
 
 import _ from "lodash"
 
-import { currencyFormat } from "../../util"
+import { numberCurrency, minTwoDigits } from "../../util"
 
 const finishBuy = [12, 14, 17]
 const numberLotterys = Array.from({ length: 10 * 10 }, (_, i) => i);
@@ -28,49 +28,39 @@ const movies =  {
                 }
 
 const DetailPanel = (props) => {
-  let { user, onLogin, selectedSeats, onSelectedSeatsChange } = props
+  let { user, data, onLogin, onSelected, selectedSeats, onSelectedSeatsChange } = props
 
-  const handleSelectedState = (seat) => {
-    _.isEmpty(user)
-    ? onLogin(true)
-    : selectedSeats.includes(seat)
-      ? onSelectedSeatsChange(selectedSeats.filter((selectedSeat) => selectedSeat !== seat) )
-      : onSelectedSeatsChange([...selectedSeats, seat]);
-  };
+  // console.log("DetailPanel data :", data)
+
+  // const handleSelectedState = (evt, itemId) => {
+  //   console.log("handleSelectedState :", itemId)
+  //   onSelected(evt, itemId)
+
+  //   _.isEmpty(user)
+  //   ? onLogin(true)
+  //   : selectedSeats.includes(itemId)
+  //     ? onSelectedSeatsChange(selectedSeats.filter((selectedSeat) => selectedSeat !== itemId) )
+  //     : onSelectedSeatsChange([...selectedSeats, itemId]);
+  // };
+
+
 
   return (
     <div className="container-detail">
       {numberLotterys.map((seat) => {
-        const isSelected  = selectedSeats.includes(seat);
+
+        const isSelected  = _.find(data?.buys, (buy)=> _.isEqual(buy?.itemId, seat) && _.isEqual( buy?.userId,  user?._id));//selectedSeats.includes(seat);
         const isOccupied  = movies.occupied?.includes(seat);
-        const isFinish    = movies.finish?.includes(seat);
-        const isBooking   = movies.booking?.includes(seat);
+        const isFinish    = _.find(data?.buys, (buy)=> _.isEqual( buy?.selected, 1));;//movies.finish?.includes(seat);
+        const isBooking   = _.find(data?.buys, (buy)=> _.isEqual(buy?.itemId, seat) && !_.isEqual( buy?.userId,  user?._id) && _.isEqual( buy?.selected, 0));//movies.booking?.includes(seat);
         return (
           <div>
             <span
               tabIndex="0"
               key={seat}
-              className={clsx(
-                "circle",
-                isSelected && "selected",
-                isOccupied && "occupied",
-                isFinish && "finish",
-                isBooking && "booking"
-              )}
-              onClick={
-                isOccupied || isFinish || isBooking
-                  ? null
-                  : () => handleSelectedState(seat)
-              }
-              onKeyDown={
-                isOccupied || isFinish || isBooking
-                ? null
-                : (e) => {
-                    if (e.key === "Enter") {
-                      handleSelectedState(seat);
-                    }
-                  }
-              }>
+              className={clsx("circle", isSelected && "selected", isOccupied && "occupied", isFinish && "finish",  isBooking && "booking" )}
+              onClick={(evt) => isOccupied || isFinish || isBooking ? null : onSelected(evt, seat) }
+              onKeyDown={(evt) => isOccupied || isFinish || isBooking ? null : (evt.key === "Enter" ?  onSelected(evt, seat) : null) }>
               {" "}
               {isBooking ? <span className="booking-font">ติดจอง</span> : ""}
               {seat <= 9 ? "0" + seat : seat}
@@ -83,8 +73,10 @@ const DetailPanel = (props) => {
 };
 
 const DetailPanelRight = (props) =>{
+  let { user, data, owner,  onSelected, selectedSeats, onSelectedSeatsChange, onPopupOpenedWallet, onPopupOpenedShoppingBag } = props
 
-  let { data, owner, selectedSeats, onSelectedSeatsChange, onPopupOpenedWallet, onPopupOpenedShoppingBag } = props
+  let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
+  let buys      =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 1) )
 
   return  <div className="ber-bg1 border col-lg-8 col-md-8 col-sm-12 col-12">
             <div className="row pb-2">
@@ -107,7 +99,7 @@ const DetailPanelRight = (props) =>{
                               color="success"
                               size="sm"
                               sx={{ pointerEvents: "none" }}>
-                              <div class="wishlist_count">$2,000</div>
+                              <div class="wishlist_count">{ !user?.balance ? numberCurrency(0) : numberCurrency(user?.balance)}</div>
                             </Chip>
                           </div>
                         </div>
@@ -130,11 +122,8 @@ const DetailPanelRight = (props) =>{
                                 variant="outlined"
                                 color="warning"
                                 size="sm"
-                                sx={{ pointerEvents: "none" }}
-                              >
-                                <div class="price-red">
-                                  {currencyFormat(selectedSeats.length * 100)}
-                                </div>
+                                sx={{ pointerEvents: "none" }}>
+                                <div class="price-red">{numberCurrency(selecteds.length * data.price)}</div>
                               </Chip>
                             </div>
                           </div>
@@ -145,20 +134,26 @@ const DetailPanelRight = (props) =>{
                           <div className="pt-2 selectBer">
                             <Autocomplete
                               size="small"
+                              open={false}
                               multiple
                               freeSolo
-                              options={selectedSeats.map((option) => option)}
-                              onChange={(e, v) =>onSelectedSeatsChange(v) }
+                              disableClearable
+                              options={selecteds.map((option) => option.itemId)}
+                              getOptionLabel={(option) => option.toString()}
+                              onChange={(e, v) =>{
+                                let itemIds = _.map(selecteds, (selected)=>minTwoDigits(selected.itemId))
+                                _.map(_.difference(itemIds, v), (itemId)=>onSelected(e, itemId))
+                              }}
                               renderInput={(params) => (
                                 <TextField
                                   {...params}
-                                  label={`เลือก/จอง(${selectedSeats.length})`}
+                                  label={`เลือก/จอง(${selecteds?.length})`}
                                   margin="normal"
                                   variant="standard"
                                   fullWidth
                                 />
                               )}
-                              value={selectedSeats.map((option) => option)}
+                              value={selecteds.map((option) => minTwoDigits(option.itemId))}
                             />
                           </div>
                         </div>
@@ -166,19 +161,22 @@ const DetailPanelRight = (props) =>{
                           <div className="pt-2 finishBer">
                             <Autocomplete
                               size="small"
+                              open={false}
                               multiple
                               freeSolo
                               readOnly
+                              disableClearable
+                              getOptionLabel={(option) => option.toString()}
                               renderInput={(params) => (
                                 <TextField
                                   {...params}
-                                  label={`ซื้อสำเร็จแล้ว(3)`}
+                                  label={`ซื้อสำเร็จแล้ว(${buys?.length})`}
                                   margin="normal"
                                   variant="standard"
                                   fullWidth
                                 />
                               )}
-                              value={finishBuy.map((option) => option)}
+                              value={buys.map((option) => option.itemId)}
                             />
                           </div>
                         </div>

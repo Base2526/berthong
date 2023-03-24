@@ -704,11 +704,11 @@ export default gql`
   }
 
   input DepositInput{
-    mode: DepositModeType
+    mode: DepositModeType!
     _id: ID
-    balance: Int!
-    dateTranfer: DATETIME!
-    bank: JSON!
+    balance: Int
+    dateTranfer: DATETIME
+    bank: JSON
     files: [JSON]
     status: String
   }

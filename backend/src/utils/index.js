@@ -190,12 +190,15 @@ export const checkBalance = async(userId) =>{
 
 export const checkBalanceBook = async(userId) =>{
     try{
-        let suppliers = await Supplier.find({});
+        let suppliers = await Supplier.find({buys: { $elemMatch : {userId}}})
         let prices  = _.filter( await Promise.all(_.map(suppliers, async(supplier)=>{
                         let { price, buys } = supplier;
-                        let filters = _.filter(buys, (buy)=>buy.userId == userId.toString() && buy.selected == 0)
+                        let filters = _.filter(buys, (buy)=>{
+                            return _.isEqual(buy.userId, userId) && buy.selected == 0
+                        } )
                         return price * filters.length
                     })), (p)=>p!=0)
+
         return _.reduce(prices, (ps, i) => ps + i, 0);
     } catch(err) {
         console.log("error :", err)

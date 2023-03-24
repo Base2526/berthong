@@ -9,7 +9,7 @@ const DetailPanelLeft = (props) =>{
                 2 ตัว{data?.type === 0 ? "บน" : "ล่าง"}
               </div>
               <div className="price-detail" style={{ width: "px" }}>
-                เบอร์ละ {data.price} บาท
+                เบอร์ละ {data?.price} บาท
               </div>
               <header class="masthead">
                 <div class="container px-5">

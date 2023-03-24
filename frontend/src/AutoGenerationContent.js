@@ -20,11 +20,25 @@ const AutoGenerationContent = (props) => {
             networkStatus } = useQuery(queryUsers, 
                                         { 
                                         context: { headers: getHeaders(location) }, 
+                                        variables: {input: { OFF_SET: 0, LIMIT: 1000 }},
                                         fetchPolicy: 'network-only', // Used for first execution
                                         nextFetchPolicy: 'cache-first', // Used for subsequent executions
                                         notifyOnNetworkStatusChange: true
                                         }
                                     );
+
+    if(!_.isEmpty(errorUsers)){
+        _.map(errorUsers?.graphQLErrors, (e)=>{
+
+            console.log("e :", e)
+            // switch(e?.extensions?.code){
+            //   case FORCE_LOGOUT:{
+            //     logout()
+            //     break;
+            //   }
+            // }
+        })
+    }
 
     const { loading: loadingDateLotterys, 
             data: dataDateLotterys, 
@@ -40,8 +54,8 @@ const AutoGenerationContent = (props) => {
         onCompleted({ data }) {
         //   history.goBack()
         },
-        onError({error}){
-          console.log("onError :")
+        onError(error){
+          console.log("onError :", error)
         }
     });
 
@@ -58,22 +72,22 @@ const AutoGenerationContent = (props) => {
     });
 
     useEffect(() => {
-        if(!loadingDateLotterys){
+        if(!loadingUsers){
           if(!_.isEmpty(dataUsers?.users)){
             let { status, data } = dataUsers?.users
             if(status)setUsers(data)
           }
         }
-    }, [dataUsers, loadingDateLotterys])
+    }, [dataUsers, loadingUsers ])
 
     useEffect(() => {
-        if(!loadingUsers){
+        if(!loadingDateLotterys){
           if(!_.isEmpty(dataDateLotterys?.dateLotterys)){
             let { status, data } = dataDateLotterys?.dateLotterys
             if(status)setDateLotterys(data)
           }
         }
-    }, [dataDateLotterys, loadingUsers])
+    }, [dataDateLotterys, loadingDateLotterys])
 
     const makeFile = (length) =>{
         let files = []
@@ -107,7 +121,7 @@ const AutoGenerationContent = (props) => {
                 <div>
                     <button onClick={()=>{
                         // let { data } = dateLotterysValue.data.dateLotterys
-                        for ( var i = 0; i < 95; i++ ) {
+                        for ( var i = 0; i < 10; i++ ) {
                             let newInput =  {
                                 mode: "NEW",
                                 title: faker.lorem.lines(1),

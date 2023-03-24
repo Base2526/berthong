@@ -15,6 +15,14 @@ import PopupCart from "./PopupCart";
 import PopupWallet from "./PopupWallet";
 import { bookView, getHeaders, sellView, showToast } from "../../util";
 
+import {  DATA_NOT_FOUND, 
+  ERROR, 
+  FORCE_LOGOUT, 
+  UNAUTHENTICATED, 
+  WS_CLOSED, 
+  WS_CONNECTED, 
+  WS_SHOULD_RETRY } from "../../constants";
+
 import { mutationBook, mutationBuy, querySupplierById, 
         querySuppliers, subscriptionSupplierById, queryUserById } from "../../gqlQuery";
 
@@ -54,12 +62,12 @@ const Detail = (props) => {
 
   let { id } = params; 
 
-  let { user } = props
+  let { user, onLogin } = props
 
   const { loading: loadingSupplierById, 
           data: dataSupplierById, 
           error: errorSupplierById, 
-          subscribeToMore, 
+          subscribeToMore: subscribeToMoreSupplierById, 
           networkStatus } = useQuery( querySupplierById, { 
                                       context: { headers: getHeaders(location) }, 
                                       variables: { id }, 
@@ -91,6 +99,95 @@ const Detail = (props) => {
     })
   }
 
+  const [onBook, resultBookValues] = useMutation(mutationBook,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {book}}) => {
+      let { status, action, data } = book
+
+      setData(data)
+
+      let {mode, itemId} = action
+      switch(mode){
+        case "BOOK":{
+          showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+          break
+        }
+
+        case "UNBOOK":{
+          showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+          break
+        }
+      }
+      
+      let supplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
+      if(status && supplierByIdValue){
+        cache.writeQuery({ query: querySupplierById, data: { supplierById: { data } }, variables: { id: data._id } }); 
+      }
+
+      ////////// update cache querySuppliers ///////////
+      let suppliersValue = cache.readQuery({ query: querySuppliers });
+      if(!_.isNull(suppliersValue)){
+        let { suppliers } = suppliersValue
+        let newData = _.map(suppliers.data, (supplier) => supplier._id == data._id ? data : supplier)
+        cache.writeQuery({
+          query: querySuppliers,
+          data: { suppliers: {...suppliersValue.suppliers, data: newData} }
+        });
+      }
+      ////////// update cache querySuppliers ///////////
+    },
+    onCompleted({ data }) {
+      console.log("onCompleted")
+    },
+    onError: (error) => {
+      _.map(error?.graphQLErrors, (e)=>{
+        switch(e?.extensions?.code){
+          case FORCE_LOGOUT:{
+            // logout()
+            break;
+          }
+          case DATA_NOT_FOUND:
+          case UNAUTHENTICATED:
+          case ERROR:{
+            showToast("error", e?.message)
+            break;
+          }
+        }
+      })
+    }
+  });
+
+  const [onBuy, resultBuyValues] = useMutation(mutationBuy,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {buy}}) => {
+      let { status, data } = buy
+         
+      ////////// update cache queryUserById ///////////
+      let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
+      if(querySupplierByIdValue){
+        cache.writeQuery({
+          query: querySupplierById,
+          data: { supplierById: {...querySupplierByIdValue.supplierById, data} },
+          variables: {id: data._id}
+        });
+      }
+      ////////// update cache queryUserById ///////////    
+
+      ////////// update cache querySuppliers ///////////
+      let suppliersValue = cache.readQuery({ query: querySuppliers });
+      if(!_.isNull(suppliersValue)){
+        console.log("suppliersValue :", suppliersValue)
+      }
+      ////////// update cache querySuppliers ///////////
+    },
+    onCompleted({ data }) {
+      console.log("onCompleted")
+    },
+    onError: (err) => {
+      console.log("onError :", err)
+    }
+  });
+
   useEffect(() => {
     if(!loadingUserById){
       if(!_.isEmpty(dataUserById?.userById)){
@@ -114,45 +211,72 @@ const Detail = (props) => {
   }, [dataSupplierById, loadingUserById])
 
   useEffect(()=>{
-    if(!_.isEmpty(data)){
+    if(!_.isEmpty(data) && _.isEmpty(dataUser)){
       refetchUserById({id: data?.ownerId});
     }
   }, [data])
 
   useEffect(()=>{
-    // unsubscribeSupplierById && unsubscribeSupplierById()
-    // unsubscribeSupplierById = null;
+    unsubscribeSupplierById && unsubscribeSupplierById()
+    unsubscribeSupplierById = null;
 
-    // unsubscribeSupplierById =  subscribeToMore({
-    //   document: subscriptionSupplierById,
-    //   variables: { supplierById: id },
-    //   updateQuery: (prev, {subscriptionData}) => {
-    //     if (!subscriptionData.data) return prev;
+    unsubscribeSupplierById =  subscribeToMoreSupplierById({
+      document: subscriptionSupplierById,
+      variables: { supplierById: id },
+      updateQuery: (prev, {subscriptionData}) => {
+        if (!subscriptionData.data) return prev;
 
-    //     let { mutation, data } = subscriptionData.data.subscriptionSupplierById;
-    //     switch(mutation){
-    //       case "BOOK":
-    //       case "UNBOOK":{
-    //         let newPrev = {...prev.supplierById, data}
+        let { mutation, data } = subscriptionData.data.subscriptionSupplierById;
+        switch(mutation){
+          case "BOOK":
+          case "UNBOOK":{
+            let newPrev = {...prev.supplierById, data}
 
-    //         setDatasSupplierById(data)
-    //         return {supplierById: newPrev}; 
-    //       }
+            setData(data)
+            return {supplierById: newPrev}; 
+          }
 
-    //       case "AUTO_CLEAR_BOOK":{
-    //         let newPrev = {...prev.supplierById, data}
-    //         console.log("AUTO_CLEAR_BOOK :", user, newPrev)
+          case "AUTO_CLEAR_BOOK":{
+            let newPrev = {...prev.supplierById, data}
+            console.log("AUTO_CLEAR_BOOK :", user, newPrev)
 
-    //         setDatasSupplierById(data)
-    //         return {supplierById: newPrev}; 
-    //       }
+            setData(data)
+            return {supplierById: newPrev}; 
+          }
 
-    //       default:
-    //         return prev;
-    //     }
-    //   }
-    // });
+          default:
+            return prev;
+        }
+      }
+    });
   }, [id])
+
+  const onSelected = (evt, itemId) =>{
+    if(_.isEmpty(user)) onLogin(true)
+
+    let fn = _.find(data.buys, (buy)=>buy.itemId == itemId)
+
+    let selected = 0;
+    if(fn){
+      selected = fn.selected == -1 ? 0 : -1
+    }
+
+    if(selected == 0){
+      let check = user?.balance - (user?.balanceBook + data.price)
+      if(check < 0){
+        showToast("error", `ยอดเงินคงเหลือไม่สามารถจองได้`)
+
+        return;
+      }
+    }
+
+    // let newDatas =  _.map(datas, (itm, k)=>itemId == k ? {...itm, selected }: itm)
+    // setData(newDatas)
+
+    console.log("supplierId: id, itemId, selected", id, itemId, selected)
+
+    onBook({ variables: { input: { supplierId: id, itemId, selected } } });
+  }
 
   return (
     <div className="row">
@@ -176,7 +300,9 @@ const Detail = (props) => {
               onSelectedSeatsChange={(value)=>setSelectedSeats(value)}
 
               onPopupOpenedWallet={(status)=>setPopupOpenedWallet(status) }
-              onPopupOpenedShoppingBag={(status)=>setPopupOpenedShoppingBag(status)}/>
+              onPopupOpenedShoppingBag={(status)=>setPopupOpenedShoppingBag(status)}
+              
+              onSelected={(evt, itemId)=>onSelected(evt, itemId)}/>
           </>
       }
     </div>

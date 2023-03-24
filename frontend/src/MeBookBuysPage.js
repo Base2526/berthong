@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
 import {
   Stack,
@@ -9,20 +9,29 @@ import {
   DialogContent,
   DialogActions,
   Dialog,
-  Button
+  Button,
+  Box,
+  Avatar
 } from '@mui/material'
 import _ from "lodash"
 import { useQuery } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
+import moment from "moment";
+
+import {
+  Edit as EditIcon,
+  DeleteForever as DeleteForeverIcon
+} from '@mui/icons-material'
 
 import { queryBookBuyTransitions } from "./gqlQuery"
+import UserComp from "./components/UserComp"
 
 const MeBookBuysPage = (props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  let { user } = props
+  let { user, onLightbox } = props
 
   let [datas, setDatas] = useState([]);
   let [total, setTotal] = useState(0)
@@ -108,8 +117,48 @@ const MeBookBuysPage = (props) => {
                     hasMore={hasMore}
                     loader={<h4>Loading...</h4>}>
                     { 
-                     _.map(datas, (i, index) => {
-                      return  <Stack direction="row" spacing={2}>{index}</Stack>
+                     _.map(datas, (item, index) => {
+
+                      let title = item.title;
+                      let description = item.description;
+                      let type   = item.type;
+                      let category  = item.category;
+                      let condition = item.condition;
+                      let buys    = item.buys;
+                      let follows = item.follows;
+                      let files   = item?.files
+                      let createdAt = new Date(item.createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+            
+                      return <Stack direction="row" spacing={2} >
+                              <Box sx={{ width: '10%' }}>
+                                <Avatar
+                                  alt="Example avatar"
+                                  variant="rounded"
+                                  src={files[0]?.url}
+                                  onClick={(e) => {
+                                    onLightbox({ isOpen: true, photoIndex: 0, images:files })
+                                  }}
+                                  sx={{ width: 56, height: 56 }}
+                                />
+                              </Box>
+                              <Box 
+                                sx={{ width: '10%' }}
+                                onClick={()=>{
+                                  navigate({
+                                  pathname: "/d",
+                                  search: `?${createSearchParams({ id: item._id})}`,
+                                  state: { id: item._id }
+                                })}}
+                              >{title}</Box>
+                              <Box sx={{ width: '20%' }}>{description}</Box>
+                              <Box sx={{ width: '20%' }}><UserComp userId={item?.ownerId} /></Box>
+                              <Box sx={{ width: '5%' }}>{type}</Box>
+                              <Box sx={{ width: '5%' }}>{category}</Box>
+                              <Box sx={{ width: '5%' }}>{condition}</Box>
+                              <Box sx={{ width: '5%' }}>{buys.length}</Box>
+                              <Box sx={{ width: '5%' }}>{follows.length}</Box>
+                              <Box sx={{ width: '10%' }}>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A') }</Box>
+                            </Stack>
                      })
 
                      /*

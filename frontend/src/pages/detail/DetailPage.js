@@ -228,10 +228,6 @@ const DetailPage = (props) => {
     let newDatas =  _.map(datas, (itm, k)=>itemId == k ? {...itm, selected }: itm)
     setDatas(newDatas)
 
-    // selected ==0 
-    // ? showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
-    // : showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
-
     onBook({ variables: { input: { supplierId: id, itemId, selected } } });
   }
 

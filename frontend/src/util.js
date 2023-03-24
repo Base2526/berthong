@@ -59,6 +59,10 @@ export const numberCurrency = (number) =>{
     return THBBaht.format(number)
 }
 
+export const minTwoDigits =(n)=> {
+    return (n < 10 ? '0' : '') + n;
+}
+
 export const currencyFormat = (num) => {
     return "$" + num.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
 };
