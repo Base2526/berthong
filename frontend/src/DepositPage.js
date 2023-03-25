@@ -161,10 +161,10 @@ const DepositPage = (props) => {
         let newInput =  {
           mode: mode.toUpperCase(),
           _id: editData?._id,
-          status: editData?.status,
+          status: parseInt(editData?.status),
         }
 
-        // console.log("edit :", newInput)
+        console.log("edit :", newInput)
         onMutationDeposit({ variables: { input: newInput } });
         break;
       }
@@ -310,7 +310,7 @@ const DepositPage = (props) => {
                           // onBlur={ validateInput }
                           >
                           <option value={""}>ไม่เลือก</option>
-                          { _.map(['wait','approved', 'reject'], (name, id)=><option key={id} value={name}>{name}</option>) }
+                          { _.map([ {id: 0, name: 'wait'},{id: 1, name: 'approved'}, {id: 2, name: 'reject'} /*'wait','approved', 'reject'*/ ], (item, id)=><option key={id} value={item?.id}>{item?.name}</option>) }
                         </select> 
                         <p className="text-red-500"> {_.isEmpty(error.status) ? "" : error.status} </p>  
                       </div>

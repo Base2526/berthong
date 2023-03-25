@@ -466,7 +466,7 @@ export default gql`
     homes: JSON
 
     suppliers(input: SearchInput): JSON
-    supplierById(_id: ID): JSON
+    supplierById(_id: ID!): JSON
 
     deposits: JSON
     depositById(_id: ID!): JSON
@@ -481,7 +481,7 @@ export default gql`
 
     historyTransitions: JSON
 
-    profile(_id: ID): JSON
+    friendProfile(_id: ID): JSON
 
     dateLotterys: JSON
     dateLotteryById(_id: ID!): JSON
@@ -710,7 +710,7 @@ export default gql`
     dateTranfer: DATETIME
     bank: JSON
     files: [JSON]
-    status: String
+    status: Int
   }
 
   input MeInput{
@@ -765,7 +765,7 @@ export default gql`
 
   type Subscription {
     subscriptionMe(sessionId: ID!): JSON
-    subscriptionSupplierById(supplierById: ID!): JSON
+    subscriptionSupplierById(_id: ID!): JSON
     subscriptionSuppliers(supplierIds: String!): JSON
 
     subscriptionAdmin(supplierIds: String!): JSON

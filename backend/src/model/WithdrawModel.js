@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+
+import * as Constants from "../constants"
+
 const Schema = mongoose.Schema
 const withdrawSchema = new Schema({
   // bank: { type: Schema.Types.ObjectId, required:[true, "Bank-Id Request is a required field"] },
@@ -11,9 +14,10 @@ const withdrawSchema = new Schema({
   userIdRequest: { type: Schema.Types.ObjectId, required:[true, "User-Id Request is a required field"] },
   userIdApprove: { type: Schema.Types.ObjectId },
   status:{
-    type: String,
-    enum : ['wait','approved', 'reject'],
-    default: 'wait'
+    type: Number,
+    min: 0,
+    max: 2,
+    default: Constants.WAIT // 0: 'wait', 1: 'approved',  2: 'reject'
   }, 
 },
 {

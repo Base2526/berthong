@@ -4,7 +4,6 @@ import {
   MoreVert as MoreVertIcon,
 } from "@material-ui/icons";
 import {
-  Avatar,
   IconButton,
   Menu,
   MenuItem
@@ -12,18 +11,19 @@ import {
 
 import {
   ContentCopy as ContentCopyIcon,
-  BugReport as BugReportIcon
+  BugReport as BugReportIcon,
+  Bookmark as BookmarkIcon
 } from "@mui/icons-material"
 import _ from "lodash"
 import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
 
-import ItemFollow from "./ItemFollow"
-
 const HomeItem = (props) => {
   const navigate = useNavigate();
-  let { index, item, onDialogLogin } = props;
+  let { user, index, item, onMutationFollow } = props;
   let { owner, files } = item
   let [openMenu, setOpenMenu] = useState(null);
+
+  let isFollow = _.find(item?.follows, (f)=>f?.userId == user?._id)
 
   const menuView = (item, index) =>{
     return  <Menu
@@ -119,7 +119,6 @@ const HomeItem = (props) => {
           />
         </div>
         <div className="card-body" style={{ overflowY: "auto" }}>
-          {/* <h4 class="card-title">{post.title}</h4> */}
           <div className="row">
             <div className="col-12 p-2">
               <span 
@@ -135,13 +134,9 @@ const HomeItem = (props) => {
               </span>
               <h4 className="card-title" 
                 style={{ float: "right" }}>
-                {/* <IconButton><BookmarkIcon /></IconButton> */}
-                <ItemFollow 
-                  {...props} 
-                  item={item} 
-                  onDialogLogin={(e)=>{
-                    onDialogLogin(true)
-                  }}/>
+                <IconButton onClick={(e) =>onMutationFollow({ variables: { id: item._id } })}> 
+                  <BookmarkIcon style={{ color : !_.isEmpty(isFollow) ? "blue" : "" }} />
+                </IconButton>
                 <IconButton onClick={(e) => { setOpenMenu({ [index]: e.currentTarget }); }}><MoreVertIcon /></IconButton>
               </h4>
             </div>
@@ -157,37 +152,6 @@ const HomeItem = (props) => {
             }}>{item?.description}</p>
           </div>
         </div>
-        {/* <div>
-          <p class="card-text">
-            <small class="text-muted">
-              <i class="fas fa-eye"></i>
-              {post.view}
-              <i class="far fa-user"></i>
-              {post.createBy}
-              <i class="fas fa-calendar-alt"></i>
-              {post.createDate}
-            </small>
-          </p>
-        </div> */}
-        {/* <div
-          class="card-footer"
-          style={{ background: "inherit", borderColor: "inherit" }}
-        >
-          <div className="profile-card-1 p-2 .card-z">
-            <a href="#">
-              <i class="fab fa-twitter twitter-color"></i>
-            </a>
-            <a href="#">
-              <i class="fab fa-facebook facebook-color"></i>
-            </a>
-            <a href="#">
-              <i class="fab fa-google google-color"></i>
-            </a>
-            <a href="#">
-              <i class="fas fa-link link-color"></i>
-            </a>
-          </div>
-        </div> */}
       </div>
     </div>
   );

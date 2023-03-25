@@ -8,18 +8,19 @@ import {
 } from "@material-ui/core";
 
 const PopupCart = (props) => {
+
+  let { data, opened, onClose } = props
+  
   const cancelForm = () => {
-    console.log("Form is canceled.");
-    props.onClose();
+    onClose();
   };
 
   const saveForm = (e) => {
-    console.log("Saving form...");
-    props.onClose();
+    onClose();
   };
 
   return (
-    <Dialog open={props.opened} onClose={cancelForm} fullWidth={true}>
+    <Dialog open={opened} onClose={cancelForm} fullWidth={true}>
       <DialogTitle>ยืนยันการซื้อ</DialogTitle>
       <DialogContent>
         <div style={{ overflow: "hidden", height: "100%", width: "100%" }}>
@@ -32,13 +33,13 @@ const PopupCart = (props) => {
               overflow: "scroll"
             }}
           >
-            จำนวน {props.dataSelect.length} เบอร์
+            จำนวน {data?.length} เบอร์
             <br />
-            {props.dataSelect.length !== 0
-              ? String(props.dataSelect)
+            {data?.length !== 0
+              ? String(data)
               : "ยังไม่ได้เลือก"}
             <br />
-            รวมราคา {props.dataSelect.length * 100} บาท
+            รวมราคา {data?.length * 100} บาท
           </div>
         </div>
       </DialogContent>

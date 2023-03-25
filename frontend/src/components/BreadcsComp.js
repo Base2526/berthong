@@ -14,7 +14,7 @@ import {
 } from 'react-icons/md';
 
 import { getHeaders, checkRole } from "../util"
-import { queryProfile } from "../gqlQuery"
+import { queryFriendProfile } from "../gqlQuery"
 import * as Constants from "../constants"
 
 const BreadcsComp = (props) => {
@@ -31,7 +31,7 @@ const BreadcsComp = (props) => {
           data: dataProfile, 
           error: errorProfile, 
           networkStatus,
-          refetch: refetchProfile } = useQuery( queryProfile, { 
+          refetch: refetchProfile } = useQuery( queryFriendProfile, { 
                                       context: { headers: getHeaders(location) }, 
                                       fetchPolicy: 'cache-only', 
                                       notifyOnNetworkStatusChange: true});
@@ -44,8 +44,8 @@ const BreadcsComp = (props) => {
 
   useEffect(() => {
     if (!loadingProfile) {
-      if(dataProfile?.profile){
-        let { status, data } = dataProfile?.profile
+      if(dataProfile?.friendProfile){
+        let { status, data } = dataProfile?.friendProfile
         if(status){
           setProfile(data)
         }

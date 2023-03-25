@@ -21,6 +21,8 @@ import logger from "./utils/logger";
 
 import * as cache from "./cache"
 
+import * as Constants from "./constants"
+
 export default {
   Query: {
     async ping(parent, args, context, info){
@@ -293,7 +295,7 @@ export default {
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
       if( checkRole(current_user) == AMDINISTRATOR ){
-        let deposits = await Deposit.find({status: "wait"})
+        let deposits = await Deposit.find({status: Constants.WAIT})
 
         deposits  =await Promise.all(_.map(deposits, async(deposit)=>{
                                       let f = await Bank.findById(deposit.bank.bankId)
@@ -339,7 +341,7 @@ export default {
             checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Admin or Authenticated only!')
 
         if( checkRole(current_user) == AMDINISTRATOR ){
-          let withdraws = await Withdraw.find({status: "wait"})
+          let withdraws = await Withdraw.find({status: Constants.WAIT})
 
           withdraws = await Promise.all(_.map(withdraws, async(i)=>{
                                                 let user = await User.findById(i.userIdRequest)
@@ -376,11 +378,6 @@ export default {
 
       let withdraw = await Withdraw.findById(_id)
       if(_.isNull(withdraw)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
-
-      // let bankValue = await Bank.findById(withdraw.bank)
-      // if(_.isNull(bankValue)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
-
-      // bank = {...bank._doc, bankName: bankValue.name}
 
       return {  status:true,
                 data: withdraw,
@@ -442,15 +439,15 @@ export default {
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      let transitions = await Transition.find({userId: current_user?._id, type: "supplier",status:"success" });
+      let transitions = await Transition.find({userId: current_user?._id, type: Constants.SUPPLIER, status: Constants.OK });
       transitions = _.filter( await Promise.all(_.map(transitions, async(transition)=>{
                       let supplier = await Supplier.findById(transition.refId)
 
                       let { buys } = supplier
                       let book  = _.filter(buys, buy=> _.isEqual(buy.userId, current_user?._id)  && buy.selected == 0)
-                      let buy  = _.filter(buys, buy=>_.isEqual(buy.userId, current_user?._id)  && buy.selected == 1)
+                      // let buy  = _.filter(buys, buy=>_.isEqual(buy.userId, current_user?._id)  && buy.selected == 1)
 
-                      return book.length > 0 || buy.length > 0 ? {...transition._doc, ...supplier._doc } : null
+                      return book.length > 0 /*|| buy.length > 0*/  ? {...transition._doc, ...supplier._doc } : null
                     })), item=>!_.isNull(item) ) 
 
       return {  status: true,
@@ -472,7 +469,7 @@ export default {
 
     },
 
-    async profile(parent, args, context, info){
+    async friendProfile(parent, args, context, info){
       let start = Date.now()
       let { _id } = args
       let { req } = context
@@ -538,10 +535,10 @@ export default {
       if( !status && code == FORCE_LOGOUT ) throw new AppError(FORCE_LOGOUT, 'Expired!')
       // if( checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
 
-      let transitions = await Transition.find({userId: current_user?._id, type: "supplier", status:"success" });
+      let transitions = await Transition.find({userId: current_user?._id, type: Constants.SUPPLIER, status: Constants.OK });
       transitions = await Promise.all(_.map(transitions, async(transition)=>{
                           switch(transition.type){ // 'supplier', 'deposit', 'withdraw'
-                            case "supplier":{
+                            case Constants.SUPPLIER:{
 
                               let supplier = await Supplier.findById(transition.refId)
 
@@ -605,15 +602,15 @@ export default {
       if( !status && code == FORCE_LOGOUT ) throw new AppError(FORCE_LOGOUT, 'Expired!')
       if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Administrator only!')
 
-
-      let deposits = await Deposit.find({status: "wait"})
+      // 0: 'wait', 1: 'approved',  2: 'approved'
+      let deposits = await Deposit.find({status: Constants.WAIT})
       deposits  = _.filter(await Promise.all(_.map(deposits, async(deposit)=>{
                                     let f = await Bank.findById(deposit.bank.bankId)
                                     if(_.isNull(f)) return null
                                     return {...deposit._doc, bank: {...deposit.bank, bankName: f?.name}}
                                   })), i=>!_.isEmpty(i))
 
-      let withdraws = await Withdraw.find({status: "wait"})
+      let withdraws = await Withdraw.find({status: Constants.WAIT})
       withdraws = _.filter(await Promise.all(_.map(withdraws, async(i)=>{
                                             let user = await User.findById(i.userIdRequest)
                                             return _.isEmpty(user) ? null : {...i._doc, userNameRequest: user?.displayName}
@@ -1198,7 +1195,7 @@ export default {
       if(_.isNull(supplier)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
       if(_.isNull(await Transition.findOne({ refId: supplier?._id, userId: current_user?._id}))){
-        await Transition.create( {type: "supplier", refId: supplier?._id, userId: current_user?._id, status: "success"} )
+        await Transition.create( { refId: supplier?._id, userId: current_user?._id } )
       }
 
       let { buys } = supplier
@@ -1480,7 +1477,7 @@ export default {
           return {
             status: true,
             mode: input.mode.toLowerCase(),
-            data: await Deposit.create({ ...input, files:newFiles, status: "wait", userIdRequest: current_user?._id }),
+            data: await Deposit.create({ ...input, files:newFiles, userIdRequest: current_user?._id }),
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }
@@ -1491,111 +1488,18 @@ export default {
           console.log("edit deposit :", input)
           if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Administrator only!')
           
-          // let newFiles = [];
-          // if(!_.isEmpty(input.files)){
-  
-          //   for (let i = 0; i < input.files.length; i++) {
-          //     try{
-          //       let fileObject = (await input.files[i]).file
-  
-          //       if(!_.isEmpty(fileObject)){
-          //         const { createReadStream, filename, encoding, mimetype } = fileObject //await input.files[i];
-          //         const stream = createReadStream();
-          //         const assetUniqName = fileRenamer(filename);
-          //         let pathName = `/app/uploads/${assetUniqName}`;
-                  
-        
-          //         const output = fs.createWriteStream(pathName)
-          //         stream.pipe(output);
-        
-          //         await new Promise(function (resolve, reject) {
-          //           output.on('close', () => {
-          //             resolve();
-          //           });
-              
-          //           output.on('error', (err) => {
-          //             logger.error(err.toString());
-        
-          //             reject(err);
-          //           });
-          //         });
-        
-          //         const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
-          //         newFiles.push({ url: urlForArray, filename, encoding, mimetype });
-          //       }else{
-          //         if(input.files[i].delete){
-          //           let pathUnlink = '/app/uploads/' + input.files[i].url.split('/').pop()
-          //           fs.unlink(pathUnlink, (err)=>{
-          //               if (err) {
-          //                 logger.error(err);
-          //               }else{
-          //                 // if no error, file has been deleted successfully
-          //                 console.log('File has been deleted successfully ', pathUnlink);
-          //               }
-          //           });
-          //         }else{
-          //           newFiles = [...newFiles, input.files[i]]
-          //         }
-          //       }
-          //       // console.log("updatePost #6:", newFiles)
-          //     } catch(err) {
-          //       logger.error(err.toString());
-          //     }
-          //   }
-          // }
-  
-          // let newInput = {...input, files:newFiles}
-          // if(_.includes(['approved', 'reject'], newInput.status)){
-          //   if( checkRole(current_user) == AMDINISTRATOR ){
+          await Deposit.updateOne( { _id: input?._id }, { status: input?.status } );
+          let deposit = await Deposit.findOne({_id: input?._id })
 
-          //     newInput = {...input, userIdApprove: current_user?._id}
-              
-          //     let deposit = await Deposit.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
-
-          //     if(input.status == "approved"){
-          //       await Transition.create({
-          //                                 type: "deposit", 
-          //                                 refId: deposit?._id, 
-          //                                 userId: deposit.userIdRequest, 
-          //                                 status: "success"
-          //                               })
-
-          //       pubsub.publish("ME", {
-          //         me: { mutation: "DEPOSIT", data: {userId: deposit.userIdRequest, data: await checkBalance(deposit.userIdRequest) } },
-          //       });
-          //     }
-
-          //     return {
-          //       status: true,
-          //       mode: input.mode.toLowerCase(),
-          //       data: deposit,
-          //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          //     }
-          //   }else{
-          //     return {
-          //       status: false,
-          //       mode: input.mode.toLowerCase(),
-          //       message: "Cannot approve & reject",
-          //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          //     }
-          //   }
-          // }
-
-          // let deposit = await Deposit.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
-        
-          await Deposit.updateOne( { _id: input._id }, { status: input.status } );
-          let deposit = await Deposit.findOne({_id: input._id })
-
-          if(input.status == "approved"){
+          if(input.status == 1){
             await Transition.create({
-                                      type: "deposit", 
+                                      type: Constants.DEPOSIT, 
                                       refId: deposit?._id, 
-                                      userId: deposit.userIdRequest, 
-                                      status: "success"
+                                      userId: deposit?.userIdRequest
                                     })
 
             pubsub.publish("ME", {
-              me: { mutation: "DEPOSIT", data: {userId: deposit.userIdRequest, data: await checkBalance(deposit.userIdRequest) } },
+              me: { mutation: "DEPOSIT", data: {userId: deposit?.userIdRequest, data: await checkBalance(deposit?.userIdRequest) } },
             });
           }
 
@@ -1643,7 +1547,7 @@ export default {
         case "new":{
           console.log("new withdraw : ", input )
 
-          let withdraw = await Withdraw.create({ ...input, status: "wait", userIdRequest: current_user?._id });
+          let withdraw = await Withdraw.create({ ...input,  userIdRequest: current_user?._id });
           return {
             status: true,
             mode: input.mode.toLowerCase(),
@@ -1655,17 +1559,16 @@ export default {
         case "edit":{
           console.log("edit withdraw :", input)
 
-          if(_.includes(['approved', 'reject'], input.status)){
+          if(_.includes([1, 2], input.status)){
             if( checkRole(current_user) == AMDINISTRATOR ){
               let newInput = {...input, userIdApprove: current_user?._id}
               let withdraw = await Withdraw.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
 
-              if(input.status == "approved"){
+              if(input.status == 1){
                 await Transition.create({
-                                          type: "withdraw", 
+                                          type: Constants.WITHDRAW, 
                                           refId: withdraw?._id, 
-                                          userId: withdraw.userIdRequest, 
-                                          status: "success"
+                                          userId: withdraw.userIdRequest
                                         })
 
                 pubsub.publish("ME", {
@@ -1786,6 +1689,9 @@ export default {
       let supplier = await Supplier.findOne({_id})
       if(_.isNull(supplier)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
+
+      let mode = "follow";
+
       let {follows} = supplier  
       if(!_.isEmpty(follows)){
         let isFollow = _.find(follows, (follow)=>_.isEqual(follow.userId, current_user?._id))
@@ -1793,6 +1699,8 @@ export default {
           follows = [...follows, {userId: current_user?._id}]
         }else{
           follows = _.filter(follows, (follow)=>!_.isEqual(follow.userId, current_user?._id))
+
+          mode = "unfollow";
         }
       }else{
         follows = [{userId: current_user?._id}]
@@ -1803,6 +1711,7 @@ export default {
       
       return {
         status: true,
+        mode,
         data: {...supplier._doc, owner: (await User.findById(supplier.ownerId))?._doc },
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
@@ -1960,16 +1869,15 @@ export default {
           return pubsub.asyncIterator(["SUPPLIER_BY_ID"])
         }, (payload, variables) => {
 
-          
           let {mutation, data} = payload.supplierById
 
-          console.log("subscriptionSupplierById : ", mutation, variables.supplierById == data._id)
+          console.log("subscriptionSupplierById : ", mutation, variables?._id == data?._id)
           switch(mutation){
             case "BOOK":
             case "UNBOOK":
             case "AUTO_CLEAR_BOOK":
               {
-                return variables.supplierById == data._id
+                return variables?._id == data?._id
               }
           }
           return false;

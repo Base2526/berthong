@@ -422,7 +422,7 @@ const App =(props) =>{
                           <Typography variant="h6" noWrap>
                             {"[  Name :" + user?.displayName +", Email :"+ user?.email + " ]"}
                           </Typography>
-                          <div>Balance : {numberCurrency(user?.balance)} [-{numberCurrency(user?.balanceBook)}]</div>
+                          <div>Balance : {numberCurrency(user?.balance ? user.balance : 0)} [-{numberCurrency(user?.balanceBook ? user.balanceBook : 0)}]</div>
                           <IconButton 
                             size={'small'}
                             onClick={()=>{

@@ -1,14 +1,13 @@
 import mongoose from 'mongoose';
+
+import * as Constants from "../constants"
+
 const Schema = mongoose.Schema
 
 /*
   - จำนวนเงิน
   - วันที่โอนเงิน ชม/นาที
   - สลิปการโอน
-
-   balance: 100,
-berthong-backend-1   |   dateTranfer: '2023-01-04T17:00:00.000Z',
-berthong-backend-1   |   files
 */
 
 var File = new Schema({
@@ -24,14 +23,11 @@ const depositSchema = new Schema({
     userIdApprove: { type: Schema.Types.ObjectId },
     files: [File],
     status:{
-        type: String,
-        enum : ['wait','approved', 'reject'],
-        default: 'wait'
+        type: Number,
+        min: 0,
+        max: 2,
+        default: Constants.WAIT // 0: 'wait', 1: 'approved',  2: 'reject'
     }, 
-    // bank: { type: String, required:[true, "Bank Request is a required field"] },
-    // // bank: [{ 
-    // //     bankId: { type: String, required:[true, "Bank-Id Request is a required field"] },
-    // // }],
     bank:{
         _id: { type: Schema.Types.ObjectId, required:[true, "Bank-id Request is a required field"] },
         bankId: { type: Schema.Types.ObjectId, required:[true, "Bank-id Request is a required field"] },

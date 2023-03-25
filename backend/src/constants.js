@@ -12,3 +12,14 @@ export const UNAUTHENTICATED= "UNAUTHENTICATED";
 export const BAD_USER_INPUT = "BAD_USER_INPUT";
 
 export const _ID_AMDINISTRATOR = "63ff2dd554645f028e66fbdd";
+
+export const WAIT           = 0;
+export const APPROVED       = 1;
+export const REJECT         = 2;
+
+export const SUPPLIER       = 0;
+export const DEPOSIT        = 1;
+export const WITHDRAW       = 2;
+
+export const CANCEL       = 0;
+export const OK           = 1;

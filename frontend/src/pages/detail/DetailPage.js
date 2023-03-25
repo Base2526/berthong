@@ -179,7 +179,7 @@ const DetailPage = (props) => {
 
     unsubscribeSupplierById =  subscribeToMore({
       document: subscriptionSupplierById,
-      variables: { supplierById: id },
+      variables: { id },
       updateQuery: (prev, {subscriptionData}) => {
         if (!subscriptionData.data) return prev;
 

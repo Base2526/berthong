@@ -1,57 +1,33 @@
-import React, { useState, useEffect } from "react";
-
+import React from "react";
 import clsx from "clsx";
 import Chip from "@mui/joy/Chip";
 import TextField from "@material-ui/core/TextField";
 import { Rating, Autocomplete } from "@material-ui/lab";
-
-import {
-  MdOutlineSavings
-} from "react-icons/md"
-
-import {
-  HiOutlineShoppingBag
-} from "react-icons/hi"
-
+import { MdOutlineSavings } from "react-icons/md"
+import { HiOutlineShoppingBag } from "react-icons/hi"
 import _ from "lodash"
 
 import { numberCurrency, minTwoDigits } from "../../util"
 
-const finishBuy = [12, 14, 17]
+// const finishBuy = [12, 14, 17]
 const numberLotterys = Array.from({ length: 10 * 10 }, (_, i) => i);
-const movies =  {
-                  name: "Avenger",
-                  price: 100,
-                  occupied: [20, 21, 30, 1, 2, 8],
-                  finish: [10, 11, 12, 15, 18],
-                  booking: [9, 22, 24, 44, 45]
-                }
+// const movies =  {
+//                   name: "Avenger",
+//                   price: 100,
+//                   occupied: [20, 21, 30, 1, 2, 8],
+//                   finish: [10, 11, 12, 15, 18],
+//                   booking: [9, 22, 24, 44, 45]
+//                 }
 
 const DetailPanel = (props) => {
-  let { user, data, onLogin, onSelected, selectedSeats, onSelectedSeatsChange } = props
-
-  // console.log("DetailPanel data :", data)
-
-  // const handleSelectedState = (evt, itemId) => {
-  //   console.log("handleSelectedState :", itemId)
-  //   onSelected(evt, itemId)
-
-  //   _.isEmpty(user)
-  //   ? onLogin(true)
-  //   : selectedSeats.includes(itemId)
-  //     ? onSelectedSeatsChange(selectedSeats.filter((selectedSeat) => selectedSeat !== itemId) )
-  //     : onSelectedSeatsChange([...selectedSeats, itemId]);
-  // };
-
-
-
+  let { user, data, onSelected} = props
   return (
     <div className="container-detail">
       {numberLotterys.map((seat) => {
 
         const isSelected  = _.find(data?.buys, (buy)=> _.isEqual(buy?.itemId, seat) && _.isEqual( buy?.userId,  user?._id));//selectedSeats.includes(seat);
-        const isOccupied  = movies.occupied?.includes(seat);
-        const isFinish    = _.find(data?.buys, (buy)=> _.isEqual( buy?.selected, 1));;//movies.finish?.includes(seat);
+        const isOccupied  = _.find(data?.buys, (buy)=> !_.isEqual( buy?.userId,  user?._id) && _.isEqual( buy?.selected, 1));;//movies.occupied?.includes(seat);
+        const isFinish    = _.find(data?.buys, (buy)=> _.isEqual( buy?.userId,  user?._id) && _.isEqual( buy?.selected, 1));//movies.finish?.includes(seat);
         const isBooking   = _.find(data?.buys, (buy)=> _.isEqual(buy?.itemId, seat) && !_.isEqual( buy?.userId,  user?._id) && _.isEqual( buy?.selected, 0));//movies.booking?.includes(seat);
         return (
           <div>
@@ -73,7 +49,7 @@ const DetailPanel = (props) => {
 };
 
 const DetailPanelRight = (props) =>{
-  let { user, data, owner,  onSelected, selectedSeats, onSelectedSeatsChange, onPopupOpenedWallet, onPopupOpenedShoppingBag } = props
+  let { user, data, owner, onSelected, onPopupOpenedWallet, onPopupOpenedShoppingBag } = props
 
   let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
   let buys      =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 1) )
@@ -111,7 +87,7 @@ const DetailPanelRight = (props) =>{
                             <div class="c_cart">
                               <HiOutlineShoppingBag size="5em"/>
                               <div class="cart_count">
-                                <span>{selectedSeats.length}</span>
+                                <span>{selecteds.length}</span>
                               </div>
                             </div>
                             <div class="cart_content">

@@ -17,7 +17,7 @@ export const queryBanks         = gql`query banks($is_admin: Boolean) { banks(is
 export const queryBankById      = gql`query bankById($id: ID!) { bankById(_id: $id) }`;
 export const queryBookBuyTransitions = gql`query bookBuyTransitions { bookBuyTransitions }`;
 export const queryHistoryTransitions = gql`query historyTransitions { historyTransitions }`;
-export const queryProfile         = gql`query profile($id: ID!) { profile(_id: $id) }`;
+export const queryFriendProfile         = gql`query friendProfile($id: ID!) { friendProfile(_id: $id) }`;
 export const queryDateLotterys    = gql`query dateLotterys { dateLotterys }`;
 export const queryDateLotteryById = gql`query dateLotteryById($id: ID!) { dateLotteryById(_id: $id) }`;
 export const queryBuys            = gql`query buys { buys }`;
@@ -43,7 +43,7 @@ export const mutationNotification = gql`mutation notification($id: ID!) { notifi
 
 // subscription 
 export const subscriptionMe            = gql`subscription subscriptionMe($sessionId: ID!){ subscriptionMe(sessionId: $sessionId) }`;
-export const subscriptionSupplierById  = gql`subscription subscriptionSupplierById( $supplierById: ID! ){ subscriptionSupplierById(supplierById: $supplierById) }`;
+export const subscriptionSupplierById  = gql`subscription subscriptionSupplierById( $id: ID! ){ subscriptionSupplierById(_id: $id) }`;
 export const subscriptionSuppliers     = gql`subscription subscriptionSuppliers( $supplierIds: String! ) { subscriptionSuppliers(supplierIds: $supplierIds) }`;
 
 export const subscriptionAdmin         = gql`subscription subscriptionAdmin($sessionId: ID!){ subscriptionAdmin(sessionId: $sessionId) }`;

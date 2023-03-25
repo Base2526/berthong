@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { NetworkStatus, useQuery } from "@apollo/client";
+import { NetworkStatus, useQuery, useMutation } from "@apollo/client";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -7,17 +7,11 @@ import { toast } from 'react-toastify';
 import InfiniteScroll from "react-infinite-scroll-component";
 import { makeStyles } from "@material-ui/core/styles";
 import { ErrorOutline as ErrorOutlineIcon } from "@material-ui/icons";
-// color
 import { lightGreen, blueGrey } from "@material-ui/core/colors";
 
-import {  FORCE_LOGOUT, 
-          WS_CLOSED, 
-          WS_CONNECTED, 
-          WS_SHOULD_RETRY } from "./constants";
-
-import { querySuppliers, subscriptionSuppliers } from "./gqlQuery";
+import { querySuppliers, subscriptionSuppliers, mutationFollow, querySupplierById } from "./gqlQuery";
 import { logout } from "./redux/actions/auth";
-import { getHeaders } from "./util";
+import { getHeaders, showToast } from "./util";
 import HomeItem from "./item/HomeItem"
 import SearchComp from "./components/SearchComp"
 import SkeletonComp from "./components/SkeletonComp"
@@ -97,7 +91,7 @@ const HomePage = (props) => {
   const [slice, setSlice] = useState(12);
   const [hasMore, setHasMore] = useState(true);
 
-  let { logout, ws, onLogin } = props
+  let { user, logout, ws, onLogin } = props
 
   const { loading: loadingSuppliers, 
           data: dataSuppliers, 
@@ -109,8 +103,8 @@ const HomePage = (props) => {
                                       { 
                                         context: { headers: getHeaders(location) }, 
                                         variables: {input: search},
-                                        fetchPolicy: 'network-only', // Used for first execution
-                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        fetchPolicy: 'network-only',
+                                        nextFetchPolicy: 'cache-first', 
                                         notifyOnNetworkStatusChange: true
                                       }
                                     );
@@ -118,13 +112,69 @@ const HomePage = (props) => {
   if(!_.isEmpty(errorSuppliers)){
     _.map(errorSuppliers?.graphQLErrors, (e)=>{
       switch(e?.extensions?.code){
-        case FORCE_LOGOUT:{
+        case Constants.FORCE_LOGOUT:{
           logout()
           break;
         }
       }
     })
   }
+
+  const [onMutationFollow, resultMutationFollowValue] = useMutation(mutationFollow,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {follow}}) => {
+
+      let { data, mode, status } = follow
+      if(status){
+
+        switch(mode?.toUpperCase()){
+          case "FOLLOW":{
+            showToast("info", `FOLLOW`)
+            break
+          }
+  
+          case "UNFOLLOW":{
+            showToast("info", `UNFOLLOW`)
+            break
+          }
+        }
+
+        let querySuppliersValue = cache.readQuery({ query: querySuppliers, variables: {input: search} });
+        if(!_.isEmpty(querySuppliersValue)){
+          let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
+          cache.writeQuery({
+            query: querySuppliers,
+            variables: {input: search},
+            data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+          });
+        }
+
+        let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: { id: data._id  } });
+        if(!_.isEmpty(querySupplierByIdValue)){
+          let newData = {...querySupplierByIdValue.supplierById}
+          cache.writeQuery({
+            query: querySupplierById,
+            data: { supplierById: {...newData, data} },
+            variables: { id: data._id }
+          }); 
+        }
+      }
+    },
+    onCompleted(data) {
+      console.log("onCompleted")
+    },
+    onError: (err) => {
+      _.map(err?.graphQLErrors, (e)=>{
+        switch(e?.extensions?.code){
+          case Constants.UNAUTHENTICATED:{
+            showToast("error", e?.message)
+            break;
+          }
+        }
+      })
+    }
+  });
+
   
   useEffect(()=>{
     return () => {
@@ -158,26 +208,18 @@ const HomePage = (props) => {
       updateQuery: (prev, {subscriptionData}) => {        
         try{
           if (!subscriptionData.data) return prev;
-
           let { mutation, data } = subscriptionData.data.subscriptionSuppliers;
-
-          console.log("mutation, data :", mutation, data)
+          
           switch(mutation){
             case "BOOK":
             case "UNBOOK":{
               let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
               let newPrev = {...prev.suppliers, data: newData}
-
-              setDatas(newData)
-
               return {suppliers: newPrev}; 
             }
             case "AUTO_CLEAR_BOOK":{
               let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
               let newPrev = {...prev.suppliers, data: newData}
-
-              setDatas(newData)
-
               return {suppliers: newPrev}; 
             }
             default:
@@ -200,47 +242,6 @@ const HomePage = (props) => {
     }
   }, [search, reset])
 
-  /////////////////////////
-  // const handleSearch = (v) => {
-  //   const oldList = [...dataList];
-  //   const filteredAll = oldList.filter((data) => {
-  //     if (title !== "" && title !== undefined) {
-  //       if (!data.title.includes(title)) return false;
-  //     }
-  //     if (detail !== "" && detail !== undefined) {
-  //       if (!data.detail.includes(detail)) return false;
-  //     }
-  //     if (Number(price) > 0) {
-  //       if (Number(data.price) > Number(price)) return false;
-  //     }
-  //     if (!(chkBon === true && chkLang === true)) {
-  //       if (chkLang) {
-  //         if (!"lang".includes(data.type)) return false;
-  //       }
-  //       if (chkBon) {
-  //         if (!"bon".includes(data.type)) return false;
-  //       }
-  //     }
-  //     if (!(chkMoney === true && chkGold === true)) {
-  //       if (chkMoney) {
-  //         if (!"money".includes(data.category)) return false;
-  //       }
-  //       if (chkGold) {
-  //         if (!"gold".includes(data.category)) return false;
-  //       }
-  //     }
-  //     return true;
-  //   });
-  //   if (filteredAll[0] === undefined || filteredAll[0] === null) {
-  //     setNoDataList([{ text: "no data" }]);
-  //     setTotalSearch(0);
-  //   } else {
-  //     setFilteredList(filteredAll);
-  //     setNoDataList(null);
-  //     setTotalSearch(filteredAll.length);
-  //   }
-  // };
-
   const handleNext = async() => {
     let mores =  await fetchMore({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
     let {status, data} =  mores.data.suppliers
@@ -259,10 +260,10 @@ const HomePage = (props) => {
 
   const mainView = () =>{
     switch(ws?.ws_status){
-      case WS_SHOULD_RETRY:{
+      case Constants.WS_SHOULD_RETRY:{
         break;
       }
-      case WS_CLOSED:{
+      case Constants.WS_CLOSED:{
         if(_.isNull(toastIdRef.current)){
           toastIdRef.current =  toast.promise(
             new Promise(resolve => setTimeout(resolve, 300000)),
@@ -276,7 +277,7 @@ const HomePage = (props) => {
         break;
       }
 
-      case WS_CONNECTED:{
+      case Constants.WS_CONNECTED:{
         if(!_.isNull(toastIdRef.current)){
           toast.dismiss()
         }
@@ -308,10 +309,7 @@ const HomePage = (props) => {
                 <SearchComp
                   {...props}
                   classes={classes}
-                  // initSearch={Constants.INIT_SEARCH}
-                  onReset={()=>{
-                    setReset(true)
-                  }}
+                  onReset={()=>setReset(true)}
                   onSearch={(search)=>setSearch(search)} />
               </div>
               {loading 
@@ -336,9 +334,8 @@ const HomePage = (props) => {
                                     key={index} 
                                     index={index}
                                     item={item}
-                                    onDialogLogin={()=>{
-                                      onLogin(true)
-                                    }} />
+                                    search={search}
+                                    onMutationFollow={(variables)=>_.isEmpty(user) ? onLogin(true) : onMutationFollow(variables) } />
                           } )}
                         </div>
                       </InfiniteScroll>

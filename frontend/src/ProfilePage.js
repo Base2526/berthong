@@ -23,7 +23,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
 
 import { getHeaders } from "./util"
-import { queryProfile } from "./gqlQuery"
+import { queryFriendProfile } from "./gqlQuery"
 import { logout } from "./redux/actions/auth"
 // import TableComp from "./components/TableComp"
 import ReadMoreMaster from "./helpers/ReadMoreMaster"
@@ -49,7 +49,7 @@ const ProfilePage = (props) => {
     const { loading: loadingProfile, 
             data: dataProfile, 
             error: errorProfile, 
-            networkStatus } = useQuery( queryProfile, { 
+            networkStatus } = useQuery( queryFriendProfile, { 
                                         context: { headers: getHeaders(location) }, 
                                         variables: {id: params.id},
                                         fetchPolicy: 'network-only', // Used for first execution
@@ -58,8 +58,8 @@ const ProfilePage = (props) => {
 
     useEffect(() => {
         if(!loadingProfile){
-            if (dataProfile?.profile) {
-                let { status, data } = dataProfile?.profile
+            if (dataProfile?.friendProfile) {
+                let { status, data } = dataProfile?.friendProfile
                 if(status){
                   setData(data)
                 }

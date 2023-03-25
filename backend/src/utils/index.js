@@ -136,24 +136,24 @@ export const checkAuthorizationWithSessionId = async(sessionId) => {
 }
 
 export const checkBalance = async(userId) =>{
-    let transitions = await Transition.find({userId, status:"success" });
+    let transitions = await Transition.find({userId, status: 1 });
     try{
         transitions = await Promise.all(_.map(transitions, async(transition)=>{
             switch(transition.type){ // 'supplier', 'deposit', 'withdraw'
-                case "supplier":{
+                case 0:{
                     let supplier = await Supplier.findById(transition.refId)
-                    let buys = _.filter(supplier.buys, (buy)=>buy.userId == userId.toString())
+                    let buys = _.filter(supplier.buys, (buy)=> _.isEqual(buy.userId, userId))
                     
                     let balance = buys.length * supplier.price
                     return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
                 }
 
-                case "deposit":{
+                case 1:{
                     let deposit = await Deposit.findById(transition.refId)
                     return {...transition._doc, title: "title", balance: deposit.balance, description: "description", dateLottery: "dateLottery"}
                 }
 
-                case "withdraw":{
+                case 2:{
                     let withdraw = await Withdraw.findById(transition.refId)
                     return {...transition._doc, title: "title", balance: withdraw.balance, description: "description", dateLottery: "dateLottery"}
                 }
@@ -163,17 +163,18 @@ export const checkBalance = async(userId) =>{
         let balance = 0;
         _.map(transitions, (transition) => {
             switch (transition.type) {
-                case "supplier": {
+                case 0: {
                     balance += -Math.abs(transition.balance);
                 break;
                 }
-                case "withdraw": {
-                    balance += -Math.abs(transition.balance);
+                
+                case 1: {
+                    balance += Math.abs(transition.balance);
                 break;
                 }
 
-                case "deposit": {
-                    balance += Math.abs(transition.balance);
+                case 2: {
+                    balance += -Math.abs(transition.balance);
                 break;
                 }
 
@@ -191,13 +192,11 @@ export const checkBalance = async(userId) =>{
 export const checkBalanceBook = async(userId) =>{
     try{
         let suppliers = await Supplier.find({buys: { $elemMatch : {userId}}})
-        let prices  = _.filter( await Promise.all(_.map(suppliers, async(supplier)=>{
-                        let { price, buys } = supplier;
-                        let filters = _.filter(buys, (buy)=>{
-                            return _.isEqual(buy.userId, userId) && buy.selected == 0
-                        } )
-                        return price * filters.length
-                    })), (p)=>p!=0)
+        let prices  =   _.filter( await Promise.all(_.map(suppliers, async(supplier)=>{
+                            let { price, buys } = supplier;
+                            let filters = _.filter(buys, (buy)=> _.isEqual(buy.userId, userId) && buy.selected == 0 )
+                            return price * filters.length
+                        })), (p)=>p!=0)
 
         return _.reduce(prices, (ps, i) => ps + i, 0);
     } catch(err) {

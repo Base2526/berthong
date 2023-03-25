@@ -19,18 +19,14 @@ import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
 
-import {
-  Edit as EditIcon,
-  DeleteForever as DeleteForeverIcon
-} from '@mui/icons-material'
-
 import { queryBookBuyTransitions } from "./gqlQuery"
 import UserComp from "./components/UserComp"
+import { getHeaders } from "./util"
 
 const MeBookBuysPage = (props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-
+  const location = useLocation();
   let { user, onLightbox } = props
 
   let [datas, setDatas] = useState([]);
@@ -44,7 +40,12 @@ const MeBookBuysPage = (props) => {
           data: dataBookBuyTransitions, 
           error: errorBookBuyTransitions, 
           subscribeToMore, 
-          networkStatus } = useQuery(queryBookBuyTransitions, { fetchPolicy: 'network-only', notifyOnNetworkStatusChange: true });
+          networkStatus } = useQuery(queryBookBuyTransitions, { 
+                                                                context: { headers: getHeaders(location) }, 
+                                                                fetchPolicy: 'network-only',
+                                                                nextFetchPolicy: 'cache-first', 
+                                                                notifyOnNetworkStatusChange: true
+                                                              });
 
   useEffect(() => {
     if (!loadingBookBuyTransitions) {
@@ -112,78 +113,55 @@ const MeBookBuysPage = (props) => {
         :  datas.length == 0 
             ?   <label>Empty data</label>
             :   <InfiniteScroll
-                    dataLength={slice}
-                    next={fetchMoreData}
-                    hasMore={hasMore}
-                    loader={<h4>Loading...</h4>}>
-                    { 
-                     _.map(datas, (item, index) => {
+                  dataLength={slice}
+                  next={fetchMoreData}
+                  hasMore={hasMore}
+                  loader={<h4>Loading...</h4>}>
+                  { 
+                    _.map(datas, (item, index) => {
 
-                      let title = item.title;
-                      let description = item.description;
-                      let type   = item.type;
-                      let category  = item.category;
-                      let condition = item.condition;
-                      let buys    = item.buys;
-                      let follows = item.follows;
-                      let files   = item?.files
-                      let createdAt = new Date(item.createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-            
-                      return <Stack direction="row" spacing={2} >
-                              <Box sx={{ width: '10%' }}>
-                                <Avatar
-                                  alt="Example avatar"
-                                  variant="rounded"
-                                  src={files[0]?.url}
-                                  onClick={(e) => {
-                                    onLightbox({ isOpen: true, photoIndex: 0, images:files })
-                                  }}
-                                  sx={{ width: 56, height: 56 }}
-                                />
-                              </Box>
-                              <Box 
-                                sx={{ width: '10%' }}
-                                onClick={()=>{
-                                  navigate({
-                                  pathname: "/d",
-                                  search: `?${createSearchParams({ id: item._id})}`,
-                                  state: { id: item._id }
-                                })}}
-                              >{title}</Box>
-                              <Box sx={{ width: '20%' }}>{description}</Box>
-                              <Box sx={{ width: '20%' }}><UserComp userId={item?.ownerId} /></Box>
-                              <Box sx={{ width: '5%' }}>{type}</Box>
-                              <Box sx={{ width: '5%' }}>{category}</Box>
-                              <Box sx={{ width: '5%' }}>{condition}</Box>
-                              <Box sx={{ width: '5%' }}>{buys.length}</Box>
-                              <Box sx={{ width: '5%' }}>{follows.length}</Box>
-                              <Box sx={{ width: '10%' }}>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A') }</Box>
-                            </Stack>
-                     })
-
-                     /*
-                     /// 1
-                     let {buys} = props.row.original
-
-let book  = _.filter(buys, buy=> _.isEqual(buy.userId, user._id)  && buy.selected == 0)
-let buy  = _.filter(buys, buy=> _.isEqual(buy.userId, user._id)  && buy.selected == 1)
-return (
-  <div>Book : {book.length}, Buy : {buy.length}</div>
-);
-
-
-/// 2
-let {_id, title} = props.row.original
-            return (<div onClick={(e)=>{ 
-              // history.push({ pathname: "/p", search: `?id=${_id}`, state: { id: _id } }) 
-              navigate({
-                        pathname: "/d",
-                        search: `?${createSearchParams({ id: _id})}`,
-                        state: { id: _id }
-                      })
-            }}>{title}</div>)
-                     */
-                    }
+                    let title = item.title;
+                    let description = item.description;
+                    let type   = item.type;
+                    let category  = item.category;
+                    let condition = item.condition;
+                    let buys    = item.buys;
+                    let follows = item.follows;
+                    let files   = item?.files
+                    let createdAt = new Date(item.createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+          
+                    return <Stack direction="row" spacing={2} >
+                            <Box sx={{ width: '10%' }}>
+                              <Avatar
+                                alt="Example avatar"
+                                variant="rounded"
+                                src={files[0]?.url}
+                                onClick={(e) => {
+                                  onLightbox({ isOpen: true, photoIndex: 0, images:files })
+                                }}
+                                sx={{ width: 56, height: 56 }}
+                              />
+                            </Box>
+                            <Box 
+                              sx={{ width: '10%' }}
+                              onClick={()=>{
+                                navigate({
+                                pathname: "/d",
+                                search: `?${createSearchParams({ id: item._id})}`,
+                                state: { id: item._id }
+                              })}}
+                            >{title}</Box>
+                            <Box sx={{ width: '20%' }}>{description}</Box>
+                            <Box sx={{ width: '20%' }}><UserComp userId={item?.ownerId} /></Box>
+                            <Box sx={{ width: '5%' }}>{type}</Box>
+                            <Box sx={{ width: '5%' }}>{category}</Box>
+                            <Box sx={{ width: '5%' }}>{condition}</Box>
+                            <Box sx={{ width: '5%' }}>{buys.length}</Box>
+                            <Box sx={{ width: '5%' }}>{follows.length}</Box>
+                            <Box sx={{ width: '10%' }}>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A') }</Box>
+                          </Stack>
+                    })
+                  }
                 </InfiniteScroll>
       }
 
