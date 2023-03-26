@@ -16,13 +16,11 @@ import PopupWallet from "./PopupWallet";
 import { getHeaders, showToast } from "../../util";
 import * as Constants from "../../constants"
 
-import {  mutationBook, 
-          mutationBuy, 
+import {  mutationBuy, 
           querySupplierById, 
           querySuppliers, 
           subscriptionSupplierById, 
-          queryUserById,
-          mutationFollow} from "../../gqlQuery";
+          queryUserById} from "../../gqlQuery";
 
 let unsubscribeSupplierById = null;
 const Detail = (props) => {
