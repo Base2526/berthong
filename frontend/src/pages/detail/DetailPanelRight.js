@@ -6,18 +6,23 @@ import { Rating, Autocomplete } from "@material-ui/lab";
 import { MdOutlineSavings } from "react-icons/md"
 import { HiOutlineShoppingBag } from "react-icons/hi"
 import _ from "lodash"
+import {
+  IconButton,
+  Menu,
+  MenuItem
+} from "@mui/material";
+import {
+  ContentCopy as ContentCopyIcon,
+  BugReport as BugReportIcon,
+  Bookmark as BookmarkIcon
+} from "@mui/icons-material"
+import {
+  MoreVert as MoreVertIcon,
+} from "@material-ui/icons";
 
 import { numberCurrency, minTwoDigits } from "../../util"
 
-// const finishBuy = [12, 14, 17]
 const numberLotterys = Array.from({ length: 10 * 10 }, (_, i) => i);
-// const movies =  {
-//                   name: "Avenger",
-//                   price: 100,
-//                   occupied: [20, 21, 30, 1, 2, 8],
-//                   finish: [10, 11, 12, 15, 18],
-//                   booking: [9, 22, 24, 44, 45]
-//                 }
 
 const DetailPanel = (props) => {
   let { user, data, onSelected} = props
@@ -49,7 +54,7 @@ const DetailPanel = (props) => {
 };
 
 const DetailPanelRight = (props) =>{
-  let { user, data, owner, onSelected, onPopupOpenedWallet, onPopupOpenedShoppingBag } = props
+  let { user, data, owner, onSelected, onMutationFollow, onPopupOpenedWallet, onPopupOpenedShoppingBag } = props
 
   let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
   let buys      =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 1) )
@@ -103,6 +108,14 @@ const DetailPanelRight = (props) =>{
                               </Chip>
                             </div>
                           </div>
+                        </div>
+                        <div>
+                          <h4 className="card-title" style={{ float: "right" }}>
+                            <IconButton onClick={(e) =>onMutationFollow({ variables: { id: data?._id } }) }> 
+                              <BookmarkIcon style={{ color : !_.isEmpty(_.find(data?.follows, (f)=>f?.userId == user?._id)) ? "blue" : "" }} />
+                            </IconButton>
+                            <IconButton onClick={(e) => { /*setOpenMenu({ [index]: e.currentTarget })*/ }}><MoreVertIcon /></IconButton>
+                          </h4>
                         </div>
                       </div>
                       <div class="row">

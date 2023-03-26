@@ -21,12 +21,12 @@ import {  mutationBook,
           querySupplierById, 
           querySuppliers, 
           subscriptionSupplierById, 
-          queryUserById } from "../../gqlQuery";
+          queryUserById,
+          mutationFollow} from "../../gqlQuery";
 
 let unsubscribeSupplierById = null;
 const Detail = (props) => {
   const location = useLocation();
-  // const [selectedSeats, setSelectedSeats] = useState([]);
   const [data, setData] = useState([]);
   const [dataUser, setDataUser] = useState([]);
    
@@ -37,7 +37,7 @@ const Detail = (props) => {
 
   let { id } = params; 
 
-  let { user, onLogin } = props
+  let { user, onLogin, onMutationFollow, onMutationBook } = props
 
   const { loading: loadingSupplierById, 
           data: dataSupplierById, 
@@ -73,66 +73,6 @@ const Detail = (props) => {
       // }
     })
   }
-
-  const [onBook, resultBookValues] = useMutation(mutationBook,{
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {book}}) => {
-      let { status, action, data } = book
-
-      let {mode, itemId} = action
-      switch(mode?.toUpperCase()){
-        case "BOOK":{
-          showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
-          break
-        }
-
-        case "UNBOOK":{
-          showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
-          break
-        }
-      }
-      
-      let supplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
-      if(status && supplierByIdValue){
-        cache.writeQuery({ 
-          query: querySupplierById, 
-          variables: { id: data._id },
-          data: { supplierById: { ...supplierByIdValue.supplierById, data } }, 
-        }); 
-      }
-
-      ////////// update cache querySuppliers ///////////
-      let suppliersValue = cache.readQuery({ query: querySuppliers });
-      if(!_.isNull(suppliersValue)){
-        let { suppliers } = suppliersValue
-        let newData = _.map(suppliers.data, (supplier) => supplier._id == data._id ? data : supplier)
-        cache.writeQuery({
-          query: querySuppliers,
-          data: { suppliers: { ...suppliersValue.suppliers, data: newData } }
-        });
-      }
-      ////////// update cache querySuppliers ///////////
-    },
-    onCompleted(data) {
-      console.log("onCompleted")
-    },
-    onError: (error) => {
-      _.map(error?.graphQLErrors, (e)=>{
-        switch(e?.extensions?.code){
-          case Constants.FORCE_LOGOUT:{
-            // logout()
-            break;
-          }
-          case Constants.DATA_NOT_FOUND:
-          case Constants.UNAUTHENTICATED:
-          case Constants.ERROR:{
-            showToast("error", e?.message)
-            break;
-          }
-        }
-      })
-    }
-  });
 
   const [onBuy, resultBuyValues] = useMutation(mutationBuy,{
     context: { headers: getHeaders(location) },
@@ -243,7 +183,7 @@ const Detail = (props) => {
         return;
       }
     }
-    onBook({ variables: { input: { supplierId: id, itemId, selected } } });
+    onMutationBook({ variables: { input: { supplierId: id, itemId, selected } } });
   }
 
   return (
@@ -261,6 +201,7 @@ const Detail = (props) => {
               data={data}
               owner={dataUser}
               onSelected={(evt, itemId)=>onSelected(evt, itemId)}
+              onMutationFollow={(variables)=>onMutationFollow(variables)}
 
               onPopupOpenedWallet={(status)=> _.isEmpty(user) ? onLogin(true) : setPopupOpenedWallet(status) }
               onPopupOpenedShoppingBag={(status)=> _.isEmpty(user) ? onLogin(true) : setPopupOpenedShoppingBag(status)}/>

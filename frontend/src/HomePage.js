@@ -85,13 +85,13 @@ const HomePage = (props) => {
 
   const [loading, setLoading] = useState(true);
 
-  let [search, setSearch] = useState(Constants.INIT_SEARCH)
+  // let [search, setSearch] = useState(Constants.INIT_SEARCH)
   let [reset, setReset] = useState(false)
 
   const [slice, setSlice] = useState(12);
   const [hasMore, setHasMore] = useState(true);
 
-  let { user, logout, ws, onLogin } = props
+  let { user, logout, ws, search, onLogin, onSearchChange, onMutationFollow } = props
 
   const { loading: loadingSuppliers, 
           data: dataSuppliers, 
@@ -120,62 +120,6 @@ const HomePage = (props) => {
     })
   }
 
-  const [onMutationFollow, resultMutationFollowValue] = useMutation(mutationFollow,{
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {follow}}) => {
-
-      let { data, mode, status } = follow
-      if(status){
-
-        switch(mode?.toUpperCase()){
-          case "FOLLOW":{
-            showToast("info", `FOLLOW`)
-            break
-          }
-  
-          case "UNFOLLOW":{
-            showToast("info", `UNFOLLOW`)
-            break
-          }
-        }
-
-        let querySuppliersValue = cache.readQuery({ query: querySuppliers, variables: {input: search} });
-        if(!_.isEmpty(querySuppliersValue)){
-          let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
-          cache.writeQuery({
-            query: querySuppliers,
-            variables: {input: search},
-            data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-          });
-        }
-
-        let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: { id: data._id  } });
-        if(!_.isEmpty(querySupplierByIdValue)){
-          let newData = {...querySupplierByIdValue.supplierById}
-          cache.writeQuery({
-            query: querySupplierById,
-            data: { supplierById: {...newData, data} },
-            variables: { id: data._id }
-          }); 
-        }
-      }
-    },
-    onCompleted(data) {
-      console.log("onCompleted")
-    },
-    onError: (err) => {
-      _.map(err?.graphQLErrors, (e)=>{
-        switch(e?.extensions?.code){
-          case Constants.UNAUTHENTICATED:{
-            showToast("error", e?.message)
-            break;
-          }
-        }
-      })
-    }
-  });
-
-  
   useEffect(()=>{
     return () => {
       unsubscribeSuppliers && unsubscribeSuppliers()
@@ -310,7 +254,7 @@ const HomePage = (props) => {
                   {...props}
                   classes={classes}
                   onReset={()=>setReset(true)}
-                  onSearch={(search)=>setSearch(search)} />
+                  onSearch={(search)=>onSearchChange(search)} />
               </div>
               {loading 
               ? <SkeletonComp />

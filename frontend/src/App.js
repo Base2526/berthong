@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { useApolloClient, useQuery, useSubscription } from "@apollo/client";
+import { useApolloClient, useQuery, useMutation, useSubscription } from "@apollo/client";
 import { connect } from "react-redux";
 import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
@@ -88,7 +88,7 @@ import ProfilePage from "./ProfilePage";
 import SuppliersPage from "./SuppliersPage";
 import UserPage from "./UserPage";
 import UsersPage from "./UsersPage";
-import { checkRole, getHeaders, numberCurrency} from "./util";
+import { checkRole, getHeaders, numberCurrency, showToast} from "./util";
 import WithdrawPage from "./WithdrawPage";
 import WithdrawsPage from "./WithdrawsPage";
 import BreadcsComp from "./components/BreadcsComp";
@@ -98,7 +98,7 @@ import NotificationsPage from "./NotificationsPage";
 import LightboxComp from "./components/LightboxComp"
 import DialogLoginComp from "./components/DialogLoginComp"
 
-import { queryNotifications } from "./gqlQuery"
+import { queryNotifications, mutationFollow, querySuppliers, querySupplierById, mutationBook } from "./gqlQuery"
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
 
@@ -202,6 +202,8 @@ const App =(props) =>{
 
   let [notifications, setNotifications] =useState([])
 
+  let [search, setSearch] = useState(Constants.INIT_SEARCH)
+
   let { ws, user, updateProfile, editedUserBalace, editedUserBalaceBook } = props
 
   const { loading: loadingNotifications, 
@@ -209,9 +211,123 @@ const App =(props) =>{
           error: errorNotifications,
           refetch: refetchNotifications, } =  useQuery( queryNotifications, { 
                                               context: { headers: getHeaders(location) }, 
-                                              fetchPolicy: 'network-only', // Used for first execution
-                                              nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                              fetchPolicy: 'cache-first', 
+                                              nextFetchPolicy: 'network-only', 
                                               notifyOnNetworkStatusChange: true});
+
+  const [onMutationFollow, resultMutationFollow] = useMutation(mutationFollow,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {follow}}) => {
+
+      let { data, mode, status } = follow
+      if(status){
+
+        switch(mode?.toUpperCase()){
+          case "FOLLOW":{
+            showToast("info", `FOLLOW`)
+            break
+          }
+  
+          case "UNFOLLOW":{
+            showToast("info", `UNFOLLOW`)
+            break
+          }
+        }
+
+        let querySuppliersValue = cache.readQuery({ query: querySuppliers, variables: {input: search} });
+        if(!_.isEmpty(querySuppliersValue)){
+          let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
+          cache.writeQuery({
+            query: querySuppliers,
+            variables: {input: search},
+            data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+          });
+        }
+
+        let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: { id: data._id  } });
+        if(!_.isEmpty(querySupplierByIdValue)){
+          cache.writeQuery({
+            query: querySupplierById,
+            data: { supplierById: {...querySupplierByIdValue.supplierById, data} },
+            variables: { id: data._id }
+          }); 
+        }
+      }
+    },
+    onCompleted(data) {
+      console.log("onCompleted")
+    },
+    onError: (err) => {
+      _.map(err?.graphQLErrors, (e)=>{
+        switch(e?.extensions?.code){
+          case Constants.UNAUTHENTICATED:{
+            showToast("error", e?.message)
+            break;
+          }
+        }
+      })
+    }
+  });
+
+  const [onMutationBook, resultMutationBook] = useMutation(mutationBook,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {book}}) => {
+      let { status, action, data } = book
+
+      let {mode, itemId} = action
+      switch(mode?.toUpperCase()){
+        case "BOOK":{
+          showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+          break
+        }
+
+        case "UNBOOK":{
+          showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+          break
+        }
+      }
+      
+      let supplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
+      if(status && supplierByIdValue){
+        cache.writeQuery({ 
+          query: querySupplierById, 
+          variables: { id: data._id },
+          data: { supplierById: { ...supplierByIdValue.supplierById, data } }, 
+        }); 
+      }
+
+      ////////// update cache querySuppliers ///////////
+      let suppliersValue = cache.readQuery({ query: querySuppliers });
+      if(!_.isNull(suppliersValue)){
+        let { suppliers } = suppliersValue
+        let newData = _.map(suppliers.data, (supplier) => supplier._id == data._id ? data : supplier)
+        cache.writeQuery({
+          query: querySuppliers,
+          data: { suppliers: { ...suppliersValue.suppliers, data: newData } }
+        });
+      }
+      ////////// update cache querySuppliers ///////////
+    },
+    onCompleted(data) {
+      console.log("onCompleted")
+    },
+    onError: (error) => {
+      _.map(error?.graphQLErrors, (e)=>{
+        switch(e?.extensions?.code){
+          case Constants.FORCE_LOGOUT:{
+            // logout()
+            break;
+          }
+          case Constants.DATA_NOT_FOUND:
+          case Constants.UNAUTHENTICATED:
+          case Constants.ERROR:{
+            showToast("error", e?.message)
+            break;
+          }
+        }
+      })
+    }
+  });
 
   useEffect(()=>{
     if(!_.isEmpty(user)){
@@ -265,26 +381,7 @@ const App =(props) =>{
     }, []),
     variables: {sessionId: localStorage.getItem('token')},
   });
-
-  // useEffect(()=> {
-  //   intervalPing.current = setInterval(() => {
-  //     pingValues && pingValues.refetch()
-  //     console.log("ping, auth : ", moment().format("DD-MM-YYYY hh:mm:ss") )
-  //   }, 60000 );
-  //   return ()=> clearInterval(intervalPing.current);
-  // }, [user]);
-  // const ProtectedHomeRoute = ({user}) =>{
-  //   switch(checkRole(user)){
-  //     case Constants.AMDINISTRATOR:
-  //     case Constants.AUTHENTICATED:{
-  //       return <Outlet />;
-  //     }
-  //     default:{
-  //       return <Navigate to={redirectPath} replace />;
-  //     }
-  //   }
-  // }
-  
+ 
   const ProtectedAuthenticatedRoute = ({ user, redirectPath = '/' }) => {
     switch(checkRole(user)){
       case Constants.AMDINISTRATOR:
@@ -514,8 +611,24 @@ const App =(props) =>{
         <div className="container">
           <BreadcsComp {...props}/>
           <Routes>
-            <Route path="/" exact element={ _.isEqual(checkRole(user), Constants.AMDINISTRATOR) ? <AdminHomePage user={user} ws={ws} onLogin={()=>setDialogLogin(true)} /> : <HomePage user={user} ws={ws} onLogin={()=>setDialogLogin(true)} />} />
-            <Route path="/d" element={<DetailPage user={user} ws={ws} onLogin={()=>setDialogLogin(true)} onLightbox={(value)=>setLightbox(value)} />} />
+            <Route path="/" exact element={ _.isEqual(checkRole(user), Constants.AMDINISTRATOR) 
+                                            ? <AdminHomePage {...props} onLogin={()=>setDialogLogin(true)} /> 
+                                            : <HomePage 
+                                                {...props}
+                                                search={search} 
+                                                onLogin={()=>setDialogLogin(true)} 
+                                                onSearchChange={(evt)=>setSearch(evt)}
+                                                onMutationFollow={(evt)=>onMutationFollow(evt)} />} 
+                                            />
+
+            <Route path="/d" element={<DetailPage 
+                                        {...props}
+                                        onLogin={()=>setDialogLogin(true)} 
+                                        onLightbox={(evt)=>setLightbox(evt)} 
+                                        onMutationFollow={(evt)=>onMutationFollow(evt)}
+                                        onMutationBook={(evt)=>onMutationBook(evt)}/>} 
+                                    />
+
             <Route path="/user/login" element={<LoginPage {...props} />} />
             <Route path="/suppliers" element={<SuppliersPage user={user} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/supplier" element={<SupplierPage />} />
