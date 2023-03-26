@@ -293,9 +293,4 @@ const HomePage = (props) => {
   return mainView()
 }
 
-const mapStateToProps = (state, ownProps) => {
-  return { }
-};
-
-const mapDispatchToProps = { logout }
-export default connect( mapStateToProps, mapDispatchToProps )(HomePage);
+export default HomePage;

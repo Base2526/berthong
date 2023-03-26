@@ -181,11 +181,7 @@ const DetailPanelRight = (props) =>{
             </div>
             <div className="ber pt-3">
               <div className="row">
-                <DetailPanel
-                  {...props}
-                  // selectedSeats={selectedSeats}
-                  // onSelectedSeatsChange={(value)=>onSelectedSeatsChange(value)}
-                />
+                <DetailPanel {...props} />
               </div>
             </div>
             <div className="pt-3"></div>
