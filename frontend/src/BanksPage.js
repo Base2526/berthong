@@ -22,7 +22,6 @@ import {
 import InfiniteScroll from "react-infinite-scroll-component";
 import _ from "lodash";
 import { useTranslation } from "react-i18next";
-import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 
@@ -138,17 +137,7 @@ const BanksPage = (props) => {
                 <DialogActions>
                   <Button
                     variant="outlined"
-                    onClick={() => {
-                      // let newInput = _.find(datas, (item)=>openDialogDelete.id == item._id.toString())
-
-                      // newInput = _.omitDeep(newInput, ['__v', 'createdAt', 'updatedAt', 'userIdRequest'])
-                      // newInput = {...newInput, mode:"DELETE",  balance: parseInt(newInput.balance), dateTranfer:new Date(newInput.dateTranfer)}
-
-                      // console.log("newInput :", newInput)
-                      // onMutationWithdraw({ variables: { input: newInput } });
-
-                      console.log("openDialogDelete : ", openDialogDelete.id)
-                    }}
+                    onClick={() =>{}}
                   >{t("delete")}</Button>
                   <Button variant="contained" onClick={handleClose} autoFocus>{t("close")}</Button>
                 </DialogActions>
@@ -164,9 +153,4 @@ const BanksPage = (props) => {
           </div>);
 }
 
-const mapStateToProps = (state, ownProps) => {
-    return { }
-};
-
-const mapDispatchToProps = { }
-export default connect( mapStateToProps, mapDispatchToProps )(BanksPage);
+export default BanksPage;

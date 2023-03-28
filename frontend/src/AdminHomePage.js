@@ -1,36 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
-import { NetworkStatus, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import _ from "lodash";
-import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import { toast } from 'react-toastify';
-import InfiniteScroll from "react-infinite-scroll-component";
 import { makeStyles } from "@material-ui/core/styles";
-import { ErrorOutline as ErrorOutlineIcon } from "@material-ui/icons";
 // color
 import { lightGreen, blueGrey } from "@material-ui/core/colors";
-
 import {
   Stack,
   IconButton,
   CircularProgress
 } from "@mui/material"
-
 import {
   FiRefreshCcw
 } from "react-icons/fi"
-
-import {  FORCE_LOGOUT, 
-          WS_CLOSED, 
-          WS_CONNECTED, 
-          WS_SHOULD_RETRY } from "./constants";
-
-import { queryAdminHome, subscriptionSuppliers } from "./gqlQuery";
-import { logout } from "./redux/actions/auth";
+import { queryAdminHome } from "./gqlQuery";
 import { getHeaders, showToast } from "./util";
-import AdminHomeItem from "./item/AdminHomeItem"
-import SearchComp from "./components/SearchComp"
-import SkeletonComp from "./components/SkeletonComp"
 import * as Constants from "./constants"
 
 const useStyles = makeStyles((theme) => ({
@@ -360,9 +344,4 @@ const AdminHomePage = (props) => {
           </div>
 }
 
-const mapStateToProps = (state, ownProps) => {
-  return { user:state.auth.user, ws: state.ws }
-};
-
-const mapDispatchToProps = { logout }
-export default connect( mapStateToProps, mapDispatchToProps )(AdminHomePage);
+export default AdminHomePage;

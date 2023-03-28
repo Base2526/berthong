@@ -21,14 +21,16 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import _ from "lodash";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
-import { connect } from "react-redux";
+// import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { mutationWithdraw, queryWithdraws } from "./gqlQuery";
-import { logout } from "./redux/actions/auth";
+// import { logout } from "./redux/actions/auth";
 import { checkRole, getHeaders, showToast } from "./util";
-import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants";
-import TableComp from "./components/TableComp"
+// import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants";
+// import TableComp from "./components/TableComp"
+
+import * as Constants from "./constants"
 
 const WithdrawsPage = (props) => {
   const navigate = useNavigate();
@@ -62,7 +64,7 @@ const WithdrawsPage = (props) => {
   if(!_.isEmpty(errorWithdraws)){
     _.map(errorWithdraws?.graphQLErrors, (e)=>{
       switch(e?.extensions?.code){
-        case UNAUTHENTICATED:{
+        case Constants.UNAUTHENTICATED:{
           showToast("error", e?.message)
           break;
         }
@@ -237,100 +239,65 @@ const WithdrawsPage = (props) => {
     }
   }
 
-
   return (<div style={{flex:1}}>
-            {/* {
+            {
               loadingWithdraws
-              ? <CircularProgress /> 
-              : <div>
-                  {
-                  checkRole(user) !== AMDINISTRATOR 
-                  ? <button 
-                      onClick={()=>{ 
-                        // history.push({ 
-                        //   pathname: "/withdraw",  
-                        //   state: {from: "/", mode: "new"}  
-                        // });
+              ?  <CircularProgress />
+              :  datas.length == 0 
+                  ?   <label>Empty data</label>
+                  :   <InfiniteScroll
+                          dataLength={slice}
+                          next={fetchMoreData}
+                          hasMore={hasMore}
+                          loader={<h4>Loading...</h4>}>
+                          { 
+                          _.map(datas, (item, index) => {                       
+                            let balance = item.balance;
+                            let status = item.status;
+                            let createdAt = item.createdAt;
 
-                        navigate("/withdraw", { state: {from: "/", mode: "new"} })
-                      }}>เพิ่ม แจ้งถอดเงิน</button> 
-                  : ""
-                  }
-                  <TableComp
-                    columns={columns}
-                    data={datas}
-                    fetchData={fetchData}
-                    rowsPerPage={pageOptions}
-                    updateMyData={updateMyData}
-                    skipReset={skipResetRef.current}
-                    isDebug={false}/>
-                </div>
-            }  */}
+                            return <Stack direction="row" spacing={2} >
+                                      <Box sx={{ width: '8%' }}>{balance}</Box>
+                                      <Box sx={{ width: '10%' }}>{status}</Box>
+                                      <Box sx={{ width: '20%' }}>{(moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</Box>
+                                      <Box sx={{ width: '20%' }}></Box>
+                                  </Stack>
+                                  
+                          })
+                        }
+                      </InfiniteScroll>
+            }
+            {openDialogDelete.isOpen && (
+              <Dialog
+                open={openDialogDelete.isOpen}
+                onClose={handleClose}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+              >
+                <DialogTitle id="alert-dialog-title">{t("confirm_delete")}</DialogTitle>
+                <DialogContent>
+                  <DialogContentText id="alert-dialog-description">
+                    {openDialogDelete.description}
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      let newInput = _.find(datas, (item)=>openDialogDelete.id == item._id.toString())
 
-        {
-          loadingWithdraws
-          ?  <CircularProgress />
-          :  datas.length == 0 
-              ?   <label>Empty data</label>
-              :   <InfiniteScroll
-                      dataLength={slice}
-                      next={fetchMoreData}
-                      hasMore={hasMore}
-                      loader={<h4>Loading...</h4>}>
-                      { 
-                      _.map(datas, (item, index) => {                       
-                        let balance = item.balance;
-                        let status = item.status;
-                        let createdAt = item.createdAt;
+                      newInput = _.omitDeep(newInput, ['__v', 'createdAt', 'updatedAt', 'userIdRequest'])
+                      newInput = {...newInput, mode:"DELETE",  balance: parseInt(newInput.balance), dateTranfer:new Date(newInput.dateTranfer)}
 
-                        return <Stack direction="row" spacing={2} >
-                                  <Box sx={{ width: '8%' }}>{balance}</Box>
-                                  <Box sx={{ width: '10%' }}>{status}</Box>
-                                  <Box sx={{ width: '20%' }}>{(moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</Box>
-                                  <Box sx={{ width: '20%' }}></Box>
-                              </Stack>
-                              
-                      })
-                    }
-                  </InfiniteScroll>
-        }
-
-          {openDialogDelete.isOpen && (
-            <Dialog
-              open={openDialogDelete.isOpen}
-              onClose={handleClose}
-              aria-labelledby="alert-dialog-title"
-              aria-describedby="alert-dialog-description"
-            >
-              <DialogTitle id="alert-dialog-title">{t("confirm_delete")}</DialogTitle>
-              <DialogContent>
-                <DialogContentText id="alert-dialog-description">
-                  {openDialogDelete.description}
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    let newInput = _.find(datas, (item)=>openDialogDelete.id == item._id.toString())
-
-                    newInput = _.omitDeep(newInput, ['__v', 'createdAt', 'updatedAt', 'userIdRequest'])
-                    newInput = {...newInput, mode:"DELETE",  balance: parseInt(newInput.balance), dateTranfer:new Date(newInput.dateTranfer)}
-
-                    console.log("newInput :", newInput)
-                    onMutationWithdraw({ variables: { input: newInput } });
-                  }}
-                >{t("delete")}</Button>
-                <Button variant="contained" onClick={handleClose} autoFocus>{t("close")}</Button>
-              </DialogActions>
-            </Dialog>
-          )}
+                      console.log("newInput :", newInput)
+                      onMutationWithdraw({ variables: { input: newInput } });
+                    }}
+                  >{t("delete")}</Button>
+                  <Button variant="contained" onClick={handleClose} autoFocus>{t("close")}</Button>
+                </DialogActions>
+              </Dialog>
+            )}
           </div>);
 }
 
-const mapStateToProps = (state, ownProps) => {
-    return { }
-};
-
-const mapDispatchToProps = { logout }
-export default connect( mapStateToProps, mapDispatchToProps )(WithdrawsPage);
+export default WithdrawsPage;

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import deepdash from "deepdash";
@@ -23,14 +22,9 @@ const BankPage = (props) => {
   const location = useLocation();
   const { t } = useTranslation();
   const initValues = {_id: "", bankNumber: "", bankId: ""}
-
   const { user } = props
-
   let [input, setInput]       = useState([]);
-
   let { mode, id } = location?.state
-
-  console.log("mode, id :", mode, id, user )
 
   const [onMutationMe, resultMutationMe] = useMutation(mutationMe, {
     context: { headers: getHeaders(location) },
@@ -138,8 +132,4 @@ const BankPage = (props) => {
           </Stack>
 }
 
-const mapStateToProps = (state, ownProps) => {
-  return {}
-}
-const mapDispatchToProps = { }
-export default connect( mapStateToProps, mapDispatchToProps )(BankPage);
+export default BankPage;
