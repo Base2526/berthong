@@ -9,8 +9,7 @@ import { createClient } from 'graphql-ws';
 
 import { store } from "./Redux";
 import { ws_status } from "./redux/actions/ws";
-
-import { WS_CLOSED, WS_CONNECTED, WS_CONNECTION, WS_SHOULD_RETRY } from "./constants";
+import * as Constants from "./constants"
 
 /////////////////////////
 
@@ -54,7 +53,7 @@ const wsLink = new GraphQLWsLink(createClient({
     },
     shouldRetry: (errOrCloseEvent) => {
         console.log("wsLink shouldRetry :")
-        store.dispatch(ws_status(WS_SHOULD_RETRY));
+        store.dispatch(ws_status(Constants.WS_SHOULD_RETRY));
         return true;
     },
     // connectionParams: {
@@ -91,19 +90,19 @@ const wsLink = new GraphQLWsLink(createClient({
 
             connecting(true)
 
-            store.dispatch(ws_status(WS_CONNECTION));
+            store.dispatch(ws_status(Constants.WS_CONNECTION));
         },
         closed: () =>{
             console.log("wsLink closed");
             activeSocket =null
             connecting(false)
 
-            store.dispatch(ws_status(WS_CLOSED));
+            store.dispatch(ws_status(Constants.WS_CLOSED));
         } ,
         connected: (socket) =>{
             activeSocket = socket
 
-            // console.log("wsLink connected client", socket);
+            console.log("wsLink connected");
 
             // gracefullyRestart = () => {
             //   if (socket.readyState === WebSocket.OPEN) {
@@ -133,7 +132,7 @@ const wsLink = new GraphQLWsLink(createClient({
                 gracefullyRestart();
             }
 
-            store.dispatch(ws_status(WS_CONNECTED));
+            store.dispatch(ws_status(Constants.WS_CONNECTED));
         },
         keepAlive: 50, // ping server every 10 seconds
         ping: (received) => {
@@ -200,7 +199,7 @@ const authLink = new ApolloLink((operation, forward) => {
 });
   
 
-  // const link = createUploadLink({ uri: "http://localhost:4000/graphql" });
+// const link = createUploadLink({ uri: "http://localhost:4000/graphql" });
 export const client = new ApolloClient({
     // uri: 'http://localhost:4040/graphql',
     link: splitLink,

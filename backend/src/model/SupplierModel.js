@@ -34,7 +34,7 @@ const SupplierSchema = new Schema({
     description: { type: String },
     dateLottery: { type: Schema.Types.ObjectId, required:[true, "Date-Lottery is a required field"] },
     files: [File],
-    condition: { type: Number, required:[true, "Price-Unit is a required field"] },       // 11-100
+    condition: { type: Number, required:[true, "Condition is a required field"] },       // 11-100
     category:{
         type: Number,
         enum : [0, 1, 2, 3], // 0: money, 1: gold, 2 : things, 3 : etc

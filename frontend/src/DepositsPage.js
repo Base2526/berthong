@@ -416,9 +416,4 @@ const DepositsPage = (props) => {
           </div>);
 }
 
-const mapStateToProps = (state, ownProps) => {
-    return { }
-};
-
-const mapDispatchToProps = { logout }
-export default connect( mapStateToProps, mapDispatchToProps )(DepositsPage);
+export default DepositsPage;

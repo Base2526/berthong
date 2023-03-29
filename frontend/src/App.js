@@ -333,6 +333,8 @@ const App =(props) =>{
     if(!_.isEmpty(user)){
       refetchNotifications();
     }
+
+    console.log("user :", user)
   }, [user])
 
   useEffect(() => {
@@ -532,7 +534,7 @@ const App =(props) =>{
                           <IconButton 
                             size={'small'}
                             onClick={()=>{ navigate("/me+book+buys") }}>
-                            <Badge badgeContent={1} color="primary">
+                            <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
                               <FiShoppingCart color="white" size="1.2em"/>
                             </Badge>
                           </IconButton>
@@ -630,22 +632,22 @@ const App =(props) =>{
                                     />
 
             <Route path="/user/login" element={<LoginPage {...props} />} />
-            <Route path="/suppliers" element={<SuppliersPage user={user} onLightbox={(value)=>setLightbox(value)} />} />
+            <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/supplier" element={<SupplierPage />} />
             <Route path="/p" element={<ProfilePage onLightbox={(value)=>setLightbox(value)} />}/>
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
               <Route path="/me" element={<MePage  {...props} />} />
-              <Route path="/deposit" element={<DepositPage user={user} />} />
-              <Route path="/withdraw" element={<WithdrawPage user={user} />} />
-              <Route path="/history-transitions" element={<HistoryTransitionsPage user={user} />} />
-              <Route path="/bank" element={<BankPage user={user} />} />
-              <Route path="/banks" element={<BanksPage user={user} />} />
-              <Route path="/me+book+buys" element={<MeBookBuysPage user={user} onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/notifications" element={<NotificationsPage user={user} />} />
+              <Route path="/deposit" element={<DepositPage {...props} />} />
+              <Route path="/withdraw" element={<WithdrawPage {...props} />} />
+              <Route path="/history-transitions" element={<HistoryTransitionsPage {...props} />} />
+              <Route path="/bank" element={<BankPage {...props} />} />
+              <Route path="/banks" element={<BanksPage {...props} />} />
+              <Route path="/me+book+buys" element={<MeBookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/notifications" element={<NotificationsPage {...props} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
-              <Route path="/deposits" element={<DepositsPage user={user} onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/withdraws" element={<WithdrawsPage user={user} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/withdraws" element={<WithdrawsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/date-lotterys" element={<DateLotterysPage />} />
               <Route path="/date-lottery" element={<DateLotteryPage />} />
               <Route path="/users" element={<UsersPage />} />

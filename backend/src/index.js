@@ -122,7 +122,7 @@ async function startApolloServer(typeDefs, resolvers) {
             },
             onDisconnect: async (ctx, code, reason) =>{
                 // logger.info(ctx.connectionParams);
-                console.log("onDisconnect")
+                console.log("onDisconnect :", ctx, code, reason)
             //     if (ctx.connectionParams.authToken) {
             //         try {
             //             let userId  = jwt.verify(ctx.connectionParams.authToken, process.env.JWT_SECRET);

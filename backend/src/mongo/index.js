@@ -265,6 +265,7 @@ const modelExists =()=>{
       let newSupplier = new Supplier({title: "title", 
                                       price: 0, 
                                       priceUnit: 0, 
+                                      condition: 1,
                                       dateLottery: new mongoose.Types.ObjectId(),
                                       ownerId: new mongoose.Types.ObjectId() });
       await newSupplier.save();
