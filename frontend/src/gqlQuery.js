@@ -37,13 +37,10 @@ export const mutationWithdraw   = gql`mutation withdraw($input: WithdrawInput){ 
 export const mutationBank       = gql`mutation bank($input: BankInput){ bank(input: $input) }`;
 export const mutationFollow     = gql`mutation follow($id: ID!) { follow(_id: $id) }`;
 export const mutationDatesLottery = gql`mutation datesLottery($input: [Date]){ datesLottery(input: $input) }`;
-// export const mutationDateLotteryDetail = gql`mutation dateLotteryDetail($input: DateLotteryDetailInput){ dateLotteryDetail(input: $input) }`;
-
 export const mutationNotification = gql`mutation notification($id: ID!) { notification(_id: $id) }`;
 
 // subscription 
 export const subscriptionMe            = gql`subscription subscriptionMe($sessionId: ID!){ subscriptionMe(sessionId: $sessionId) }`;
 export const subscriptionSupplierById  = gql`subscription subscriptionSupplierById( $id: ID! ){ subscriptionSupplierById(_id: $id) }`;
 export const subscriptionSuppliers     = gql`subscription subscriptionSuppliers( $supplierIds: String! ) { subscriptionSuppliers(supplierIds: $supplierIds) }`;
-
 export const subscriptionAdmin         = gql`subscription subscriptionAdmin($sessionId: ID!){ subscriptionAdmin(sessionId: $sessionId) }`;

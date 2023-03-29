@@ -7,7 +7,16 @@ import { useLocation } from "react-router-dom";
 import queryString from 'query-string';
 import { useMutation, useQuery } from "@apollo/client";
 import _ from "lodash"
-import {LinearProgress} from "@mui/material"
+import {
+  LinearProgress,
+  Menu,
+  MenuItem} from "@mui/material"
+import {
+    ContentCopy as ContentCopyIcon,
+    BugReport as BugReportIcon,
+    Bookmark as BookmarkIcon
+  } from "@mui/icons-material"
+import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
 
 import DetailPanelRight from "./DetailPanelRight"
 import DetailPanelLeft from "./DetailPanelLeft"
@@ -27,6 +36,7 @@ const Detail = (props) => {
   const location = useLocation();
   const [data, setData] = useState([]);
   const [dataUser, setDataUser] = useState([]);
+  const [openMenu, setOpenMenu] = useState(null);
    
   const [isPopupOpenedWallet, setPopupOpenedWallet] = useState(false);
   const [isPopupOpenedShoppingBag, setPopupOpenedShoppingBag] = useState(false);
@@ -184,6 +194,57 @@ const Detail = (props) => {
     onMutationBook({ variables: { input: { supplierId: id, itemId, selected } } });
   }
 
+  const menuView = (item) =>{
+    return  <Menu
+              anchorEl={openMenu}
+              keepMounted
+              open={openMenu}
+              onClose={(e)=>setOpenMenu(null)}
+              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              transformOrigin={{ vertical: "top", horizontal: "center" }}
+              MenuListProps={{ "aria-labelledby": "lock-button", role: "listbox" }}>
+              <MenuItem onClose={(e)=>setOpenMenu(null)}>
+                  <FacebookShareButton
+                    url={ window.location.href + "detail/"}
+                    quote={item?.title}
+                    // hashtag={"#hashtag"}
+                    description={item?.description}
+                    className="Demo__some-network__share-button"
+                    onClick={(e)=>setOpenMenu(null)} >
+                    <FacebookIcon size={32} round /> Facebook
+                  </FacebookShareButton>
+              </MenuItem>{" "}
+  
+              <MenuItem onClose={(e)=>setOpenMenu(null)}>
+                <TwitterShareButton
+                  title={item?.title}
+                  url={ window.location.origin + "/detail/"  }
+                  // hashtags={["hashtag1", "hashtag2"]}
+                  onClick={(e)=>setOpenMenu(null)} >
+                  <TwitterIcon size={32} round />
+                  Twitter
+                </TwitterShareButton>
+              </MenuItem>
+  
+              <MenuItem 
+              onClick={async(e)=>{
+                let text = window.location.href
+
+                if ('clipboard' in navigator) {
+                  await navigator.clipboard.writeText(text);
+                } else {
+                  document.execCommand('copy', true, text);
+                }
+  
+                showToast("info", `Copy link`)
+                setOpenMenu(null)
+              }}>
+                
+              <ContentCopyIcon size={32} round /> Copy link
+              </MenuItem>
+            </Menu>
+  }
+
   return (
     <div className="row">
       { isPopupOpenedShoppingBag && <PopupCart opened={isPopupOpenedShoppingBag} data={data} onClose={() => setPopupOpenedShoppingBag(false) } /> }
@@ -199,10 +260,14 @@ const Detail = (props) => {
               data={data}
               owner={dataUser}
               onSelected={(evt, itemId)=>onSelected(evt, itemId)}
-              onMutationFollow={(variables)=>onMutationFollow(variables)}
+              onFollow={(evt)=> _.isEmpty(user) ? onLogin(true) : onMutationFollow(evt)}
 
-              onPopupOpenedWallet={(status)=> _.isEmpty(user) ? onLogin(true) : setPopupOpenedWallet(status) }
-              onPopupOpenedShoppingBag={(status)=> _.isEmpty(user) ? onLogin(true) : setPopupOpenedShoppingBag(status)}/>
+              onPopupWallet={(evt)=> _.isEmpty(user) ? onLogin(true) : setPopupOpenedWallet(evt) }
+              onPopupShopping={(evt)=> _.isEmpty(user) ? onLogin(true) : setPopupOpenedShoppingBag(evt) }
+              
+              onMenu={(evt)=>setOpenMenu(evt)}/>
+          
+            {menuView(data)}
           </>
       }
     </div>

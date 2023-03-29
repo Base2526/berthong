@@ -100,14 +100,13 @@ const AdminHomePage = (props) => {
           subscribeToMore: subscribeToMoreAdminHome, 
           networkStatus: networkStatusAdminHome } = useQuery(queryAdminHome, 
                                       { 
-                                        context: { headers: getHeaders(location) }, 
+                                        // context: { headers: getHeaders(location) }, 
                                         fetchPolicy: 'cache-first', // Used for first execution
                                         nextFetchPolicy: 'network-only', // Used for subsequent executions
                                         notifyOnNetworkStatusChange: true
                                       }
                                     );
 
-  
   if(!_.isEmpty(errorAdminHome)){
     _.map(errorAdminHome?.graphQLErrors, (e)=>{
       switch(e?.extensions?.code){

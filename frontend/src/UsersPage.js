@@ -51,8 +51,8 @@ const UsersPage = (props) => {
                                       { 
                                         context: { headers: getHeaders(location) }, 
                                         variables: {input},
-                                        fetchPolicy: 'network-only', // Used for first execution
-                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        fetchPolicy: 'cache-first', 
+                                        nextFetchPolicy: 'network-only', 
                                         notifyOnNetworkStatusChange: true
                                       }
                                     );

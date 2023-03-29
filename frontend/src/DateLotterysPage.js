@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useNavigate, useLocation, createSearchParams} from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Dialog,
   DialogActions,
@@ -10,7 +10,8 @@ import {
   CircularProgress,
   SpeedDial,
   SpeedDialIcon,
-  Stack
+  Stack,
+  Box
 } from '@mui/material';
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
@@ -19,65 +20,71 @@ import moment from "moment";
 import DatePicker from "react-multi-date-picker"
 import DatePanel from "react-multi-date-picker/plugins/date_panel"
 import DateObject from "react-date-object";
-
+import InfiniteScroll from "react-infinite-scroll-component";
 import { DeleteForever as DeleteForeverIcon, 
         Edit as EditIcon} from '@mui/icons-material';
 
 import { queryDateLotterys, mutationDatesLottery } from "./gqlQuery"
-import TableComp from "./components/TableComp"
-import { getHeaders, checkRole, showToast } from "./util"
+import { getHeaders } from "./util"
 
 const DateLotterysPage = (props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const location = useLocation();
 
-  const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
-  const [pageIndex, setPageIndex] = useState(0);  
-  const [pageSize, setPageSize] = useState(pageOptions[0])
+  // const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
+  // const [pageIndex, setPageIndex] = useState(0);  
+  // const [pageSize, setPageSize] = useState(pageOptions[0])
   const [dates, setDates] = useState([])
   const [dateLotterys, setDateLotterys] = useState([])
+  let [total, setTotal] = useState(0)
+  let [slice, setSlice] = useState(20);
+  let [hasMore, setHasMore] = useState(false)
+
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
   const { loading: loadingDateLotterys, 
           data: dataDateLotterys, 
           error: errorDateLotterys       } =  useQuery(queryDateLotterys, {
                                                 context: { headers: getHeaders(location) },
-                                                fetchPolicy: 'network-only', // Used for first execution
-                                                nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                                fetchPolicy: 'cache-first', 
+                                                nextFetchPolicy: 'network-only', 
                                                 notifyOnNetworkStatusChange: false,
                                               });
 
-  const [onMutationDatesLottery, resultMutationDatesLotteryValues] = useMutation(mutationDatesLottery
+  const [onMutationDatesLottery, resultMutationDatesLottery] = useMutation(mutationDatesLottery
     , {
         update: (cache, {data: {datesLottery}}) => {
 
-          // console.log("datesLottery :", datesLottery)
+          console.log("datesLottery :", datesLottery)
           
-          // ////////// udpate cache Banks ///////////
-          // let queryDateLotterysValue = cache.readQuery({ query: queryDateLotterys });
-          // let { status, mode, data } = dateLottery
-          // if(status && queryDateLotterysValue){
-          //   switch(mode){
-          //     case "new":{
-          //       cache.writeQuery({
-          //         query: queryDateLotterys,
-          //         data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: [...queryDateLotterysValue.dateLotterys.data, data]} },
-          //       });
-          //       break;
-          //     }
+          //////////// udpate cache Banks ///////////
+          let queryDateLotterysValue = cache.readQuery({ query: queryDateLotterys });
+          // let { status, mode, data } = datesLottery
+          console.log("")
+          /*
+          if(status && queryDateLotterysValue){
+            switch(mode){
+              case "new":{
+                cache.writeQuery({
+                  query: queryDateLotterys,
+                  data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: [...queryDateLotterysValue.dateLotterys.data, data]} },
+                });
+                break;
+              }
 
-          //     case "edit":{
-          //       let newData = _.map(queryDateLotterysValue.dateLotterys.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
-          //       cache.writeQuery({
-          //         query: queryDateLotterys,
-          //         data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: newData} },
-          //       });
-          //       break;
-          //     }
-          //   }
-          // }
-          // ////////// udpate cache Banks ///////////
+              case "edit":{
+                let newData = _.map(queryDateLotterysValue.dateLotterys.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
+                cache.writeQuery({
+                  query: queryDateLotterys,
+                  data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: newData} },
+                });
+                break;
+              }
+            }
+          }
+          */
+          ////////// udpate cache Banks ///////////
         
 
           // ////////// update cache queryDateLotteryById ///////////
@@ -92,12 +99,16 @@ const DateLotterysPage = (props) => {
           // ////////// update cache queryDateLotteryById ///////////
 
         },
-        onCompleted({ data }) {
+        onCompleted(data) {
           // history.goBack();
           // navigate(-1);
+
+          console.log("onCompleted")
         },
         onError(error){
           // console.log("error :", error)
+
+          console.log("onError")
         }
       }
   );
@@ -141,10 +152,10 @@ const DateLotterysPage = (props) => {
   // console.log("resultDeleteBank :", resultDeleteBank)
 
   ///////////////
-  const fetchData = useCallback(({ pageSize, pageIndex }) => {
-    setPageSize(pageSize)
-    setPageIndex(pageIndex)
-  })
+  // const fetchData = useCallback(({ pageSize, pageIndex }) => {
+  //   setPageSize(pageSize)
+  //   setPageIndex(pageIndex)
+  // })
   ///////////////
 
   const handleClose = () => {
@@ -156,6 +167,7 @@ const DateLotterysPage = (props) => {
   };
 
   ///////////////////////
+  /*
   const columns = useMemo(
     () => [
         
@@ -236,7 +248,24 @@ const DateLotterysPage = (props) => {
   const updateMyData = (rowIndex, columnId, value) => {
     skipResetRef.current = true
   }
+  */
   //////////////////////
+
+  const fetchMoreData = async() =>{
+    // let mores =  await fetchMoreUsers({ variables: { input: {...input, OFF_SET:input.OFF_SET + 1} } })
+    // let {status, data} =  mores.data.users
+    // console.log("status, data :", status, data)
+   
+    if(slice === total){
+      // setHasMore(false);
+    }else{
+      setTimeout(() => {
+        // let newDatas = [...datas, ...data]
+        // setDatas(newDatas)
+        // setSlice(newDatas.length);
+      }, 1000); 
+    }
+  }
 
   return (
     <div className="user-list-container">
@@ -256,6 +285,7 @@ const DateLotterysPage = (props) => {
                 let newInput =  _.map(dates, (date)=> (date instanceof DateObject) ?  date.toDate() : date)
                 onMutationDatesLottery({ variables: { input: newInput } })
               }}>Update</button>
+              {/* 
               <TableComp
                 columns={columns}
                 data={dateLotterys}
@@ -263,7 +293,60 @@ const DateLotterysPage = (props) => {
                 rowsPerPage={pageOptions}
                 updateMyData={updateMyData}
                 skipReset={skipResetRef.current}
-                isDebug={false}/>
+                isDebug={false}/> 
+              */}
+                  {
+                    <InfiniteScroll
+                      dataLength={slice}
+                      next={fetchMoreData}
+                      hasMore={hasMore}
+                      loader={<h4>Loading...</h4>}>
+                      { 
+                      _.map(dateLotterys, (item, index) => {                       
+                        let date         = item?.date;
+                        // let avatar      = item.avatar;
+                        // let displayName = item.displayName;
+                        // let username    = item.username;
+                        // let email       = item.email;
+                        // let roles       = item.roles;
+                        // let lastAccess  = item.lastAccess;
+
+                        console.log("item :", item)
+
+                        return <Stack direction="row" spacing={2} >
+                                  <Box sx={{ width: '20%' }}> { (moment(date, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')} </Box>
+                                  {/* 
+                                  <Box sx={{ width: '8%' }}>
+                                    <Avatar
+                                      alt="Example avatar"
+                                      variant="rounded"
+                                      src={avatar?.url}
+                                      // onClick={(e) => {
+                                      //   // onLightbox({ isOpen: true, photoIndex: 0, images:files })
+                                      // }}
+                                      sx={{ width: 56, height: 56 }}
+                                    />
+                                  </Box>
+                                  <Box 
+                                    sx={{ width: '8%' }}
+                                    onClick={()=>{
+                                      navigate({ pathname: `/p`, search: `?${createSearchParams({ id: _id })}` })
+                                    }}>{displayName}</Box>
+                                  <Box sx={{ width: '10%' }}>{username}</Box>
+                                  <Box sx={{ width: '20%' }}>{email}</Box>
+                                  <Box sx={{ width: '15%' }}> <RolesComp Ids={roles}/> </Box>
+                                  <Box sx={{ width: '5%' }}>{ (moment(lastAccess, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</Box>
+                                  <Box sx={{ width: '20%' }}>
+                                    <button onClick={(e)=>{ console.log("Force logout") }}><ExitToAppIcon />Force logout</button>
+                                    <button onClick={()=>{ navigate("/user", {state: {from: "/", mode: "edit", id: _id}}) }}><EditIcon/>{t("edit")}</button>
+                                    <button onClick={(e)=>{ setOpenDialogDelete({ isOpen: true, id: _id, description: displayName }) }}><DeleteForeverIcon/>{t("delete")}</button>
+                                  </Box> 
+                                  */}
+                              </Stack>
+                      })
+                      }
+                    </InfiniteScroll>
+                  }
             </div>
       }
 

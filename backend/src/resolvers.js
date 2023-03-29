@@ -70,7 +70,8 @@ export default {
       if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
       user =_.omit( { ...user._doc, 
-                      balance: (await checkBalance(current_user?._id)).balance,
+                      // balance: (await checkBalance(current_user?._id)).balance,
+                      ...await checkBalance(current_user?._id),
                       balanceBook: await checkBalanceBook(current_user?._id)}, ["password", "__v"])
 
       return {  status: true,
@@ -598,6 +599,12 @@ export default {
 
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
 
+      /*
+      try{
+
+      }catch(error){
+        console
+      }
       console.log("adminHome: ", current_user)
       if( !status && code == FORCE_LOGOUT ) throw new AppError(FORCE_LOGOUT, 'Expired!')
       if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Administrator only!')
@@ -630,14 +637,15 @@ export default {
                 let newUser = {...user._doc, roles: _.filter(roles, (role)=>role!=undefined)};
                 return _.omit(newUser, ['password']);
               })), i => !_.isEmpty(i))
+              */
 
       let data =  [ 
-                    { title: "รายการ ฝากเงินรออนุมัติ", data: deposits },
-                    { title: "รายการ ถอดเงินรออนุมัติ", data: withdraws }, 
-                    { title: "รายการ สินค้าทั้งหมด", data: suppliers },
-                    { title: "รายชื่อบุคคลทั้งหมด", data: users } 
+                    { title: "รายการ ฝากเงินรออนุมัติ", data: [] },
+                    { title: "รายการ ถอดเงินรออนุมัติ", data: [] }, 
+                    { title: "รายการ สินค้าทั้งหมด", data: [] },
+                    { title: "รายชื่อบุคคลทั้งหมด", data: [] } 
                   ]
-
+      
 
       return {  status: true,
                 data,
@@ -668,7 +676,8 @@ export default {
 
       user = {...user._doc, 
               banks,
-              balance: (await checkBalance(user?._id)).balance,
+              // balance: (await checkBalance(user?._id)).balance,
+              ...await checkBalance(user?._id),
               balanceBook: await checkBalanceBook(user?._id)}
 
       return {
@@ -1741,7 +1750,7 @@ export default {
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Administrator only!')
+      if( !_.isEqual(checkRole(current_user), AMDINISTRATOR) ) throw new AppError(UNAUTHENTICATED, 'AMDINISTRATOR only!')
 
       await Promise.all( _.map(input, async(date, weight)=>{
                           let dateLottery =  await DateLottery.findOne({date})
@@ -1749,10 +1758,10 @@ export default {
                         }))
 
       let dateLottery = await DateLottery.find({})
-      dateLottery = await Promise.all( _.map(dateLottery, async(lo)=>{
-        let suppliers = await Supplier.find({ dateLottery: lo?._id });
-        return {...lo._doc, suppliers }
-      }) )
+      dateLottery = _.filter( await Promise.all( _.map(dateLottery, async(i)=>{
+        let suppliers = await Supplier.findOne({ dateLottery: i?._id });
+        return _.isEmpty(suppliers) ?  null : {...i?._doc, suppliers }
+      })), i => !_.isNull(i))
 
       return {
         status: true,
