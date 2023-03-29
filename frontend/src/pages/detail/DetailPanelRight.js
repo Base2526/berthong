@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import clsx from "clsx";
 import Chip from "@mui/joy/Chip";
 import TextField from "@material-ui/core/TextField";
@@ -8,8 +8,6 @@ import { HiOutlineShoppingBag } from "react-icons/hi"
 import _ from "lodash"
 import {
   IconButton,
-  Menu,
-  MenuItem
 } from "@mui/material";
 import {
   ContentCopy as ContentCopyIcon,
@@ -54,7 +52,14 @@ const DetailPanel = (props) => {
 };
 
 const DetailPanelRight = (props) =>{
-  let { user, data, owner, onSelected, onMutationFollow, onPopupOpenedWallet, onPopupOpenedShoppingBag } = props
+  let { user, 
+        data, 
+        owner, 
+        onSelected, 
+        onFollow, 
+        onPopupWallet, 
+        onPopupShopping,
+        onMenu } = props
 
   let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
   let buys      =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 1) )
@@ -69,7 +74,7 @@ const DetailPanelRight = (props) =>{
                         <div
                           class="wishlist box d-flex flex-row align-items-center justify-content-center"
                           style={{ marginRight: "3px" }}
-                          onClick={() => onPopupOpenedWallet(true)}>
+                          onClick={() => onPopupWallet(true)}>
                           <MdOutlineSavings size="5em"/>
                           <div class="wishlist_content">
                             <div class="wishlist_text" style={{ color: "#fff" }}>
@@ -86,7 +91,7 @@ const DetailPanelRight = (props) =>{
                         </div>
                         <div class="wishlist1 wishlist-new box cart d-flex flex-row align-items-center">
                           <div
-                            onClick={() => onPopupOpenedShoppingBag(true)}
+                            onClick={() => onPopupShopping(true)}
                             class="cart_container d-flex flex-row align-items-center justify-content-center"
                           >
                             <div class="c_cart">
@@ -111,10 +116,10 @@ const DetailPanelRight = (props) =>{
                         </div>
                         <div>
                           <h4 className="card-title" style={{ float: "right" }}>
-                            <IconButton onClick={(e) =>onMutationFollow({ variables: { id: data?._id } }) }> 
+                            <IconButton onClick={(e) => onFollow({ variables: { id: data?._id } }) }> 
                               <BookmarkIcon style={{ color : !_.isEmpty(_.find(data?.follows, (f)=>f?.userId == user?._id)) ? "blue" : "" }} />
                             </IconButton>
-                            <IconButton onClick={(e) => { /*setOpenMenu({ [index]: e.currentTarget })*/ }}><MoreVertIcon /></IconButton>
+                            <IconButton onClick={(e) =>onMenu(e.currentTarget)}><MoreVertIcon /></IconButton>
                           </h4>
                         </div>
                       </div>

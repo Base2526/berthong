@@ -56,7 +56,7 @@ cron.schedule('*/60 * * * *', async() => {
                                 if(!_.isEmpty(users)){
                                   _.map(_.uniqWith(users, _.isEqual), async(userId)=>{
                                     pubsub.publish("ME", {
-                                      me: { mutation: "BOOK", data: {userId, data: { balance: (await checkBalance(userId)).balance , balanceBook: await checkBalanceBook(userId) } } },
+                                      me: { mutation: "BOOK", data: {userId, data: { /* balance: (await checkBalance(userId)).balance*/ ...await checkBalance(userId) , balanceBook: await checkBalanceBook(userId) } } },
                                     });
                                   })
                                 }
