@@ -1190,7 +1190,7 @@ export default {
       if( checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
 
       let { supplierId, itemId, selected } = input
-      let supplier = await Supplier.findById(supplierId);
+      let supplier = await Supplier.findOne({_id: supplierId })//await Supplier.findById(supplierId);
 
       if(_.isNull(supplier)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
@@ -1206,7 +1206,7 @@ export default {
                                 { _id: supplierId }, 
                                 {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, selected}] } );
             
-          let newSupplier = await Supplier.findById(supplierId)
+          let newSupplier = await Supplier.findOne({_id: supplierId })
           newSupplier = {...newSupplier._doc, owner: current_user?._doc}
 
           pubsub.publish("SUPPLIER_BY_ID", {
@@ -1218,7 +1218,14 @@ export default {
           });
 
           pubsub.publish("ME", {
-            me: { mutation: "BOOK", data: {userId: current_user?._id, data: { balance: (await checkBalance(current_user?._id)).balance , balanceBook: await checkBalanceBook(current_user?._id) } } },
+            me: { mutation: "BOOK", data: { userId: current_user?._id, 
+                                            data: { 
+                                              // balance, transitions, inTheCarts
+                                                    // balance: (await checkBalance(current_user?._id)).balance,
+                                                    ...await checkBalance(current_user?._id),
+                                                    balanceBook: await checkBalanceBook(current_user?._id) 
+                                                  } 
+                                          } },
           });
 
           return {
@@ -1234,7 +1241,7 @@ export default {
         { _id: supplierId }, 
         {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id ) },  );
 
-        let newSupplier = await Supplier.findById(supplierId)
+        let newSupplier = await Supplier.findOne({_id: supplierId })
         newSupplier = {...newSupplier._doc, owner: current_user?._doc}
         
         pubsub.publish("SUPPLIER_BY_ID", {
@@ -1246,7 +1253,16 @@ export default {
         });
 
         pubsub.publish("ME", {
-          me: { mutation: "BOOK", data: {userId: current_user?._id, data: { balance: (await checkBalance(current_user?._id)).balance, balanceBook: await checkBalanceBook(current_user?._id) } } },
+          me: { mutation: "BOOK", 
+                data: { 
+                      userId: current_user?._id, 
+                      data: { 
+                        // balance: (await checkBalance(current_user?._id)).balance, 
+                        ...await checkBalance(current_user?._id),
+                        balanceBook: await checkBalanceBook(current_user?._id) 
+                      } 
+                } 
+          },
         });
 
         return {

@@ -186,13 +186,13 @@ const auth = (state = initialState, action) => {
 
         case EDITED_USER_BALANCE:{
             let {type, data} = action.data
-            return {...state, user: {...state.user, balance: data.balance, balanceBook: data.balanceBook}}
+            return {...state, user: {...state.user, /*balance: data.balance, balanceBook: data.balanceBook*/ ...data}}
         } 
 
         case EDITED_USER_BALANCE_BOOK: 
         {
             let {type, data} = action.data
-            return {...state, user: {...state.user, balance: data.balance, balanceBook: data.balanceBook}}
+            return {...state, user: {...state.user, /*balance: data.balance, balanceBook: data.balanceBook*/ ...data}}
         } 
 
     }

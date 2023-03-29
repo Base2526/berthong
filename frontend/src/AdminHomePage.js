@@ -101,9 +101,8 @@ const AdminHomePage = (props) => {
           networkStatus: networkStatusAdminHome } = useQuery(queryAdminHome, 
                                       { 
                                         context: { headers: getHeaders(location) }, 
-                                        // variables: {input: search},
-                                        fetchPolicy: 'network-only', // Used for first execution
-                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        fetchPolicy: 'cache-first', // Used for first execution
+                                        nextFetchPolicy: 'network-only', // Used for subsequent executions
                                         notifyOnNetworkStatusChange: true
                                       }
                                     );
@@ -115,6 +114,9 @@ const AdminHomePage = (props) => {
         case Constants.UNAUTHENTICATED:{
           showToast("error", e.message)
           break;
+        }
+        default:{
+          console.log("error :",  e.message)
         }
       }
     })

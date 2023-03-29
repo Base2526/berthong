@@ -333,6 +333,8 @@ const App =(props) =>{
     if(!_.isEmpty(user)){
       refetchNotifications();
     }
+
+    console.log("user :", user)
   }, [user])
 
   useEffect(() => {
@@ -532,7 +534,7 @@ const App =(props) =>{
                           <IconButton 
                             size={'small'}
                             onClick={()=>{ navigate("/me+book+buys") }}>
-                            <Badge badgeContent={1} color="primary">
+                            <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
                               <FiShoppingCart color="white" size="1.2em"/>
                             </Badge>
                           </IconButton>

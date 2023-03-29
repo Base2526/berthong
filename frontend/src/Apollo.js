@@ -102,7 +102,7 @@ const wsLink = new GraphQLWsLink(createClient({
         connected: (socket) =>{
             activeSocket = socket
 
-            // console.log("wsLink connected client", socket);
+            console.log("wsLink connected");
 
             // gracefullyRestart = () => {
             //   if (socket.readyState === WebSocket.OPEN) {

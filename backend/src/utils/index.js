@@ -136,13 +136,19 @@ export const checkAuthorizationWithSessionId = async(sessionId) => {
 }
 
 export const checkBalance = async(userId) =>{
-    let transitions = await Transition.find({userId, status: 1 });
     try{
+        let transitions = await Transition.find({userId, status: 1 });
+
         transitions = await Promise.all(_.map(transitions, async(transition)=>{
             switch(transition.type){ // 'supplier', 'deposit', 'withdraw'
                 case 0:{
                     let supplier = await Supplier.findById(transition.refId)
                     let buys = _.filter(supplier.buys, (buy)=> _.isEqual(buy.userId, userId))
+
+                    // let books = _.filter(supplier.buys, (buy)=> _.isEqual(buy.userId, userId) && selected == 0)
+                    // if(!_.isEmpty(books)){
+                    //     inTheCart = [...inTheCart, transition?.refId]
+                    // }
                     
                     let balance = buys.length * supplier.price
                     return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
@@ -183,9 +189,32 @@ export const checkBalance = async(userId) =>{
                 }
             }
         });
-        return {balance, transitions}
+
+        let inTheCarts = _.filter( await Promise.all(_.map(transitions, async(transition)=>{
+            switch(transition.type){ // 'supplier', 'deposit', 'withdraw'
+                case 0:{
+                    let supplier = await Supplier.findById(transition.refId)
+
+                    let books = _.filter(supplier.buys, (buy)=> _.isEqual(buy.userId, userId) && buy.selected == 0)
+                    if(!_.isEmpty(books)){
+                        console.log("inTheCarts item :", books, transition?.refId)
+                        return transition?.refId
+                    }
+                    return null;
+                }
+
+                default:{
+                    return null;
+                }
+            }
+        })), (i)=> !_.isNull(i))
+
+        console.log("inTheCarts :", balance, inTheCarts)
+
+        return {balance, transitions, inTheCarts}
     } catch(err) {
-        return {balance: 0, transitions: []}
+        console.log(" err o checkBalance :", err.message)
+        return {balance: 0, transitions: [], inTheCarts: []}
     }
 }
 
