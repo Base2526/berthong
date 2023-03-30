@@ -450,7 +450,7 @@ const App =(props) =>{
       }
       case Constants.AUTHENTICATED:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
-                {id: 1, title:"รายการ สินค้า", icon: <AssistantIcon />, path: "/suppliers"},
+                {id: 1, title:"รายการ จอง-ซื้อ", icon: <AssistantIcon />, path: "/book-buy"},
                 {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
                 {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"},
@@ -533,7 +533,7 @@ const App =(props) =>{
                           </IconButton>
                           <IconButton 
                             size={'small'}
-                            onClick={()=>{ navigate("/me+book+buys") }}>
+                            onClick={()=>{ navigate("/book-buy") }}>
                             <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
                               <FiShoppingCart color="white" size="1.2em"/>
                             </Badge>
@@ -642,7 +642,7 @@ const App =(props) =>{
               <Route path="/history-transitions" element={<HistoryTransitionsPage {...props} />} />
               <Route path="/bank" element={<BankPage {...props} />} />
               <Route path="/banks" element={<BanksPage {...props} />} />
-              <Route path="/me+book+buys" element={<MeBookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/book-buy" element={<MeBookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/notifications" element={<NotificationsPage {...props} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>

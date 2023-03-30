@@ -33,7 +33,7 @@ const wsLink = new GraphQLWsLink(createClient({
     disablePong: false,
     connectionAckWaitTimeout: 0,
     retryAttempts: 50,
-    keepAlive: 50_000,
+    keepAlive: 100_000,
     reconnect: true,
     retryWait: async function randomisedExponentialBackoff(retries) {
 
