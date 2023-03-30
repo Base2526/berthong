@@ -84,8 +84,6 @@ const HomePage = (props) => {
   let [total, setTotal] = useState(0);
 
   const [loading, setLoading] = useState(true);
-
-  // let [search, setSearch] = useState(Constants.INIT_SEARCH)
   let [reset, setReset] = useState(false)
 
   const [slice, setSlice] = useState(12);
@@ -103,8 +101,8 @@ const HomePage = (props) => {
                                       { 
                                         context: { headers: getHeaders(location) }, 
                                         variables: {input: search},
-                                        fetchPolicy: 'network-only',
-                                        nextFetchPolicy: 'cache-first', 
+                                        fetchPolicy: 'cache-first',
+                                        nextFetchPolicy: 'network-only', 
                                         notifyOnNetworkStatusChange: true
                                       }
                                     );
@@ -121,6 +119,14 @@ const HomePage = (props) => {
   }
 
   useEffect(()=>{
+    console.log("")
+
+    
+    if(search.OFF_SET == 0){
+      // refetchSuppliers({input: search});
+
+      onSearchChange({...search, OFF_SET: search.OFF_SET + 1 })
+    }
     return () => {
       unsubscribeSuppliers && unsubscribeSuppliers()
       unsubscribeSuppliers = null;
@@ -181,25 +187,35 @@ const HomePage = (props) => {
       console.log("search :", search)
     }
 
+    // if(search.OFF_SET == 0){
+    //   refetchSuppliers({input: search});
+
+    //   onSearchChange({...search, OFF_SET: search.OFF_SET + 1 })
+    // }
+
     if(reset){
       setReset(false)
     }
   }, [search, reset])
 
   const handleNext = async() => {
-    let mores =  await fetchMore({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
+    let input =  {...search, OFF_SET:(search.OFF_SET * search.LIMIT) }
+    let mores =  await fetchMore({ variables: { input } })
     let {status, data} =  mores.data.suppliers
-    console.log("status, data :", status, data)
+    console.log("handleNext :", input, slice, total)
 
-    if(slice === total){
+    if(slice >= total){
       setHasMore(false);
     }else{
       setTimeout(() => {
+        if(slice + data.length == total) setHasMore(false)
+
         let newDatas = [...datas, ...data]
         setDatas(newDatas)
         setSlice(newDatas.length);
       }, 1000); 
     }
+    onSearchChange({...search, OFF_SET: search.OFF_SET + 1 })
   }
 
   const mainView = () =>{

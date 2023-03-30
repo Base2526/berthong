@@ -161,7 +161,7 @@ const BreadcsComp = (props) => {
         ]
       }
 
-      case "/me+book+buys":{
+      case "/book-buy":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายการ จอง-ซื้อ</Typography>

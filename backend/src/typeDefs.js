@@ -55,8 +55,8 @@ export default gql`
   }
 
   input SearchInput{
-    OFF_SET: Int
-    LIMIT: Int
+    OFF_SET: Int!
+    LIMIT: Int!
     NUMBER: String
     TITLE: String
     DETAIL: String

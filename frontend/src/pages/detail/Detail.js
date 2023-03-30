@@ -228,14 +228,12 @@ const Detail = (props) => {
   
               <MenuItem 
               onClick={async(e)=>{
-                let text = window.location.href
+                let href = window.location.href
 
-                if ('clipboard' in navigator) {
-                  await navigator.clipboard.writeText(text);
-                } else {
-                  document.execCommand('copy', true, text);
-                }
-  
+                'clipboard' in navigator 
+                ? await navigator.clipboard.writeText(href) 
+                : document.execCommand('copy', true, href)
+                
                 showToast("info", `Copy link`)
                 setOpenMenu(null)
               }}>
