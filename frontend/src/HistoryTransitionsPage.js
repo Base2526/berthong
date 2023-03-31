@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
-import moment from "moment";
 import _ from "lodash";
 import deepdash from "deepdash";
 import { useQuery, useMutation } from "@apollo/client";
-
 import {
   Stack,
   DialogTitle,
@@ -15,23 +12,18 @@ import {
   DialogActions,
   Dialog,
   Button,
-  CircularProgress
+  LinearProgress,
+  Box
 } from "@mui/material"
-
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import { getHeaders } from "./util"
 import { queryHistoryTransitions, mutationDeposit, queryDeposits } from "./gqlQuery"
-import { logout } from "./redux/actions/auth"
 deepdash(_);
 
 const HistoryTransitionsPage = (props) => {
   const location = useLocation();
   const { t } = useTranslation();
-  const { user } = props
-  const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
-  const [pageIndex, setPageIndex]     = useState(0);  
-  const [pageSize, setPageSize]       = useState(pageOptions[0])
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
   let [datas, setDatas] = useState([]);
@@ -39,48 +31,47 @@ const HistoryTransitionsPage = (props) => {
   let [slice, setSlice] = useState(20);
   let [hasMore, setHasMore] = useState(true)
 
-  // const historyTransitionsValue = useQuery(queryHistoryTransitions, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true });
-
   const { loading: loadingHistoryTransitions, 
           data: dataHistoryTransitions, 
           error: errorHistoryTransitions, 
           subscribeToMore: subscribeToMoreHistoryTransitions, 
           networkStatus: networkStatusHistoryTransitions } = useQuery(queryHistoryTransitions, { 
                                                                                                   context: { headers: getHeaders(location) }, 
-                                                                                                  fetchPolicy: 'network-only', 
+                                                                                                  fetchPolicy: 'cache-first',
+                                                                                                  nextFetchPolicy: 'network-only', 
                                                                                                   notifyOnNetworkStatusChange: true 
                                                                                                 });
 
 
-  const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {deposit}}) => {
-      let { data, mode, status } = deposit
+  // const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
+  //   context: { headers: getHeaders(location) },
+  //   update: (cache, {data: {deposit}}) => {
+  //     let { data, mode, status } = deposit
 
-      if(status){
-        switch(mode){
-          case "delete":{
-            let data1 = cache.readQuery({ query: queryDeposits });
-            let dataFilter =_.filter(data1.deposits.data, (item)=>data._id != item._id)
+  //     if(status){
+  //       switch(mode){
+  //         case "delete":{
+  //           let data1 = cache.readQuery({ query: queryDeposits });
+  //           let dataFilter =_.filter(data1.deposits.data, (item)=>data._id != item._id)
 
-            cache.writeQuery({
-              query: queryDeposits,
-              data: { deposits: {...data1.deposits, data: dataFilter} }
-            });
+  //           cache.writeQuery({
+  //             query: queryDeposits,
+  //             data: { deposits: {...data1.deposits, data: dataFilter} }
+  //           });
 
-            handleClose()
-            break;
-          }
-        }
-      }
-    },
-    onCompleted({ data }) {
-      // history.goBack()
-    },
-    onError({error}){
-      console.log("onError :")
-    }
-  });
+  //           handleClose()
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   },
+  //   onCompleted({ data }) {
+  //     // history.goBack()
+  //   },
+  //   onError({error}){
+  //     console.log("onError :")
+  //   }
+  // });
   // console.log("resultMutationDeposit :", resultMutationDeposit)
 
   /*
@@ -280,17 +271,22 @@ const HistoryTransitionsPage = (props) => {
   return (<div style={{flex:1}}>
             {
               loadingHistoryTransitions
-              ?  <CircularProgress />
+              ?  <LinearProgress />
               :  datas.length == 0 
                   ?   <label>Empty data</label>
                   :   <InfiniteScroll
                           dataLength={slice}
                           next={fetchMoreData}
-                          hasMore={hasMore}
+                          hasMore={false}
                           loader={<h4>Loading...</h4>}>
                           { 
-                          _.map(datas, (i, index) => {
-                            return  <Stack direction="row" spacing={2}>{index}</Stack>
+                          _.map(datas, (item, index) => {
+                            console.log("datas :", datas)
+                            return  <Stack direction="row" spacing={2}>
+                                      <Box>{item.balance}</Box>
+                                      <Box>{item.title}</Box>
+                                      <Box>{item.createdAt}</Box>
+                                    </Stack>
                           })
                         }
                       </InfiniteScroll>
@@ -328,10 +324,4 @@ const HistoryTransitionsPage = (props) => {
           </div>);
 }
 
-const mapStateToProps = (state, ownProps) => {
-    return {  }
-};
-
-const mapDispatchToProps = { logout }
-
-export default connect( mapStateToProps, mapDispatchToProps )(HistoryTransitionsPage);
+export default HistoryTransitionsPage
