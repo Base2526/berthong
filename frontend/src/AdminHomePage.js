@@ -8,7 +8,7 @@ import { lightGreen, blueGrey } from "@material-ui/core/colors";
 import {
   Stack,
   IconButton,
-  CircularProgress
+  LinearProgress
 } from "@mui/material"
 import {
   FiRefreshCcw
@@ -334,7 +334,7 @@ const AdminHomePage = (props) => {
 
             {
               loadingAdminHome
-              ? <CircularProgress />
+              ? <LinearProgress />
               : <Stack
                   direction={{ xs: 'column', sm: 'row' }}
                   spacing={{ xs: 1, sm: 2, md: 4 }}>

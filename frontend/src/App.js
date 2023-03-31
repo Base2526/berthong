@@ -639,7 +639,7 @@ const App =(props) =>{
               <Route path="/me" element={<MePage  {...props} />} />
               <Route path="/deposit" element={<DepositPage {...props} />} />
               <Route path="/withdraw" element={<WithdrawPage {...props} />} />
-              <Route path="/history-transitions" element={<HistoryTransitionsPage {...props} />} />
+              <Route path="/history-transitions" {...props} element={<HistoryTransitionsPage {...props} />} />
               <Route path="/bank" element={<BankPage {...props} />} />
               <Route path="/banks" element={<BanksPage {...props} />} />
               <Route path="/book-buy" element={<MeBookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
