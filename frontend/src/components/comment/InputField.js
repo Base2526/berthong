@@ -1,10 +1,10 @@
 import React, { useContext, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { slateToHtml, htmlToSlate } from 'slate-serializers'
-
+import _ from "lodash";
 import { ActionContext } from "./ActionContext";
 import Editor from "../editable/SlateEditor/Editor";
-import _ from "lodash";
+
 
 const InputField = (props) => {
   let { cancellor, parentId, child, value, edit, main } = props

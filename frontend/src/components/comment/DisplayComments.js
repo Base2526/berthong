@@ -74,7 +74,9 @@ const DisplayComments = ({ comments }) => {
                         edit: false
                       })
                     ) : (
-                      <div className='inputfield-level-4'><InputField cancellor={a.comId} parentId={i.comId} child /></div>
+                      <div className='inputfield-level-4'>
+                        <InputField cancellor={a.comId} parentId={i.comId} child />
+                      </div>
                     ))}
                 </div>
               ))}

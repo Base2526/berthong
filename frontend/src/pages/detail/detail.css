@@ -710,10 +710,11 @@ body {
 }
 div {
   display: block;
-  /* position: relative; */
+  position: relative;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
+  text-align: left;
 }
 ul {
   list-style: none;

@@ -161,12 +161,10 @@ const SlateEditor = (props) => {
       setValue={setValue}
       onChange={(newValue) => {
         onChange(newValue)
-      }}
-    >
+      }}>
       <div
         className="editor-wrapper"
-        style={{ border: "1px solid #f3f3f3", padding: "0 10px" }}
-      >
+        style={{ border: "1px solid #f3f3f3", padding: "0 10px" }}>
         <Editable
           placeholder={t("editable_placeholder")}
           renderElement={renderElement}
