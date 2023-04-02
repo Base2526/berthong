@@ -7,7 +7,7 @@ deepdash(_);
 import * as fs from "fs";
 import { __TypeKind } from 'graphql';
 import mongoose from 'mongoose';
-import { User, Supplier, Bank, Role, Deposit, Withdraw, DateLottery, Transition } from './model'
+import { User, Supplier, Bank, Role, Deposit, Withdraw, DateLottery, Transition, Comment } from './model'
 import pubsub from './pubsub'
 import { emailValidate, checkBalance, checkBalanceBook, fileRenamer, 
         checkAuthorization, checkAuthorizationWithSessionId, getSessionId, checkRole} from "./utils"
@@ -651,6 +651,30 @@ export default {
                 data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
+    },
+
+    // 
+    async commentById(parent, args, context, info){
+      try{
+        let start = Date.now()
+        let { _id } = args
+        let { req } = context
+
+        console.log("commentById :", args)
+
+        let { status, code, pathname, current_user } =  await checkAuthorization(req);
+        if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+
+        let comm = await Comment.findOne({_id});
+        return {  status: true,
+                  data: _.isNull(comm) ? [] : comm,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }catch(error){
+        console.log("commentById error :", error)
+        return {  status: false,
+                  error: error?.message,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
     },
   },
   Upload: GraphQLUpload,
@@ -1844,6 +1868,45 @@ export default {
       }
     },
 
+    async comment(parent, args, context, info) {
+      let start = Date.now()
+      let { req } = context
+      let { input } = args
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
+
+      let comment = await Comment.findOne({ _id: input?._id })
+
+      if(_.isNull(comment)){
+        comment = await Comment.create(input);
+        pubsub.publish("COMMENT_BY_ID", {
+          commentById: {
+            mutation: "CREATED",
+            commentId: comment?._id,
+            data: comment,
+          },
+        });
+      }else{
+        await Comment.updateOne({ _id: input?._id }, input );
+        comment = await Comment.findOne({ _id: input?._id })
+        pubsub.publish("COMMENT_BY_ID", {
+          commentById: {
+            mutation: "UPDATED",
+            commentId: comment?._id,
+            data: comment,
+          },
+        });
+      }
+      
+      return {
+        status:true,
+        commentId: comment?._id,
+        data: comment,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+    },
   },
   Subscription:{
     subscriptionMe: {
@@ -1934,7 +1997,6 @@ export default {
         }
       )
     },
-
     subscriptionAdmin: {
       resolve: (payload) =>{
         return payload.admin
@@ -1957,6 +2019,27 @@ export default {
           // }
 
           return true;
+        }
+      )
+    },
+    subscriptionCommentById: {
+      resolve: (payload) =>{
+        return payload.commentById 
+      },
+      subscribe: withFilter((parent, args, context, info) => {
+          return pubsub.asyncIterator(["COMMENT_BY_ID"])
+        }, (payload, variables) => {
+
+          let {mutation, commentId, data} = payload?.commentById
+
+          // console.log("COMMENT_BY_ID : ", mutation, commentId, variables )
+          switch(mutation){
+            case "CREATED":
+            case "UPDATED":
+              return variables?._id == commentId
+            default:
+              return false;
+          }
         }
       )
     },

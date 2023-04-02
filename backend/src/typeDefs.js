@@ -491,6 +491,8 @@ export default gql`
     notifications: JSON
 
     adminHome: JSON
+
+    commentById(_id: ID!): JSON
   }  
   
   input RoomInput {
@@ -761,6 +763,8 @@ export default gql`
     datesLottery(input: [Date]): JSON 
 
     notification(_id: ID!): JSON 
+
+    comment(input: JSON): JSON
   }
 
   type Subscription {
@@ -769,6 +773,8 @@ export default gql`
     subscriptionSuppliers(supplierIds: String!): JSON
 
     subscriptionAdmin(supplierIds: String!): JSON
+
+    subscriptionCommentById(_id: ID!): JSON
   }
 
   type PostSubscriptionPayload {

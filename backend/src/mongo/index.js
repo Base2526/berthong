@@ -95,11 +95,11 @@ const modelExists =()=>{
 
   Comment.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Comment');
     } else {
-      // console.log('Not found Comment, creating');
-      let newComments = new Comment({});
-      await newComments.save();
+      let newComment = new Comment({supplierId: mongoose.Types.ObjectId()});
+      await newComment.save();
+
+      // supplierId
 
       await Comment.deleteMany({})
     }

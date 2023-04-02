@@ -98,7 +98,13 @@ import NotificationsPage from "./NotificationsPage";
 import LightboxComp from "./components/LightboxComp"
 import DialogLoginComp from "./components/DialogLoginComp"
 
-import { queryNotifications, mutationFollow, querySuppliers, querySupplierById, mutationBook } from "./gqlQuery"
+import { queryNotifications, 
+          mutationFollow, 
+          querySuppliers, 
+          querySupplierById, 
+          mutationBook,
+          mutationComment,
+          queryCommentById } from "./gqlQuery"
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
 
@@ -326,6 +332,69 @@ const App =(props) =>{
           }
         }
       })
+    }
+  });
+
+  const [onMutationComment, resultMutationComment] = useMutation(mutationComment,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {comment}}) => {
+      let { status, commentId, data } = comment
+
+      console.log("comment > update :", comment)
+
+      // let {mode, itemId} = action
+      // switch(mode?.toUpperCase()){
+      //   case "BOOK":{
+      //     showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+      //     break
+      //   }
+
+      //   case "UNBOOK":{
+      //     showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+      //     break
+      //   }
+      // }
+      
+      let resultCommentById = cache.readQuery({ query: queryCommentById, variables: {id: commentId}});
+      if(status && resultCommentById){
+        cache.writeQuery({ 
+          query: queryCommentById, 
+          variables: {id: commentId},
+          data: { commentById: { ...resultCommentById.commentById, data } }, 
+        }); 
+      }
+
+      // ////////// update cache querySuppliers ///////////
+      // let suppliersValue = cache.readQuery({ query: querySuppliers });
+      // if(!_.isNull(suppliersValue)){
+      //   let { suppliers } = suppliersValue
+      //   let newData = _.map(suppliers.data, (supplier) => supplier._id == data._id ? data : supplier)
+      //   cache.writeQuery({
+      //     query: querySuppliers,
+      //     data: { suppliers: { ...suppliersValue.suppliers, data: newData } }
+      //   });
+      // }
+      // ////////// update cache querySuppliers ///////////
+    },
+    onCompleted(data) {
+      console.log("onCompleted")
+    },
+    onError: (error) => {
+      console.log("error :", error)
+      // _.map(error?.graphQLErrors, (e)=>{
+      //   switch(e?.extensions?.code){
+      //     case Constants.FORCE_LOGOUT:{
+      //       // logout()
+      //       break;
+      //     }
+      //     case Constants.DATA_NOT_FOUND:
+      //     case Constants.UNAUTHENTICATED:
+      //     case Constants.ERROR:{
+      //       showToast("error", e?.message)
+      //       break;
+      //     }
+      //   }
+      // })
     }
   });
 
@@ -628,7 +697,11 @@ const App =(props) =>{
                                         onLogin={()=>setDialogLogin(true)} 
                                         onLightbox={(evt)=>setLightbox(evt)} 
                                         onMutationFollow={(evt)=>onMutationFollow(evt)}
-                                        onMutationBook={(evt)=>onMutationBook(evt)}/>} 
+                                        onMutationBook={(evt)=>onMutationBook(evt)}
+                                        
+                                        onMutationComment={(evt)=>{
+                                          onMutationComment(evt)
+                                        }}/>} 
                                     />
 
             <Route path="/user/login" element={<LoginPage {...props} />} />

@@ -37,8 +37,8 @@ const UserPage = (props) => {
           error: errorUserById,
           refetch: refetchUserById } = useQuery(queryUserById, { 
                                                               context: { headers: getHeaders(location) },
-                                                              fetchPolicy: 'network-only', // Used for first execution
-                                                              nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                                              fetchPolicy:'cache-first', // Used for first execution
+                                                              nextFetchPolicy:'network-only', // Used for subsequent executions
                                                               notifyOnNetworkStatusChange: true 
                                                             });
 
