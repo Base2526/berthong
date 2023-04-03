@@ -96,10 +96,8 @@ const modelExists =()=>{
   Comment.find({}, async(err, result)=> {
     if (result.length > 0) {
     } else {
-      let newComment = new Comment({supplierId: mongoose.Types.ObjectId()});
+      let newComment = new Comment({_id: mongoose.Types.ObjectId()});
       await newComment.save();
-
-      // supplierId
 
       await Comment.deleteMany({})
     }
