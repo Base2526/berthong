@@ -3,7 +3,8 @@ import InputField from './InputField'
 import { ActionContext } from './ActionContext'
 import CommentStructure from './CommentStructure'
 
-const DisplayComments = ({ comments }) => {
+const DisplayComments = (props) => {
+  let { comments } = props
   const actions = useContext(ActionContext)
   return (
     <div>

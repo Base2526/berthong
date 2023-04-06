@@ -3,15 +3,8 @@ import uuid from 'react-uuid'
 import moment from "moment";
 
 export const ActionContext = createContext()
-export const ActionProvider = ({
-  children,
-  currentUser,
-  setComment,
-  comments,
-  signinUrl,
-  signupUrl,
-  customInput
-}) => {
+export const ActionProvider = (props) => {
+  const { children, currentUser, setComment, comments, signinUrl, signupUrl, customInput} = props
   const [replies, setReplies] = useState([])
   const [user, setUser] = useState()
   const [editArr, setEdit] = useState([])
