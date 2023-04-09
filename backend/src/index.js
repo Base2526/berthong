@@ -122,7 +122,7 @@ async function startApolloServer(typeDefs, resolvers) {
             },
             onDisconnect: async (ctx, code, reason) =>{
                 // logger.info(ctx.connectionParams);
-                console.log("onDisconnect :", ctx, code, reason)
+                // console.log("onDisconnect :", ctx, code, reason)
             //     if (ctx.connectionParams.authToken) {
             //         try {
             //             let userId  = jwt.verify(ctx.connectionParams.authToken, process.env.JWT_SECRET);
@@ -280,7 +280,6 @@ async function startApolloServer(typeDefs, resolvers) {
         } 
     });
 
-    
     app.use(express.static("/app/uploads"));
     app.use(bodyParser.json());
     app.use(bodyParser.json({ type: "text/*" }));
@@ -301,8 +300,6 @@ async function startApolloServer(typeDefs, resolvers) {
     httpServer.listen(PORT, () => {
         console.log(`🚀 Query endpoint ready at http://localhost:${PORT}${server.graphqlPath}`);
         console.log(`🚀 Subscription endpoint ready at ws://localhost:${PORT}${server.graphqlPath}`);
-
-        // console.log("process.env :", process.env)
     });
 }
 

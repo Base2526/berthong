@@ -1,25 +1,21 @@
 import mongoose from 'mongoose';
-
 const Schema = mongoose.Schema
 
 const commentSchema = new Schema({
-    postId: { type: String },
+    _id: { type: Schema.Types.ObjectId, required:[true, "Id is a required field"] },
+    // supplierId: { type: Schema.Types.ObjectId, required:[true, "Supplier-Id is a required field"] },
     data: [{
-            userId: { type: String },
+            userId: { type: Schema.Types.ObjectId, required:[true, "User-Id is a required field"] },
             comId: { type: String },
-            // fullName: { type: String },
-            // avatarUrl: { type: String },
-            created: { type: String },
-            updated: { type: String },
+            created: { type: Date },
+            updated: { type: Date },
             text: { type: String },
             replies: [{
-                        userId: { type: String },
+                        userId: { type: Schema.Types.ObjectId, required:[true, "User-Id is a required field"] },
                         comId: { type: String },
-                        // fullName: { type: String },
-                        // avatarUrl: { type: String },
                         text: { type: String },
-                        created: { type: String },
-                        updated: { type: String },
+                        created: { type: Date },
+                        updated: { type: Date },
                     }]
             }]
 },

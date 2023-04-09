@@ -20,6 +20,8 @@ import {
 
 import { numberCurrency, minTwoDigits } from "../../util"
 
+import CommentComp from "../../components/CommentComp"
+
 const numberLotterys = Array.from({ length: 10 * 10 }, (_, i) => i);
 
 const DetailPanel = (props) => {
@@ -59,7 +61,10 @@ const DetailPanelRight = (props) =>{
         onFollow, 
         onPopupWallet, 
         onPopupShopping,
-        onMenu } = props
+        onMenu,
+        onMutationComment } = props
+
+  console.log("data :", data)
 
   let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
   let buys      =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 1) )
@@ -236,6 +241,13 @@ const DetailPanelRight = (props) =>{
                   <div className="col-lg-6 col-md-6 col-sm-12 col-12 p-2"></div>
                 </div>
               </div>
+
+              <CommentComp 
+                {...props} 
+                id={data?._id} 
+                onMutationComment={(input)=>{
+                  onMutationComment({ variables: { input }});
+              }}/>
             </div>
           </div>
 }

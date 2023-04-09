@@ -45,7 +45,7 @@ export const USER_NOT_FOUND = "USER_NOT_FOUND";
 export const UNAUTHENTICATED= "UNAUTHENTICATED";
 
 export const INIT_SEARCH = {
-    OFF_SET: 0,
+    PAGE: 1,
     LIMIT: 12,
     NUMBER: "",
     TITLE: "",

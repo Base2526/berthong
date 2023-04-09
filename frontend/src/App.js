@@ -74,7 +74,6 @@ import DateLotterysPage from "./DateLotterysPage";
 import DepositPage from "./DepositPage";
 import DepositsPage from "./DepositsPage";
 import DetailPage from "./pages/detail/Detail";
-import { queryPing, subscriptionMe } from "./gqlQuery";
 import HistoryTransitionsPage from "./HistoryTransitionsPage";
 import HomePage from "./HomePage";
 import AdminHomePage from "./AdminHomePage";
@@ -98,7 +97,16 @@ import NotificationsPage from "./NotificationsPage";
 import LightboxComp from "./components/LightboxComp"
 import DialogLoginComp from "./components/DialogLoginComp"
 
-import { queryNotifications, mutationFollow, querySuppliers, querySupplierById, mutationBook } from "./gqlQuery"
+import { queryNotifications, 
+          mutationFollow, 
+          querySuppliers, 
+          querySupplierById, 
+          mutationBook,
+          mutationComment,
+          queryCommentById,
+          mutationBuy,
+          subscriptionMe } from "./gqlQuery"
+          
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
 
@@ -206,6 +214,8 @@ const App =(props) =>{
 
   let { ws, user, updateProfile, editedUserBalace, editedUserBalaceBook } = props
 
+  
+
   const { loading: loadingNotifications, 
           data: dataNotifications, 
           error: errorNotifications,
@@ -234,13 +244,12 @@ const App =(props) =>{
           }
         }
 
-        let querySuppliersValue = cache.readQuery({ query: querySuppliers, variables: {input: search} });
+        let querySuppliersValue = cache.readQuery({ query: querySuppliers, variables: { input: search } });
         if(!_.isEmpty(querySuppliersValue)){
-          let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
           cache.writeQuery({
             query: querySuppliers,
-            variables: {input: search},
-            data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+            variables: { input: search},
+            data: Object.assign({}, querySuppliersValue, { suppliers: {...querySuppliersValue.suppliers, data: _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data: item ) } } )
           });
         }
 
@@ -328,6 +337,106 @@ const App =(props) =>{
       })
     }
   });
+
+  const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {buy}}) => {
+      let { status, data } = buy
+
+      console.log("")
+         
+      // ////////// update cache queryUserById ///////////
+      // let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
+      // if(querySupplierByIdValue){
+      //   cache.writeQuery({
+      //     query: querySupplierById,
+      //     data: { supplierById: {...querySupplierByIdValue.supplierById, data} },
+      //     variables: {id: data._id}
+      //   });
+      // }
+      // ////////// update cache queryUserById ///////////    
+
+      // ////////// update cache querySuppliers ///////////
+      // let suppliersValue = cache.readQuery({ query: querySuppliers });
+      // if(!_.isNull(suppliersValue)){
+      //   console.log("suppliersValue :", suppliersValue)
+      // }
+      // ////////// update cache querySuppliers ///////////
+    },
+    onCompleted({ data }) {
+      console.log("onCompleted")
+    },
+    onError: (err) => {
+      console.log("onError :", err)
+    }
+  });
+
+  const [onMutationComment, resultMutationComment] = useMutation(mutationComment,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {comment}}) => {
+      let { status, commentId, data } = comment
+
+      console.log("comment > update :", comment)
+
+      // let {mode, itemId} = action
+      // switch(mode?.toUpperCase()){
+      //   case "BOOK":{
+      //     showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+      //     break
+      //   }
+
+      //   case "UNBOOK":{
+      //     showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+      //     break
+      //   }
+      // }
+      
+      let resultCommentById = cache.readQuery({ query: queryCommentById, variables: {id: commentId}});
+      if(status && resultCommentById){
+        cache.writeQuery({ 
+          query: queryCommentById, 
+          variables: {id: commentId},
+          data: { commentById: { ...resultCommentById.commentById, data } }, 
+        }); 
+      }
+
+      // ////////// update cache querySuppliers ///////////
+      // let suppliersValue = cache.readQuery({ query: querySuppliers });
+      // if(!_.isNull(suppliersValue)){
+      //   let { suppliers } = suppliersValue
+      //   let newData = _.map(suppliers.data, (supplier) => supplier._id == data._id ? data : supplier)
+      //   cache.writeQuery({
+      //     query: querySuppliers,
+      //     data: { suppliers: { ...suppliersValue.suppliers, data: newData } }
+      //   });
+      // }
+      // ////////// update cache querySuppliers ///////////
+    },
+    onCompleted(data) {
+      console.log("onCompleted")
+    },
+    onError: (error) => {
+      console.log("error :", error)
+      // _.map(error?.graphQLErrors, (e)=>{
+      //   switch(e?.extensions?.code){
+      //     case Constants.FORCE_LOGOUT:{
+      //       // logout()
+      //       break;
+      //     }
+      //     case Constants.DATA_NOT_FOUND:
+      //     case Constants.UNAUTHENTICATED:
+      //     case Constants.ERROR:{
+      //       showToast("error", e?.message)
+      //       break;
+      //     }
+      //   }
+      // })
+    }
+  });
+
+  useEffect(()=>{
+    console.log("search :", search)
+  }, [search])
 
   useEffect(()=>{
     if(!_.isEmpty(user)){
@@ -628,7 +737,12 @@ const App =(props) =>{
                                         onLogin={()=>setDialogLogin(true)} 
                                         onLightbox={(evt)=>setLightbox(evt)} 
                                         onMutationFollow={(evt)=>onMutationFollow(evt)}
-                                        onMutationBook={(evt)=>onMutationBook(evt)}/>} 
+                                        onMutationBook={(evt)=>onMutationBook(evt)}
+                                        onMutationBuy={(evt)=>{
+                                          console.log("onMutationBuy :", evt)
+                                          // onMutationBuy
+                                        }}
+                                        onMutationComment={(evt)=>onMutationComment(evt)}/>} 
                                     />
 
             <Route path="/user/login" element={<LoginPage {...props} />} />
