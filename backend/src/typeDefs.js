@@ -55,8 +55,8 @@ export default gql`
   }
 
   input SearchInput{
-    OFF_SET: Int!
-    LIMIT: Int!
+    PAGE: Int
+    LIMIT: Int
     NUMBER: String
     TITLE: String
     DETAIL: String
@@ -465,7 +465,7 @@ export default gql`
 
     homes: JSON
 
-    suppliers(input: SearchInput): JSON
+    suppliers( input:SearchInput ): JSON
     supplierById(_id: ID!): JSON
 
     deposits: JSON

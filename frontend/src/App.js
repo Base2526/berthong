@@ -74,7 +74,6 @@ import DateLotterysPage from "./DateLotterysPage";
 import DepositPage from "./DepositPage";
 import DepositsPage from "./DepositsPage";
 import DetailPage from "./pages/detail/Detail";
-import { queryPing, subscriptionMe } from "./gqlQuery";
 import HistoryTransitionsPage from "./HistoryTransitionsPage";
 import HomePage from "./HomePage";
 import AdminHomePage from "./AdminHomePage";
@@ -104,7 +103,10 @@ import { queryNotifications,
           querySupplierById, 
           mutationBook,
           mutationComment,
-          queryCommentById } from "./gqlQuery"
+          queryCommentById,
+          mutationBuy,
+          subscriptionMe } from "./gqlQuery"
+          
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
 
@@ -212,6 +214,8 @@ const App =(props) =>{
 
   let { ws, user, updateProfile, editedUserBalace, editedUserBalaceBook } = props
 
+  
+
   const { loading: loadingNotifications, 
           data: dataNotifications, 
           error: errorNotifications,
@@ -240,13 +244,12 @@ const App =(props) =>{
           }
         }
 
-        let querySuppliersValue = cache.readQuery({ query: querySuppliers, variables: {input: search} });
+        let querySuppliersValue = cache.readQuery({ query: querySuppliers, variables: { input: search } });
         if(!_.isEmpty(querySuppliersValue)){
-          let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
           cache.writeQuery({
             query: querySuppliers,
-            variables: {input: search},
-            data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+            variables: { input: search},
+            data: Object.assign({}, querySuppliersValue, { suppliers: {...querySuppliersValue.suppliers, data: _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data: item ) } } )
           });
         }
 
@@ -335,6 +338,39 @@ const App =(props) =>{
     }
   });
 
+  const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {buy}}) => {
+      let { status, data } = buy
+
+      console.log("")
+         
+      // ////////// update cache queryUserById ///////////
+      // let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
+      // if(querySupplierByIdValue){
+      //   cache.writeQuery({
+      //     query: querySupplierById,
+      //     data: { supplierById: {...querySupplierByIdValue.supplierById, data} },
+      //     variables: {id: data._id}
+      //   });
+      // }
+      // ////////// update cache queryUserById ///////////    
+
+      // ////////// update cache querySuppliers ///////////
+      // let suppliersValue = cache.readQuery({ query: querySuppliers });
+      // if(!_.isNull(suppliersValue)){
+      //   console.log("suppliersValue :", suppliersValue)
+      // }
+      // ////////// update cache querySuppliers ///////////
+    },
+    onCompleted({ data }) {
+      console.log("onCompleted")
+    },
+    onError: (err) => {
+      console.log("onError :", err)
+    }
+  });
+
   const [onMutationComment, resultMutationComment] = useMutation(mutationComment,{
     context: { headers: getHeaders(location) },
     update: (cache, {data: {comment}}) => {
@@ -397,6 +433,10 @@ const App =(props) =>{
       // })
     }
   });
+
+  useEffect(()=>{
+    console.log("search :", search)
+  }, [search])
 
   useEffect(()=>{
     if(!_.isEmpty(user)){
@@ -698,10 +738,11 @@ const App =(props) =>{
                                         onLightbox={(evt)=>setLightbox(evt)} 
                                         onMutationFollow={(evt)=>onMutationFollow(evt)}
                                         onMutationBook={(evt)=>onMutationBook(evt)}
-                                        
-                                        onMutationComment={(evt)=>{
-                                          onMutationComment(evt)
-                                        }}/>} 
+                                        onMutationBuy={(evt)=>{
+                                          console.log("onMutationBuy :", evt)
+                                          // onMutationBuy
+                                        }}
+                                        onMutationComment={(evt)=>onMutationComment(evt)}/>} 
                                     />
 
             <Route path="/user/login" element={<LoginPage {...props} />} />

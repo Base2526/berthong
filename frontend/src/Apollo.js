@@ -7,6 +7,8 @@ import { getMainDefinition } from "@apollo/client/utilities";
 import { createUploadLink } from 'apollo-upload-client'; // v15.0.0
 import { createClient } from 'graphql-ws';
 
+import _ from "lodash"
+
 import { store } from "./Redux";
 import { ws_status } from "./redux/actions/ws";
 import * as Constants from "./constants"
@@ -229,7 +231,23 @@ export const client = new ApolloClient({
     //     },
     //   },
     // }),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+        typePolicies: {
+          Query: {
+            fields: {
+                suppliers: {
+                    keyArgs: false,
+                    merge(existing = {}, incoming) {
+                        return !_.isEmpty(existing) ? {...existing, data: _.unionBy(incoming?.data, existing?.data, '_id') } : incoming
+                    },
+                    read(existing, { args: { input } }) {
+                        return existing && existing
+                    },
+                }
+            }
+          }
+        }
+      }),
     onError: ({ networkError, graphQLErrors }) => {
       console.log("graphQLErrors", graphQLErrors)
       console.log("networkError", networkError)

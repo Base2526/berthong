@@ -2,6 +2,7 @@ import './App.css';
 import "./skeleton.scss";
 import "react-toastify/dist/ReactToastify.css";
 import "react-image-lightbox/style.css";
+import 'font-awesome/css/font-awesome.min.css';
 
 import { ApolloProvider } from "@apollo/client";
 import { StrictMode } from "react";
@@ -26,10 +27,10 @@ if (REACT_APP_NODE_ENV === 'production') {
   console.debug = () => {}
 }
 
-const styleLink = document.createElement("link");
-styleLink.rel = "stylesheet";
-styleLink.href = "https://use.fontawesome.com/releases/v5.15.3/css/all.css";
-document.head.appendChild(styleLink);
+// const styleLink = document.createElement("link");
+// styleLink.rel = "stylesheet";
+// styleLink.href = "https://use.fontawesome.com/releases/v5.15.3/css/all.css";
+// document.head.appendChild(styleLink);
 
 ReactGA4.initialize(REACT_APP_GOOGLE_ANALYTICS4)
 ReactDOM.render(

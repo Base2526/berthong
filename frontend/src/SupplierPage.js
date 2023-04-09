@@ -7,7 +7,7 @@ import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import moment from "moment";
 
-import { mutationSupplier, queryDateLotterys, querySupplierById, querySuppliers } from "./gqlQuery";
+import { mutationSupplier, queryDateLotterys, querySupplierById } from "./gqlQuery";
 import { getHeaders, showToast } from "./util";
 import AttackFileField from "./AttackFileField";
 import { FORCE_LOGOUT, DATA_NOT_FOUND, UNAUTHENTICATED, ERROR } from "./constants"
@@ -64,35 +64,35 @@ const SupplierPage = (props) => {
     update: (cache, {data: {supplier}}) => {
       let { data, mode, status } = supplier
 
-      if(status){
-        switch(mode){
-          case "new":{
-            const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+      // if(status){
+      //   switch(mode){
+      //     case "new":{
+      //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
 
-            if(!_.isNull(querySuppliersValue)){
-              let newData = [...querySuppliersValue.suppliers.data, data];
+      //       if(!_.isNull(querySuppliersValue)){
+      //         let newData = [...querySuppliersValue.suppliers.data, data];
 
-              cache.writeQuery({
-                query: querySuppliers,
-                data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-              });
-            }
-            break;
-          }
-          case "edit":{
-            const querySuppliersValue = cache.readQuery({ query: querySuppliers });
-            if(!_.isNull(querySuppliersValue)){
-              let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
+      //         cache.writeQuery({
+      //           query: querySuppliers,
+      //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+      //         });
+      //       }
+      //       break;
+      //     }
+      //     case "edit":{
+      //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+      //       if(!_.isNull(querySuppliersValue)){
+      //         let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
 
-              cache.writeQuery({
-                query: querySuppliers,
-                data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-              });
-            }
-            break;
-          }
-        }
-      }
+      //         cache.writeQuery({
+      //           query: querySuppliers,
+      //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+      //         });
+      //       }
+      //       break;
+      //     }
+      //   }
+      // }
     },
     onCompleted(data) {
       navigate(-1)

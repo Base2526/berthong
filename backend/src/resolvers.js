@@ -157,119 +157,145 @@ export default {
 
     async suppliers(parent, args, context, info){
       let start = Date.now()
-      let { req } = context
-      let { status, code, pathname, current_user } = await checkAuthorization(req);
-      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      let { PAGE, LIMIT } = args
+      let skip = (PAGE - 1) * LIMIT;
 
-      console.log("suppliers args :", args)
-      
-      switch(pathname){
-        case undefined:
-        case "/":{
+      let suppliers = await Supplier.find({}).skip(skip).limit(LIMIT); 
 
-          let {
-            OFF_SET,
-            LIMIT,
-            NUMBER,
-            TITLE,
-            DETAIL,
-            PRICE,
-            CHK_BON,
-            CHK_LAND,
-            CHK_MONEY,
-            CHK_GOLD
-          } = args?.input
+      suppliers = await Promise.all(_.map(suppliers, async(item)=>{
+        let user = await User.findOne({_id: item.ownerId});
+        if(_.isNull(user)) return null;
+        return {...item._doc,  owner: user?._doc }
+      }).filter(i=>!_.isNull(i)))
 
-          console.log("suppliers: ", args?.input)
-
-          /*
-            let data = await  User.find({}).limit(perPage).skip(page); 
-            let total = (await User.find({})).length;
-          */ 
-          //  mongoose
-          // let condition = {$and: [] }
-          if(!_.isEmpty(NUMBER)){
-            
-          }
-
-          if(!_.isEmpty(TITLE)){
-            
-          }
-
-          if(!_.isEmpty(DETAIL)){
-            
-          }
-
-          if(PRICE != 500){
-
-          }
-
-          if(CHK_BON){
-
-          }
-
-          if(CHK_LAND){
-
-          }
-
-          if(CHK_MONEY){
-
-          }
-
-          if(CHK_GOLD){
-
-          }
-
-          let total = (await Supplier.find({})).length;
-
-          let suppliers = await Supplier.find({}).limit(LIMIT).skip(OFF_SET); 
-          suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-            let user = await User.findById(item.ownerId);
-            if(_.isNull(user)) return null;
-            return {...item._doc,  owner: user?._doc }
-          }).filter(i=>!_.isNull(i)))
-
-          return {  
-            status: true,
-            data: suppliers,
-            total,
-            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
-          }
-        }
-
-        default:{
-          if( checkRole(current_user) == AMDINISTRATOR ){
-            let suppliers = await Supplier.find({});
-
-            suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-                          let user = await User.findById(item.ownerId);
-                          if(_.isNull(user)) return null;
-                          return {...item._doc,  owner: user?._doc }
-                        }).filter(i=>!_.isNull(i)))
-
-            return {  status: true,
-                      data: suppliers,
-                      total: suppliers.length,
-                      executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-          }
-
-          
-          let suppliers = await Supplier.find({ownerId: current_user?._id});
-          suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-                        let user = await User.findById(item.ownerId);
-                        if(_.isNull(user)) return null;
-                        return {...item._doc,  owner: user?._doc }
-                      }).filter(i=>!_.isNull(i)))
-
-          return {  
-            status: true,
-            data: suppliers,
-            total: suppliers.length,
-            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
-          }
-        }
+      return {  
+        status: true,
+        data: suppliers,
+        total: (await Supplier.find({})).length,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
       }
     },
+
+    // async suppliers(parent, args, context, info){
+    //   let start = Date.now()
+    //   let { req } = context
+    //   let { status, code, pathname, current_user } = await checkAuthorization(req);
+    //   if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+
+    //   console.log("suppliers args :", args)
+      
+    //   switch(pathname){
+    //     case undefined:
+    //     case "/":{
+
+    //       let {
+    //         OFF_SET,
+    //         LIMIT = 20,
+    //         NUMBER,
+    //         TITLE,
+    //         DETAIL,
+    //         PRICE,
+    //         CHK_BON,
+    //         CHK_LAND,
+    //         CHK_MONEY,
+    //         CHK_GOLD
+    //       } = args?.input
+
+    //       console.log("suppliers: ", args?.input)
+
+    //       /*
+    //         let data = await  User.find({}).limit(perPage).skip(page); 
+    //         let total = (await User.find({})).length;
+    //       */ 
+    //       //  mongoose
+    //       // let condition = {$and: [] }
+    //       if(!_.isEmpty(NUMBER)){
+            
+    //       }
+
+    //       if(!_.isEmpty(TITLE)){
+            
+    //       }
+
+    //       if(!_.isEmpty(DETAIL)){
+            
+    //       }
+
+    //       if(PRICE != 500){
+
+    //       }
+
+    //       if(CHK_BON){
+
+    //       }
+
+    //       if(CHK_LAND){
+
+    //       }
+
+    //       if(CHK_MONEY){
+
+    //       }
+
+    //       if(CHK_GOLD){
+
+    //       }
+
+    //       let total = (await Supplier.find({})).length;
+
+    //       // let skip  = OFF_SET * LIMIT
+
+    //       const skip = (OFF_SET - 1) * LIMIT;
+
+    //       let suppliers = await Supplier.find({}).skip(skip).limit(LIMIT); 
+
+    //       suppliers = await Promise.all(_.map(suppliers, async(item)=>{
+    //         let user = await User.findOne({_id: item.ownerId});
+    //         if(_.isNull(user)) return null;
+    //         return {...item._doc,  owner: user?._doc }
+    //       }).filter(i=>!_.isNull(i)))
+
+    //       return {  
+    //         status: true,
+    //         data: suppliers,
+    //         total,
+    //         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+    //       }
+    //     }
+
+    //     default:{
+    //       if( checkRole(current_user) == AMDINISTRATOR ){
+    //         let suppliers = await Supplier.find({});
+
+    //         suppliers = await Promise.all(_.map(suppliers, async(item)=>{
+    //                       let user = await User.findById(item.ownerId);
+    //                       if(_.isNull(user)) return null;
+    //                       return {...item._doc,  owner: user?._doc }
+    //                     }).filter(i=>!_.isNull(i)))
+
+    //         return {  status: true,
+    //                   data: suppliers,
+    //                   total: suppliers.length,
+    //                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    //       }
+
+          
+    //       let suppliers = await Supplier.find({ownerId: current_user?._id});
+    //       suppliers = await Promise.all(_.map(suppliers, async(item)=>{
+    //                     let user = await User.findById(item.ownerId);
+    //                     if(_.isNull(user)) return null;
+    //                     return {...item._doc,  owner: user?._doc }
+    //                   }).filter(i=>!_.isNull(i)))
+
+    //       return {  
+    //         status: true,
+    //         data: suppliers,
+    //         total: suppliers.length,
+    //         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+    //       }
+    //     }
+    //   }
+    // },
 
     async supplierById(parent, args, context, info){
       let start = Date.now()
