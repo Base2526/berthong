@@ -153,6 +153,7 @@ const DialogLoginComp = (props) => {
                       <div className="col-12 pl-2 pr-2 pb-2">
                         <TextField
                           id="standard-basic"
+                          type="password"
                           label={t("password")}
                           variant="filled"
                           name="password" value={input.password} onChange={onInputChange} required
@@ -162,13 +163,13 @@ const DialogLoginComp = (props) => {
                   <div className="row">
                     <div className="col-12 pb-2 text-center">
                       <div className="row">
-                      <div className="col-6 pb-2 text-center">
-                        <Button variant="contained" className="btn-confirm m-1" type="submit" style={{width:"100%"}}>
-                          {t("login")}
+                      <div className="col-6 text-center">
+                        <Button variant="contained" className="btn-confirm" type="submit" style={{width:"100%"}}>
+                         {t("login")}
                         </Button>
                       </div>
-                      <div className="col-6 pb-2 text-center">
-                        <Button disabled variant="contained" className="btn-dis m-1" style={{width:"100%"}}>
+                      <div className="col-6 text-center">
+                        <Button disabled variant="contained" className="btn-dis" style={{width:"100%"}}>
                             สมัครสมาชิก
                         </Button>
                       </div>
