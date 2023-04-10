@@ -286,7 +286,7 @@ const HomePage = (props) => {
                         loader={<SkeletonComp />}
                         scrollThreshold={0.5}
                         scrollableTarget="scrollableDiv"
-                        endMessage={<h1>You have reached the end</h1>}>
+                        endMessage={<div className="text-center">You have reached the end</div>}>
                         <div className="row">
                           {_.map(datas, (item, index) =>{
                             return <HomeItem 

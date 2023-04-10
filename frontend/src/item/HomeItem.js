@@ -11,7 +11,8 @@ import {
 import {
   ContentCopy as ContentCopyIcon,
   BugReport as BugReportIcon,
-  Bookmark as BookmarkIcon
+  Bookmark as BookmarkIcon,
+  Share as ShareIcon
 } from "@mui/icons-material"
 import _ from "lodash"
 import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
@@ -61,8 +62,7 @@ const HomeItem = (props) => {
                   url={ window.location.origin + "/detail/"  }
                   // hashtags={["hashtag1", "hashtag2"]}
                   onClick={(e)=>setOpenMenu(null)} >
-                  <TwitterIcon size={32} round />
-                  Twitter
+                  <TwitterIcon size={32} round /> Twitter
                 </TwitterShareButton>
               </MenuItem>
               <MenuItem 
@@ -101,14 +101,15 @@ const HomeItem = (props) => {
         ></div>
         <div 
           className="card-custom-avatar"
-          onClick={(e)=>{
-            navigate({
-              pathname: `/p`,
-              search: `?${createSearchParams({ id: item.ownerId})}`
-            })
-          }}>
+         >
           <img
             className="img-fluid"
+            onClick={(e)=>{
+              navigate({
+                pathname: `/p`,
+                search: `?${createSearchParams({ id: item.ownerId})}`
+              })
+            }}
             src={
               !_.isEmpty(owner?.avatar)
                 ? owner?.avatar?.url
@@ -116,10 +117,20 @@ const HomeItem = (props) => {
             }
             alt="Avatar"
           />
+            <h4 className="card-title icon-card-share" 
+                style={{ float: "right" }}>
+                <IconButton onClick={(e) =>onMutationFollow({ variables: { id: item._id } })}> 
+                  <BookmarkIcon style={{ color : !_.isEmpty(isFollow) ? "blue" : "" }} />
+                </IconButton>
+                <IconButton onClick={(e) => { setOpenMenu({ [index]: e.currentTarget }); }}><ShareIcon /></IconButton>
+            </h4>
+            <div className="row text-jong">
+              <div className="font12">ยอดจอง {  _.filter(item.buys, (buy)=> buy.selected == 0 )?.length }, ขายไปแล้ว { _.filter(item.buys, (buy)=> buy.selected == 1 )?.length }</div>
+            </div>
         </div>
         <div className="card-body" style={{ overflowY: "auto" }}>
           <div className="row">
-            <div className="col-12 p-2">
+            <div className="col-12 p-2 pb-0 text-center">
               <span 
                 className="card-title" 
                 style={{ float: "left" }}
@@ -129,26 +140,28 @@ const HomeItem = (props) => {
                   search: `?${createSearchParams({ id: item._id})}`,
                   state: { id: item._id }
                 })}}>
-                <b>{item?.title} - ยอดจอง {  _.filter(item.buys, (buy)=> buy.selected == 0 )?.length }, ขายไปแล้ว { _.filter(item.buys, (buy)=> buy.selected == 1 )?.length } </b>
+                <b>{item?.title}</b>
               </span>
-              <h4 className="card-title" 
+              {/* <h4 className="card-title" 
                 style={{ float: "right" }}>
                 <IconButton onClick={(e) =>onMutationFollow({ variables: { id: item._id } })}> 
                   <BookmarkIcon style={{ color : !_.isEmpty(isFollow) ? "blue" : "" }} />
                 </IconButton>
                 <IconButton onClick={(e) => { setOpenMenu({ [index]: e.currentTarget }); }}><MoreVertIcon /></IconButton>
-              </h4>
+              </h4> */}
             </div>
           </div>
-          <div>
-            <p className="card-text"
-              onClick={()=>{
-                navigate({
-                pathname: "/d",
-                search: `?${createSearchParams({ id: item._id})}`,
-                state: { id: item._id }
-              })
-            }}>{item?.description}</p>
+          <div className="row">
+            <div>
+              <p className="card-text font12"
+                onClick={()=>{
+                  navigate({
+                  pathname: "/d",
+                  search: `?${createSearchParams({ id: item._id})}`,
+                  state: { id: item._id }
+                })
+              }}>{item?.description}</p>
+            </div>
           </div>
         </div>
       </div>

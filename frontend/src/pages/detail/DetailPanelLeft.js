@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 const DetailPanelLeft = (props) =>{
   let { data } = props
   const [currentImage, setCurrentImage] = useState(data?.files[0]);
+  console.log(currentImage);
 
   return  <div className="ber-bg border col-lg-4 col-md-4 col-sm-12 col-12">
             <div className="row" style={{ justifyContent: "space-between" }}>

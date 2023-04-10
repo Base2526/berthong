@@ -161,14 +161,30 @@ const CommentStructure = (props) => {
     let {status, data}  = dataUserById?.userById
 
     if(status){
-      return  <div>
-                  <Avatar className={classes.link} src={data?.avatar?.url} sx={{ width: 24, height: 24 }} alt="userIcon" />
-                  <Typography className={classes.link} variant="subtitle2" gutterBottom component="div">{ data?.displayName }</Typography>
+      return  <div className='d-flex avartar-comment'>
+                  <Avatar className={classes.link + " p-1 m-1"} src={data?.avatar?.url} sx={{ width: 24, height: 24 }} alt="userIcon" />
+                  <div>
+                     <Typography className={classes.link} variant="subtitle2" gutterBottom component="div"><b>{ data?.displayName }</b></Typography>
+                     {
+                      actions.user 
+                      ? <div className='days'>
+                          <Typography variant="caption" gutterBottom component="div">{ moment(new Date(i.updated)).fromNow()  /*moment.unix(i.updated / 1000).fromNow()*/}</Typography>
+                        </div>
+                      : <div className='days'><Typography variant="caption" gutterBottom component="div" style={{ marginLeft: '.5rem' }}>{' '}{ moment(new Date(i.updated)).fromNow() /*moment.unix(i.updated / 1000).fromNow()*/ }</Typography></div>
+                    }
+                  </div>
                 </div>
     }else{
-      return  <div>
-                <Avatar className={classes.link} src={""} sx={{ width: 24, height: 24 }} alt="userIcon" />
+      return  <div className='d-flex avartar-comment'>
+                <Avatar className={classes.link + " p-1 m-1"} src={""} sx={{ width: 24, height: 24 }} alt="userIcon" />
                 <Typography className={classes.link} variant="subtitle2" gutterBottom component="div"></Typography>
+                {
+                  actions.user 
+                  ? <div className='days'>
+                      <Typography variant="caption" gutterBottom component="div">{ moment(new Date(i.updated)).fromNow()  /*moment.unix(i.updated / 1000).fromNow()*/}</Typography>
+                    </div>
+                  : <div className='days'><Typography variant="caption" gutterBottom component="div" style={{ marginLeft: '.5rem' }}>{' '}{ moment(new Date(i.updated)).fromNow() /*moment.unix(i.updated / 1000).fromNow()*/ }</Typography></div>
+                }
               </div>
     }
   }
@@ -178,7 +194,7 @@ const CommentStructure = (props) => {
       <div className={"userInfo"} style={reply && { marginLeft: 15, marginTop: '6px' }} >
         <div className={"commentsTwo"}>
           {onLoadProfile()}
-          {
+          {/* {
             actions.user 
             ? <div>
                 <IconButton aria-label="reply" className={"replyBtn"}
@@ -186,20 +202,33 @@ const CommentStructure = (props) => {
                   disabled={!actions.user}>
                   <ReplyIcon/>Reply
                 </IconButton>
-                {/*  */}
-                <Typography variant="caption" gutterBottom component="div">{ moment(new Date(i.updated)).fromNow()  /*moment.unix(i.updated / 1000).fromNow()*/}</Typography>
+                <Typography variant="caption" gutterBottom component="div">{ moment(new Date(i.updated)).fromNow() }</Typography>
               </div>
-            : <Typography variant="caption" gutterBottom component="div" style={{ marginLeft: '.5rem' }}>{' '}{ moment(new Date(i.updated)).fromNow() /*moment.unix(i.updated / 1000).fromNow()*/ }</Typography>
-          }
-          
+            : <Typography variant="caption" gutterBottom component="div" style={{ marginLeft: '.5rem' }}>{' '}{ moment(new Date(i.updated)).fromNow() }</Typography>
+          } */}
         </div>
         {/* <Typography variant="subtitle1" gutterBottom component="div">{i.text} </Typography> */}
 
-        <Typography 
-          variant="subtitle1" 
-          gutterBottom 
-          component="div"
-          dangerouslySetInnerHTML={{ __html: i.text }}/>
+        <div className='comment-pl'>
+          <Typography 
+            variant="subtitle1" 
+            gutterBottom 
+            component="div"
+            dangerouslySetInnerHTML={{ __html: i.text }}/>
+        </div>
+        <div className='reply-btn p-1'>
+              {
+                  actions.user 
+                  ? 
+                      <IconButton aria-label="reply" className={"replyBtn"}
+                        onClick={() => actions.handleAction(i.comId)}
+                        disabled={!actions.user}>
+                        <ReplyIcon/>Reply
+                      </IconButton>
+                    
+                  :null 
+              }
+        </div>
       </div>
       <div className={"userActions"}>
         {actions.userId === i.userId && actions.user && (

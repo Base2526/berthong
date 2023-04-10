@@ -12,8 +12,13 @@ import {
 import {
   ContentCopy as ContentCopyIcon,
   BugReport as BugReportIcon,
-  Bookmark as BookmarkIcon
+  Bookmark as BookmarkIcon,
+  Share as ShareIcon
 } from "@mui/icons-material"
+import CurrencyExchangeOutlinedIcon from '@mui/icons-material/CurrencyExchangeOutlined';
+import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
+import Slider from '@material-ui/core/Slider';
+import Typography from '@material-ui/core/Typography';
 import {
   MoreVert as MoreVertIcon,
 } from "@material-ui/icons";
@@ -69,18 +74,90 @@ const DetailPanelRight = (props) =>{
   let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
   let buys      =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 1) )
 
+  const marks = [
+    {
+      value: 60,
+      label: '***ข้อกำหนด : คืนโพยเมื่อยอดซื้อไม่ถึง 60 เบอร์',
+    },
+  ];
+  
+  function valuetext(value) {
+    return `${value}°C`;
+  }
+
+
   return  <div className="ber-bg1 border col-lg-8 col-md-8 col-sm-12 col-12">
+            <div className="row" style={{textAlign:"right"}}>
+              <h4 className="card-title" style={{ float: "right" }}>
+                <IconButton onClick={(e) => onFollow({ variables: { id: data?._id } }) }> 
+                  <BookmarkIcon style={{ color : !_.isEmpty(_.find(data?.follows, (f)=>f?.userId == user?._id)) ? "blue" : "" }} />
+                </IconButton>
+                <IconButton onClick={(e) =>onMenu(e.currentTarget)}><ShareIcon /></IconButton>
+              </h4>
+            </div>
             <div className="row pb-2">
               <div className="col-12">
                 <div class="header_main">
                   <div class="container">
-                    <div class="pt-2 col-lg-12 col-12 order-lg-12 order-12 text-lg-left text-right">
-                      <div class="wishlist_cart d-flex flex-row align-items-center justify-content-evenly">
+                    <div class="col-lg-12 col-12 order-lg-12 order-12 text-lg-left text-right">
+                    <div className="row">
+                        <div className="col-lg-6 col-12 wishlist_cart d-flex flex-row align-items-center justify-content-evenly">
+                          <div className="row box wishlist bg-wallet p-2" onClick={() => onPopupWallet(true)}>
+                            <div className="col-6 bag text-center">
+                              กระเป๋าเงิน<br />
+                              <CurrencyExchangeOutlinedIcon size={70}/>
+                            </div>
+                            <div className="col-6 money-p text-center"> 
+                              <div className="row">
+                                <Chip
+                                  variant="outlined"
+                                  color="success"
+                                  size="sm"
+                                  sx={{ pointerEvents: "none" }}>
+                                  <div class="wishlist_count text-center">{ !user?.balance ? numberCurrency(0) : numberCurrency(user?.balance)}</div>
+                                </Chip>
+                              </div>
+                              <div className="row pt-1">
+                                <Chip
+                                    variant="outlined"
+                                    color="warning"
+                                    size="sm"
+                                    sx={{ pointerEvents: "none" }}>
+                                    <div class="price-jong text-center">-{numberCurrency(user?.balanceBook ? user.balanceBook : 0)}</div>
+                                  </Chip>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-lg-6 col-12 wishlist_cart d-flex flex-row align-items-center justify-content-evenly">
+                          <div className="row box wishlist bg-buy p-2" onClick={() => onPopupShopping(true)}>
+                            <div className="col-6 bag text-center">
+                              คลิกเพื่อซื้อ<br />
+                              <div class="c_cart text-center">
+                              <AddShoppingCartOutlinedIcon size="5em"/>
+                              <div class="cart_count">
+                                <span>{selecteds.length}</span>
+                              </div>
+                            </div>
+                            </div>
+                            <div className="col-6 money-p text-center">   
+                              <Chip
+                                  variant="outlined"
+                                  color="warning"
+                                  size="sm"
+                                  sx={{ pointerEvents: "none" }}>
+                                  <div class="price-red text-center">{numberCurrency(selecteds.length * data.price)}</div>
+                                </Chip>
+                              </div>
+                          </div>
+                        </div>
+                    </div>
+                      {/* <div class="wishlist_cart d-flex flex-row align-items-center justify-content-evenly">
                         <div
                           class="wishlist box d-flex flex-row align-items-center justify-content-center"
                           style={{ marginRight: "3px" }}
                           onClick={() => onPopupWallet(true)}>
-                          <MdOutlineSavings size="5em"/>
+                          <CurrencyExchangeOutlinedIcon size="5em"/>
                           <div class="wishlist_content">
                             <div class="wishlist_text" style={{ color: "#fff" }}>
                               <a href="#">คงเหลือ</a>
@@ -119,15 +196,7 @@ const DetailPanelRight = (props) =>{
                             </div>
                           </div>
                         </div>
-                        <div>
-                          <h4 className="card-title" style={{ float: "right" }}>
-                            <IconButton onClick={(e) => onFollow({ variables: { id: data?._id } }) }> 
-                              <BookmarkIcon style={{ color : !_.isEmpty(_.find(data?.follows, (f)=>f?.userId == user?._id)) ? "blue" : "" }} />
-                            </IconButton>
-                            <IconButton onClick={(e) =>onMenu(e.currentTarget)}><MoreVertIcon /></IconButton>
-                          </h4>
-                        </div>
-                      </div>
+                      </div> */}
                       <div class="row">
                         <div class="col-lg-6 col-md-12 col-sm-12 col-12">
                           <div className="pt-2 selectBer">
@@ -189,6 +258,22 @@ const DetailPanelRight = (props) =>{
             <div style={{ textAlign: "left", color: "#aaa", fontSize: "12px" }}>
               หมายเหตุ : กรุณาชำระเงินภายใน 2 นาที เพราะการจองจะถูกยกเลิก
             </div>
+            <div>
+                <Typography id="discrete-slider-always" gutterBottom>
+                  ซื้อไปแล้ว 37 เบอร์ , จอง 12 เบอร์
+                </Typography>
+                <div className="pt-4">     
+                  <Slider
+                  track={false}
+                  aria-labelledby="track-false-range-slider"
+                  getAriaValueText={valuetext}
+                  defaultValue={[37, 60]}
+                  valueLabelDisplay="on"
+                  marks={marks}
+                  disabled
+                  />
+                </div>
+            </div>
             <div className="ber pt-3">
               <div className="row">
                 <DetailPanel {...props} />
@@ -200,7 +285,7 @@ const DetailPanelRight = (props) =>{
               <div className="col-12">
                 <div class="avatar" style={{ textAlign: "left" }}>
                   <img
-                    src={owner?.avatar?.url}
+                    src={owner?.avatar?.url != null ? owner?.avatar?.url :"https://img.myloview.com/stickers/default-avatar-profile-icon-vector-social-media-user-image-700-205124837.jpg"}
                     alt="Avatar"
                   />
                   <span className="name-ava f-color-0">{owner.displayName}</span>

@@ -523,7 +523,7 @@ const App =(props) =>{
                 {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
                 {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"},
-                {id: 5, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/banks"},
+                {id: 5, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/banks"},
                 {id: 6, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
       }
       default:{
@@ -577,20 +577,14 @@ const App =(props) =>{
                       edge="start"
                       className={clsx(classes.menuButton, open && classes.hide)}
                     ><MenuIcon /></IconButton>
-                    <Typography variant="h6" noWrap onClick={()=>navigate("/")}>BERTHONG</Typography>
+                    <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">Berthong.com</div></Typography>
                     {
                       !_.isEmpty(user) && checkRole(user) === Constants.AUTHENTICATED 
                       ? <Stack direction={"row"} spacing={2} alignItems="center">
-                          <IconButton size={'small'}>
-                            <Avatar 
-                              src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
-                              alt="profile"
-                            />
-                          </IconButton>
-                          <Typography variant="h6" noWrap>
+                          {/* <Typography variant="h6" noWrap>
                             {"[  Name :" + user?.displayName +", Email :"+ user?.email + " ]"}
-                          </Typography>
-                          <div>Balance : {numberCurrency(user?.balance ? user.balance : 0)} [-{numberCurrency(user?.balanceBook ? user.balanceBook : 0)}]</div>
+                          </Typography> */}
+                          {/* <div>Balance : {numberCurrency(user?.balance ? user.balance : 0)} [-{numberCurrency(user?.balanceBook ? user.balanceBook : 0)}]</div> */}
                           <IconButton 
                             size={'small'}
                             onClick={()=>{
@@ -606,6 +600,12 @@ const App =(props) =>{
                             <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
                               <FiShoppingCart color="white" size="1.2em"/>
                             </Badge>
+                          </IconButton>
+                          <IconButton size={'small'}>
+                            <Avatar 
+                              src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
+                              alt="profile"
+                            />
                           </IconButton>
                         </Stack>
                       : ""  
@@ -672,7 +672,7 @@ const App =(props) =>{
                   )}
                 </List>
               <Divider />
-              <Typography variant="caption" display="block" gutterBottom>© 2023 BERTHONG LLC</Typography>
+              <Typography variant="caption" display="block" gutterBottom><div className="text-center p-1">© 2023 BERTHONG LLC</div></Typography>
             </Drawer>
           </ClickAwayListener>
           <main className={clsx(classes.content, { [classes.contentShift]: open })} >
