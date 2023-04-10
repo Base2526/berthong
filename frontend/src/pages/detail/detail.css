@@ -36,6 +36,9 @@
   .masthead .masthead-device-mockup .circle {
     width: 75%;
   }
+  .css-1t1j96h-MuiPaper-root-MuiDialog-paper{
+    max-width: 30% !important;
+  }
 }
 @media (min-width: 992px) {
   .masthead .masthead-device-mockup .circle {
@@ -2575,4 +2578,61 @@ footer a:focus {
 
 .icon-view svg:hover{
   color : #A7A9A8;
+}
+
+.css-1t1j96h-MuiPaper-root-MuiDialog-paper{
+  background: linear-gradient(45deg, transparent 49%, #d6d4ff 49% 51%, transparent 51%) , linear-gradient(-45deg, transparent 49%, #d6d4ff 49% 51%, transparent 51%);
+  background-size: 2em 2em;
+  background-color: #ffffff;
+  opacity: 1
+}
+
+.btn-facebook {
+  color: #fff;
+  background-color: #3b5998;
+  border-color: rgba(0,0,0,0.2);
+}
+
+.btn-social {
+  position: relative;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  align-items: center;
+  padding-left: 3rem;
+}
+
+.btn-social :first-child {
+  position: relative;
+  font-size: 1.6em;
+  text-align: center;
+}
+
+.font14{
+  font-size: 14px;
+}
+
+.btn-social:hover{
+  background-color: #2B4271;
+}
+
+.btn-google {
+  color: #fff;
+  background-color: #DB4437;
+  border-color: rgba(0,0,0,0.2);
+}
+
+.btn-google:hover{
+  background-color: #AE372D;
+}
+
+.btn-line {
+  color: #fff;
+  background-color: #06C755;
+  border-color: rgba(0,0,0,0.2);
+}
+
+.btn-line:hover{
+  background-color: #08A94A;
 }

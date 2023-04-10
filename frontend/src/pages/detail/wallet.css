@@ -439,6 +439,14 @@
   background-color: #1dda5f !important;
 }
 
+.btn-dis {
+  background-color: #d8d8d8 !important;
+}
+
+.btn-dis:hover {
+  background-color: #898989 !important;
+}
+
 .balanceBuy {
   background: rgba(255, 255, 255, 0.8);
   width: "80%";

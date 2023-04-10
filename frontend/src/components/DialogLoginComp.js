@@ -24,6 +24,9 @@ import { useNavigate } from "react-router-dom";
 import { mutationLogin, mutationLoginWithSocial } from "../gqlQuery";
 import { USER_NOT_FOUND } from "../constants";
 import { showToast } from "../util";
+import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
+import line from '../line.svg';
 
 const DialogLoginComp = (props) => {
   const { t } = useTranslation();
@@ -136,8 +139,68 @@ const DialogLoginComp = (props) => {
   const formUserLogin = () =>{
     return  <form onSubmit={(evt)=>handleSubmit(evt, "manual")}>
               <div className="row">
-                <div className="col-12 d-flex">
-                  <div className="d-flex form-input">
+                <div className="col-12">
+                  <div className="row">
+                      <div className="col-12 pl-2 pr-2 pb-2">
+                        <TextField
+                          id="standard-basic"
+                          label={t("username")}
+                          variant="filled"
+                          name="username" value={input.username} onChange={onInputChange} required
+                        />
+                      </div>
+                  </div>
+                  <div className="row">
+                      <div className="col-12 pl-2 pr-2 pb-2">
+                        <TextField
+                          id="standard-basic"
+                          label={t("password")}
+                          variant="filled"
+                          name="password" value={input.password} onChange={onInputChange} required
+                        />
+                      </div>
+                  </div>
+                  <div className="row">
+                    <div className="col-12 pb-2 text-center">
+                      <div className="row">
+                      <div className="col-6 pb-2 text-center">
+                        <Button variant="contained" className="btn-confirm m-1" type="submit" style={{width:"100%"}}>
+                          {t("login")}
+                        </Button>
+                      </div>
+                      <div className="col-6 pb-2 text-center">
+                        <Button disabled variant="contained" className="btn-dis m-1" style={{width:"100%"}}>
+                            สมัครสมาชิก
+                        </Button>
+                      </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="col-lg-12 col-12 pb-2 text-center" style={{justifyContent:"center"}}>
+                      <a class="d-flex btn btn-social btn-facebook" >
+                      <FacebookIcon/>
+                      <span className="font14" style={{marginLeft:"20px"}}>Sign in with Facebook</span>
+                      </a>
+                    </div>
+                    <div className="col-lg-12 col-12 pb-2 text-center" style={{justifyContent:"center"}}>
+                      <a class="d-flex btn btn-social btn-google" >
+                      <GoogleIcon/>
+                      <span className="font14" style={{marginLeft:"20px"}}>Sign in with Google</span>
+                      </a>
+                    </div>
+                    <div className="col-lg-12 col-12pb-2 text-center" style={{justifyContent:"center"}}>
+                      <a class="d-flex btn btn-social btn-line" >
+                      <img style={{width:"24px"}} src={line} />
+                      <span className="font14" style={{marginLeft:"20px"}}>Sign in with Line</span>
+                      </a>
+                    </div>
+                  </div>
+
+
+
+
+                  {/* <div className="d-flex form-input">
                     <label>{t("username")}</label>
                     <div className="position-relative wrapper-form">
                       <input type="text" className="input-bl-form" name="username" value={input.username} onChange={onInputChange} required/>
@@ -152,7 +215,7 @@ const DialogLoginComp = (props) => {
                       <LockIcon />
                     </div>
                   </div>
-                  <button type="submit">{t("login")}</button>
+                  <button type="submit">{t("login")}</button> */}
                 </div>
               </div>
             </form>
@@ -174,13 +237,13 @@ const DialogLoginComp = (props) => {
   return (
     <Dialog onClose={(e)=>{ onClose(false) }} open={open}>
       <DialogTitle className="text-center">{t("welcome_to_berthong")}</DialogTitle>
-      <DialogContent>
+      {/* <DialogContent>
         <DialogContentText id="alert-dialog-description" className="text-center">Get a free account, no credit card required</DialogContentText>
-      </DialogContent>
+      </DialogContent> */}
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
           { formUserLogin() }
-          <div className="d-flex flex-wrap">
+          {/* <div className="d-flex flex-wrap">
             <GoogleLogin
               clientId={googleClientId}
               render={renderProps => (
@@ -190,33 +253,22 @@ const DialogLoginComp = (props) => {
               onSuccess={onGoogleSuccess}
               onFailure={onGoogleFailure}
               cookiePolicy={'single_host_origin'}
-              // isSignedIn={true}
             />
             <FacebookLogin
               className={"facebookLogin"}
               appId={facebookAppId}
               autoLoad={false}
-              // fields="name,email,picture"
-              // onClick={(e)=>{
-              //   console.log("FacebookLogin :", e)
-              // }}
               fields="name,email,picture"
               callback={callbackFacebook} 
               render={renderProps => (
                 <button onClick={renderProps.onClick}><FacebookIcon/> <span>Facebook </span></button>
               )}/>
-            {/* <LoginGithub 
-              clientId={process.env.REACT_APP_GITHUB_CLIENT_ID}
-              onSuccess={onGithubSuccess}
-              onFailure={onGithubFailure}
-              className={"login-github"}
-              children={<React.Fragment><i className="left"><GitHubIcon /></i><span>Github</span></React.Fragment>}/> */}
-          </div>
+          </div> */}
         </DialogContentText>
         </DialogContent>
-        <DialogContent className="text-center">
+        {/* <DialogContent className="text-center">
             <Typography variant="body2" color="text.secondary">By continuing, you agree to Banlist Terms of Service, Privacy Policy</Typography>
-        </DialogContent>
+        </DialogContent> */}
     </Dialog>    
   );
 };
