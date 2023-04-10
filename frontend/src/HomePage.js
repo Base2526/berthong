@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { NetworkStatus, useQuery, useMutation } from "@apollo/client";
+import { NetworkStatus, useQuery } from "@apollo/client";
 import _ from "lodash";
-import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -9,8 +8,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { ErrorOutline as ErrorOutlineIcon } from "@material-ui/icons";
 import { lightGreen, blueGrey } from "@material-ui/core/colors";
 
-import { querySuppliers, subscriptionSuppliers, mutationFollow, querySupplierById } from "./gqlQuery";
-import { logout } from "./redux/actions/auth";
+import { querySuppliers, subscriptionSuppliers} from "./gqlQuery";
 import { getHeaders, showToast } from "./util";
 import HomeItem from "./item/HomeItem"
 import SearchComp from "./components/SearchComp"
@@ -96,13 +94,14 @@ const HomePage = (props) => {
           error: errorSuppliers, 
           refetch: refetchSuppliers,
           subscribeToMore, 
-          fetchMore,
+          fetchMore: fetchMoreSuppliers,
           networkStatus } = useQuery(querySuppliers, 
                                       { 
                                         context: { headers: getHeaders(location) }, 
-                                        variables: {input: search},
+                                        variables: { input: search },
                                         fetchPolicy: 'cache-first',
                                         nextFetchPolicy: 'network-only', 
+                                        // fetchPolicy: 'cache-and-network', // cache all pages in the Apollo cache
                                         notifyOnNetworkStatusChange: true
                                       }
                                     );
@@ -119,14 +118,7 @@ const HomePage = (props) => {
   }
 
   useEffect(()=>{
-    console.log("")
-
-    
-    if(search.OFF_SET == 0){
-      // refetchSuppliers({input: search});
-
-      onSearchChange({...search, OFF_SET: search.OFF_SET + 1 })
-    }
+    onSearchChange({...search, PAGE: 1 })
     return () => {
       unsubscribeSuppliers && unsubscribeSuppliers()
       unsubscribeSuppliers = null;
@@ -138,7 +130,10 @@ const HomePage = (props) => {
       if(!_.isEmpty(dataSuppliers?.suppliers)){
         let { status, total, data } = dataSuppliers?.suppliers
         if(status){
-          setDatas(data)
+          let newDatas = _.unionBy(data, datas, '_id')
+          newDatas = _.orderBy(newDatas, "createdAt", 'asc')
+          setDatas(newDatas)
+          setSlice(newDatas?.length)
           setTotal(total)
         }
 
@@ -148,6 +143,11 @@ const HomePage = (props) => {
   }, [dataSuppliers, loadingSuppliers])
 
   useEffect(()=>{
+
+    if( total != 0 && total == datas?.length){
+      setHasMore(false);
+    }
+
     let supplierIds = JSON.stringify(_.map(datas, _.property("_id")));
     unsubscribeSuppliers && unsubscribeSuppliers()
     unsubscribeSuppliers = null;
@@ -180,43 +180,35 @@ const HomePage = (props) => {
         }
       }
     });
-  }, [datas])
+  }, [datas, total])
 
   useEffect(()=>{
-    if(!_.isEqual(Constants.INIT_SEARCH, search)){
-      console.log("search :", search)
-    }
-
-    // if(search.OFF_SET == 0){
-    //   refetchSuppliers({input: search});
-
-    //   onSearchChange({...search, OFF_SET: search.OFF_SET + 1 })
-    // }
-
     if(reset){
       setReset(false)
     }
   }, [search, reset])
 
-  const handleNext = async() => {
-    let input =  {...search, OFF_SET:(search.OFF_SET * search.LIMIT) }
-    let mores =  await fetchMore({ variables: { input } })
-    let {status, data} =  mores.data.suppliers
-    console.log("handleNext :", input, slice, total)
-
-    if(slice >= total){
-      setHasMore(false);
-    }else{
-      setTimeout(() => {
-        if(slice + data.length == total) setHasMore(false)
-
-        let newDatas = [...datas, ...data]
-        setDatas(newDatas)
-        setSlice(newDatas.length);
-      }, 1000); 
-    }
-    onSearchChange({...search, OFF_SET: search.OFF_SET + 1 })
+  const handleRefresh = async() => {
+    onSearchChange({...search, PAGE: 1})
   }
+
+  const handleLoadMore = () => {
+    fetchMoreSuppliers({
+      variables: {
+        input: {...search, PAGE: search.PAGE + 1}
+      },
+      updateQuery: (prev, {fetchMoreResult}) => {
+        if (!fetchMoreResult?.suppliers?.data?.length) {
+          return prev;
+        }
+
+        let suppliers = {...prev.suppliers, data: _.unionBy( fetchMoreResult?.suppliers?.data, prev?.suppliers?.data, '_id') }
+        return Object.assign({}, prev, {suppliers} );
+      },
+    });
+
+    onSearchChange({...search, PAGE: search.PAGE + 1})
+  };
 
   const mainView = () =>{
     switch(ws?.ws_status){
@@ -269,6 +261,7 @@ const HomePage = (props) => {
                 <SearchComp
                   {...props}
                   classes={classes}
+                  search={search}
                   onReset={()=>setReset(true)}
                   onSearch={(search)=>onSearchChange(search)} />
               </div>
@@ -281,12 +274,24 @@ const HomePage = (props) => {
                     ? <div className="noData p-2 m-1"><ErrorOutlineIcon /> ไม่พบข้อมูลที่ค้นหา </div>
                     : <InfiniteScroll
                         dataLength={slice}
-                        next={handleNext}
+                        next={handleLoadMore}
                         hasMore={hasMore}
                         loader={<SkeletonComp />}
                         scrollThreshold={0.5}
                         scrollableTarget="scrollableDiv"
-                        endMessage={<div className="text-center">You have reached the end</div>}>
+                        endMessage={<div className="text-center">You have reached the end</div>}
+                        
+                        // below props only if you need pull down functionality
+                        refreshFunction={handleRefresh}
+                        pullDownToRefresh
+                        pullDownToRefreshThreshold={50}
+                        pullDownToRefreshContent={
+                          <h3 style={{ textAlign: 'center' }}>&#8595; Pull down to refresh</h3>
+                        }
+                        releaseToRefreshContent={
+                          <h3 style={{ textAlign: 'center' }}>&#8593; Release to refresh</h3>
+                        }
+                        >
                         <div className="row">
                           {_.map(datas, (item, index) =>{
                             return <HomeItem 

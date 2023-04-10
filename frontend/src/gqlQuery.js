@@ -2,7 +2,7 @@ import { gql } from "@apollo/client";
 
 // query
 export const queryPing          = gql`query ping { ping }`;
-export const querySuppliers     = gql`query suppliers($input: SearchInput ) { suppliers(input: $input) }`;
+export const querySuppliers     = gql`query suppliers( $input: SearchInput ) { suppliers( input: $input) }`;
 export const querySupplierById  = gql`query supplierById($id: ID!) { supplierById(_id: $id) }`;
 export const queryDeposits      = gql`query deposits { deposits }`;
 export const queryDepositById   = gql`query depositById($id: ID!) { depositById(_id: $id) }`;

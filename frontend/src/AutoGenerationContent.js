@@ -121,7 +121,7 @@ const AutoGenerationContent = (props) => {
                 <div>
                     <button onClick={()=>{
                         // let { data } = dateLotterysValue.data.dateLotterys
-                        for ( var i = 0; i < 10; i++ ) {
+                        for ( var i = 0; i < 100; i++ ) {
                             let newInput =  {
                                 mode: "NEW",
                                 title: faker.lorem.lines(1),

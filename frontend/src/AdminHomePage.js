@@ -121,15 +121,6 @@ const AdminHomePage = (props) => {
     })
   }
   
-  /*
-  useEffect(()=>{
-    return () => {
-      unsubscribeSuppliers && unsubscribeSuppliers()
-      unsubscribeSuppliers = null;
-    };
-  }, [])
-  */
-
   useEffect(() => {
     if(!loadingAdminHome){
       if(!_.isEmpty(dataAdminHome?.adminHome)){
@@ -140,7 +131,7 @@ const AdminHomePage = (props) => {
       }
     }
   }, [dataAdminHome, loadingAdminHome])
-
+  
   /*
   useEffect(()=>{
     let supplierIds = JSON.stringify(_.map(datas, _.property("_id")));

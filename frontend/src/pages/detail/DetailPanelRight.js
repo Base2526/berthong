@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import clsx from "clsx";
 import Chip from "@mui/joy/Chip";
 import TextField from "@material-ui/core/TextField";
@@ -31,31 +31,31 @@ const numberLotterys = Array.from({ length: 10 * 10 }, (_, i) => i);
 
 const DetailPanel = (props) => {
   let { user, data, onSelected} = props
-  return (
-    <div className="container-detail">
-      {numberLotterys.map((seat) => {
+  return  useMemo(() => {
+            return  <div className="container-detail">
+                      {numberLotterys.map((seat) => {
 
-        const isSelected  = _.find(data?.buys, (buy)=> _.isEqual(buy?.itemId, seat) && _.isEqual( buy?.userId,  user?._id));//selectedSeats.includes(seat);
-        const isOccupied  = _.find(data?.buys, (buy)=> !_.isEqual( buy?.userId,  user?._id) && _.isEqual( buy?.selected, 1));;//movies.occupied?.includes(seat);
-        const isFinish    = _.find(data?.buys, (buy)=> _.isEqual( buy?.userId,  user?._id) && _.isEqual( buy?.selected, 1));//movies.finish?.includes(seat);
-        const isBooking   = _.find(data?.buys, (buy)=> _.isEqual(buy?.itemId, seat) && !_.isEqual( buy?.userId,  user?._id) && _.isEqual( buy?.selected, 0));//movies.booking?.includes(seat);
-        return (
-          <div>
-            <span
-              tabIndex="0"
-              key={seat}
-              className={clsx("circle", isSelected && "selected", isOccupied && "occupied", isFinish && "finish",  isBooking && "booking" )}
-              onClick={(evt) => isOccupied || isFinish || isBooking ? null : onSelected(evt, seat) }
-              onKeyDown={(evt) => isOccupied || isFinish || isBooking ? null : (evt.key === "Enter" ?  onSelected(evt, seat) : null) }>
-              {" "}
-              {isBooking ? <span className="booking-font">ติดจอง</span> : ""}
-              {seat <= 9 ? "0" + seat : seat}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
+                        const isSelected  = _.find(data?.buys, (buy)=> _.isEqual(buy?.itemId, seat) && _.isEqual( buy?.userId,  user?._id));//selectedSeats.includes(seat);
+                        const isOccupied  = _.find(data?.buys, (buy)=> !_.isEqual( buy?.userId,  user?._id) && _.isEqual( buy?.selected, 1));;//movies.occupied?.includes(seat);
+                        const isFinish    = _.find(data?.buys, (buy)=> _.isEqual( buy?.userId,  user?._id) && _.isEqual( buy?.selected, 1));//movies.finish?.includes(seat);
+                        const isBooking   = _.find(data?.buys, (buy)=> _.isEqual(buy?.itemId, seat) && !_.isEqual( buy?.userId,  user?._id) && _.isEqual( buy?.selected, 0));//movies.booking?.includes(seat);
+                        return (
+                          <div>
+                            <span
+                              tabIndex="0"
+                              key={seat}
+                              className={clsx("circle", isSelected && "selected", isOccupied && "occupied", isFinish && "finish",  isBooking && "booking" )}
+                              onClick={(evt) => isOccupied || isFinish || isBooking ? null : onSelected(evt, seat) }
+                              onKeyDown={(evt) => isOccupied || isFinish || isBooking ? null : (evt.key === "Enter" ?  onSelected(evt, seat) : null) }>
+                              {" "}
+                              {isBooking ? <span className="booking-font">ติดจอง</span> : ""}
+                              {seat <= 9 ? "0" + seat : seat}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+          }, [data]);
 };
 
 const DetailPanelRight = (props) =>{

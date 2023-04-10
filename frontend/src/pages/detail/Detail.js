@@ -25,9 +25,7 @@ import PopupWallet from "./PopupWallet";
 import { getHeaders, showToast } from "../../util";
 import * as Constants from "../../constants"
 
-import {  mutationBuy, 
-          querySupplierById, 
-          querySuppliers, 
+import {  querySupplierById, 
           subscriptionSupplierById, 
           queryUserById} from "../../gqlQuery";
 
@@ -45,7 +43,7 @@ const Detail = (props) => {
 
   let { id } = params; 
 
-  let { user, onLogin, onMutationFollow, onMutationBook } = props
+  let { user, onLogin, onMutationFollow, onMutationBook, onMutationBuy } = props
 
   const { loading: loadingSupplierById, 
           data: dataSupplierById, 
@@ -81,37 +79,6 @@ const Detail = (props) => {
       // }
     })
   }
-
-  const [onBuy, resultBuyValues] = useMutation(mutationBuy,{
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {buy}}) => {
-      let { status, data } = buy
-         
-      ////////// update cache queryUserById ///////////
-      let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
-      if(querySupplierByIdValue){
-        cache.writeQuery({
-          query: querySupplierById,
-          data: { supplierById: {...querySupplierByIdValue.supplierById, data} },
-          variables: {id: data._id}
-        });
-      }
-      ////////// update cache queryUserById ///////////    
-
-      ////////// update cache querySuppliers ///////////
-      let suppliersValue = cache.readQuery({ query: querySuppliers });
-      if(!_.isNull(suppliersValue)){
-        console.log("suppliersValue :", suppliersValue)
-      }
-      ////////// update cache querySuppliers ///////////
-    },
-    onCompleted({ data }) {
-      console.log("onCompleted")
-    },
-    onError: (err) => {
-      console.log("onError :", err)
-    }
-  });
 
   useEffect(() => {
     if(!loadingUserById){
