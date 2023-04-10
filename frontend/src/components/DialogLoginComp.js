@@ -154,6 +154,7 @@ const DialogLoginComp = (props) => {
                       <div className="col-12 pl-2 pr-2 pb-2">
                         <TextField
                           id="standard-basic"
+                          type="password"
                           label={t("password")}
                           variant="filled"
                           name="password" value={input.password} onChange={onInputChange} required
