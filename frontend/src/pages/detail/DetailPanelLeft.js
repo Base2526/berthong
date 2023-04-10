@@ -18,7 +18,7 @@ const DetailPanelLeft = (props) =>{
                           <div className="icon-view">
                             <PageviewIcon />
                           </div>
-                          <img src={currentImage.url} style={{width:"100%"}} alt="picture"/>
+                          <img src={currentImage.url} style={{width:"100%",borderRadius:"4px"}} alt="picture"/>
                         </div>
                     </div>
                       <div className="row pb-3" style={{ justifyContent: "center" }}>
@@ -26,7 +26,7 @@ const DetailPanelLeft = (props) =>{
                           <span
                             className="sideImage col-lg-2 col-md-4 col-sm-2 col-2"
                             onClick={() => setCurrentImage(item)}
-                            style={{ backgroundImage: `url(${item.url})` }}
+                            style={{ backgroundImage: `url(${item.url})`,borderRadius:"4px" }}
                           ></span>
                         ))}
                       </div>
