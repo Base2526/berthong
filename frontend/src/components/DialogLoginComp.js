@@ -135,22 +135,26 @@ const DialogLoginComp = (props) => {
 
   const formUserLogin = () =>{
     return  <form onSubmit={(evt)=>handleSubmit(evt, "manual")}>
-              <div className="d-flex form-input">
-                <label>{t("username")}</label>
-                <div className="position-relative wrapper-form">
-                  <input type="text" className="input-bl-form" name="username" value={input.username} onChange={onInputChange} required/>
-                  <AccountCircle />
+              <div className="row">
+                <div className="col-12 d-flex">
+                  <div className="d-flex form-input">
+                    <label>{t("username")}</label>
+                    <div className="position-relative wrapper-form">
+                      <input type="text" className="input-bl-form" name="username" value={input.username} onChange={onInputChange} required/>
+                      <AccountCircle />
+                    </div>
+                  
+                  </div>
+                  <div className="d-flex form-input">
+                    <label>{t("password")}</label>
+                    <div className="position-relative wrapper-form">
+                      <input type="password" className="input-bl-form" name="password" value={input.password} onChange={onInputChange} required />
+                      <LockIcon />
+                    </div>
+                  </div>
+                  <button type="submit">{t("login")}</button>
                 </div>
-               
               </div>
-              <div className="d-flex form-input">
-                <label>{t("password")}</label>
-                <div className="position-relative wrapper-form">
-                  <input type="password" className="input-bl-form" name="password" value={input.password} onChange={onInputChange} required />
-                  <LockIcon />
-                </div>
-              </div>
-              <button type="submit">{t("login")}</button>
             </form>
   }
 

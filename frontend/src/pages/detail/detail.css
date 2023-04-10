@@ -2570,4 +2570,9 @@ footer a:focus {
 
 .icon-view svg{
   font-size: 3rem;
+  color : #C9CBCB;
+}
+
+.icon-view svg:hover{
+  color : #A7A9A8;
 }
