@@ -94,6 +94,8 @@ import BreadcsComp from "./components/BreadcsComp";
 import DialogLogoutComp from "./components/DialogLogoutComp";
 import NotificationsPage from "./NotificationsPage";
 
+import LoginWithLine from "./LoginWithLine";
+
 import LightboxComp from "./components/LightboxComp"
 import DialogLoginComp from "./components/DialogLoginComp"
 
@@ -749,6 +751,9 @@ const App =(props) =>{
             <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/supplier" element={<SupplierPage />} />
             <Route path="/p" element={<ProfilePage onLightbox={(value)=>setLightbox(value)} />}/>
+
+            <Route path="/login-with-line" element={<LoginWithLine />}  />
+
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
               <Route path="/me" element={<MePage  {...props} />} />
               <Route path="/deposit" element={<DepositPage {...props} />} />
