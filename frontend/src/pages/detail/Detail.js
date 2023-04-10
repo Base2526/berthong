@@ -52,7 +52,6 @@ const Detail = (props) => {
           subscribeToMore: subscribeToMoreSupplierById, 
           networkStatus } = useQuery( querySupplierById, { 
                                       context: { headers: getHeaders(location) }, 
-                                      // variables: { id }, 
                                       fetchPolicy: 'cache-first', 
                                       nextFetchPolicy: 'network-only', 
                                       notifyOnNetworkStatusChange: true});
@@ -219,7 +218,7 @@ const Detail = (props) => {
         loadingSupplierById || _.isEmpty(data)
         ? <LinearProgress />
         : <>
-            <DetailPanelLeft data={data}/>
+            <DetailPanelLeft {...props} data={data}/>
             <DetailPanelRight 
               {...props}
               data={data}

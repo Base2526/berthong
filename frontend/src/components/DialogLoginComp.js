@@ -1,5 +1,5 @@
+import React, { useEffect, useState, useMemo } from "react";
 import { useMutation } from "@apollo/client";
-import AccountCircle from "@material-ui/icons/AccountCircle";
 import { 
   Lock as LockIcon,
   Google as GoogleIcon,
@@ -14,7 +14,6 @@ import {
 } from "@mui/material";
 import { gapi } from "gapi-script";
 import _ from "lodash";
-import React, { useEffect, useState } from "react";
 import { useDeviceData } from "react-device-detect";
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 import { GoogleLogin } from "react-google-login";
@@ -234,43 +233,45 @@ const DialogLoginComp = (props) => {
       console.log("onGithubFailure :", response)
   }
 
-  return (
-    <Dialog onClose={(e)=>{ onClose(false) }} open={open}>
-      <DialogTitle className="text-center">{t("welcome_to_berthong")}</DialogTitle>
-      {/* <DialogContent>
-        <DialogContentText id="alert-dialog-description" className="text-center">Get a free account, no credit card required</DialogContentText>
-      </DialogContent> */}
-      <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          { formUserLogin() }
-          {/* <div className="d-flex flex-wrap">
-            <GoogleLogin
-              clientId={googleClientId}
-              render={renderProps => (
-                <button onClick={renderProps.onClick} disabled={renderProps.disabled}><GoogleIcon /> <span> Google</span> </button>
-              )}
-              buttonText="Login"
-              onSuccess={onGoogleSuccess}
-              onFailure={onGoogleFailure}
-              cookiePolicy={'single_host_origin'}
-            />
-            <FacebookLogin
-              className={"facebookLogin"}
-              appId={facebookAppId}
-              autoLoad={false}
-              fields="name,email,picture"
-              callback={callbackFacebook} 
-              render={renderProps => (
-                <button onClick={renderProps.onClick}><FacebookIcon/> <span>Facebook </span></button>
-              )}/>
-          </div> */}
-        </DialogContentText>
-        </DialogContent>
-        {/* <DialogContent className="text-center">
-            <Typography variant="body2" color="text.secondary">By continuing, you agree to Banlist Terms of Service, Privacy Policy</Typography>
-        </DialogContent> */}
-    </Dialog>    
-  );
+  return  useMemo(() => {
+            return (
+              <Dialog onClose={(e)=>{ onClose(false) }} open={open}>
+                <DialogTitle className="text-center">{t("welcome_to_berthong")}</DialogTitle>
+                {/* <DialogContent>
+                  <DialogContentText id="alert-dialog-description" className="text-center">Get a free account, no credit card required</DialogContentText>
+                </DialogContent> */}
+                <DialogContent>
+                  <DialogContentText id="alert-dialog-description">
+                    { formUserLogin() }
+                    {/* <div className="d-flex flex-wrap">
+                      <GoogleLogin
+                        clientId={googleClientId}
+                        render={renderProps => (
+                          <button onClick={renderProps.onClick} disabled={renderProps.disabled}><GoogleIcon /> <span> Google</span> </button>
+                        )}
+                        buttonText="Login"
+                        onSuccess={onGoogleSuccess}
+                        onFailure={onGoogleFailure}
+                        cookiePolicy={'single_host_origin'}
+                      />
+                      <FacebookLogin
+                        className={"facebookLogin"}
+                        appId={facebookAppId}
+                        autoLoad={false}
+                        fields="name,email,picture"
+                        callback={callbackFacebook} 
+                        render={renderProps => (
+                          <button onClick={renderProps.onClick}><FacebookIcon/> <span>Facebook </span></button>
+                        )}/>
+                    </div> */}
+                  </DialogContentText>
+                  </DialogContent>
+                  {/* <DialogContent className="text-center">
+                      <Typography variant="body2" color="text.secondary">By continuing, you agree to Banlist Terms of Service, Privacy Policy</Typography>
+                  </DialogContent> */}
+              </Dialog>    
+            )
+          }, [input]);
 };
 
 export default DialogLoginComp;
