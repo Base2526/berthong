@@ -167,7 +167,7 @@ const HomeItem = (props) => {
                 </div>
               </div>
             )
-          }, [item]);
+          }, [item, openMenu]);
 }
 
 export default HomeItem;
