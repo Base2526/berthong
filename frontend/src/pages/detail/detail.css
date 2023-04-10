@@ -2191,7 +2191,7 @@ select option {
 }
 
 /* cover */
-
+/* 
 .device-wrapper {
   max-width: 300px;
   width: 100%;
@@ -2232,11 +2232,6 @@ select option {
   width: 86.2258953168%;
   height: 93.6288088643%;
 }
-
-/* .device[data-device="iPhoneX"][data-orientation="portrait"][data-color="black"]::after {
-  content: "";
-  background-image: url("../assets/img/portrait_black.png");
-} */
 
 .device[data-device="iPhoneX"][data-orientation="portrait"][data-color="black"]
   .button {
@@ -2283,7 +2278,6 @@ section.cta:before {
   left: 0;
   fill: url(#circleGradient);
   width: 70%;
-  /* display: none; */
 }
 .features-device-mockup .circle1 .gradient-start-color {
   stop-color: #2937f0;
@@ -2382,11 +2376,6 @@ footer a:focus {
   text-decoration: underline;
 }
 
-.masthead {
-  /* background-color: #f8f9fa; */
-  /* padding-top: 9.5rem;
-  padding-bottom: 5rem; */
-}
 .masthead .masthead-device-mockup {
   display: flex;
   align-items: center;
@@ -2397,7 +2386,6 @@ footer a:focus {
   position: absolute;
   fill: url(#circleGradient);
   width: 70%;
-  /* display: none; */
 }
 .masthead .masthead-device-mockup .circle1 .gradient-start-color {
   stop-color: #2937f0;
@@ -2465,7 +2453,7 @@ footer a:focus {
   .masthead .masthead-device-mockup .device-wrapper {
     max-width: 17rem;
   }
-}
+} */
 
 /* cover */
 
@@ -2573,4 +2561,13 @@ footer a:focus {
 
 .MuiSlider-markLabel{
   color:red !important;
+}
+
+.icon-view{
+  position: absolute;
+  padding: 3px;
+}
+
+.icon-view svg{
+  font-size: 3rem;
 }
