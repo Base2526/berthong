@@ -58,12 +58,19 @@ import {
 } from "react-icons/ai"
 
 import {
+  CgProfile as ProfileIcon
+} from "react-icons/cg"
+
+import {
   Avatar,
   IconButton,
   ClickAwayListener,
   Stack,
-  Badge
+  Badge,
+  Menu,
+  MenuItem
 } from "@mui/material";
+
 import _ from "lodash"
 
 import TaxonomyBankPage from "./TaxonomyBankPage";
@@ -202,6 +209,8 @@ const App =(props) =>{
   const location = useLocation();
   const navigate = useNavigate();
   let intervalPing = useRef(null);
+
+  let [openMenuProfile, setOpenMenuProfile] = useState(null);
 
   const classes = useStyles();
   const theme = useTheme();
@@ -575,6 +584,38 @@ const App =(props) =>{
     }
   }
 
+  const menuProfile = () =>{
+    return  <Menu
+              anchorEl={openMenuProfile}
+              keepMounted
+              open={openMenuProfile && Boolean(openMenuProfile)}
+              onClose={()=>{ setOpenMenuProfile(null) }}
+              getContentAnchorEl={null}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "center"
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "center"
+              }}
+              MenuListProps={{
+                "aria-labelledby": "lock-button",
+                role: "listbox"
+              }}
+            >
+              <MenuItem onClick={(e)=>{
+                setOpenMenuProfile(null)
+                navigate("/me")
+              }}><ProfileIcon size={20} round />Profile</MenuItem>
+              <MenuItem onClick={(e)=>{
+                setOpenMenuProfile(null)
+                setOpenDialogLogout(true)
+              }}><LoginIcon size={20} round />Logout</MenuItem>
+            </Menu>
+  }
+
+
   return (
     <div className="App">
       {lightbox.isOpen  && <LightboxComp lightbox={lightbox} onLightbox={(v)=>setLightbox(v)}/> }
@@ -607,6 +648,7 @@ const App =(props) =>{
               [classes.appBarShift]: open
             })}>
             <Toolbar>
+              {menuProfile()}
               {
                 // _.isEqual(checkRole(user), Constants.AMDINISTRATOR)
                 // ? <Typography variant="h6" noWrap>AMDINISTRATOR</Typography> 
@@ -643,7 +685,13 @@ const App =(props) =>{
                               <FiShoppingCart color="white" size="1.2em"/>
                             </Badge>
                           </IconButton>
-                          <IconButton size={'small'}>
+                          <IconButton 
+                            size={'small'}
+                            onClick={(evt)=>{
+                              console.log(">>>")
+
+                              setOpenMenuProfile(evt.currentTarget);
+                            }}>
                             <Avatar 
                               src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
                               alt="profile"
