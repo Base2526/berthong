@@ -95,169 +95,176 @@ const DetailPanelRight = (props) =>{
                 <IconButton onClick={(e) =>onMenu(e.currentTarget)}><ShareIcon /></IconButton>
               </h4>
             </div>
-            <div className="row pb-2">
-              <div className="col-12">
-                <div class="header_main">
-                  <div class="container">
-                    <div class="col-lg-12 col-12 order-lg-12 order-12 text-lg-left text-right">
-                    <div className="row">
-                        <div className="col-lg-6 col-12 wishlist_cart d-flex flex-row align-items-center justify-content-evenly">
-                          <div className="row box wishlist bg-wallet p-2" onClick={() => onPopupWallet(true)}>
-                            <div className="col-6 bag text-center">
-                              กระเป๋าเงิน<br />
-                              <CurrencyExchangeOutlinedIcon size={70}/>
-                            </div>
-                            <div className="col-6 money-p text-center"> 
-                              <div className="row">
-                                <Chip
-                                  variant="outlined"
-                                  color="success"
-                                  size="sm"
-                                  sx={{ pointerEvents: "none" }}>
-                                  <div class="wishlist_count text-center">{ !user?.balance ? numberCurrency(0) : numberCurrency(user?.balance)}</div>
-                                </Chip>
+            {
+              _.isEmpty(user)
+              ? ""
+              : <>
+                  <div className="row pb-2">
+                    <div className="col-12">
+                      <div class="header_main">
+                        <div class="container">
+                          <div class="col-lg-12 col-12 order-lg-12 order-12 text-lg-left text-right">
+                          <div className="row">
+                              <div className="col-lg-6 col-12 wishlist_cart d-flex flex-row align-items-center justify-content-evenly">
+                                <div className="row box wishlist bg-wallet p-2" onClick={() => onPopupWallet(true)}>
+                                  <div className="col-6 bag text-center">
+                                    กระเป๋าเงิน<br />
+                                    <CurrencyExchangeOutlinedIcon size={70}/>
+                                  </div>
+                                  <div className="col-6 money-p text-center"> 
+                                    <div className="row">
+                                      <Chip
+                                        variant="outlined"
+                                        color="success"
+                                        size="sm"
+                                        sx={{ pointerEvents: "none" }}>
+                                        <div class="wishlist_count text-center">{ !user?.balance ? numberCurrency(0) : numberCurrency(user?.balance)}</div>
+                                      </Chip>
+                                    </div>
+                                    <div className="row pt-1">
+                                      <Chip
+                                          variant="outlined"
+                                          color="warning"
+                                          size="sm"
+                                          sx={{ pointerEvents: "none" }}>
+                                          <div class="price-jong text-center">-{numberCurrency(user?.balanceBook ? user.balanceBook : 0)}</div>
+                                        </Chip>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
-                              <div className="row pt-1">
-                                <Chip
+                              <div className="col-lg-6 col-12 wishlist_cart d-flex flex-row align-items-center justify-content-evenly">
+                                <div className="row box wishlist bg-buy p-2" onClick={() => onPopupShopping(true)}>
+                                  <div className="col-6 bag text-center">
+                                    คลิกเพื่อซื้อ<br />
+                                    <div class="c_cart text-center">
+                                    <AddShoppingCartOutlinedIcon size="5em"/>
+                                    <div class="cart_count">
+                                      <span>{selecteds.length}</span>
+                                    </div>
+                                  </div>
+                                  </div>
+                                  <div className="col-6 money-p text-center">   
+                                    <Chip
+                                        variant="outlined"
+                                        color="warning"
+                                        size="sm"
+                                        sx={{ pointerEvents: "none" }}>
+                                        <div class="price-red text-center">{numberCurrency(selecteds.length * data.price)}</div>
+                                      </Chip>
+                                    </div>
+                                </div>
+                              </div>
+                          </div>
+                            {/* <div class="wishlist_cart d-flex flex-row align-items-center justify-content-evenly">
+                              <div
+                                class="wishlist box d-flex flex-row align-items-center justify-content-center"
+                                style={{ marginRight: "3px" }}
+                                onClick={() => onPopupWallet(true)}>
+                                <CurrencyExchangeOutlinedIcon size="5em"/>
+                                <div class="wishlist_content">
+                                  <div class="wishlist_text" style={{ color: "#fff" }}>
+                                    <a href="#">คงเหลือ</a>
+                                  </div>
+                                  <Chip
                                     variant="outlined"
-                                    color="warning"
+                                    color="success"
                                     size="sm"
                                     sx={{ pointerEvents: "none" }}>
-                                    <div class="price-jong text-center">-{numberCurrency(user?.balanceBook ? user.balanceBook : 0)}</div>
+                                    <div class="wishlist_count">{ !user?.balance ? numberCurrency(0) : numberCurrency(user?.balance)}</div>
                                   </Chip>
+                                </div>
+                              </div>
+                              <div class="wishlist1 wishlist-new box cart d-flex flex-row align-items-center">
+                                <div
+                                  onClick={() => onPopupShopping(true)}
+                                  class="cart_container d-flex flex-row align-items-center justify-content-center"
+                                >
+                                  <div class="c_cart">
+                                    <HiOutlineShoppingBag size="5em"/>
+                                    <div class="cart_count">
+                                      <span>{selecteds.length}</span>
+                                    </div>
+                                  </div>
+                                  <div class="cart_content">
+                                    <div class="cart_text">
+                                      <a href="#">คลิกซื้อ</a>
+                                    </div>
+                                    <Chip
+                                      variant="outlined"
+                                      color="warning"
+                                      size="sm"
+                                      sx={{ pointerEvents: "none" }}>
+                                      <div class="price-red">{numberCurrency(selecteds.length * data.price)}</div>
+                                    </Chip>
+                                  </div>
+                                </div>
+                              </div>
+                            </div> */}
+                            <div class="row">
+                              <div class="col-lg-6 col-md-12 col-sm-12 col-12">
+                                <div className="pt-2 selectBer">
+                                  <Autocomplete
+                                    size="small"
+                                    open={false}
+                                    multiple
+                                    freeSolo
+                                    disableClearable
+                                    options={selecteds.map((option) => option.itemId)}
+                                    getOptionLabel={(option) => option.toString()}
+                                    onChange={(e, v) =>{
+                                      let itemIds = _.map(selecteds, (selected)=>minTwoDigits(selected.itemId))
+                                      _.map(_.difference(itemIds, v), (itemId)=>onSelected(e, itemId))
+                                    }}
+                                    renderInput={(params) => (
+                                      <TextField
+                                        {...params}
+                                        label={`เลือก/จอง(${selecteds?.length})`}
+                                        margin="normal"
+                                        variant="standard"
+                                        fullWidth
+                                      />
+                                    )}
+                                    value={selecteds.map((option) => minTwoDigits(option.itemId))}
+                                  />
+                                </div>
+                              </div>
+                              <div class="col-lg-6 col-md-12 col-sm-12 col-12">
+                                <div className="pt-2 finishBer">
+                                  <Autocomplete
+                                    size="small"
+                                    open={false}
+                                    multiple
+                                    freeSolo
+                                    readOnly
+                                    disableClearable
+                                    getOptionLabel={(option) => option.toString()}
+                                    renderInput={(params) => (
+                                      <TextField
+                                        {...params}
+                                        label={`ซื้อสำเร็จแล้ว(${buys?.length})`}
+                                        margin="normal"
+                                        variant="standard"
+                                        fullWidth
+                                      />
+                                    )}
+                                    value={buys.map((option) => option.itemId)}
+                                  />
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </div>
-                        <div className="col-lg-6 col-12 wishlist_cart d-flex flex-row align-items-center justify-content-evenly">
-                          <div className="row box wishlist bg-buy p-2" onClick={() => onPopupShopping(true)}>
-                            <div className="col-6 bag text-center">
-                              คลิกเพื่อซื้อ<br />
-                              <div class="c_cart text-center">
-                              <AddShoppingCartOutlinedIcon size="5em"/>
-                              <div class="cart_count">
-                                <span>{selecteds.length}</span>
-                              </div>
-                            </div>
-                            </div>
-                            <div className="col-6 money-p text-center">   
-                              <Chip
-                                  variant="outlined"
-                                  color="warning"
-                                  size="sm"
-                                  sx={{ pointerEvents: "none" }}>
-                                  <div class="price-red text-center">{numberCurrency(selecteds.length * data.price)}</div>
-                                </Chip>
-                              </div>
-                          </div>
-                        </div>
-                    </div>
-                      {/* <div class="wishlist_cart d-flex flex-row align-items-center justify-content-evenly">
-                        <div
-                          class="wishlist box d-flex flex-row align-items-center justify-content-center"
-                          style={{ marginRight: "3px" }}
-                          onClick={() => onPopupWallet(true)}>
-                          <CurrencyExchangeOutlinedIcon size="5em"/>
-                          <div class="wishlist_content">
-                            <div class="wishlist_text" style={{ color: "#fff" }}>
-                              <a href="#">คงเหลือ</a>
-                            </div>
-                            <Chip
-                              variant="outlined"
-                              color="success"
-                              size="sm"
-                              sx={{ pointerEvents: "none" }}>
-                              <div class="wishlist_count">{ !user?.balance ? numberCurrency(0) : numberCurrency(user?.balance)}</div>
-                            </Chip>
-                          </div>
-                        </div>
-                        <div class="wishlist1 wishlist-new box cart d-flex flex-row align-items-center">
-                          <div
-                            onClick={() => onPopupShopping(true)}
-                            class="cart_container d-flex flex-row align-items-center justify-content-center"
-                          >
-                            <div class="c_cart">
-                              <HiOutlineShoppingBag size="5em"/>
-                              <div class="cart_count">
-                                <span>{selecteds.length}</span>
-                              </div>
-                            </div>
-                            <div class="cart_content">
-                              <div class="cart_text">
-                                <a href="#">คลิกซื้อ</a>
-                              </div>
-                              <Chip
-                                variant="outlined"
-                                color="warning"
-                                size="sm"
-                                sx={{ pointerEvents: "none" }}>
-                                <div class="price-red">{numberCurrency(selecteds.length * data.price)}</div>
-                              </Chip>
-                            </div>
-                          </div>
-                        </div>
-                      </div> */}
-                      <div class="row">
-                        <div class="col-lg-6 col-md-12 col-sm-12 col-12">
-                          <div className="pt-2 selectBer">
-                            <Autocomplete
-                              size="small"
-                              open={false}
-                              multiple
-                              freeSolo
-                              disableClearable
-                              options={selecteds.map((option) => option.itemId)}
-                              getOptionLabel={(option) => option.toString()}
-                              onChange={(e, v) =>{
-                                let itemIds = _.map(selecteds, (selected)=>minTwoDigits(selected.itemId))
-                                _.map(_.difference(itemIds, v), (itemId)=>onSelected(e, itemId))
-                              }}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label={`เลือก/จอง(${selecteds?.length})`}
-                                  margin="normal"
-                                  variant="standard"
-                                  fullWidth
-                                />
-                              )}
-                              value={selecteds.map((option) => minTwoDigits(option.itemId))}
-                            />
-                          </div>
-                        </div>
-                        <div class="col-lg-6 col-md-12 col-sm-12 col-12">
-                          <div className="pt-2 finishBer">
-                            <Autocomplete
-                              size="small"
-                              open={false}
-                              multiple
-                              freeSolo
-                              readOnly
-                              disableClearable
-                              getOptionLabel={(option) => option.toString()}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label={`ซื้อสำเร็จแล้ว(${buys?.length})`}
-                                  margin="normal"
-                                  variant="standard"
-                                  fullWidth
-                                />
-                              )}
-                              value={buys.map((option) => option.itemId)}
-                            />
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-            <div className="blog-footer"></div>
-            <div style={{ textAlign: "left", color: "#aaa", fontSize: "12px" }}>
-              หมายเหตุ : กรุณาชำระเงินภายใน 2 นาที เพราะการจองจะถูกยกเลิก
-            </div>
+                  <div className="blog-footer"></div>
+                  <div style={{ textAlign: "left", color: "#aaa", fontSize: "12px" }}>
+                    หมายเหตุ : กรุณาชำระเงินภายใน 2 นาที เพราะการจองจะถูกยกเลิก
+                  </div>
+                </>
+            }
+           
             <div>
               <Typography id="discrete-slider-always" gutterBottom>ซื้อไปแล้ว { sellView(data) } เบอร์ , จอง { bookView(data) } เบอร์ </Typography>
               <div className="pt-4">     

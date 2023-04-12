@@ -157,6 +157,10 @@ export default {
 
     async suppliers(parent, args, context, info){
       let start = Date.now()
+      let { req } = context
+      let { status, code, pathname, current_user } = await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+
       let { PAGE, LIMIT } = args
       let skip = (PAGE - 1) * LIMIT;
 

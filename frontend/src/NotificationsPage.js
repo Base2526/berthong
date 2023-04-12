@@ -145,8 +145,4 @@ const NotificationsPage = (props) => {
             </div>);
 }
 
-const mapStateToProps = (state, ownProps) => {
-    return {}
-}
-const mapDispatchToProps = { }
-export default connect( mapStateToProps, mapDispatchToProps )(NotificationsPage);
+export default NotificationsPage

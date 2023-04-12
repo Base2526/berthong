@@ -117,16 +117,16 @@ const HomeItem = (props) => {
                       }
                       alt="Avatar"
                     />
-                      <h4 className="card-title icon-card-share" 
-                          style={{ float: "right" }}>
-                          <IconButton onClick={(e) =>onMutationFollow({ variables: { id: item._id } })}> 
-                            <BookmarkIcon style={{ color : !_.isEmpty(isFollow) ? "blue" : "" }} />
-                          </IconButton>
-                          <IconButton onClick={(e) => { setOpenMenu({ [index]: e.currentTarget }); }}><ShareIcon /></IconButton>
-                      </h4>
-                      <div className="row text-jong">
-                        <div className="font12">ยอดจอง {  _.filter(item.buys, (buy)=> buy.selected == 0 )?.length }, ขายไปแล้ว { _.filter(item.buys, (buy)=> buy.selected == 1 )?.length }</div>
-                      </div>
+                    <h4 className="card-title icon-card-share" 
+                        style={{ float: "right" }}>
+                        <IconButton onClick={(e) =>onMutationFollow({ variables: { id: item._id } })}> 
+                          <BookmarkIcon style={{ color : !_.isEmpty(isFollow) ? "blue" : "" }} />
+                        </IconButton>
+                        <IconButton onClick={(e) => { setOpenMenu({ [index]: e.currentTarget }); }}><ShareIcon /></IconButton>
+                    </h4>
+                    <div className="row text-jong">
+                      <div className="font12">ยอดจอง {  _.filter(item.buys, (buy)=> buy.selected == 0 )?.length }, ขายไปแล้ว { _.filter(item.buys, (buy)=> buy.selected == 1 )?.length }</div>
+                    </div>
                   </div>
                   <div className="card-body" style={{ overflowY: "auto" }}>
                     <div className="row">

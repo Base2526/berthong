@@ -110,6 +110,7 @@ const HomePage = (props) => {
     _.map(errorSuppliers?.graphQLErrors, (e)=>{
       switch(e?.extensions?.code){
         case Constants.FORCE_LOGOUT:{
+          showToast("error", "Force logout")
           logout()
           break;
         }

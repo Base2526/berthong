@@ -1,14 +1,23 @@
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import queryString from 'query-string';
-import React from "react";
 import { useTranslation } from "react-i18next";
 import { createSearchParams, useLocation, useNavigate } from "react-router-dom";
+import {
+    Avatar
+} from '@mui/material';
+import {
+    AiFillCamera as CameraIcon
+} from "react-icons/ai" 
+import { IconButton } from "@material-ui/core";
+import _ from "lodash"
+import { styled } from "@mui/material/styles";
 
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants";
 import { queryMe } from "./gqlQuery";
 import { checkRole, getHeaders } from "./util";
-
 import AutoGenerationContent from "./AutoGenerationContent";
+const Input = styled("input")({ display: "none" });
 
 const MePage = (props) => {
     const navigate = useNavigate();
@@ -19,21 +28,31 @@ const MePage = (props) => {
     
     let { user, updateProfile,  logout } = props
 
-    console.log("params :", params)
+    const [data, setData] = useState(user)
 
-    let meValues = useQuery(queryMe, {
-        context: { headers: getHeaders(location) },
-        notifyOnNetworkStatusChange: true,
-    });
+    const { loading: loadingMe, 
+            data: dataMe, 
+            error: errorMe, 
+            refetch: refetchMe,
+            networkStatus } = useQuery(queryMe, 
+                                        { 
+                                            context: { headers: getHeaders(location) }, 
+                                            fetchPolicy: 'cache-first',
+                                            nextFetchPolicy: 'network-only',
+                                            notifyOnNetworkStatusChange: true
+                                        }
+                                    );
 
-    console.log("meValues :", meValues)
-
-    if(!meValues.loading){
-        let { status, data } = meValues.data.me
-        if(status){
-            updateProfile(data)
+    useEffect(()=>{
+        if(!loadingMe){
+            if(!_.isEmpty(dataMe?.me)){
+                let { status, data } = dataMe?.me
+                if(status){
+                    updateProfile(data)
+                }
+            }
         }
-    }
+    }, [dataMe, loadingMe])
 
     const managementView = () =>{
         switch(checkRole(user)){
@@ -120,23 +139,44 @@ const MePage = (props) => {
         }
     }
 
-    return (  <div style={{flex:1}}>
-                    <div> Profile Page {user.displayName} - {user.email} </div>
-                    <button onClick={()=>{
-                        // history.push({ pathname: "/user",  search: `?u=${user._id}`, state: {from: "/", mode: "edit", id: user._id } });
-                        navigate("/user",  {
-                                                search: `?${createSearchParams({ u: user._id})}`,
-                                                state: {from: "/", mode: "edit", id: user._id }
-                                            })
-                    }}>แก้ไขข้อมูล</button>
-                    <div> Balance : { user?.balance }[-{ user?.balanceBook }]</div>
-                    {managementView()}
-                    <button onClick={()=>{
-                        logout()
-                        // history.push("/");
-                        navigate("/")
-                    }}>Logout</button>
-                </div>);
+    return (<div style={{flex:1}}>
+                <div>
+                    <Avatar 
+                        sx={{ width: 80, height: 80 }} 
+                        src= {  data?.avatar?.url ? data?.avatar?.url : URL.createObjectURL(data?.avatar) }
+                        variant="rounded" />
+                    <label htmlFor="contained-button-file">
+                        <Input
+                            accept="image/*"
+                            id="contained-button-file"
+                            name="file"
+                            multiple={ false }
+                            type="file"
+                            onChange={(e) => setData({...data, avatar: e.target.files[0]}) } />
+                        <IconButton
+                            color="primary"
+                            aria-label="upload picture"
+                            component="span">
+                            <CameraIcon size="0.8em"/>
+                        </IconButton>
+                    </label>
+                </div>
+                <div> Display name : {data.displayName} </div>
+                <div> Email : {data.email} </div>
+                <button onClick={()=>{
+                    navigate("/user",  {
+                                            search: `?${createSearchParams({ u: data._id})}`,
+                                            state: {from: "/", mode: "edit", id: data._id }
+                                        })
+                }}>แก้ไขข้อมูล</button>
+                <div> Balance : { data?.balance }[-{ data?.balanceBook }]</div>
+                {managementView()}
+                <button onClick={()=>{
+                    logout()
+                    // history.push("/");
+                    navigate("/")
+                }}>Logout</button>
+            </div>);
 }
 
 export default MePage

@@ -100,9 +100,7 @@ import WithdrawsPage from "./WithdrawsPage";
 import BreadcsComp from "./components/BreadcsComp";
 import DialogLogoutComp from "./components/DialogLogoutComp";
 import NotificationsPage from "./NotificationsPage";
-
 import LoginWithLine from "./LoginWithLine";
-
 import LightboxComp from "./components/LightboxComp"
 import DialogLoginComp from "./components/DialogLoginComp"
 
@@ -209,23 +207,16 @@ const App =(props) =>{
   const location = useLocation();
   const navigate = useNavigate();
   let intervalPing = useRef(null);
-
   let [openMenuProfile, setOpenMenuProfile] = useState(null);
-
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [openDialogLogout, setOpenDialogLogout] = useState(false);
   const [dialogLogin, setDialogLogin] = useState(false);
   const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
-
   let [notifications, setNotifications] =useState([])
-
   let [search, setSearch] = useState(Constants.INIT_SEARCH)
-
   let { ws, user, updateProfile, editedUserBalace, editedUserBalaceBook } = props
-
-  
 
   const { loading: loadingNotifications, 
           data: dataNotifications, 
@@ -615,7 +606,6 @@ const App =(props) =>{
             </Menu>
   }
 
-
   return (
     <div className="App">
       {lightbox.isOpen  && <LightboxComp lightbox={lightbox} onLightbox={(v)=>setLightbox(v)}/> }
@@ -624,7 +614,6 @@ const App =(props) =>{
         openDialogLogout 
         && <DialogLogoutComp {...props} open={openDialogLogout} onClose={()=>setOpenDialogLogout(false)}/>
       }
-
       {
         dialogLogin 
         && <DialogLoginComp   
@@ -637,8 +626,8 @@ const App =(props) =>{
               setDialogLogin(false);
             }}/>
       }
-      
       {statusView()}
+      {menuProfile()}
       <div className="container-fluid">
         <div className={classes.root}>
           <CssBaseline />
@@ -648,59 +637,55 @@ const App =(props) =>{
               [classes.appBarShift]: open
             })}>
             <Toolbar>
-              {menuProfile()}
               {
-                // _.isEqual(checkRole(user), Constants.AMDINISTRATOR)
-                // ? <Typography variant="h6" noWrap>AMDINISTRATOR</Typography> 
-                // : 
                 <>
-                    <IconButton
-                      color="inherit"
-                      aria-label="open drawer"
-                      onClick={handleDrawerOpen}
-                      edge="start"
-                      className={clsx(classes.menuButton, open && classes.hide)}
-                    ><MenuIcon /></IconButton>
-                    <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">Berthong.com</div></Typography>
-                    {
-                      !_.isEmpty(user) && checkRole(user) === Constants.AUTHENTICATED 
-                      ? <Stack direction={"row"} spacing={2} alignItems="center">
-                          {/* <Typography variant="h6" noWrap>
-                            {"[  Name :" + user?.displayName +", Email :"+ user?.email + " ]"}
-                          </Typography> */}
-                          {/* <div>Balance : {numberCurrency(user?.balance ? user.balance : 0)} [-{numberCurrency(user?.balanceBook ? user.balanceBook : 0)}]</div> */}
-                          <IconButton 
-                            size={'small'}
-                            onClick={()=>{
-                              navigate("/notifications")
-                            }}>
-                            <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
-                              <MdCircleNotificationsIcon color="white" size="1.2em"/>
-                            </Badge>
-                          </IconButton>
-                          <IconButton 
-                            size={'small'}
-                            onClick={()=>{ navigate("/book-buy") }}>
-                            <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
-                              <FiShoppingCart color="white" size="1.2em"/>
-                            </Badge>
-                          </IconButton>
-                          <IconButton 
-                            size={'small'}
-                            onClick={(evt)=>{
-                              console.log(">>>")
+                  <IconButton
+                    color="inherit"
+                    aria-label="open drawer"
+                    onClick={handleDrawerOpen}
+                    edge="start"
+                    className={clsx(classes.menuButton, open && classes.hide)}
+                  ><MenuIcon /></IconButton>
+                  <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">Berthong.com</div></Typography>
+                  {
+                    !_.isEmpty(user) && checkRole(user) === Constants.AUTHENTICATED 
+                    ? <Stack direction={"row"} spacing={2} alignItems="center">
+                        {/* <Typography variant="h6" noWrap>
+                          {"[  Name :" + user?.displayName +", Email :"+ user?.email + " ]"}
+                        </Typography> */}
+                        {/* <div>Balance : {numberCurrency(user?.balance ? user.balance : 0)} [-{numberCurrency(user?.balanceBook ? user.balanceBook : 0)}]</div> */}
+                        <IconButton 
+                          size={'small'}
+                          onClick={()=>{
+                            navigate("/notifications")
+                          }}>
+                          <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
+                            <MdCircleNotificationsIcon color="white" size="1.2em"/>
+                          </Badge>
+                        </IconButton>
+                        <IconButton 
+                          size={'small'}
+                          onClick={()=>{ navigate("/book-buy") }}>
+                          <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
+                            <FiShoppingCart color="white" size="1.2em"/>
+                          </Badge>
+                        </IconButton>
+                        <IconButton 
+                          size={'small'}
+                          onClick={(evt)=>{
+                            console.log(">>>")
 
-                              setOpenMenuProfile(evt.currentTarget);
-                            }}>
-                            <Avatar 
-                              src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
-                              alt="profile"
-                            />
-                          </IconButton>
-                        </Stack>
-                      : ""  
-                    }
-                  </>
+                            setOpenMenuProfile(evt.currentTarget);
+                          }}>
+                          <Avatar 
+                            src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
+                            alt="profile"
+                          />
+                        </IconButton>
+                      </Stack>
+                    : ""  
+                  }
+                </>
               }
             </Toolbar>
           </AppBar>
@@ -781,7 +766,6 @@ const App =(props) =>{
                                                 onSearchChange={(evt)=>setSearch(evt)}
                                                 onMutationFollow={(evt)=>onMutationFollow(evt)} />} 
                                             />
-
             <Route path="/d" element={<DetailPage 
                                         {...props}
                                         onLogin={()=>setDialogLogin(true)} 
@@ -794,14 +778,11 @@ const App =(props) =>{
                                         }}
                                         onMutationComment={(evt)=>onMutationComment(evt)}/>} 
                                     />
-
             <Route path="/user/login" element={<LoginPage {...props} />} />
             <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/supplier" element={<SupplierPage />} />
             <Route path="/p" element={<ProfilePage  {...props} onLightbox={(value)=>setLightbox(value)} />}/>
-
             <Route path="/login-with-line" element={<LoginWithLine />}  />
-
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
               <Route path="/me" element={<MePage  {...props} />} />
               <Route path="/deposit" element={<DepositPage {...props} />} />
@@ -842,4 +823,3 @@ const mapDispatchToProps = {
 }
 
 export default connect( mapStateToProps, mapDispatchToProps )(App);
-

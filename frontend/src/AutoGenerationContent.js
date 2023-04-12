@@ -146,7 +146,7 @@ const AutoGenerationContent = (props) => {
 
                 <div>
                     <button onClick={()=>{
-                        for ( var i = 0; i < 100; i++ ) {
+                        for ( var i = 0; i < 5; i++ ) {
                             let newInput =  {
                                 username: faker.name.firstName(),
                                 password: faker.name.firstName(),
