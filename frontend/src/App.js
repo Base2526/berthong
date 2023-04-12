@@ -798,7 +798,7 @@ const App =(props) =>{
             <Route path="/user/login" element={<LoginPage {...props} />} />
             <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/supplier" element={<SupplierPage />} />
-            <Route path="/p" element={<ProfilePage onLightbox={(value)=>setLightbox(value)} />}/>
+            <Route path="/p" element={<ProfilePage  {...props} onLightbox={(value)=>setLightbox(value)} />}/>
 
             <Route path="/login-with-line" element={<LoginWithLine />}  />
 

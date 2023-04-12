@@ -2,7 +2,6 @@ import { useQuery } from "@apollo/client";
 import queryString from 'query-string';
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { connect } from "react-redux";
 import { createSearchParams, useLocation, useNavigate } from "react-router-dom";
 
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants";
@@ -140,10 +139,4 @@ const MePage = (props) => {
                 </div>);
 }
 
-const mapStateToProps = (state, ownProps) => {
-    return { }
-};
-
-const mapDispatchToProps = {}
-
-export default connect( mapStateToProps, mapDispatchToProps )(MePage);
+export default MePage

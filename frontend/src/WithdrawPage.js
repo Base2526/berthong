@@ -1,10 +1,8 @@
+import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import _ from "lodash";
-import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-
 import { 
   Stack,
   Box,
@@ -15,7 +13,6 @@ import {
 } from "@mui/material";
 
 import { mutationWithdraw, queryBanks, queryWithdrawById, queryWithdraws } from "./gqlQuery";
-import { logout } from "./redux/actions/auth";
 import { getHeaders, checkRole } from "./util";
 import  * as Constants from "./constants";
 import BankComp from "./components/BankComp"
@@ -337,8 +334,4 @@ const WithdrawPage = (props) => {
           </Stack>
 }
 
-const mapStateToProps = (state, ownProps) => {
-    return { }
-}
-const mapDispatchToProps = { logout }
-export default connect( mapStateToProps, mapDispatchToProps )(WithdrawPage);
+export default WithdrawPage

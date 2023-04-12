@@ -2,7 +2,6 @@ import React , {useState, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useApolloClient } from "@apollo/client";
 import { useDeviceData } from "react-device-detect";
-import { connect } from "react-redux";
 import _ from "lodash";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import LockIcon from '@mui/icons-material/Lock';
@@ -77,12 +76,6 @@ const LoginPage = (props) => {
                     </form>
                 </div>
             </div> );
-};
+}
 
-const mapStateToProps = (state, ownProps) => {
-    return { }
-};
-
-const mapDispatchToProps = { }
-  
-export default connect( mapStateToProps, mapDispatchToProps )(LoginPage);  
+export default LoginPage
