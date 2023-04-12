@@ -784,7 +784,7 @@ const App =(props) =>{
             <Route path="/p" element={<ProfilePage  {...props} onLightbox={(value)=>setLightbox(value)} />}/>
             <Route path="/login-with-line" element={<LoginWithLine />}  />
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
-              <Route path="/me" element={<MePage  {...props} />} />
+              <Route path="/me" element={<MePage {...props} onLightbox={(v)=>setLightbox(v)} />} />
               <Route path="/deposit" element={<DepositPage {...props} />} />
               <Route path="/withdraw" element={<WithdrawPage {...props} />} />
               <Route path="/history-transitions" {...props} element={<HistoryTransitionsPage {...props} />} />

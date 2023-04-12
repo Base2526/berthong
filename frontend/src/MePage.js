@@ -7,9 +7,10 @@ import {
     Avatar
 } from '@mui/material';
 import {
-    AiFillCamera as CameraIcon
+    AiFillCamera as CameraIcon,
+    AiOutlineZoomIn as ZoomInIcon
 } from "react-icons/ai" 
-import { IconButton } from "@material-ui/core";
+import { IconButton, LinearProgress } from "@material-ui/core";
 import _ from "lodash"
 import { styled } from "@mui/material/styles";
 
@@ -26,9 +27,9 @@ const MePage = (props) => {
 
     let params = queryString.parse(location.search)
     
-    let { user, updateProfile,  logout } = props
+    let { user, updateProfile, logout, onLightbox } = props
 
-    const [data, setData] = useState(user)
+    const [data, setData] = useState()
 
     const { loading: loadingMe, 
             data: dataMe, 
@@ -49,6 +50,8 @@ const MePage = (props) => {
                 let { status, data } = dataMe?.me
                 if(status){
                     updateProfile(data)
+
+                    setData(data)
                 }
             }
         }
@@ -140,42 +143,51 @@ const MePage = (props) => {
     }
 
     return (<div style={{flex:1}}>
-                <div>
-                    <Avatar 
-                        sx={{ width: 80, height: 80 }} 
-                        src= {  data?.avatar?.url ? data?.avatar?.url : URL.createObjectURL(data?.avatar) }
-                        variant="rounded" />
-                    <label htmlFor="contained-button-file">
-                        <Input
-                            accept="image/*"
-                            id="contained-button-file"
-                            name="file"
-                            multiple={ false }
-                            type="file"
-                            onChange={(e) => setData({...data, avatar: e.target.files[0]}) } />
-                        <IconButton
-                            color="primary"
-                            aria-label="upload picture"
-                            component="span">
-                            <CameraIcon size="0.8em"/>
-                        </IconButton>
-                    </label>
-                </div>
-                <div> Display name : {data.displayName} </div>
-                <div> Email : {data.email} </div>
-                <button onClick={()=>{
-                    navigate("/user",  {
-                                            search: `?${createSearchParams({ u: data._id})}`,
-                                            state: {from: "/", mode: "edit", id: data._id }
-                                        })
-                }}>แก้ไขข้อมูล</button>
-                <div> Balance : { data?.balance }[-{ data?.balanceBook }]</div>
-                {managementView()}
-                <button onClick={()=>{
-                    logout()
-                    // history.push("/");
-                    navigate("/")
-                }}>Logout</button>
+                {
+                    loadingMe || _.isEmpty(data)
+                    ?  <LinearProgress />
+                    :  <>
+                            <div>
+                                <Avatar 
+                                    sx={{ width: 80, height: 80 }} 
+                                    src= {  data?.avatar?.url ? data?.avatar?.url : URL.createObjectURL(data?.avatar) }
+                                    variant="rounded" />
+                                <>
+                                    <label htmlFor="contained-button-file">
+                                        <Input
+                                            accept="image/*"
+                                            id="contained-button-file"
+                                            name="file"
+                                            multiple={ false }
+                                            type="file"
+                                            onChange={(e) => setData({...data, avatar: e.target.files[0]}) } />
+                                        <IconButton
+                                            color="primary"
+                                            aria-label="upload picture"
+                                            component="span">
+                                            <CameraIcon size="0.8em"/>
+                                        </IconButton>
+                                    </label>
+                                    { data?.avatar?.url &&  <IconButton onClick={(evt)=> onLightbox({ isOpen: true, photoIndex: 0, images:[data?.avatar] }) }><ZoomInIcon size="0.8em" /></IconButton> }
+                                </>
+                            </div>
+                            <div> Display name : {data.displayName} </div>
+                            <div> Email : {data.email} </div>
+                            <button onClick={()=>{
+                                navigate("/user",  {
+                                                        search: `?${createSearchParams({ u: data._id})}`,
+                                                        state: {from: "/", mode: "edit", id: data._id }
+                                                    })
+                            }}>แก้ไขข้อมูล</button>
+                            <div> Balance : { data?.balance }[-{ data?.balanceBook }]</div>
+                            {managementView()}
+                            {/* <button onClick={()=>{
+                                logout()
+                                // history.push("/");
+                                navigate("/")
+                            }}>Logout</button> */}
+                        </>
+                }
             </div>);
 }
 
