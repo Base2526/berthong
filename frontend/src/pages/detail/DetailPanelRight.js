@@ -1,10 +1,7 @@
 import React, { useMemo } from "react";
 import clsx from "clsx";
 import Chip from "@mui/joy/Chip";
-import TextField from "@material-ui/core/TextField";
 import { Rating, Autocomplete } from "@material-ui/lab";
-import { MdOutlineSavings } from "react-icons/md"
-import { HiOutlineShoppingBag } from "react-icons/hi"
 import _ from "lodash"
 import {
   IconButton,
@@ -13,18 +10,17 @@ import {
   ContentCopy as ContentCopyIcon,
   BugReport as BugReportIcon,
   Bookmark as BookmarkIcon,
-  Share as ShareIcon
+  Share as ShareIcon,
+  CurrencyExchangeOutlined as CurrencyExchangeOutlinedIcon,
+  AddShoppingCartOutlined as AddShoppingCartOutlinedIcon
 } from "@mui/icons-material"
-import CurrencyExchangeOutlinedIcon from '@mui/icons-material/CurrencyExchangeOutlined';
-import AddShoppingCartOutlinedIcon from '@mui/icons-material/AddShoppingCartOutlined';
-import Slider from '@material-ui/core/Slider';
-import Typography from '@material-ui/core/Typography';
 import {
-  MoreVert as MoreVertIcon,
-} from "@material-ui/icons";
+  Slider,
+  Typography,
+  TextField
+} from "@material-ui/core";
 
-import { numberCurrency, minTwoDigits } from "../../util"
-
+import { numberCurrency, minTwoDigits, sellView, bookView } from "../../util"
 import CommentComp from "../../components/CommentComp"
 
 const numberLotterys = Array.from({ length: 10 * 10 }, (_, i) => i);
@@ -74,6 +70,11 @@ const DetailPanelRight = (props) =>{
   let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
   let buys      =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 1) )
 
+//   export const sellView = (val) =>{
+//     let fn = _.filter(val.buys, (buy)=> buy.selected == 1 );
+//     return fn.length;
+// }
+
   const marks = [
     {
       value: 60,
@@ -81,10 +82,9 @@ const DetailPanelRight = (props) =>{
     },
   ];
   
-  function valuetext(value) {
+  const valuetext = (value, index) => {
     return `${value}°C`;
   }
-
 
   return  <div className="ber-bg1 border col-lg-8 col-md-8 col-sm-12 col-12">
             <div className="row" style={{textAlign:"right"}}>
@@ -259,20 +259,20 @@ const DetailPanelRight = (props) =>{
               หมายเหตุ : กรุณาชำระเงินภายใน 2 นาที เพราะการจองจะถูกยกเลิก
             </div>
             <div>
-                <Typography id="discrete-slider-always" gutterBottom>
-                  ซื้อไปแล้ว 37 เบอร์ , จอง 12 เบอร์
-                </Typography>
-                <div className="pt-4">     
-                  <Slider
+              <Typography id="discrete-slider-always" gutterBottom>ซื้อไปแล้ว { sellView(data) } เบอร์ , จอง { bookView(data) } เบอร์ </Typography>
+              <div className="pt-4">     
+                <Slider
                   track={false}
                   aria-labelledby="track-false-range-slider"
                   getAriaValueText={valuetext}
-                  defaultValue={[37, 60]}
+                  defaultValue={[ bookView(data), sellView(data), data?.condition ]}
+                  value={[ bookView(data), sellView(data), data?.condition ]}
                   valueLabelDisplay="on"
                   marks={marks}
+                  valueLabelFormat={value => <div>{value}</div>}
                   disabled
                   />
-                </div>
+              </div>
             </div>
             <div className="ber pt-3">
               <div className="row">
@@ -330,9 +330,7 @@ const DetailPanelRight = (props) =>{
               <CommentComp 
                 {...props} 
                 id={data?._id} 
-                onMutationComment={(input)=>{
-                  onMutationComment({ variables: { input }});
-              }}/>
+                onMutationComment={(input)=> onMutationComment({ variables: { input }}) }/>
             </div>
           </div>
 }

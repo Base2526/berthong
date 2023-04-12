@@ -4,7 +4,6 @@ const DetailPanelLeft = (props) =>{
   let { data, onLightbox } = props
   const [photoIndex, setPhotoIndex] = useState(0)
   const [currentImage, setCurrentImage] = useState(data?.files[0])
-  console.log(currentImage);
 
   return  useMemo(() => {
             return  <div className="ber-bg border col-lg-4 col-md-4 col-sm-12 col-12">

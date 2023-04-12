@@ -113,7 +113,8 @@ export const showToast = (type, text) =>{
     toast(
         <p style={{ fontSize: 16 }}>{text}</p>, 
         {
-          position: "top-right",
+        //   position: "top-right",
+          position:"bottom-right",
           autoClose: 1000,
           hideProgressBar: true,
           newestOnTop: false,
