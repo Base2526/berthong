@@ -493,6 +493,8 @@ export default gql`
     adminHome: JSON
 
     commentById(_id: ID!): JSON
+
+    bookmarks: JSON
   }  
   
   input RoomInput {

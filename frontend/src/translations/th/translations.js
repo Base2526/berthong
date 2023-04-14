@@ -80,4 +80,6 @@ export const TRANSLATIONS_TH = {
     report: "รายงาน",
 
     editable_placeholder: "กรอกรายละเอียด คอมเม้นต์?",
+
+    bookmark: "บุ๊กมาร์ก",
 };

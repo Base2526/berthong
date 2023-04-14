@@ -19,6 +19,10 @@ import {
   Typography,
   TextField
 } from "@material-ui/core";
+import {
+  MdOutlineBookmarkAdd as MdOutlineBookmarkAddIcon,
+  MdOutlineBookmarkAdded as MdOutlineBookmarkAddedIcon
+} from "react-icons/md"
 
 import { numberCurrency, minTwoDigits, sellView, bookView } from "../../util"
 import CommentComp from "../../components/CommentComp"
@@ -90,7 +94,11 @@ const DetailPanelRight = (props) =>{
             <div className="row" style={{textAlign:"right"}}>
               <h4 className="card-title" style={{ float: "right" }}>
                 <IconButton onClick={(e) => onFollow({ variables: { id: data?._id } }) }> 
-                  <BookmarkIcon style={{ color : !_.isEmpty(_.find(data?.follows, (f)=>f?.userId == user?._id)) ? "blue" : "" }} />
+                  {/* <BookmarkIcon style={{ color : !_.isEmpty(_.find(data?.follows, (f)=>f?.userId == user?._id)) ? "blue" : "" }} /> */}
+
+                  { _.isEmpty(_.find(data?.follows, (f)=>f?.userId == user?._id)) 
+                    ? <MdOutlineBookmarkAddIcon /> 
+                    : <MdOutlineBookmarkAddedIcon style={{ color: "blue" }} /> }
                 </IconButton>
                 <IconButton onClick={(e) =>onMenu(e.currentTarget)}><ShareIcon /></IconButton>
               </h4>

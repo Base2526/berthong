@@ -690,14 +690,39 @@ export default {
         let { _id } = args
         let { req } = context
 
-        console.log("commentById :", args)
-
         let { status, code, pathname, current_user } =  await checkAuthorization(req);
         if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
         let comm = await Comment.findOne({_id});
         return {  status: true,
                   data: _.isNull(comm) ? [] : comm,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }catch(error){
+        console.log("commentById error :", error)
+        return {  status: false,
+                  error: error?.message,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+    async bookmarks(parent, args, context, info){
+      try{
+        let start = Date.now()
+        let { req } = context
+
+        let { status, code, pathname, current_user } =  await checkAuthorization(req);
+        if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+
+        let suppliers = await Supplier.find({follows: {$elemMatch: {userId: current_user?._id} }})
+
+        suppliers = await Promise.all(_.map(suppliers, async(item)=>{
+                      let user = await User.findOne({_id: item.ownerId});
+                      if(_.isNull(user)) return null;
+                      return {...item._doc,  owner: user?._doc }
+                    }).filter(i=>!_.isNull(i)))
+
+        return {  status: true,
+                  data: suppliers,
+                  total: suppliers.length,
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
       }catch(error){
         console.log("commentById error :", error)

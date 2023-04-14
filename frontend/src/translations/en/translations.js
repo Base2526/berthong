@@ -79,4 +79,6 @@ export const TRANSLATIONS_EN = {
     report: "Report",
 
     editable_placeholder: "What are your thoughts?",
+
+    bookmark: "Bookmark",
 };

@@ -24,6 +24,7 @@ export const queryBuys            = gql`query buys { buys }`;
 export const queryNotifications   = gql`query notifications { notifications }`;
 export const queryAdminHome       = gql`query adminHome { adminHome }`;
 export const queryCommentById     = gql`query commentById($id: ID!) { commentById(_id: $id) }`;
+export const queryBookmarks       = gql`query bookmarks{ bookmarks }`;
 
 // mutation
 export const mutationLogin      = gql`mutation login($input: LoginInput) { login(input: $input) }`;

@@ -36,30 +36,27 @@ import {
 import {
   BiWalletAlt as AccountBalanceWalletIcon,
 } from 'react-icons/bi';
-
 import {
   FiLogOut as LogoutIcon,
 } from 'react-icons/fi';
-
 import {
   HiOutlineHome as HomeIcon,
 } from 'react-icons/hi';
-
 import {
   MdCircleNotifications as MdCircleNotificationsIcon,
 } from 'react-icons/md';
-
 import {
   FiShoppingCart
 } from "react-icons/fi"
-
 import {
   AiOutlineHistory
 } from "react-icons/ai"
-
 import {
   CgProfile as ProfileIcon
 } from "react-icons/cg"
+import {
+  MdOutlineBookmarkAdded as MdOutlineBookmarkAddedIcon
+} from "react-icons/md"
 
 import {
   Avatar,
@@ -101,8 +98,9 @@ import BreadcsComp from "./components/BreadcsComp";
 import DialogLogoutComp from "./components/DialogLogoutComp";
 import NotificationsPage from "./NotificationsPage";
 import LoginWithLine from "./LoginWithLine";
-import LightboxComp from "./components/LightboxComp"
-import DialogLoginComp from "./components/DialogLoginComp"
+import LightboxComp from "./components/LightboxComp";
+import DialogLoginComp from "./components/DialogLoginComp";
+import BookMarksPage from "./BookMarksPage";
 
 import { queryNotifications, 
           mutationFollow, 
@@ -236,12 +234,12 @@ const App =(props) =>{
 
         switch(mode?.toUpperCase()){
           case "FOLLOW":{
-            showToast("info", `FOLLOW`)
+            showToast("info", `Bookmark`)
             break
           }
   
           case "UNFOLLOW":{
-            showToast("info", `UNFOLLOW`)
+            showToast("info", `Un-Bookmark`)
             break
           }
         }
@@ -670,13 +668,16 @@ const App =(props) =>{
                             <FiShoppingCart color="white" size="1.2em"/>
                           </Badge>
                         </IconButton>
+
+                        {/* MdOutlineBookmarkAddedIcon */}
                         <IconButton 
                           size={'small'}
-                          onClick={(evt)=>{
-                            console.log(">>>")
-
-                            setOpenMenuProfile(evt.currentTarget);
-                          }}>
+                          onClick={()=>{ navigate("/bookmarks") }}>
+                          <MdOutlineBookmarkAddedIcon color="white" size="1.2em"/>
+                        </IconButton>
+                        <IconButton 
+                          size={'small'}
+                          onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
                           <Avatar 
                             src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
                             alt="profile"
@@ -792,6 +793,7 @@ const App =(props) =>{
               <Route path="/banks" element={<BanksPage {...props} />} />
               <Route path="/book-buy" element={<MeBookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/notifications" element={<NotificationsPage {...props} />} />
+              <Route path="/bookmarks" element={<BookMarksPage {...props} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
               <Route path="/deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />

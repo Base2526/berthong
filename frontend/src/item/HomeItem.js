@@ -16,6 +16,10 @@ import {
 } from "@mui/icons-material"
 import _ from "lodash"
 import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
+import {
+  MdOutlineBookmarkAdd as MdOutlineBookmarkAddIcon,
+  MdOutlineBookmarkAdded as MdOutlineBookmarkAddedIcon
+} from "react-icons/md"
 
 const HomeItem = (props) => {
   const navigate = useNavigate();
@@ -120,7 +124,7 @@ const HomeItem = (props) => {
                     <h4 className="card-title icon-card-share" 
                         style={{ float: "right" }}>
                         <IconButton onClick={(e) =>onMutationFollow({ variables: { id: item._id } })}> 
-                          <BookmarkIcon style={{ color : !_.isEmpty(isFollow) ? "blue" : "" }} />
+                          { _.isEmpty(isFollow) ? <MdOutlineBookmarkAddIcon /> : <MdOutlineBookmarkAddedIcon style={{ color: "blue" }} /> }
                         </IconButton>
                         <IconButton onClick={(e) => { setOpenMenu({ [index]: e.currentTarget }); }}><ShareIcon /></IconButton>
                     </h4>
