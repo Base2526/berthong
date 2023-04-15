@@ -20,7 +20,7 @@ export const TRANSLATIONS_TH = {
 
     login: "เข้าสู่ระบบ",
 
-    attack_file: "ไฟล์แนบ *",
+    attack_file: "ไฟล์แนบ",
 
     posts: "โพส",
     new_post: "สร้างโพสใหม่",
@@ -82,4 +82,6 @@ export const TRANSLATIONS_TH = {
     editable_placeholder: "กรอกรายละเอียด คอมเม้นต์?",
 
     bookmark: "บุ๊กมาร์ก",
+
+    send: "ส่ง"
 };

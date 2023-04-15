@@ -250,6 +250,13 @@ const BreadcsComp = (props) => {
         ]
       }
 
+      case "/contact-us":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">ติดต่อเรา</Typography>
+        ]
+      }
+
       case "/bank":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,

@@ -43,6 +43,8 @@ export const mutationNotification = gql`mutation notification($id: ID!) { notifi
 
 export const mutationComment    = gql`mutation comment($input: JSON) { comment(input: $input) }`;
 
+export const mutationContactUs    = gql`mutation contactUs($input: ContactUsInput) { contactUs(input: $input) }`;
+
 
 // subscription 
 export const subscriptionMe            = gql`subscription subscriptionMe($sessionId: ID!){ subscriptionMe(sessionId: $sessionId) }`;

@@ -78,7 +78,7 @@ const HomeItem = (props) => {
                   }
                   setOpenMenu(null)
                 }}><ContentCopyIcon size={20} round /> Copy link</MenuItem>
-              <MenuItem onClick={(e)=>{setOpenMenu(null)}}><BugReportIcon size={20} round />Report</MenuItem>
+              {/* <MenuItem onClick={(e)=>{setOpenMenu(null)}}><BugReportIcon size={20} round />Report</MenuItem> */}
             </Menu>
   }
 

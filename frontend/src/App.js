@@ -68,6 +68,10 @@ import {
   MenuItem
 } from "@mui/material";
 
+import {
+  GrContactInfo as GrContactInfoIcon
+} from "react-icons/gr"
+
 import _ from "lodash"
 
 import TaxonomyBankPage from "./TaxonomyBankPage";
@@ -101,6 +105,7 @@ import LoginWithLine from "./LoginWithLine";
 import LightboxComp from "./components/LightboxComp";
 import DialogLoginComp from "./components/DialogLoginComp";
 import BookMarksPage from "./BookMarksPage";
+import ContactUsPage from "./ContactUsPage";
 
 import { queryNotifications, 
           mutationFollow, 
@@ -110,7 +115,8 @@ import { queryNotifications,
           mutationComment,
           queryCommentById,
           mutationBuy,
-          subscriptionMe } from "./gqlQuery"
+          subscriptionMe,
+          mutationContactUs} from "./gqlQuery"
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
@@ -400,6 +406,56 @@ const App =(props) =>{
     }
   });
 
+  // 
+  const [onMutationContactUs, resultMutationContactUs] = useMutation(mutationContactUs,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {contactUs}}) => {
+      // let { status, commentId, data } = comment
+
+      console.log("contactUs :", contactUs)
+
+      // let {mode, itemId} = action
+      // switch(mode?.toUpperCase()){
+      //   case "BOOK":{
+      //     showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+      //     break
+      //   }
+
+      //   case "UNBOOK":{
+      //     showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+      //     break
+      //   }
+      // }
+      
+      // let resultCommentById = cache.readQuery({ query: queryCommentById, variables: {id: commentId}});
+      // if(status && resultCommentById){
+      //   cache.writeQuery({ 
+      //     query: queryCommentById, 
+      //     variables: {id: commentId},
+      //     data: { commentById: { ...resultCommentById.commentById, data } }, 
+      //   }); 
+      // }
+
+      // ////////// update cache querySuppliers ///////////
+      // let suppliersValue = cache.readQuery({ query: querySuppliers });
+      // if(!_.isNull(suppliersValue)){
+      //   let { suppliers } = suppliersValue
+      //   let newData = _.map(suppliers.data, (supplier) => supplier._id == data._id ? data : supplier)
+      //   cache.writeQuery({
+      //     query: querySuppliers,
+      //     data: { suppliers: { ...suppliersValue.suppliers, data: newData } }
+      //   });
+      // }
+      // ////////// update cache querySuppliers ///////////
+    },
+    onCompleted(data) {
+      showToast("success", "ส่งเรียบร้อย")
+    },
+    onError: (error) => {
+      return handlerErrorApollo( props, error ) 
+    }
+  });
+
   useEffect(()=>{
     console.log("search :", search)
   }, [search])
@@ -530,11 +586,13 @@ const App =(props) =>{
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
                 {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"},
                 {id: 5, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/banks"},
-                {id: 6, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
+                {id: 6, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
+                {id: 7, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
       }
       default:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
-                {id: 1, title:"Login", icon: <LoginIcon />, path: "/login"}]
+                {id: 1, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
+                {id: 2, title:"Login", icon: <LoginIcon />, path: "/login"}]
       }
     }
   }
@@ -641,6 +699,14 @@ const App =(props) =>{
                           onClick={()=>{ navigate("/bookmarks") }}>
                           <MdOutlineBookmarkAddedIcon color="white" size="1.2em"/>
                         </IconButton>
+
+                        {/*
+                        <IconButton 
+                          size={'small'}
+                          onClick={()=>{ console.log("report") }}>
+                          <BugReportIcon color="white" size="1.2em"/>
+                        </IconButton> */}
+
                         <IconButton 
                           size={'small'}
                           onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
@@ -745,8 +811,9 @@ const App =(props) =>{
             <Route path="/user/login" element={<LoginPage {...props} />} />
             <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/supplier" element={<SupplierPage />} />
-            <Route path="/p" element={<ProfilePage  {...props} onLightbox={(value)=>setLightbox(value)} />}/>
+            <Route path="/p" element={<ProfilePage {...props} onLightbox={(value)=>setLightbox(value)} />}/>
             <Route path="/login-with-line" element={<LoginWithLine />}  />
+            <Route path="/contact-us" element={<ContactUsPage onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
               <Route path="/me" element={<MePage {...props} onLightbox={(v)=>setLightbox(v)} />} />
               <Route path="/deposit" element={<DepositPage {...props} />} />
