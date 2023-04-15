@@ -22,8 +22,8 @@ import DetailPanelRight from "./DetailPanelRight"
 import DetailPanelLeft from "./DetailPanelLeft"
 import PopupCart from "./PopupCart";
 import PopupWallet from "./PopupWallet";
-import { getHeaders, showToast } from "../../util";
-import * as Constants from "../../constants"
+import { getHeaders, showToast, handlerErrorApollo } from "../../util";
+// import * as Constants from "../../constants"
 
 import {  querySupplierById, 
           subscriptionSupplierById, 
@@ -67,16 +67,7 @@ const Detail = (props) => {
                                                     });
 
   if(!_.isEmpty(errorUserById)){
-    _.map(errorUserById?.graphQLErrors, (e)=>{
-
-      console.log("e :", e)
-      // switch(e?.extensions?.code){
-      //   case FORCE_LOGOUT:{
-      //     logout()
-      //     break;
-      //   }
-      // }
-    })
+    return handlerErrorApollo( props, errorUserById )
   }
 
   useEffect(() => {

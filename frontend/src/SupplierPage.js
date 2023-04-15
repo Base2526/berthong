@@ -8,7 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import moment from "moment";
 
 import { mutationSupplier, queryDateLotterys, querySupplierById } from "./gqlQuery";
-import { getHeaders, showToast } from "./util";
+import { getHeaders, showToast, handlerErrorApollo } from "./util";
 import AttackFileField from "./AttackFileField";
 import { FORCE_LOGOUT, DATA_NOT_FOUND, UNAUTHENTICATED, ERROR } from "./constants"
 import { logout } from "./redux/actions/auth";
@@ -98,20 +98,7 @@ const SupplierPage = (props) => {
       navigate(-1)
     },
     onError(error){
-      _.map(error?.graphQLErrors, (e)=>{
-        switch(e?.extensions?.code){
-          case FORCE_LOGOUT:{
-            logout()
-            break;
-          } 
-          case DATA_NOT_FOUND:
-          case UNAUTHENTICATED:
-          case ERROR:{
-            showToast("error", e?.message)
-            break;
-          }
-        }
-      })
+      return handlerErrorApollo( props, error )
     }
   });
 

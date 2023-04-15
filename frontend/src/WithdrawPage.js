@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 
 import { mutationWithdraw, queryBanks, queryWithdrawById, queryWithdraws } from "./gqlQuery";
-import { getHeaders, checkRole } from "./util";
+import { getHeaders, checkRole, handlerErrorApollo } from "./util";
 import  * as Constants from "./constants";
 import BankComp from "./components/BankComp"
 
@@ -53,16 +53,7 @@ const WithdrawPage = (props) => {
                                                 })
 
   if(!_.isEmpty(errorWithdrawById)){
-    _.map(errorWithdrawById?.graphQLErrors, (e)=>{
-
-      console.log("error :", e)
-      // switch(e?.extensions?.code){
-      //   case FORCE_LOGOUT:{
-      //     logout()
-      //     break;
-      //   }
-      // }
-    })
+    return handlerErrorApollo( props, errorWithdrawById )
   }
 
   const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {

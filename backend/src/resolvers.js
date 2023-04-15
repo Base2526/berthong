@@ -753,11 +753,11 @@ export default {
                     return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
                   })), e=>!_.isNull(e) ) 
 
-      user = {...user._doc, 
-              banks,
-              // balance: (await checkBalance(user?._id)).balance,
-              ...await checkBalance(user?._id),
-              balanceBook: await checkBalanceBook(user?._id)}
+      user = {  ...user._doc, 
+                banks,
+                ...await checkBalance(user?._id),
+                balanceBook: await checkBalanceBook(user?._id)
+              }
 
       return {
         status: true,

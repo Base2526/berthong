@@ -9,7 +9,7 @@ import { ErrorOutline as ErrorOutlineIcon } from "@material-ui/icons";
 import { lightGreen, blueGrey } from "@material-ui/core/colors";
 
 import { querySuppliers, subscriptionSuppliers} from "./gqlQuery";
-import { getHeaders, showToast } from "./util";
+import { handlerErrorApollo,  getHeaders, showToast } from "./util";
 import HomeItem from "./item/HomeItem"
 import SearchComp from "./components/SearchComp"
 import SkeletonComp from "./components/SkeletonComp"
@@ -101,22 +101,11 @@ const HomePage = (props) => {
                                         variables: { input: search },
                                         fetchPolicy: 'cache-first',
                                         nextFetchPolicy: 'network-only', 
-                                        // fetchPolicy: 'cache-and-network', // cache all pages in the Apollo cache
                                         notifyOnNetworkStatusChange: true
                                       }
                                     );
 
-  if(!_.isEmpty(errorSuppliers)){
-    _.map(errorSuppliers?.graphQLErrors, (e)=>{
-      switch(e?.extensions?.code){
-        case Constants.FORCE_LOGOUT:{
-          showToast("error", "Force logout")
-          logout()
-          break;
-        }
-      }
-    })
-  }
+  !_.isEmpty(errorSuppliers) ? handlerErrorApollo( props, errorSuppliers ) : ""
 
   useEffect(()=>{
     onSearchChange({...search, PAGE: 1 })

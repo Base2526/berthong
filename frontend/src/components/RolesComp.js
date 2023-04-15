@@ -5,7 +5,7 @@ import { useQuery } from "@apollo/client";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 
 import { queryRoleByIds } from "../gqlQuery"
-import { getHeaders } from "../util"
+import { getHeaders, handlerErrorApollo } from "../util"
 
 const RolesComp = (props) => {
     const navigate = useNavigate();
@@ -24,15 +24,7 @@ const RolesComp = (props) => {
                                                                 notifyOnNetworkStatusChange: true 
                                                             });
     if(!_.isEmpty(errorRoleByIds)){
-        _.map(errorRoleByIds?.graphQLErrors, (e)=>{
-            console.log("e :", e)
-            // switch(e?.extensions?.code){
-            //     case UNAUTHENTICATED:{
-            //         showToast("error", e?.message)
-            //     break;
-            //     }
-            // }
-        })
+        return handlerErrorApollo( props, errorRoleByIds )
     }
 
     useEffect(() => {

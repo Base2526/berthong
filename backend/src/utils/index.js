@@ -19,15 +19,20 @@ export const fileRenamer = (filename) => {
     return `${arrTemp[0].slice(0, arrTemp[0].length - 1).join("_")}${queHoraEs}.${arrTemp[0].pop()}`;
 };
 
-export const getSessionId = async(userId, input) => {
-    let newInput = {...input, userId, token: jwt.sign(userId.toString(), process.env.JWT_SECRET)}
+export const getSessionId = async(userId, input) => {  
+    await Session.remove({userId})
+
+    // let session = await Session.findOne({userId, deviceAgent: newInput.deviceAgent})
+    // if(_.isEmpty(session)){
+    //     let  session = await Session.create(newInput);
+    // }
+
+    let session = await Session.create({...input, 
+                                        userId, 
+                                        token: jwt.sign(userId.toString(), 
+                                        process.env.JWT_SECRET)});
   
-    let session = await Session.findOne({userId, deviceAgent: newInput.deviceAgent})
-    if(_.isEmpty(session)){
-      session = await Session.create(newInput);
-    }
-  
-    return session._id.toString()
+    return session?._id.toString()
 }
 
 export const checkAuthorization = async(req) => {

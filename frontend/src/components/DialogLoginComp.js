@@ -21,8 +21,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { mutationLogin, mutationLoginWithSocial } from "../gqlQuery";
-import { USER_NOT_FOUND } from "../constants";
-import { showToast } from "../util";
+import { handlerErrorApollo } from "../util";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import line from '../line.svg';
@@ -52,14 +51,7 @@ const DialogLoginComp = (props) => {
       console.log("onCompleted :", data)
     },
     onError(error){
-      _.map(error?.graphQLErrors, (e)=>{
-        switch(e?.extensions?.code){
-          case USER_NOT_FOUND:{
-            showToast("error", error?.message)
-            break;
-          }
-        }
-      })
+      return handlerErrorApollo( props, error )
     }
   });
 

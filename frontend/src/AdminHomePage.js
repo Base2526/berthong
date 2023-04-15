@@ -14,7 +14,7 @@ import {
   FiRefreshCcw
 } from "react-icons/fi"
 import { queryAdminHome } from "./gqlQuery";
-import { getHeaders, showToast } from "./util";
+import { getHeaders, showToast, handlerErrorApollo } from "./util";
 import * as Constants from "./constants"
 
 const useStyles = makeStyles((theme) => ({
@@ -108,17 +108,7 @@ const AdminHomePage = (props) => {
                                     );
 
   if(!_.isEmpty(errorAdminHome)){
-    _.map(errorAdminHome?.graphQLErrors, (e)=>{
-      switch(e?.extensions?.code){
-        case Constants.UNAUTHENTICATED:{
-          showToast("error", e.message)
-          break;
-        }
-        default:{
-          console.log("error :",  e.message)
-        }
-      }
-    })
+    return handlerErrorApollo( props, errorAdminHome )
   }
   
   useEffect(() => {

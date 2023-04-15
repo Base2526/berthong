@@ -26,7 +26,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { mutationWithdraw, queryWithdraws } from "./gqlQuery";
 // import { logout } from "./redux/actions/auth";
-import { checkRole, getHeaders, showToast } from "./util";
+import { getHeaders, handlerErrorApollo } from "./util";
 // import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants";
 // import TableComp from "./components/TableComp"
 
@@ -62,14 +62,7 @@ const WithdrawsPage = (props) => {
                                     );
 
   if(!_.isEmpty(errorWithdraws)){
-    _.map(errorWithdraws?.graphQLErrors, (e)=>{
-      switch(e?.extensions?.code){
-        case Constants.UNAUTHENTICATED:{
-          showToast("error", e?.message)
-          break;
-        }
-      }
-    })
+    return handlerErrorApollo( props, errorWithdraws )
   }
 
   useEffect(() => {

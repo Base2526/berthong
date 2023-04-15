@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
-import { getHeaders } from "./util"
+import { getHeaders, handlerErrorApollo } from "./util"
 import { mutationSupplier, queryDateLotterys, mutationRegister, queryUsers } from "./gqlQuery"
 
 const { faker } = require("@faker-js/faker");
@@ -28,16 +28,7 @@ const AutoGenerationContent = (props) => {
                                     );
 
     if(!_.isEmpty(errorUsers)){
-        _.map(errorUsers?.graphQLErrors, (e)=>{
-
-            console.log("e :", e)
-            // switch(e?.extensions?.code){
-            //   case FORCE_LOGOUT:{
-            //     logout()
-            //     break;
-            //   }
-            // }
-        })
+        return handlerErrorApollo( props, errorUsers )
     }
 
     const { loading: loadingDateLotterys, 

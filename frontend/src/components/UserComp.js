@@ -6,7 +6,7 @@ import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import { Avatar } from "@mui/material"
 
 import { queryUserById } from "../gqlQuery"
-import { getHeaders } from "../util"
+import { getHeaders, handlerErrorApollo } from "../util"
 
 const UserComp = (props) => {
     const navigate = useNavigate();
@@ -26,17 +26,9 @@ const UserComp = (props) => {
                                                             });
 
     if(!_.isEmpty(errorUserById)){
-        _.map(errorUserById?.graphQLErrors, (e)=>{
-
-            console.log("")
-            // switch(e?.extensions?.code){
-            //     case UNAUTHENTICATED:{
-            //     showToast("error", e?.message)
-            //     break;
-            //     }
-            // }
-        })
+        return handlerErrorApollo( props, errorUserById )
     }
+    
     useEffect(() => {
         if(!loadingUserById){
             if (dataUserById?.userById) {

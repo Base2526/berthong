@@ -24,7 +24,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, createSearchParams } from "react-router-dom";
 
 import { queryUsers } from "./gqlQuery";
-import { getHeaders, showToast } from "./util";
+import { getHeaders, handlerErrorApollo } from "./util";
 import RolesComp from "./components/RolesComp"
 import * as Constants from "./constants";
 
@@ -58,14 +58,7 @@ const UsersPage = (props) => {
                                     );
 
   if(!_.isEmpty(errorUsers)){
-    _.map(errorUsers?.graphQLErrors, (e)=>{
-      switch(e?.extensions?.code){
-        case Constants.UNAUTHENTICATED:{
-          showToast("error", e?.message)
-          break;
-        }
-      }
-    })
+    return handlerErrorApollo( props, errorUsers )
   }
 
   useEffect(() => {

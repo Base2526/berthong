@@ -22,7 +22,7 @@ import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import { queryBanks } from "./gqlQuery"
-import { getHeaders, checkRole, showToast } from "./util"
+import { getHeaders, handlerErrorApollo } from "./util"
 
 import * as Constants from "./constants"
 
@@ -51,14 +51,7 @@ const TaxonomyBanksPage = (props) => {
                                                 );
 
   if(!_.isEmpty(errorBanks)){
-    _.map(errorBanks?.graphQLErrors, (e)=>{
-      switch(e?.extensions?.code){
-        case Constants.UNAUTHENTICATED:{
-          showToast("error", e?.message)
-          break;
-        }
-      }
-    })
+    return handlerErrorApollo( props, errorBanks )
   }
 
   useEffect(() => {

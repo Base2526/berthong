@@ -91,7 +91,7 @@ import ProfilePage from "./ProfilePage";
 import SuppliersPage from "./SuppliersPage";
 import UserPage from "./UserPage";
 import UsersPage from "./UsersPage";
-import { checkRole, getHeaders, numberCurrency, showToast} from "./util";
+import { checkRole, getHeaders, handlerErrorApollo, showToast} from "./util";
 import WithdrawPage from "./WithdrawPage";
 import WithdrawsPage from "./WithdrawsPage";
 import BreadcsComp from "./components/BreadcsComp";
@@ -266,15 +266,8 @@ const App =(props) =>{
     onCompleted(data) {
       console.log("onCompleted")
     },
-    onError: (err) => {
-      _.map(err?.graphQLErrors, (e)=>{
-        switch(e?.extensions?.code){
-          case Constants.UNAUTHENTICATED:{
-            showToast("error", e?.message)
-            break;
-          }
-        }
-      })
+    onError: (error) => {
+      return handlerErrorApollo( props, error )
     }
   });
 
@@ -321,20 +314,7 @@ const App =(props) =>{
       console.log("onCompleted")
     },
     onError: (error) => {
-      _.map(error?.graphQLErrors, (e)=>{
-        switch(e?.extensions?.code){
-          case Constants.FORCE_LOGOUT:{
-            // logout()
-            break;
-          }
-          case Constants.DATA_NOT_FOUND:
-          case Constants.UNAUTHENTICATED:
-          case Constants.ERROR:{
-            showToast("error", e?.message)
-            break;
-          }
-        }
-      })
+      return handlerErrorApollo( props, error )
     }
   });
 
@@ -416,21 +396,7 @@ const App =(props) =>{
       console.log("onCompleted")
     },
     onError: (error) => {
-      console.log("error :", error)
-      // _.map(error?.graphQLErrors, (e)=>{
-      //   switch(e?.extensions?.code){
-      //     case Constants.FORCE_LOGOUT:{
-      //       // logout()
-      //       break;
-      //     }
-      //     case Constants.DATA_NOT_FOUND:
-      //     case Constants.UNAUTHENTICATED:
-      //     case Constants.ERROR:{
-      //       showToast("error", e?.message)
-      //       break;
-      //     }
-      //   }
-      // })
+      return handlerErrorApollo( props, error ) 
     }
   });
 
@@ -765,8 +731,7 @@ const App =(props) =>{
                                                 search={search} 
                                                 onLogin={()=>setDialogLogin(true)} 
                                                 onSearchChange={(evt)=>setSearch(evt)}
-                                                onMutationFollow={(evt)=>onMutationFollow(evt)} />} 
-                                            />
+                                                onMutationFollow={(evt)=>onMutationFollow(evt)} />} />
             <Route path="/d" element={<DetailPage 
                                         {...props}
                                         onLogin={()=>setDialogLogin(true)} 
@@ -775,10 +740,8 @@ const App =(props) =>{
                                         onMutationBook={(evt)=>onMutationBook(evt)}
                                         onMutationBuy={(evt)=>{
                                           console.log("onMutationBuy :", evt)
-                                          // onMutationBuy
                                         }}
-                                        onMutationComment={(evt)=>onMutationComment(evt)}/>} 
-                                    />
+                                        onMutationComment={(evt)=>onMutationComment(evt)}/>} />
             <Route path="/user/login" element={<LoginPage {...props} />} />
             <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/supplier" element={<SupplierPage />} />
@@ -824,4 +787,4 @@ const mapDispatchToProps = {
   logout
 }
 
-export default connect( mapStateToProps, mapDispatchToProps )(App);
+export default connect( mapStateToProps, mapDispatchToProps )(App)

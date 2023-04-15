@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 
 import { queryCommentById, subscriptionCommentById } from "../gqlQuery"
 import { CommentSection } from "./comment";
-import { getHeaders } from "../util"
+import { getHeaders, handlerErrorApollo } from "../util"
 
 let unsubscribeCommentById = null;
 const CommentComp = (props) => {
@@ -33,15 +33,7 @@ const CommentComp = (props) => {
                                     );
 
     if(!_.isEmpty(errorCommentById)){
-      _.map(errorCommentById?.graphQLErrors, (e)=>{
-        console.log("errorCommentById :", e)
-        // switch(e?.extensions?.code){
-        //   case Constants.FORCE_LOGOUT:{
-        //     logout()
-        //     break;
-        //   }
-        // }
-      })
+      return handlerErrorApollo( props, errorCommentById )
     }
 
     useEffect(()=>{
