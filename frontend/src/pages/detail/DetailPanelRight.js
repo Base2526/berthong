@@ -81,8 +81,8 @@ const DetailPanelRight = (props) =>{
 
   const marks = [
     {
-      value: 60,
-      label: '***ข้อกำหนด : คืนโพยเมื่อยอดซื้อไม่ถึง 60 เบอร์',
+      value: data?.condition,
+      label: `***ข้อกำหนด : คืนโพยเมื่อยอดซื้อไม่ถึง ${data?.condition} เบอร์`,
     },
   ];
   
