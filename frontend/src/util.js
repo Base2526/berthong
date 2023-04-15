@@ -147,6 +147,11 @@ export const handlerErrorApollo = (props, error) =>{
             break;
           }
 
+          case Constants.INTERNAL_SERVER_ERROR: {
+            showToast("error", e?.message)
+            break;
+          }
+
           default:{
             console.log("handlerErrorApollo :", e)
           }

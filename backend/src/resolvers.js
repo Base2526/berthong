@@ -9,8 +9,15 @@ import { __TypeKind } from 'graphql';
 import mongoose from 'mongoose';
 import { User, Supplier, Bank, Role, Deposit, Withdraw, DateLottery, Transition, Comment } from './model'
 import pubsub from './pubsub'
-import { emailValidate, checkBalance, checkBalanceBook, fileRenamer, 
-        checkAuthorization, checkAuthorizationWithSessionId, getSessionId, checkRole} from "./utils"
+import {  emailValidate, 
+          checkBalance, 
+          checkBalanceBook, 
+          fileRenamer, 
+          checkAuthorization, 
+          checkAuthorizationWithSessionId, 
+          getSessionId, 
+          checkRole, 
+          getUser } from "./utils"
 import { BAD_USER_INPUT, ERROR, FORCE_LOGOUT, DATA_NOT_FOUND, 
         USER_NOT_FOUND, UNAUTHENTICATED, AMDINISTRATOR, AUTHENTICATED,
         _ID_AMDINISTRATOR } from "./constants"
@@ -167,7 +174,7 @@ export default {
       let suppliers = await Supplier.find({}).skip(skip).limit(LIMIT); 
 
       suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-        let user = await User.findOne({_id: item.ownerId});
+        let user = await getUser({ _id: item.ownerId })
         if(_.isNull(user)) return null;
         return {...item._doc,  owner: user?._doc }
       }).filter(i=>!_.isNull(i)))
@@ -715,7 +722,7 @@ export default {
         let suppliers = await Supplier.find({follows: {$elemMatch: {userId: current_user?._id} }})
 
         suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-                      let user = await User.findOne({_id: item.ownerId});
+                      let user = await getUser({_id: item.ownerId})
                       if(_.isNull(user)) return null;
                       return {...item._doc,  owner: user?._doc }
                     }).filter(i=>!_.isNull(i)))
@@ -738,16 +745,17 @@ export default {
       let start = Date.now()
       let {input} = args
 
-      let user = emailValidate().test(input.username) ?  await User.findOne({email: input.username}) : await User.findOne({username: input.username})
+      let user = emailValidate().test(input.username) ? await getUser({email: input.username}) : await getUser({username: input.username})
       
       if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
       await User.updateOne({ _id: user?._id }, { lastAccess : Date.now() });
-      user = await User.findOne({ _id: user?._id}, 
-                                { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 })
+      user = await getUser({_id: user?._id}) 
+
       // let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
       //   return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
       // }))  
+      
       let banks = _.filter(await Promise.all(_.map(user?.banks, async(item)=>{
                     let bank = await Bank.findById(item.bankId)
                     return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
@@ -822,7 +830,7 @@ export default {
 
           let { data } = input
 
-          let user = await User.findOne({socialId: data.profileObj.googleId, socialType: 'google'});
+          let user = await getUser({socialId: data.profileObj.googleId, socialType: 'google'});
           if(_.isEmpty(user)){
 
             /*
@@ -868,7 +876,7 @@ export default {
         case "github":{
           let { data } = input
 
-          let user = await User.findOne({socialId: data.code, socialType: 'github'});
+          let user = await getUser({socialId: data.code, socialType: 'github'});
 
           let github_user = null;
           if(_.isEmpty(user)){
@@ -1023,7 +1031,7 @@ export default {
 
           let { data } = input
 
-          let user = await User.findOne({socialId: data.id, socialType: 'facebook'});
+          let user = await getUser({socialId: data.id, socialType: 'facebook'});
 
           if(_.isEmpty(user)){
             let newInput = {
@@ -1135,7 +1143,7 @@ export default {
 
       console.log("params register : ", input)
 
-      let user = await User.findOne({email: input.email})
+      let user = await getUser({ email: input.email } )
       if(!_.isNull(user)) throw new AppError(ERROR, 'Exiting email.')
 
       let newInput =  {...input,  password: cryptojs.AES.encrypt( input.password, process.env.JWT_SECRET).toString(),
