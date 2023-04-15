@@ -107,9 +107,7 @@ const AdminHomePage = (props) => {
                                       }
                                     );
 
-  if(!_.isEmpty(errorAdminHome)){
-    return handlerErrorApollo( props, errorAdminHome )
-  }
+  if(!_.isEmpty(errorAdminHome)) handlerErrorApollo( props, errorAdminHome )
   
   useEffect(() => {
     if(!loadingAdminHome){

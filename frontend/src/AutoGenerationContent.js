@@ -27,9 +27,7 @@ const AutoGenerationContent = (props) => {
                                         }
                                     );
 
-    if(!_.isEmpty(errorUsers)){
-        return handlerErrorApollo( props, errorUsers )
-    }
+    if(!_.isEmpty(errorUsers)) handlerErrorApollo( props, errorUsers )
 
     const { loading: loadingDateLotterys, 
             data: dataDateLotterys, 

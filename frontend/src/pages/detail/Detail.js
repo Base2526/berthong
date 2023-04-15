@@ -66,9 +66,7 @@ const Detail = (props) => {
                                                         notifyOnNetworkStatusChange: true 
                                                     });
 
-  if(!_.isEmpty(errorUserById)){
-    return handlerErrorApollo( props, errorUserById )
-  }
+  if(!_.isEmpty(errorUserById)) handlerErrorApollo( props, errorUserById )
 
   useEffect(() => {
     if(!loadingUserById){

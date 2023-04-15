@@ -52,9 +52,7 @@ const WithdrawPage = (props) => {
                                                   notifyOnNetworkStatusChange: true,
                                                 })
 
-  if(!_.isEmpty(errorWithdrawById)){
-    return handlerErrorApollo( props, errorWithdrawById )
-  }
+  if(!_.isEmpty(errorWithdrawById)) handlerErrorApollo( props, errorWithdrawById )
 
   const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
     context: { headers: getHeaders(location) },

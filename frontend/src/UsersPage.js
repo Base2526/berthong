@@ -57,9 +57,7 @@ const UsersPage = (props) => {
                                       }
                                     );
 
-  if(!_.isEmpty(errorUsers)){
-    return handlerErrorApollo( props, errorUsers )
-  }
+  if(!_.isEmpty(errorUsers)) handlerErrorApollo( props, errorUsers )
 
   useEffect(() => {
     if(!loadingUsers){

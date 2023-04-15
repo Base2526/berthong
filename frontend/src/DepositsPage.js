@@ -63,9 +63,7 @@ const DepositsPage = (props) => {
                                       }
                                     );
 
-  if(!_.isEmpty(errorDeposits)){
-    return handlerErrorApollo( props, errorDeposits )
-  }
+  if(!_.isEmpty(errorDeposits)) handlerErrorApollo( props, errorDeposits )
 
   const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
     context: { headers: getHeaders(location) },

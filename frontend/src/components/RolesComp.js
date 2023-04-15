@@ -23,9 +23,7 @@ const RolesComp = (props) => {
                                                                 nextFetchPolicy: 'network-only', // Used for subsequent executions
                                                                 notifyOnNetworkStatusChange: true 
                                                             });
-    if(!_.isEmpty(errorRoleByIds)){
-        return handlerErrorApollo( props, errorRoleByIds )
-    }
+    if(!_.isEmpty(errorRoleByIds)) return handlerErrorApollo( props, errorRoleByIds )
 
     useEffect(() => {
         if(!loadingRoleByIds){

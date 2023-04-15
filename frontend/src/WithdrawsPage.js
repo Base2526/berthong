@@ -61,9 +61,7 @@ const WithdrawsPage = (props) => {
                                       }
                                     );
 
-  if(!_.isEmpty(errorWithdraws)){
-    return handlerErrorApollo( props, errorWithdraws )
-  }
+  if(!_.isEmpty(errorWithdraws)) handlerErrorApollo( props, errorWithdraws )
 
   useEffect(() => {
     if(!loadingWithdraws){

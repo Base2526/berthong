@@ -105,7 +105,7 @@ const HomePage = (props) => {
                                       }
                                     );
 
-  !_.isEmpty(errorSuppliers) ? handlerErrorApollo( props, errorSuppliers ) : ""
+  if(!_.isEmpty(errorSuppliers)) handlerErrorApollo( props, errorSuppliers )
 
   useEffect(()=>{
     onSearchChange({...search, PAGE: 1 })

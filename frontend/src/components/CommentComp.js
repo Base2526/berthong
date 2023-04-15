@@ -32,9 +32,7 @@ const CommentComp = (props) => {
                                         }
                                     );
 
-    if(!_.isEmpty(errorCommentById)){
-      return handlerErrorApollo( props, errorCommentById )
-    }
+    if(!_.isEmpty(errorCommentById)) handlerErrorApollo( props, errorCommentById )
 
     useEffect(()=>{
         if(!_.isEmpty(id)){

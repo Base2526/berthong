@@ -22,10 +22,8 @@ const BankComp = (props) => {
                                                                 nextFetchPolicy: 'network-only', // Used for subsequent executions
                                                                 notifyOnNetworkStatusChange: true 
                                                             });
-    if(!_.isEmpty(errorBankById)){
-        return handlerErrorApollo( props, errorBankById )
-    }
-
+    if(!_.isEmpty(errorBankById)) handlerErrorApollo( props, errorBankById )
+    
     useEffect(() => {
         if(!loadingBankById){
             if (dataBankById?.bankById) {

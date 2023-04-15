@@ -50,9 +50,7 @@ const TaxonomyBanksPage = (props) => {
                                                   }
                                                 );
 
-  if(!_.isEmpty(errorBanks)){
-    return handlerErrorApollo( props, errorBanks )
-  }
+  if(!_.isEmpty(errorBanks)) handlerErrorApollo( props, errorBanks )
 
   useEffect(() => {
     if(!loadingBanks){
