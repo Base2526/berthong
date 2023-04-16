@@ -1,4 +1,4 @@
-import React, { useState,  useEffect } from "react";
+import React, { useState,  useEffect, useMemo } from "react";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import _ from "lodash"
@@ -35,47 +35,49 @@ const ContactUsPage = (props) => {
         onMutationContactUs({ variables: { input } });
     }
 
-    return (<Stack
-                direction="column"
-                justifyContent="center"
-                alignItems="flex-start"
-                spacing={2}>
-                <TextField
-                    id="outlined-basic"
-                    label="ชื่อเรื่อง"
-                    required={true}
-                    onChange={(e) => {
-                        setInput({...input, title: e.target.value})
-                    }}
-                    />
-                <TextField
-                    id="outlined-multiline-flexible"
-                    label="รายละเอียด"
-                    multiline
-                    maxRows={4}
-                    rows={6}
-                    required={true}
-                    onChange={(e) => {
-                        setInput({...input, description: e.target.value})
-                    }}
-                    />
-                <AttackFileField
-                    label={t("attack_file")}
-                    values={input.files}
-                    multiple={true}
-                    required={true}
-                    onChange={(values) => {
-                        setInput({...input, files: values})
-                    }}
-                    onSnackbar={(data) => {
-                        setSnackbar(data);
-                    }}/>
-                <Button 
-                    type="submit" 
-                    variant="contained" 
-                    color="primary"
-                    onClick={(evt)=>submitForm(evt)}>{t("send")}</Button>
-            </Stack>);
+    return  useMemo(() => {
+                return (<Stack
+                            direction="column"
+                            justifyContent="center"
+                            alignItems="flex-start"
+                            spacing={2}>
+                            <TextField
+                                id="outlined-basic"
+                                label="ชื่อเรื่อง"
+                                required={true}
+                                onChange={(e) => {
+                                    setInput({...input, title: e.target.value})
+                                }}
+                                />
+                            <TextField
+                                id="outlined-multiline-flexible"
+                                label="รายละเอียด"
+                                multiline
+                                maxRows={4}
+                                rows={6}
+                                required={true}
+                                onChange={(e) => {
+                                    setInput({...input, description: e.target.value})
+                                }}
+                                />
+                            <AttackFileField
+                                label={t("attack_file")}
+                                values={input.files}
+                                multiple={true}
+                                required={true}
+                                onChange={(values) => {
+                                    setInput({...input, files: values})
+                                }}
+                                onSnackbar={(data) => {
+                                    setSnackbar(data);
+                                }}/>
+                            <Button 
+                                type="submit" 
+                                variant="contained" 
+                                color="primary"
+                                onClick={(evt)=>submitForm(evt)}>{t("send")}</Button>
+                        </Stack>)
+            }, [input]);
 }
 
 export default ContactUsPage

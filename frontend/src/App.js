@@ -406,7 +406,6 @@ const App =(props) =>{
     }
   });
 
-  // 
   const [onMutationContactUs, resultMutationContactUs] = useMutation(mutationContactUs,{
     context: { headers: getHeaders(location) },
     update: (cache, {data: {contactUs}}) => {
