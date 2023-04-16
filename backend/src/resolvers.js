@@ -7,7 +7,16 @@ deepdash(_);
 import * as fs from "fs";
 import { __TypeKind } from 'graphql';
 import mongoose from 'mongoose';
-import { User, Supplier, Bank, Role, Deposit, Withdraw, DateLottery, Transition, Comment } from './model'
+import {  User, 
+          Supplier, 
+          Bank, 
+          Role, 
+          Deposit, 
+          Withdraw, 
+          DateLottery, 
+          Transition, 
+          Comment,
+          ContactUs } from './model'
 import pubsub from './pubsub'
 import {  emailValidate, 
           checkBalance, 
@@ -1971,7 +1980,6 @@ export default {
       }
     },
 
-    // contactUs
     async contactUs(parent, args, context, info){
       let start = Date.now()
       let { input } = args
@@ -1979,12 +1987,42 @@ export default {
 
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-      if( checkRole(current_user) != AMDINISTRATOR && checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
+      // if( checkRole(current_user) != AMDINISTRATOR && checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
 
+      let newFiles = [];
+      if(!_.isEmpty(input.files)){
+        for (let i = 0; i < input.files.length; i++) {
+          const { createReadStream, filename, encoding, mimetype } = (await input.files[i]).file //await input.files[i];
+
+          const stream = createReadStream();
+          const assetUniqName = fileRenamer(filename);
+          let pathName = `/app/uploads/${assetUniqName}`;
+
+          const output = fs.createWriteStream(pathName)
+          stream.pipe(output);
+
+          await new Promise(function (resolve, reject) {
+            output.on('close', () => {
+              resolve();
+            });
+      
+            output.on('error', (err) => {
+              logger.error(err.toString());
+
+              reject(err);
+            });
+          });
+
+          const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+          newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+        }
+      }
+
+      let contactUs = await ContactUs.create({ ...input, files:newFiles });
+    
       return {
         status: true,
-        // mode: input.mode.toLowerCase(),
-        // data: supplier,
+        data: contactUs,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     }

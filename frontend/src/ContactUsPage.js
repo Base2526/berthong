@@ -26,6 +26,8 @@ const ContactUsPage = (props) => {
     },[]);
 
     const submitForm = async(event) => {
+        validateCaptcha(input.captcha)
+
         let newInput = _.omit(input, ['captcha'])
         onMutationContactUs({ variables: { input: newInput } });
     }
