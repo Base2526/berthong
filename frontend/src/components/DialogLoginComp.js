@@ -20,8 +20,8 @@ import { GoogleLogin } from "react-google-login";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-import { mutationLogin, mutationLoginWithSocial } from "../gqlQuery";
-import { handlerErrorApollo } from "../util";
+// import { mutationLogin, mutationLoginWithSocial } from "../gqlQuery";
+// import { handlerErrorApollo } from "../util";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import line from '../line.svg';
@@ -33,61 +33,61 @@ const DialogLoginComp = (props) => {
   const navigate = useNavigate();
   const deviceData = useDeviceData();
 
-  let { onComplete, onClose, open, updateProfile } = props;
+  let { onComplete, onClose, open, updateProfile, onMutationLogin, onMutationLoginWithSocial } = props;
 
   let [input, setInput]   = useState({ username: "",  password: ""});
   
-  const [onLogin, resultLogin] = useMutation(mutationLogin, {
-    update: (cache, {data:{login}}) => {
-      let {status, data, sessionId} = login
-      if(status){
-        localStorage.setItem('token', sessionId)
+  // const [onLogin, resultLogin] = useMutation(mutationLogin, {
+  //   update: (cache, {data:{login}}) => {
+  //     let {status, data, sessionId} = login
+  //     if(status){
+  //       localStorage.setItem('token', sessionId)
 
-        updateProfile(data)
-        onComplete()
-      }
-    },
-    onCompleted(data) {
-      console.log("onCompleted :", data)
-    },
-    onError(error){
-      return handlerErrorApollo( props, error )
-    }
-  });
+  //       updateProfile(data)
+  //       onComplete()
+  //     }
+  //   },
+  //   onCompleted(data) {
+  //     console.log("onCompleted :", data)
+  //   },
+  //   onError(error){
+  //     return handlerErrorApollo( props, error )
+  //   }
+  // });
 
-  const [onLoginWithSocial, resultLoginWithSocial] = useMutation(mutationLoginWithSocial, 
-    {
-      update: (cache, {data: {loginWithSocial}}) => {
+  // const [onLoginWithSocial, resultLoginWithSocial] = useMutation(mutationLoginWithSocial, 
+  //   {
+  //     update: (cache, {data: {loginWithSocial}}) => {
 
-        // console.log("loginWithSocial :", loginWithSocial)
-        // const data1 = cache.readQuery({ query: gqlBanks });
+  //       // console.log("loginWithSocial :", loginWithSocial)
+  //       // const data1 = cache.readQuery({ query: gqlBanks });
 
-        let {status, data, sessionId} = loginWithSocial
+  //       let {status, data, sessionId} = loginWithSocial
 
-        if(status){
-          localStorage.setItem('token', sessionId)
+  //       if(status){
+  //         localStorage.setItem('token', sessionId)
 
-          onComplete(data)
-        }
+  //         onComplete(data)
+  //       }
 
-        // let newBanks = {...data1.banks}
-        // let newData  = _.map(newBanks.data, bank=>bank._id == updateBank._id ? updateBank : bank)
+  //       // let newBanks = {...data1.banks}
+  //       // let newData  = _.map(newBanks.data, bank=>bank._id == updateBank._id ? updateBank : bank)
 
-        // newBanks = {...newBanks, data: newData}
-        // cache.writeQuery({
-        //   query: gqlBanks,
-        //   data: { banks: newBanks },
-        // });
-      },
-      onCompleted({ data }) {
-        // history.push("/");
-        navigate("/")
-      },
-      onError({error}){
-        console.log("onError :")
-      }
-    }
-  );
+  //       // newBanks = {...newBanks, data: newData}
+  //       // cache.writeQuery({
+  //       //   query: gqlBanks,
+  //       //   data: { banks: newBanks },
+  //       // });
+  //     },
+  //     onCompleted({ data }) {
+  //       // history.push("/");
+  //       navigate("/")
+  //     },
+  //     onError({error}){
+  //       console.log("onError :")
+  //     }
+  //   }
+  // );
 
   useEffect(()=>{
     const initClient = () =>{
@@ -101,13 +101,13 @@ const DialogLoginComp = (props) => {
 
   const callbackFacebook = (response) => {
     if(!_.has(response, "status")){
-      onLoginWithSocial({ variables: { input: { authType: "FACEBOOK",  data: response, deviceAgent: JSON.stringify(deviceData)  }} })
+      onMutationLoginWithSocial({ variables: { input: { authType: "FACEBOOK",  data: response, deviceAgent: JSON.stringify(deviceData)  }} })
     }
   }
 
   // https://github.com/Sivanesh-S/react-google-authentication/blob/master/src/utils/refreshToken.js
   const onGoogleSuccess = async(response) => {
-    onLoginWithSocial({ variables: { input: { authType: "GOOGLE",  data: {...response, ...await response.reloadAuthResponse()}, deviceAgent: JSON.stringify(deviceData)  }} })
+    onMutationLoginWithSocial({ variables: { input: { authType: "GOOGLE",  data: {...response, ...await response.reloadAuthResponse()}, deviceAgent: JSON.stringify(deviceData)  }} })
   };
 
   const onGoogleFailure = (response) =>{
@@ -116,7 +116,7 @@ const DialogLoginComp = (props) => {
 
   const handleSubmit = (event, type) =>{
     event.preventDefault();
-    onLogin({ variables: { input: { username: _.trim(input.username),  password: _.trim(input.password), deviceAgent: JSON.stringify(deviceData) }} })
+    onMutationLogin({ variables: { input: { username: _.trim(input.username),  password: _.trim(input.password), deviceAgent: JSON.stringify(deviceData) }} })
   }
 
   const onInputChange = (e) => {
@@ -218,7 +218,7 @@ const DialogLoginComp = (props) => {
 
     let {code} = response
     if(!_.isEmpty(code)){
-      onLoginWithSocial({ variables: { input: { authType: "GITHUB",  data: response, deviceAgent: JSON.stringify(deviceData)}} })
+      onMutationLoginWithSocial({ variables: { input: { authType: "GITHUB",  data: response, deviceAgent: JSON.stringify(deviceData)}} })
     }
   }
 

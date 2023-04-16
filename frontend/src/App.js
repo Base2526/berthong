@@ -120,7 +120,9 @@ import { queryNotifications,
           queryCommentById,
           mutationBuy,
           subscriptionMe,
-          mutationContactUs} from "./gqlQuery"
+          mutationContactUs,
+          mutationLogin,
+          mutationLoginWithSocial} from "./gqlQuery"
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
@@ -459,6 +461,58 @@ const App =(props) =>{
     }
   });
 
+  const [onMutationLogin, resultMutationLogin] = useMutation(mutationLogin, {
+    update: (cache, {data:{login}}) => {
+      let {status, data, sessionId} = login
+      if(status){
+        localStorage.setItem('token', sessionId)
+
+        updateProfile(data)
+        onComplete()
+      }
+    },
+    onCompleted(data) {
+      console.log("onCompleted :", data)
+    },
+    onError(error){
+      return handlerErrorApollo( props, error )
+    }
+  });
+
+  const [onMutationLoginWithSocial, resultMutationLoginWithSocial] = useMutation(mutationLoginWithSocial, 
+    {
+      update: (cache, {data: {loginWithSocial}}) => {
+
+        // console.log("loginWithSocial :", loginWithSocial)
+        // const data1 = cache.readQuery({ query: gqlBanks });
+
+        let {status, data, sessionId} = loginWithSocial
+
+        if(status){
+          localStorage.setItem('token', sessionId)
+
+          onComplete(data)
+        }
+
+        // let newBanks = {...data1.banks}
+        // let newData  = _.map(newBanks.data, bank=>bank._id == updateBank._id ? updateBank : bank)
+
+        // newBanks = {...newBanks, data: newData}
+        // cache.writeQuery({
+        //   query: gqlBanks,
+        //   data: { banks: newBanks },
+        // });
+      },
+      onCompleted({ data }) {
+        // history.push("/");
+        navigate("/")
+      },
+      onError({error}){
+        console.log("onError :")
+      }
+    }
+  );
+
   useEffect(()=>{
     console.log("search :", search)
   }, [search])
@@ -649,7 +703,9 @@ const App =(props) =>{
             }}
             onClose={() => {
               setDialogLogin(false);
-            }}/>
+            }}
+            onMutationLogin={(evt)=>onMutationLogin(evt)}
+            onMutationLoginWithSocial={(evt)=>onMutationLoginWithSocial(evt)}/>
       }
       {statusView()}
       {menuProfile()}
