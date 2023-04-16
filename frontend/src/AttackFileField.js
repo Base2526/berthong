@@ -18,7 +18,6 @@ const Input = styled("input")({ display: "none" });
 const AttackFileField = (props) => {
   let { label, values, multiple, required=false, onChange, onSnackbar } = props
 
-  console.log("AttackFileField :", required)
   const onFileChange = (e) => {
     let newInputList = [...values];
     for (var i = 0; i < e.target.files.length; i++) {

@@ -1,43 +1,29 @@
-import React, { useState,  useEffect, useMemo, useRef } from "react";
-import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
+import React, { useState,  useEffect, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import _ from "lodash"
-import { useQuery } from "@apollo/client";
-import InfiniteScroll from "react-infinite-scroll-component";
 import {
     TextField,
     Button,
     Stack
 } from '@mui/material';
 import { loadCaptchaEnginge, LoadCanvasTemplate , validateCaptcha} from "react-simple-captcha";
-
 import AttackFileField from "./AttackFileField";
 
-// import { getHeaders } from "./util"
-// import { queryBookmarks, mutationNotification } from "./gqlQuery"
-
 const initialValue = { title: "", description: "", files: [], captcha: "", }
-
 const ContactUsPage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useTranslation();
 
     let [snackbar, setSnackbar] = useState({open:false, message:""});
-    
-    const valueRef = useRef(null);
     let [input, setInput] = useState(initialValue)
 
     let { onMutationContactUs } = props
 
     useEffect( () => {
-        // console.log("Hi buddy");
         loadCaptchaEnginge(8);
     },[]);
-
-    useEffect(()=>{
-        console.log("input :", input)
-    }, [input])
 
     const submitForm = async(event) => {
         let newInput = _.omit(input, ['captcha'])
