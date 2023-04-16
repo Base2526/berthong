@@ -35,6 +35,9 @@ export default {
     async ping(parent, args, context, info){
       let { req } = context
 
+      // let user  = await getUser({_id: mongoose.Types.ObjectId(_ID_AMDINISTRATOR)})
+
+      // console.log("user doc :", user?._doc, user)
       // let { status, code, pathname, current_user } =  await checkAuthorization(req);
       // if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
@@ -73,13 +76,12 @@ export default {
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
       if(!status && code == USER_NOT_FOUND) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
-      let user = await User.findById(current_user?._id)
+      let user = await getUser({_id: current_user?._id}) 
       if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
-      user =_.omit( { ...user._doc, 
-                      // balance: (await checkBalance(current_user?._id)).balance,
-                      ...await checkBalance(current_user?._id),
-                      balanceBook: await checkBalanceBook(current_user?._id)}, ["password", "__v"])
+      user =  { ...user, 
+                ...await checkBalance(current_user?._id),
+                balanceBook: await checkBalanceBook(current_user?._id)}
 
       return {  status: true,
                 data: user,
@@ -104,7 +106,7 @@ export default {
       return { 
               status: true,
               data: users,
-              total: (await User.find({roles: {$nin:[AMDINISTRATOR]}}) ).length,
+              total: ( await getUser({roles: {$nin:[AMDINISTRATOR]}}) )?.length,
               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
             }
     },
@@ -119,7 +121,7 @@ export default {
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
       // if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
 
-      let user = await User.findById(_id)
+      let user = await getUser({_id})
       if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
       return {  status: true,
@@ -174,9 +176,9 @@ export default {
       let suppliers = await Supplier.find({}).skip(skip).limit(LIMIT); 
 
       suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-        let user = await getUser({ _id: item.ownerId })
-        if(_.isNull(user)) return null;
-        return {...item._doc,  owner: user?._doc }
+        let owner = await getUser({ _id: item.ownerId })
+        if(_.isNull(owner)) return null;
+        return { ...item._doc, owner }
       }).filter(i=>!_.isNull(i)))
 
       return {  
@@ -265,7 +267,6 @@ export default {
     //         if(_.isNull(user)) return null;
     //         return {...item._doc,  owner: user?._doc }
     //       }).filter(i=>!_.isNull(i)))
-
     //       return {  
     //         status: true,
     //         data: suppliers,
@@ -382,7 +383,7 @@ export default {
           let withdraws = await Withdraw.find({status: Constants.WAIT})
 
           withdraws = await Promise.all(_.map(withdraws, async(i)=>{
-                                                let user = await User.findById(i.userIdRequest)
+                                                let user = await getUser({_id: i.userIdRequest})
                                                 return _.isEmpty(user) ? null : {...i._doc, userNameRequest: user?.displayName}
                                               }).filter(i=>!_.isNull(i)))
           return {  status: true,
@@ -392,7 +393,7 @@ export default {
 
         let withdraws = await Withdraw.find({userIdRequest: current_user?._id})
         withdraws = await Promise.all(_.map(withdraws, async(item)=>{
-                                              let user = await User.findById(item.userIdApprove)
+                                              let user = await getUser({_id: item.userIdApprove})
                                               return {...item._doc, userNameApprove: user?.displayName}
                                             }))
 
@@ -434,7 +435,7 @@ export default {
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
       if(is_admin){
-        let user  = await User.findById(mongoose.Types.ObjectId(_ID_AMDINISTRATOR))
+        let user  = await getUser({_id: mongoose.Types.ObjectId(_ID_AMDINISTRATOR)})
         if(_.isNull(user)) throw new AppError(DATA_NOT_FOUND, 'User not found.')
   
         let banks =_.filter(await Promise.all(_.map(user?.banks, async(item)=>{
@@ -515,14 +516,14 @@ export default {
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      let user = await User.findById(_id);
+      let user = await getUser({_id})
       if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
       let suppliers = await Supplier.find({ownerId: _id});
       if(_.isNull(suppliers)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
       return {  status: true,
-                data: {...user._doc, suppliers},
+                data: {...user, suppliers},
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
     },
@@ -722,9 +723,9 @@ export default {
         let suppliers = await Supplier.find({follows: {$elemMatch: {userId: current_user?._id} }})
 
         suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-                      let user = await getUser({_id: item.ownerId})
-                      if(_.isNull(user)) return null;
-                      return {...item._doc,  owner: user?._doc }
+                      let owner = await getUser({_id: item.ownerId})
+                      if(_.isNull(owner)) return null;
+                      return { ...item._doc,  owner }
                     }).filter(i=>!_.isNull(i)))
 
         return {  status: true,
@@ -761,7 +762,7 @@ export default {
                     return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
                   })), e=>!_.isNull(e) ) 
 
-      user = {  ...user._doc, 
+      user = {  ...user, 
                 banks,
                 ...await checkBalance(user?._id),
                 balanceBook: await checkBalanceBook(user?._id)
@@ -1262,8 +1263,8 @@ export default {
         // user = {...user._doc, roles}
 
       await User.updateOne({ _id: current_user?._id }, newInput );
-      let user = await User.findById(current_user?._id)
-      user = _.omit(user, ['password'])
+      let user = await getUser({_id: current_user?._id}) 
+      // user = _.omit(user, ['password'])
       
       pubsub.publish("ME", {
         me: { mutation: "UPDATE", data: user },
@@ -1823,7 +1824,7 @@ export default {
       return {
         status: true,
         mode,
-        data: {...supplier._doc, owner: (await User.findById(supplier.ownerId))?._doc },
+        data: {...supplier._doc, owner: await getUser({_id: supplier.ownerId}) },
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },

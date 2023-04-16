@@ -1,4 +1,4 @@
-import React, { useState,  useEffect, useMemo } from "react";
+import React, { useState,  useEffect, useMemo, useRef } from "react";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import _ from "lodash"
@@ -9,12 +9,14 @@ import {
     Button,
     Stack
 } from '@mui/material';
+import { loadCaptchaEnginge, LoadCanvasTemplate , validateCaptcha} from "react-simple-captcha";
+
 import AttackFileField from "./AttackFileField";
 
-import { getHeaders } from "./util"
-import { queryBookmarks, mutationNotification } from "./gqlQuery"
+// import { getHeaders } from "./util"
+// import { queryBookmarks, mutationNotification } from "./gqlQuery"
 
-const initialValue = { title: "", description: "", files: [] }
+const initialValue = { title: "", description: "", files: [], captcha: "", }
 
 const ContactUsPage = (props) => {
     const navigate = useNavigate();
@@ -23,16 +25,23 @@ const ContactUsPage = (props) => {
 
     let [snackbar, setSnackbar] = useState({open:false, message:""});
     
+    const valueRef = useRef(null);
     let [input, setInput] = useState(initialValue)
 
     let { onMutationContactUs } = props
+
+    useEffect( () => {
+        // console.log("Hi buddy");
+        loadCaptchaEnginge(8);
+    },[]);
 
     useEffect(()=>{
         console.log("input :", input)
     }, [input])
 
     const submitForm = async(event) => {
-        onMutationContactUs({ variables: { input } });
+        let newInput = _.omit(input, ['captcha'])
+        onMutationContactUs({ variables: { input: newInput } });
     }
 
     return  useMemo(() => {
@@ -71,10 +80,24 @@ const ContactUsPage = (props) => {
                                 onSnackbar={(data) => {
                                     setSnackbar(data);
                                 }}/>
+
+                            <div className="">
+                                <LoadCanvasTemplate reloadText="Reload Captcha" reloadColor="red" />
+                                <div  className="input-block">
+                                    <input 
+                                        type="text"  
+                                        id="captcha" 
+                                        name="captcha" 
+                                        placeholder="Enter the Captcha"
+                                        onChange={(evt)=> setInput({...input, captcha: evt.target.value}) }
+                                        autoComplete="off"/>
+                                </div>
+                            </div>
                             <Button 
                                 type="submit" 
                                 variant="contained" 
                                 color="primary"
+                                disabled={ (_.isEmpty( input.title ) || _.isEmpty(input.description)) || !validateCaptcha(input.captcha, false) }
                                 onClick={(evt)=>submitForm(evt)}>{t("send")}</Button>
                         </Stack>)
             }, [input]);
