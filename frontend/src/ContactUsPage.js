@@ -30,6 +30,8 @@ const ContactUsPage = (props) => {
 
         let newInput = _.omit(input, ['captcha'])
         onMutationContactUs({ variables: { input: newInput } });
+
+        setInput(initialValue)
     }
 
     return  useMemo(() => {

@@ -30,7 +30,7 @@ import {
   AlternateEmail as AlternateEmailIcon,
   AllOut as AllOutIcon,
   Assistant as AssistantIcon,
-  Login as LoginIcon
+  // Login as LoginIcon
 } from '@mui/icons-material';
 
 import {
@@ -57,6 +57,10 @@ import {
 import {
   MdOutlineBookmarkAdded as MdOutlineBookmarkAddedIcon
 } from "react-icons/md"
+
+import {
+  CiLogin as LoginIcon
+} from "react-icons/ci"
 
 import {
   Avatar,
@@ -591,7 +595,7 @@ const App =(props) =>{
       default:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
                 {id: 1, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
-                {id: 2, title:"Login", icon: <LoginIcon />, path: "/login"}]
+                {id: 2, title:"Login", icon: <LoginIcon size="1.5em"  />, path: "/login"}]
       }
     }
   }
@@ -671,10 +675,6 @@ const App =(props) =>{
                   {
                     !_.isEmpty(user) && checkRole(user) === Constants.AUTHENTICATED 
                     ? <Stack direction={"row"} spacing={2} alignItems="center">
-                        {/* <Typography variant="h6" noWrap>
-                          {"[  Name :" + user?.displayName +", Email :"+ user?.email + " ]"}
-                        </Typography> */}
-                        {/* <div>Balance : {numberCurrency(user?.balance ? user.balance : 0)} [-{numberCurrency(user?.balanceBook ? user.balanceBook : 0)}]</div> */}
                         <IconButton 
                           size={'small'}
                           onClick={()=>{
@@ -691,21 +691,11 @@ const App =(props) =>{
                             <FiShoppingCart color="white" size="1.2em"/>
                           </Badge>
                         </IconButton>
-
-                        {/* MdOutlineBookmarkAddedIcon */}
                         <IconButton 
                           size={'small'}
                           onClick={()=>{ navigate("/bookmarks") }}>
                           <MdOutlineBookmarkAddedIcon color="white" size="1.2em"/>
                         </IconButton>
-
-                        {/*
-                        <IconButton 
-                          size={'small'}
-                          onClick={()=>{ console.log("report") }}>
-                          <BugReportIcon color="white" size="1.2em"/>
-                        </IconButton> */}
-
                         <IconButton 
                           size={'small'}
                           onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
@@ -715,7 +705,13 @@ const App =(props) =>{
                           />
                         </IconButton>
                       </Stack>
-                    : ""  
+                    : <Stack direction={"row"} spacing={2} alignItems="center">
+                         <IconButton 
+                          size={'small'}
+                          onClick={()=>{ setDialogLogin(true) }}>
+                          <LoginIcon color="white" size="1.2em"/>
+                        </IconButton>
+                      </Stack>
                   }
                 </>
               }

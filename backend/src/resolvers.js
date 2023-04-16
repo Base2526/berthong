@@ -88,7 +88,7 @@ export default {
       let user = await getUser({_id: current_user?._id}) 
       if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
-      user =  { ...user, 
+      user =  { ...user?._doc, 
                 ...await checkBalance(current_user?._id),
                 balanceBook: await checkBalanceBook(current_user?._id)}
 
@@ -532,7 +532,7 @@ export default {
       if(_.isNull(suppliers)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
       return {  status: true,
-                data: {...user, suppliers},
+                data: {...user?._doc, suppliers},
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
     },
@@ -755,33 +755,43 @@ export default {
       let start = Date.now()
       let {input} = args
 
-      let user = emailValidate().test(input.username) ? await getUser({email: input.username}) : await getUser({username: input.username})
-      
-      if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
+      try{
 
-      await User.updateOne({ _id: user?._id }, { lastAccess : Date.now() });
-      user = await getUser({_id: user?._id}) 
+        let user = emailValidate().test(input.username) ? await getUser({email: input.username}) : await getUser({username: input.username})
+        
+        if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
-      // let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
-      //   return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
-      // }))  
-      
-      let banks = _.filter(await Promise.all(_.map(user?.banks, async(item)=>{
-                    let bank = await Bank.findById(item.bankId)
-                    return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
-                  })), e=>!_.isNull(e) ) 
+        await User.updateOne({ _id: user?._id }, { lastAccess : Date.now() });
+        user = await getUser({_id: user?._id}) 
 
-      user = {  ...user, 
-                banks,
-                ...await checkBalance(user?._id),
-                balanceBook: await checkBalanceBook(user?._id)
-              }
+        // let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
+        //   return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
+        // }))  
+        
+        let banks = _.filter(await Promise.all(_.map(user?.banks, async(item)=>{
+                      let bank = await Bank.findById(item.bankId)
+                      return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
+                    })), e=>!_.isNull(e) ) 
 
-      return {
-        status: true,
-        data: user,
-        sessionId: await getSessionId(user?._id, input),
-        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        user = {  ...user?._doc, 
+                  banks,
+                  ...await checkBalance(user?._id),
+                  balanceBook: await checkBalanceBook(user?._id)
+                }
+
+        return {
+          status: true,
+          data: user,
+          sessionId: await getSessionId(user?._id, input),
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }catch(error){
+        console.log("error :", error)
+        return {
+          status: false,
+          error: error.message,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
       }
     },
 

@@ -48,6 +48,8 @@ const MePage = (props) => {
         if(!loadingMe){
             if(!_.isEmpty(dataMe?.me)){
                 let { status, data } = dataMe?.me
+
+                console.log("data : ", data)
                 if(status){
                     updateProfile(data)
 
@@ -150,7 +152,7 @@ const MePage = (props) => {
                             <div>
                                 <Avatar 
                                     sx={{ width: 80, height: 80 }} 
-                                    src= {  data?.avatar?.url ? data?.avatar?.url : URL.createObjectURL(data?.avatar) }
+                                    src= { _.isEmpty(data?.avatar) ? "" :  data?.avatar?.url ? data?.avatar?.url : URL.createObjectURL(data?.avatar) }
                                     variant="rounded" />
                                 <>
                                     <label htmlFor="contained-button-file">
