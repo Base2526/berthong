@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import _ from "lodash"
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { 
@@ -39,7 +38,7 @@ const DepositPage = (props) => {
   let [editData, setEditData]       = useState({});
 
   let [ banks, setBanks ]       = useState([]);
-  let { user, logout } = props
+  let { onMutationDeposit } = props
   let { mode, id } = location?.state
 
   const { loading: loadingBanks, 
@@ -51,57 +50,57 @@ const DepositPage = (props) => {
                                         nextFetchPolicy: 'cache-first', // Used for subsequent executions
                                         notifyOnNetworkStatusChange: true });
 
-  const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {deposit}}) => {
-      let { data, mode, status } = deposit
-      if(status){
-        switch(mode){
-          // case "new":{
-          //   const queryDepositsValue = cache.readQuery({ query: queryDeposits });
-          //   if(!_.isNull(queryDepositsValue)){
-          //     let newData = [...queryDepositsValue.deposits.data, data];
+  // const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
+  //   context: { headers: getHeaders(location) },
+  //   update: (cache, {data: {deposit}}) => {
+  //     let { data, mode, status } = deposit
+  //     if(status){
+  //       switch(mode){
+  //         // case "new":{
+  //         //   const queryDepositsValue = cache.readQuery({ query: queryDeposits });
+  //         //   if(!_.isNull(queryDepositsValue)){
+  //         //     let newData = [...queryDepositsValue.deposits.data, data];
 
-          //     cache.writeQuery({
-          //       query: queryDeposits,
-          //       data: { deposits: {...queryDepositsValue.deposits, data: newData} }
-          //     });
-          //   }
-          //   break;
-          // }
+  //         //     cache.writeQuery({
+  //         //       query: queryDeposits,
+  //         //       data: { deposits: {...queryDepositsValue.deposits, data: newData} }
+  //         //     });
+  //         //   }
+  //         //   break;
+  //         // }
 
-          case "edit":{
-            let queryDepositsValue = cache.readQuery({ query: queryDeposits });
-            if(!_.isNull(queryDepositsValue)){
-              let newData = _.map(queryDepositsValue.deposits.data, (item)=> item._id == data._id ? data : item ) 
+  //         case "edit":{
+  //           let queryDepositsValue = cache.readQuery({ query: queryDeposits });
+  //           if(!_.isNull(queryDepositsValue)){
+  //             let newData = _.map(queryDepositsValue.deposits.data, (item)=> item._id == data._id ? data : item ) 
 
-              if(deposit.data.status == "approved" || deposit.data.status == "reject"){
-                newData = _.filter(queryDepositsValue.deposits.data, (item)=> item._id != data._id ) 
-              }
+  //             if(deposit.data.status == "approved" || deposit.data.status == "reject"){
+  //               newData = _.filter(queryDepositsValue.deposits.data, (item)=> item._id != data._id ) 
+  //             }
 
-              cache.writeQuery({
-                query: queryDeposits,
-                data: { deposits: {...queryDepositsValue.deposits, data: newData} }
-              });
-            }
-            break;
-          }
-        }
-      }
-    },
-    onCompleted(data) {
-      if(_.isEqual(checkRole(user) , AMDINISTRATOR)){
-        navigate(-1);
-      }else {
-        showToast("success", "ได้รับเรื่องแล้ว กำลังดำเนินการ")
-        navigate("/");
-      }
-    },
-    onError(error){
-      console.log("onError :", error?.message)
-      showToast("error", error?.message)
-    }
-  });
+  //             cache.writeQuery({
+  //               query: queryDeposits,
+  //               data: { deposits: {...queryDepositsValue.deposits, data: newData} }
+  //             });
+  //           }
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   },
+  //   onCompleted(data) {
+  //     if(_.isEqual(checkRole(user) , AMDINISTRATOR)){
+  //       navigate(-1);
+  //     }else {
+  //       showToast("success", "ได้รับเรื่องแล้ว กำลังดำเนินการ")
+  //       navigate("/");
+  //     }
+  //   },
+  //   onError(error){
+  //     console.log("onError :", error?.message)
+  //     showToast("error", error?.message)
+  //   }
+  // });
 
   let { loading: loadingDepositById, 
         data: dataDepositById, 

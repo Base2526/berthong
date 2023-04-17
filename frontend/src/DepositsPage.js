@@ -25,10 +25,10 @@ import {
       } from '@mui/material';
 import InfiniteScroll from "react-infinite-scroll-component";
 
-import { getHeaders, checkRole, showToast } from "./util"
+import { getHeaders, handlerErrorApollo } from "./util"
 import { queryDeposits, mutationDeposit } from "./gqlQuery"
-import { logout } from "./redux/actions/auth"
-import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants"
+// import { logout } from "./redux/actions/auth"
+// import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants"
 // import TableComp from "./components/TableComp"
 
 import UserComp from "./components/UserComp"
@@ -63,16 +63,7 @@ const DepositsPage = (props) => {
                                       }
                                     );
 
-  if(!_.isEmpty(errorDeposits)){
-    _.map(errorDeposits?.graphQLErrors, (e)=>{
-      switch(e?.extensions?.code){
-        case UNAUTHENTICATED:{
-          showToast("error", e?.message)
-          break;
-        }
-      }
-    })
-  }
+  if(!_.isEmpty(errorDeposits)) handlerErrorApollo( props, errorDeposits )
 
   const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
     context: { headers: getHeaders(location) },

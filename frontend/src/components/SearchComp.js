@@ -241,6 +241,6 @@ const SearchComp = (props) => {
                     </div>
           }, [data]);
 
-};
+}
 
 export default SearchComp;

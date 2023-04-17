@@ -1,10 +1,8 @@
-import { useMutation, useQuery } from "@apollo/client";
-import _ from "lodash";
 import React, { useEffect, useState } from "react";
+import { useQuery } from "@apollo/client";
+import _ from "lodash";
 import { useTranslation } from "react-i18next";
-import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-
 import { 
   Stack,
   Box,
@@ -15,8 +13,7 @@ import {
 } from "@mui/material";
 
 import { mutationWithdraw, queryBanks, queryWithdrawById, queryWithdraws } from "./gqlQuery";
-import { logout } from "./redux/actions/auth";
-import { getHeaders, checkRole } from "./util";
+import { getHeaders, checkRole, handlerErrorApollo } from "./util";
 import  * as Constants from "./constants";
 import BankComp from "./components/BankComp"
 
@@ -55,97 +52,86 @@ const WithdrawPage = (props) => {
                                                   notifyOnNetworkStatusChange: true,
                                                 })
 
-  if(!_.isEmpty(errorWithdrawById)){
-    _.map(errorWithdrawById?.graphQLErrors, (e)=>{
+  if(!_.isEmpty(errorWithdrawById)) handlerErrorApollo( props, errorWithdrawById )
 
-      console.log("error :", e)
-      // switch(e?.extensions?.code){
-      //   case FORCE_LOGOUT:{
-      //     logout()
-      //     break;
-      //   }
-      // }
-    })
-  }
+  // const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
+  //   context: { headers: getHeaders(location) },
+  //   update: (cache, {data: {withdraw}}) => {
+  //     let { data, mode, status } = withdraw
 
-  const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {withdraw}}) => {
-      let { data, mode, status } = withdraw
-
-      if(status){
+  //     if(status){
         
-        switch(mode){
-          case "new":{
-            const queryWithdrawsValue = cache.readQuery({ query: queryWithdraws });
-            if(!_.isEmpty(queryWithdrawsValue)){
-              let newData = [...queryWithdrawsValue.withdraws.data, withdraw.data];
+  //       switch(mode){
+  //         case "new":{
+  //           const queryWithdrawsValue = cache.readQuery({ query: queryWithdraws });
+  //           if(!_.isEmpty(queryWithdrawsValue)){
+  //             let newData = [...queryWithdrawsValue.withdraws.data, withdraw.data];
 
-              cache.writeQuery({
-                query: queryWithdraws,
-                data: { withdraws: {...queryWithdrawsValue.withdraws, data: newData} }
-              });
-            }
+  //             cache.writeQuery({
+  //               query: queryWithdraws,
+  //               data: { withdraws: {...queryWithdrawsValue.withdraws, data: newData} }
+  //             });
+  //           }
             
-            ////////// update cache queryWithdrawById ///////////
-            let queryWithdrawByIdValue = cache.readQuery({ query: queryWithdrawById, variables: {id: data._id}});
-            if(!_.isEmpty(queryWithdrawByIdValue)){
-              cache.writeQuery({
-                query: queryWithdrawById,
-                data: { withdrawById: {...queryWithdrawByIdValue.withdrawById, data} },
-                variables: {id: data._id}
-              });
-            }
-            ////////// update cache queryWithdrawById ///////////   
-            break;
-          }
+  //           ////////// update cache queryWithdrawById ///////////
+  //           let queryWithdrawByIdValue = cache.readQuery({ query: queryWithdrawById, variables: {id: data._id}});
+  //           if(!_.isEmpty(queryWithdrawByIdValue)){
+  //             cache.writeQuery({
+  //               query: queryWithdrawById,
+  //               data: { withdrawById: {...queryWithdrawByIdValue.withdrawById, data} },
+  //               variables: {id: data._id}
+  //             });
+  //           }
+  //           ////////// update cache queryWithdrawById ///////////   
+  //           break;
+  //         }
 
-          case "edit":{
-            const queryWithdrawsValue = cache.readQuery({ query: queryWithdraws });
-            let newData = _.map(queryWithdrawsValue.withdraws.data, (item)=> item._id == withdraw.data._id ? withdraw.data : item ) 
+  //         case "edit":{
+  //           const queryWithdrawsValue = cache.readQuery({ query: queryWithdraws });
+  //           let newData = _.map(queryWithdrawsValue.withdraws.data, (item)=> item._id == withdraw.data._id ? withdraw.data : item ) 
 
-            if(withdraw.data.status == "approved" || withdraw.data.status == "reject"){
-              newData = _.filter(queryWithdrawsValue.withdraws.data, (item)=> item._id != withdraw.data._id ) 
-            }
+  //           if(withdraw.data.status == "approved" || withdraw.data.status == "reject"){
+  //             newData = _.filter(queryWithdrawsValue.withdraws.data, (item)=> item._id != withdraw.data._id ) 
+  //           }
             
-            cache.writeQuery({
-              query: queryWithdraws,
-              data: { withdraws: {...queryWithdrawsValue.withdraws, data: newData} }
-            });
+  //           cache.writeQuery({
+  //             query: queryWithdraws,
+  //             data: { withdraws: {...queryWithdrawsValue.withdraws, data: newData} }
+  //           });
 
-            ////////// update cache queryWithdrawById ///////////
-            let queryWithdrawByIdValue = cache.readQuery({ query: queryWithdrawById, variables: {id: data._id}});
-            if(queryWithdrawByIdValue){
-              cache.writeQuery({
-                query: queryWithdrawById,
-                data: { withdrawById: {...queryWithdrawByIdValue.withdrawById, data} },
-                variables: {id: data._id}
-              });
-            }
-            ////////// update cache queryWithdrawById ///////////            
-            break;
-          }
-        }
+  //           ////////// update cache queryWithdrawById ///////////
+  //           let queryWithdrawByIdValue = cache.readQuery({ query: queryWithdrawById, variables: {id: data._id}});
+  //           if(queryWithdrawByIdValue){
+  //             cache.writeQuery({
+  //               query: queryWithdrawById,
+  //               data: { withdrawById: {...queryWithdrawByIdValue.withdrawById, data} },
+  //               variables: {id: data._id}
+  //             });
+  //           }
+  //           ////////// update cache queryWithdrawById ///////////            
+  //           break;
+  //         }
+  //       }
         
-      }
-    },
-    onCompleted(data) {
-      switch(checkRole(user)){
-        case Constants.AMDINISTRATOR:{
-          navigate("/withdraws")
-          break;
-        }
+  //     }
+  //   },
+  //   onCompleted(data) {
+  //     switch(checkRole(user)){
+  //       case Constants.AMDINISTRATOR:{
+  //         navigate("/withdraws")
+  //         break;
+  //       }
   
-        case Constants.AUTHENTICATED:{
-          navigate("/")
-          break;
-        }
-      }
-    },
-    onError(error){
-      console.log("onError :", error)
-    }
-  });
+  //       case Constants.AUTHENTICATED:{
+  //         navigate("/")
+  //         break;
+  //       }
+  //     }
+  //   },
+  //   onError(error){
+  //     console.log("onError :", error)
+  //   }
+  // });
 
   useEffect(()=>{
     if( !loadingWithdrawById && mode == "edit"){
@@ -337,8 +323,4 @@ const WithdrawPage = (props) => {
           </Stack>
 }
 
-const mapStateToProps = (state, ownProps) => {
-    return { }
-}
-const mapDispatchToProps = { logout }
-export default connect( mapStateToProps, mapDispatchToProps )(WithdrawPage);
+export default WithdrawPage

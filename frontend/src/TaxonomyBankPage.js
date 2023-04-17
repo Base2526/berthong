@@ -3,12 +3,12 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import CircularProgress from '@mui/material/CircularProgress';
 import _ from "lodash";
 
 import { getHeaders } from "./util";
-import { mutationBank, queryBankById, queryBanks } from "./gqlQuery"
+import { queryBankById } from "./gqlQuery"
 
 let editValues = undefined;
 let initValues =  { mode: "NEW",  name : "",  description: "" }
@@ -20,6 +20,8 @@ const TaxonomyBankPage = (props) => {
   let [data, setData] = useState(initValues)
   const { mode, _id } = location.state
 
+  let { onMutationBank } = props
+
   const { loading: loadingBankById, 
           data: dataBankById, 
           error: errorBankById,
@@ -30,51 +32,51 @@ const TaxonomyBankPage = (props) => {
                                     notifyOnNetworkStatusChange: true,
                                   });
 
-  const [onMutationBank, resultMutationBankValues] = useMutation(mutationBank
-    , {
-        update: (cache, {data: {bank}}) => {
+  // const [onMutationBank, resultMutationBankValues] = useMutation(mutationBank
+  //   , {
+  //       update: (cache, {data: {bank}}) => {
 
-          ////////// udpate cache Banks ///////////
-          let banksValue = cache.readQuery({ query: queryBanks });
-          let { status, mode, data } = bank
-          if(status && banksValue){
-            switch(mode){
-              case "new":{
-                cache.writeQuery({
-                  query: queryBanks,
-                  data: { banks: {...banksValue.banks, data: [...banksValue.banks.data, data]} },
-                });
-                break;
-              }
+  //         ////////// udpate cache Banks ///////////
+  //         let banksValue = cache.readQuery({ query: queryBanks });
+  //         let { status, mode, data } = bank
+  //         if(status && banksValue){
+  //           switch(mode){
+  //             case "new":{
+  //               cache.writeQuery({
+  //                 query: queryBanks,
+  //                 data: { banks: {...banksValue.banks, data: [...banksValue.banks.data, data]} },
+  //               });
+  //               break;
+  //             }
 
-              case "edit":{
-                let newData = _.map(banksValue.banks.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
-                cache.writeQuery({
-                  query: queryBanks,
-                  data: { banks: {...banksValue.banks, data: newData} },
-                });
-                break;
-              }
-            }
-          }
-          ////////// udpate cache Banks ///////////
+  //             case "edit":{
+  //               let newData = _.map(banksValue.banks.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
+  //               cache.writeQuery({
+  //                 query: queryBanks,
+  //                 data: { banks: {...banksValue.banks, data: newData} },
+  //               });
+  //               break;
+  //             }
+  //           }
+  //         }
+  //         ////////// udpate cache Banks ///////////
 
-          ////////// update cache queryBankById ///////////
-          let bankByIdValue = cache.readQuery({ query: queryBankById, variables: {id: data._id}});
-          if(status && bankByIdValue){
-            cache.writeQuery({
-              query: queryBankById,
-              data: { bankById: {...bankByIdValue.bankById, data} },
-              variables: {id: data._id}
-            });
-          }
-          ////////// update cache queryBankById ///////////
-        },
-        onCompleted({ data }) {
-          navigate(-1)
-        }
-      }
-  );
+  //         ////////// update cache queryBankById ///////////
+  //         let bankByIdValue = cache.readQuery({ query: queryBankById, variables: {id: data._id}});
+  //         if(status && bankByIdValue){
+  //           cache.writeQuery({
+  //             query: queryBankById,
+  //             data: { bankById: {...bankByIdValue.bankById, data} },
+  //             variables: {id: data._id}
+  //           });
+  //         }
+  //         ////////// update cache queryBankById ///////////
+  //       },
+  //       onCompleted({ data }) {
+  //         navigate(-1)
+  //       }
+  //     }
+  // );
 
   useEffect(()=>{
     if(mode == "edit" && _id){

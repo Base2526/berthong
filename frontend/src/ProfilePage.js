@@ -1,19 +1,14 @@
-import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
-import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import _ from "lodash"
 import { useQuery } from "@apollo/client";
 import queryString from 'query-string';
-import CardActionArea from "@material-ui/core/CardActionArea";
-
 import {
     Box,
     Stack,
     Avatar,
-    CircularProgress,
-    IconButton,
-    LinearProgress
+    CircularProgress
 } from '@mui/material';
 
 import {
@@ -24,9 +19,6 @@ import moment from "moment";
 
 import { getHeaders } from "./util"
 import { queryFriendProfile } from "./gqlQuery"
-import { logout } from "./redux/actions/auth"
-// import TableComp from "./components/TableComp"
-import ReadMoreMaster from "./helpers/ReadMoreMaster"
 
 const ProfilePage = (props) => {
     const navigate = useNavigate();
@@ -195,10 +187,6 @@ const ProfilePage = (props) => {
                         </div>
                 }
             </div>);
-    }
-
-const mapStateToProps = (state, ownProps) => {
-    return { user:state.auth.user }
 }
-const mapDispatchToProps = { logout }
-export default connect( mapStateToProps, mapDispatchToProps )(ProfilePage);
+
+export default ProfilePage

@@ -1,9 +1,8 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
-import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import _ from "lodash"
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import {
@@ -26,7 +25,7 @@ import {
 } from "react-icons/md"
 
 import { getHeaders } from "./util"
-import { queryNotifications, mutationNotification } from "./gqlQuery"
+import { queryNotifications } from "./gqlQuery"
 
 const initialValue = { data: [] , total : 0, slice: 20, hasMore: true}
 
@@ -37,6 +36,8 @@ const NotificationsPage = (props) => {
     
     let [input, setInput] = useState(initialValue)
 
+    let { onMutationNotification } = props
+
     const { loading: loadingNotifications, 
             data: dataNotifications, 
             error: errorNotifications,
@@ -45,20 +46,6 @@ const NotificationsPage = (props) => {
                                                     fetchPolicy: 'cache-first', // Used for first execution
                                                     nextFetchPolicy: 'network-only', // Used for subsequent executions
                                                     notifyOnNetworkStatusChange: true});
-
-    const [onMutationNotification, resultNotification] = useMutation(mutationNotification, {
-        context: { headers: getHeaders(location) },
-        update: (cache, {data: {notification}}) => {
-            let { data, status } = notification
-            console.log("update")
-        },
-        onCompleted(data) {
-            console.log("onCompleted")
-        },
-        onError(error){
-            console.log(error)
-        }
-    });
 
     useEffect(() => {
         if (!loadingNotifications) {
@@ -145,8 +132,4 @@ const NotificationsPage = (props) => {
             </div>);
 }
 
-const mapStateToProps = (state, ownProps) => {
-    return {}
-}
-const mapDispatchToProps = { }
-export default connect( mapStateToProps, mapDispatchToProps )(NotificationsPage);
+export default NotificationsPage

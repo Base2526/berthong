@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from "react";
-import { useMutation, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 
 import {  
   Edit as EditIcon,
@@ -24,9 +24,9 @@ import { useTranslation } from "react-i18next";
 // import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { mutationWithdraw, queryWithdraws } from "./gqlQuery";
+import { queryWithdraws } from "./gqlQuery";
 // import { logout } from "./redux/actions/auth";
-import { checkRole, getHeaders, showToast } from "./util";
+import { getHeaders, handlerErrorApollo } from "./util";
 // import { AMDINISTRATOR, UNAUTHENTICATED } from "./constants";
 // import TableComp from "./components/TableComp"
 
@@ -37,7 +37,7 @@ const WithdrawsPage = (props) => {
   const location = useLocation();
   const { t } = useTranslation();
 
-  let { user, logout, onLightbox } = props
+  let { user, logout, onLightbox, onMutationWithdraw } = props
 
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
   const [pageIndex, setPageIndex]     = useState(0);  
@@ -55,22 +55,13 @@ const WithdrawsPage = (props) => {
           networkStatus } = useQuery(queryWithdraws, 
                                       { 
                                         context: { headers: getHeaders(location) }, 
-                                        fetchPolicy: 'network-only', // Used for first execution
-                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        fetchPolicy: 'network-only', 
+                                        nextFetchPolicy: 'cache-first', 
                                         notifyOnNetworkStatusChange: true
                                       }
                                     );
 
-  if(!_.isEmpty(errorWithdraws)){
-    _.map(errorWithdraws?.graphQLErrors, (e)=>{
-      switch(e?.extensions?.code){
-        case Constants.UNAUTHENTICATED:{
-          showToast("error", e?.message)
-          break;
-        }
-      }
-    })
-  }
+  if(!_.isEmpty(errorWithdraws)) handlerErrorApollo( props, errorWithdraws )
 
   useEffect(() => {
     if(!loadingWithdraws){
@@ -82,35 +73,35 @@ const WithdrawsPage = (props) => {
   }, [dataWithdraws, loadingWithdraws])
 
 
-  const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {withdraw}}) => {
-      let { data, mode, status } = withdraw
+  // const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
+  //   context: { headers: getHeaders(location) },
+  //   update: (cache, {data: {withdraw}}) => {
+  //     let { data, mode, status } = withdraw
 
-      if(status){
-        switch(mode){
-          case "delete":{
-            let data1 = cache.readQuery({ query: queryWithdraws });
-            let dataFilter =_.filter(data1.withdraws.data, (item)=>data._id != item._id)
+  //     if(status){
+  //       switch(mode){
+  //         case "delete":{
+  //           let data1 = cache.readQuery({ query: queryWithdraws });
+  //           let dataFilter =_.filter(data1.withdraws.data, (item)=>data._id != item._id)
 
-            cache.writeQuery({
-              query: queryWithdraws,
-              data: { withdraws: {...data1.withdraws, data: dataFilter} }
-            });
+  //           cache.writeQuery({
+  //             query: queryWithdraws,
+  //             data: { withdraws: {...data1.withdraws, data: dataFilter} }
+  //           });
 
-            handleClose()
-            break;
-          }
-        }
-      }
-    },
-    onCompleted({ data }) {
-      // history.goBack()
-    },
-    onError({error}){
-      console.log("onError :")
-    }
-  });
+  //           handleClose()
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   },
+  //   onCompleted({ data }) {
+  //     // history.goBack()
+  //   },
+  //   onError({error}){
+  //     console.log("onError :")
+  //   }
+  // });
   // console.log("resultMutationWithdraw :", resultMutationWithdraw)
 
   const handleClose = () => {

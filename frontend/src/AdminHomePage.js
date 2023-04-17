@@ -14,7 +14,7 @@ import {
   FiRefreshCcw
 } from "react-icons/fi"
 import { queryAdminHome } from "./gqlQuery";
-import { getHeaders, showToast } from "./util";
+import { getHeaders, showToast, handlerErrorApollo } from "./util";
 import * as Constants from "./constants"
 
 const useStyles = makeStyles((theme) => ({
@@ -107,29 +107,8 @@ const AdminHomePage = (props) => {
                                       }
                                     );
 
-  if(!_.isEmpty(errorAdminHome)){
-    _.map(errorAdminHome?.graphQLErrors, (e)=>{
-      switch(e?.extensions?.code){
-        case Constants.UNAUTHENTICATED:{
-          showToast("error", e.message)
-          break;
-        }
-        default:{
-          console.log("error :",  e.message)
-        }
-      }
-    })
-  }
+  if(!_.isEmpty(errorAdminHome)) handlerErrorApollo( props, errorAdminHome )
   
-  /*
-  useEffect(()=>{
-    return () => {
-      unsubscribeSuppliers && unsubscribeSuppliers()
-      unsubscribeSuppliers = null;
-    };
-  }, [])
-  */
-
   useEffect(() => {
     if(!loadingAdminHome){
       if(!_.isEmpty(dataAdminHome?.adminHome)){
@@ -140,7 +119,7 @@ const AdminHomePage = (props) => {
       }
     }
   }, [dataAdminHome, loadingAdminHome])
-
+  
   /*
   useEffect(()=>{
     let supplierIds = JSON.stringify(_.map(datas, _.property("_id")));

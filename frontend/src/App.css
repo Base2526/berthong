@@ -1,11 +1,17 @@
 .App {
   font-family: sans-serif;
   text-align: center;
+  background-color: #f3f3f3;
+  /* background-image:linear-gradient(163deg, #f3f3f3 0%, rgba(251, 247, 255, 0.8) 11.8%,  #f3f3f3 42.86%, #f3f3f3 57.14%, #E5E5E5 71.43%, #f3f3f3 100%) */
 }
 
-body {
+/* body {
   background: #f1f1f1;
-}
+} */
+/* body {
+  background-color: #f3f3f3 !important;
+} */
+
 
 * {
   box-sizing: border-box;
@@ -57,7 +63,8 @@ body {
 .card-custom {
   overflow: hidden;
   min-height: 120px;
-  box-shadow: 0 0 15px rgba(10, 10, 10, 0.3);
+  /* box-shadow: 0 0 15px rgba(10, 10, 10, 0.3); */
+  box-shadow: 0px 1px 2px rgba(10, 10, 10, 0.3);
   margin: 3px;
 }
 
@@ -973,7 +980,7 @@ ul {
 }
 
 .card-title {
-  font-size: 18px;
+  font-size: 14px;
   cursor: pointer;
 }
 
@@ -1028,3 +1035,22 @@ tbody, td, tfoot, th, thead, tr {
 .card-admin:hover {
   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
 }
+
+.css-1yo1jo6-MuiStack-root{
+  margin-left: auto;
+}
+
+.MuiAppBar-colorPrimary {
+  color: #fff;
+  /* background-color: #3f51b5; */
+  background: linear-gradient(to left, #A6A0B7, #3f51b5);
+  /* background: linear-gradient(to right, #3188D5, #26a0da); */
+  opacity: 0.85;
+}
+
+.fnt {
+  font-family: "Lucida Handwriting", sans-serif;
+  /* font-family: "MV Boli", sans-serif; */
+  /* font-family: "Segoe Script", sans-serif; */
+}
+

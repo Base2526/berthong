@@ -25,7 +25,8 @@ import {Bank,
         Withdraw,
         Transition,
 
-        DateLottery
+        DateLottery,
+        ContactUs
       } from '../model'
 
 let logger = require("../utils/logger");
@@ -328,8 +329,18 @@ const modelExists =()=>{
       await DateLottery.deleteMany({})
     }
   });
-}
 
+  // 
+  ContactUs.find({}, async(err, result)=> {
+    if (result.length > 0) {
+    } else {
+      let newContactUs = new ContactUs({  title: "title",
+                                          description: "description" });
+      await newContactUs.save();
+      await ContactUs.deleteMany({})
+    }
+  });
+}
 
 // TODO: initial and connect to MongoDB
 mongoose.Promise = global.Promise;

@@ -30,40 +30,52 @@ import {
   AlternateEmail as AlternateEmailIcon,
   AllOut as AllOutIcon,
   Assistant as AssistantIcon,
-  Login as LoginIcon
+  // Login as LoginIcon
 } from '@mui/icons-material';
 
 import {
   BiWalletAlt as AccountBalanceWalletIcon,
 } from 'react-icons/bi';
-
 import {
   FiLogOut as LogoutIcon,
 } from 'react-icons/fi';
-
 import {
   HiOutlineHome as HomeIcon,
 } from 'react-icons/hi';
-
 import {
   MdCircleNotifications as MdCircleNotificationsIcon,
 } from 'react-icons/md';
-
 import {
   FiShoppingCart
 } from "react-icons/fi"
-
 import {
   AiOutlineHistory
 } from "react-icons/ai"
+import {
+  CgProfile as ProfileIcon
+} from "react-icons/cg"
+import {
+  MdOutlineBookmarkAdded as MdOutlineBookmarkAddedIcon
+} from "react-icons/md"
+
+import {
+  CiLogin as LoginIcon
+} from "react-icons/ci"
 
 import {
   Avatar,
   IconButton,
   ClickAwayListener,
   Stack,
-  Badge
+  Badge,
+  Menu,
+  MenuItem
 } from "@mui/material";
+
+import {
+  GrContactInfo as GrContactInfoIcon
+} from "react-icons/gr"
+
 import _ from "lodash"
 
 import TaxonomyBankPage from "./TaxonomyBankPage";
@@ -87,15 +99,17 @@ import ProfilePage from "./ProfilePage";
 import SuppliersPage from "./SuppliersPage";
 import UserPage from "./UserPage";
 import UsersPage from "./UsersPage";
-import { checkRole, getHeaders, numberCurrency, showToast} from "./util";
+import { checkRole, getHeaders, handlerErrorApollo, showToast} from "./util";
 import WithdrawPage from "./WithdrawPage";
 import WithdrawsPage from "./WithdrawsPage";
 import BreadcsComp from "./components/BreadcsComp";
 import DialogLogoutComp from "./components/DialogLogoutComp";
 import NotificationsPage from "./NotificationsPage";
-
-import LightboxComp from "./components/LightboxComp"
-import DialogLoginComp from "./components/DialogLoginComp"
+import LoginWithLine from "./LoginWithLine";
+import LightboxComp from "./components/LightboxComp";
+import DialogLoginComp from "./components/DialogLoginComp";
+import BookMarksPage from "./BookMarksPage";
+import ContactUsPage from "./ContactUsPage";
 
 import { queryNotifications, 
           mutationFollow, 
@@ -105,7 +119,15 @@ import { queryNotifications,
           mutationComment,
           queryCommentById,
           mutationBuy,
-          subscriptionMe } from "./gqlQuery"
+          subscriptionMe,
+          mutationContactUs,
+          mutationLogin,
+          mutationLoginWithSocial,
+          mutationWithdraw,
+          mutationBank,
+          mutationSupplier,
+          mutationNotification,
+          mutationDeposit } from "./gqlQuery"
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
@@ -171,24 +193,24 @@ const useStyles = makeStyles((theme) => ({
 const ListItem = withStyles({
   root: {
     "&$selected": {
-      backgroundColor: "red",
+      backgroundColor: "#5F73DF",
       color: "black",
       "& .MuiListItemIcon-root": {
         color: "blue"
       }
     },
     "&$selected:hover": {
-      backgroundColor: "purple",
+      backgroundColor: "#5F73DF",
       color: "black",
       "& .MuiListItemIcon-root": {
-        color: "white"
+        color: "blue"
       }
     },
     "&:hover": {
-      backgroundColor: "blue",
+      backgroundColor: "#EBECF4",
       color: "black",
       "& .MuiListItemIcon-root": {
-        color: "white"
+        color: "blue"
       }
     }
   },
@@ -200,21 +222,16 @@ const App =(props) =>{
   const location = useLocation();
   const navigate = useNavigate();
   let intervalPing = useRef(null);
-
+  let [openMenuProfile, setOpenMenuProfile] = useState(null);
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [openDialogLogout, setOpenDialogLogout] = useState(false);
   const [dialogLogin, setDialogLogin] = useState(false);
   const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
-
   let [notifications, setNotifications] =useState([])
-
   let [search, setSearch] = useState(Constants.INIT_SEARCH)
-
   let { ws, user, updateProfile, editedUserBalace, editedUserBalaceBook } = props
-
-  
 
   const { loading: loadingNotifications, 
           data: dataNotifications, 
@@ -234,12 +251,12 @@ const App =(props) =>{
 
         switch(mode?.toUpperCase()){
           case "FOLLOW":{
-            showToast("info", `FOLLOW`)
+            showToast("info", `Bookmark`)
             break
           }
   
           case "UNFOLLOW":{
-            showToast("info", `UNFOLLOW`)
+            showToast("info", `Un-Bookmark`)
             break
           }
         }
@@ -266,15 +283,8 @@ const App =(props) =>{
     onCompleted(data) {
       console.log("onCompleted")
     },
-    onError: (err) => {
-      _.map(err?.graphQLErrors, (e)=>{
-        switch(e?.extensions?.code){
-          case Constants.UNAUTHENTICATED:{
-            showToast("error", e?.message)
-            break;
-          }
-        }
-      })
+    onError: (error) => {
+      return handlerErrorApollo( props, error )
     }
   });
 
@@ -321,20 +331,7 @@ const App =(props) =>{
       console.log("onCompleted")
     },
     onError: (error) => {
-      _.map(error?.graphQLErrors, (e)=>{
-        switch(e?.extensions?.code){
-          case Constants.FORCE_LOGOUT:{
-            // logout()
-            break;
-          }
-          case Constants.DATA_NOT_FOUND:
-          case Constants.UNAUTHENTICATED:
-          case Constants.ERROR:{
-            showToast("error", e?.message)
-            break;
-          }
-        }
-      })
+      return handlerErrorApollo( props, error )
     }
   });
 
@@ -416,23 +413,375 @@ const App =(props) =>{
       console.log("onCompleted")
     },
     onError: (error) => {
-      console.log("error :", error)
-      // _.map(error?.graphQLErrors, (e)=>{
-      //   switch(e?.extensions?.code){
-      //     case Constants.FORCE_LOGOUT:{
-      //       // logout()
+      return handlerErrorApollo( props, error ) 
+    }
+  });
+
+  const [onMutationContactUs, resultMutationContactUs] = useMutation(mutationContactUs,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {contactUs}}) => {
+      // let { status, commentId, data } = comment
+
+      console.log("contactUs :", contactUs)
+
+      // let {mode, itemId} = action
+      // switch(mode?.toUpperCase()){
+      //   case "BOOK":{
+      //     showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+      //     break
+      //   }
+
+      //   case "UNBOOK":{
+      //     showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+      //     break
+      //   }
+      // }
+      
+      // let resultCommentById = cache.readQuery({ query: queryCommentById, variables: {id: commentId}});
+      // if(status && resultCommentById){
+      //   cache.writeQuery({ 
+      //     query: queryCommentById, 
+      //     variables: {id: commentId},
+      //     data: { commentById: { ...resultCommentById.commentById, data } }, 
+      //   }); 
+      // }
+
+      // ////////// update cache querySuppliers ///////////
+      // let suppliersValue = cache.readQuery({ query: querySuppliers });
+      // if(!_.isNull(suppliersValue)){
+      //   let { suppliers } = suppliersValue
+      //   let newData = _.map(suppliers.data, (supplier) => supplier._id == data._id ? data : supplier)
+      //   cache.writeQuery({
+      //     query: querySuppliers,
+      //     data: { suppliers: { ...suppliersValue.suppliers, data: newData } }
+      //   });
+      // }
+      // ////////// update cache querySuppliers ///////////
+    },
+    onCompleted(data) {
+      showToast("success", "ส่งเรียบร้อย")
+    },
+    onError: (error) => {
+      return handlerErrorApollo( props, error ) 
+    }
+  });
+
+  const [onMutationLogin, resultMutationLogin] = useMutation(mutationLogin, {
+    update: (cache, {data:{login}}) => {
+      let {status, data, sessionId} = login
+      if(status){
+        localStorage.setItem('token', sessionId)
+
+        updateProfile(data)
+        onComplete()
+      }
+    },
+    onCompleted(data) {
+      console.log("onCompleted :", data)
+    },
+    onError(error){
+      return handlerErrorApollo( props, error )
+    }
+  });
+
+  const [onMutationLoginWithSocial, resultMutationLoginWithSocial] = useMutation(mutationLoginWithSocial, 
+    {
+      update: (cache, {data: {loginWithSocial}}) => {
+
+        // console.log("loginWithSocial :", loginWithSocial)
+        // const data1 = cache.readQuery({ query: gqlBanks });
+
+        let {status, data, sessionId} = loginWithSocial
+
+        if(status){
+          localStorage.setItem('token', sessionId)
+
+          onComplete(data)
+        }
+
+        // let newBanks = {...data1.banks}
+        // let newData  = _.map(newBanks.data, bank=>bank._id == updateBank._id ? updateBank : bank)
+
+        // newBanks = {...newBanks, data: newData}
+        // cache.writeQuery({
+        //   query: gqlBanks,
+        //   data: { banks: newBanks },
+        // });
+      },
+      onCompleted({ data }) {
+        // history.push("/");
+        navigate("/")
+      },
+      onError({error}){
+        return handlerErrorApollo( props, error )
+      }
+    }
+  );
+
+  const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {withdraw}}) => {
+      let { data, mode, status } = withdraw
+
+      if(status){
+        switch(mode){
+          case "delete":{
+            let data1 = cache.readQuery({ query: queryWithdraws });
+            let dataFilter =_.filter(data1.withdraws.data, (item)=>data._id != item._id)
+
+            cache.writeQuery({
+              query: queryWithdraws,
+              data: { withdraws: {...data1.withdraws, data: dataFilter} }
+            });
+
+            handleClose()
+            break;
+          }
+        }
+      }
+    },
+    onCompleted({ data }) {
+      // history.goBack()
+    },
+    onError({error}){
+      return handlerErrorApollo( props, error )
+    }
+  });
+
+  const [onMutationBank, resultMutationBankValues] = useMutation(mutationBank
+    , {
+        update: (cache, {data: {bank}}) => {
+
+          ////////// udpate cache Banks ///////////
+          let banksValue = cache.readQuery({ query: queryBanks });
+          let { status, mode, data } = bank
+          if(status && banksValue){
+            switch(mode){
+              case "new":{
+                cache.writeQuery({
+                  query: queryBanks,
+                  data: { banks: {...banksValue.banks, data: [...banksValue.banks.data, data]} },
+                });
+                break;
+              }
+
+              case "edit":{
+                let newData = _.map(banksValue.banks.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
+                cache.writeQuery({
+                  query: queryBanks,
+                  data: { banks: {...banksValue.banks, data: newData} },
+                });
+                break;
+              }
+            }
+          }
+          ////////// udpate cache Banks ///////////
+
+          ////////// update cache queryBankById ///////////
+          let bankByIdValue = cache.readQuery({ query: queryBankById, variables: {id: data._id}});
+          if(status && bankByIdValue){
+            cache.writeQuery({
+              query: queryBankById,
+              data: { bankById: {...bankByIdValue.bankById, data} },
+              variables: {id: data._id}
+            });
+          }
+          ////////// update cache queryBankById ///////////
+        },
+        onCompleted({ data }) {
+          navigate(-1)
+        }
+      }
+  );
+
+  const [onMutationSupplier, resultSupplier] = useMutation(mutationSupplier, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {supplier}}) => {
+      let { data, mode, status } = supplier
+
+      // if(status){
+      //   switch(mode){
+      //     case "new":{
+      //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+
+      //       if(!_.isNull(querySuppliersValue)){
+      //         let newData = [...querySuppliersValue.suppliers.data, data];
+
+      //         cache.writeQuery({
+      //           query: querySuppliers,
+      //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+      //         });
+      //       }
       //       break;
       //     }
-      //     case Constants.DATA_NOT_FOUND:
-      //     case Constants.UNAUTHENTICATED:
-      //     case Constants.ERROR:{
-      //       showToast("error", e?.message)
+      //     case "edit":{
+      //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+      //       if(!_.isNull(querySuppliersValue)){
+      //         let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
+
+      //         cache.writeQuery({
+      //           query: querySuppliers,
+      //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+      //         });
+      //       }
       //       break;
       //     }
       //   }
-      // })
+      // }
+    },
+    onCompleted(data) {
+      navigate(-1)
+    },
+    onError(error){
+      return handlerErrorApollo( props, error )
     }
   });
+
+  const [onMutationNotification, resultNotification] = useMutation(mutationNotification, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {notification}}) => {
+        let { data, status } = notification
+        console.log("update")
+    },
+    onCompleted(data) {
+        console.log("onCompleted")
+    },
+    onError(error){
+        console.log(error)
+    }
+  });
+
+  const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {deposit}}) => {
+      let { data, mode, status } = deposit
+      if(status){
+        switch(mode){
+          // case "new":{
+          //   const queryDepositsValue = cache.readQuery({ query: queryDeposits });
+          //   if(!_.isNull(queryDepositsValue)){
+          //     let newData = [...queryDepositsValue.deposits.data, data];
+
+          //     cache.writeQuery({
+          //       query: queryDeposits,
+          //       data: { deposits: {...queryDepositsValue.deposits, data: newData} }
+          //     });
+          //   }
+          //   break;
+          // }
+
+          case "edit":{
+            let queryDepositsValue = cache.readQuery({ query: queryDeposits });
+            if(!_.isNull(queryDepositsValue)){
+              let newData = _.map(queryDepositsValue.deposits.data, (item)=> item._id == data._id ? data : item ) 
+
+              if(deposit.data.status == "approved" || deposit.data.status == "reject"){
+                newData = _.filter(queryDepositsValue.deposits.data, (item)=> item._id != data._id ) 
+              }
+
+              cache.writeQuery({
+                query: queryDeposits,
+                data: { deposits: {...queryDepositsValue.deposits, data: newData} }
+              });
+            }
+            break;
+          }
+        }
+      }
+    },
+    onCompleted(data) {
+      if(_.isEqual(checkRole(user) , AMDINISTRATOR)){
+        navigate(-1);
+      }else {
+        showToast("success", "ได้รับเรื่องแล้ว กำลังดำเนินการ")
+        navigate("/");
+      }
+    },
+    onError(error){
+      console.log("onError :", error?.message)
+      showToast("error", error?.message)
+    }
+  });
+
+  // const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
+  //   context: { headers: getHeaders(location) },
+  //   update: (cache, {data: {withdraw}}) => {
+  //     let { data, mode, status } = withdraw
+
+  //     if(status){
+        
+  //       switch(mode){
+  //         case "new":{
+  //           const queryWithdrawsValue = cache.readQuery({ query: queryWithdraws });
+  //           if(!_.isEmpty(queryWithdrawsValue)){
+  //             let newData = [...queryWithdrawsValue.withdraws.data, withdraw.data];
+
+  //             cache.writeQuery({
+  //               query: queryWithdraws,
+  //               data: { withdraws: {...queryWithdrawsValue.withdraws, data: newData} }
+  //             });
+  //           }
+            
+  //           ////////// update cache queryWithdrawById ///////////
+  //           let queryWithdrawByIdValue = cache.readQuery({ query: queryWithdrawById, variables: {id: data._id}});
+  //           if(!_.isEmpty(queryWithdrawByIdValue)){
+  //             cache.writeQuery({
+  //               query: queryWithdrawById,
+  //               data: { withdrawById: {...queryWithdrawByIdValue.withdrawById, data} },
+  //               variables: {id: data._id}
+  //             });
+  //           }
+  //           ////////// update cache queryWithdrawById ///////////   
+  //           break;
+  //         }
+
+  //         case "edit":{
+  //           const queryWithdrawsValue = cache.readQuery({ query: queryWithdraws });
+  //           let newData = _.map(queryWithdrawsValue.withdraws.data, (item)=> item._id == withdraw.data._id ? withdraw.data : item ) 
+
+  //           if(withdraw.data.status == "approved" || withdraw.data.status == "reject"){
+  //             newData = _.filter(queryWithdrawsValue.withdraws.data, (item)=> item._id != withdraw.data._id ) 
+  //           }
+            
+  //           cache.writeQuery({
+  //             query: queryWithdraws,
+  //             data: { withdraws: {...queryWithdrawsValue.withdraws, data: newData} }
+  //           });
+
+  //           ////////// update cache queryWithdrawById ///////////
+  //           let queryWithdrawByIdValue = cache.readQuery({ query: queryWithdrawById, variables: {id: data._id}});
+  //           if(queryWithdrawByIdValue){
+  //             cache.writeQuery({
+  //               query: queryWithdrawById,
+  //               data: { withdrawById: {...queryWithdrawByIdValue.withdrawById, data} },
+  //               variables: {id: data._id}
+  //             });
+  //           }
+  //           ////////// update cache queryWithdrawById ///////////            
+  //           break;
+  //         }
+  //       }
+        
+  //     }
+  //   },
+  //   onCompleted(data) {
+  //     switch(checkRole(user)){
+  //       case Constants.AMDINISTRATOR:{
+  //         navigate("/withdraws")
+  //         break;
+  //       }
+  
+  //       case Constants.AUTHENTICATED:{
+  //         navigate("/")
+  //         break;
+  //       }
+  //     }
+  //   },
+  //   onError(error){
+  //     console.log("onError :", error)
+  //   }
+  // });
+
 
   useEffect(()=>{
     console.log("search :", search)
@@ -563,14 +912,47 @@ const App =(props) =>{
                 {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
                 {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"},
-                {id: 5, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon />, path: "/banks"},
-                {id: 6, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
+                {id: 5, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/banks"},
+                {id: 6, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
+                {id: 7, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
       }
       default:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
-                {id: 1, title:"Login", icon: <LoginIcon />, path: "/login"}]
+                {id: 1, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
+                {id: 2, title:"Login", icon: <LoginIcon size="1.5em"  />, path: "/login"}]
       }
     }
+  }
+
+  const menuProfile = () =>{
+    return  <Menu
+              anchorEl={openMenuProfile}
+              keepMounted
+              open={openMenuProfile && Boolean(openMenuProfile)}
+              onClose={()=>{ setOpenMenuProfile(null) }}
+              getContentAnchorEl={null}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "center"
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "center"
+              }}
+              MenuListProps={{
+                "aria-labelledby": "lock-button",
+                role: "listbox"
+              }}
+            >
+              <MenuItem onClick={(e)=>{
+                setOpenMenuProfile(null)
+                navigate("/me")
+              }}><ProfileIcon size={20} round />Profile</MenuItem>
+              <MenuItem onClick={(e)=>{
+                setOpenMenuProfile(null)
+                setOpenDialogLogout(true)
+              }}><LoginIcon size={20} round />Logout</MenuItem>
+            </Menu>
   }
 
   return (
@@ -581,7 +963,6 @@ const App =(props) =>{
         openDialogLogout 
         && <DialogLogoutComp {...props} open={openDialogLogout} onClose={()=>setOpenDialogLogout(false)}/>
       }
-
       {
         dialogLogin 
         && <DialogLoginComp   
@@ -592,10 +973,12 @@ const App =(props) =>{
             }}
             onClose={() => {
               setDialogLogin(false);
-            }}/>
+            }}
+            onMutationLogin={(evt)=>onMutationLogin(evt)}
+            onMutationLoginWithSocial={(evt)=>onMutationLoginWithSocial(evt)}/>
       }
-      
       {statusView()}
+      {menuProfile()}
       <div className="container-fluid">
         <div className={classes.root}>
           <CssBaseline />
@@ -606,51 +989,57 @@ const App =(props) =>{
             })}>
             <Toolbar>
               {
-                // _.isEqual(checkRole(user), Constants.AMDINISTRATOR)
-                // ? <Typography variant="h6" noWrap>AMDINISTRATOR</Typography> 
-                // : 
                 <>
-                    <IconButton
-                      color="inherit"
-                      aria-label="open drawer"
-                      onClick={handleDrawerOpen}
-                      edge="start"
-                      className={clsx(classes.menuButton, open && classes.hide)}
-                    ><MenuIcon /></IconButton>
-                    <Typography variant="h6" noWrap onClick={()=>navigate("/")}>BERTHONG</Typography>
-                    {
-                      !_.isEmpty(user) && checkRole(user) === Constants.AUTHENTICATED 
-                      ? <Stack direction={"row"} spacing={2} alignItems="center">
-                          <IconButton size={'small'}>
-                            <Avatar 
-                              src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
-                              alt="profile"
-                            />
-                          </IconButton>
-                          <Typography variant="h6" noWrap>
-                            {"[  Name :" + user?.displayName +", Email :"+ user?.email + " ]"}
-                          </Typography>
-                          <div>Balance : {numberCurrency(user?.balance ? user.balance : 0)} [-{numberCurrency(user?.balanceBook ? user.balanceBook : 0)}]</div>
-                          <IconButton 
-                            size={'small'}
-                            onClick={()=>{
-                              navigate("/notifications")
-                            }}>
-                            <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
-                              <MdCircleNotificationsIcon color="white" size="1.2em"/>
-                            </Badge>
-                          </IconButton>
-                          <IconButton 
-                            size={'small'}
-                            onClick={()=>{ navigate("/book-buy") }}>
-                            <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
-                              <FiShoppingCart color="white" size="1.2em"/>
-                            </Badge>
-                          </IconButton>
-                        </Stack>
-                      : ""  
-                    }
-                  </>
+                  <IconButton
+                    color="inherit"
+                    aria-label="open drawer"
+                    onClick={handleDrawerOpen}
+                    edge="start"
+                    className={clsx(classes.menuButton, open && classes.hide)}
+                  ><MenuIcon /></IconButton>
+                  <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">Berthong.com</div></Typography>
+                  {
+                    !_.isEmpty(user) && checkRole(user) === Constants.AUTHENTICATED 
+                    ? <Stack direction={"row"} spacing={2} alignItems="center">
+                        <IconButton 
+                          size={'small'}
+                          onClick={()=>{
+                            navigate("/notifications")
+                          }}>
+                          <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
+                            <MdCircleNotificationsIcon color="white" size="1.2em"/>
+                          </Badge>
+                        </IconButton>
+                        <IconButton 
+                          size={'small'}
+                          onClick={()=>{ navigate("/book-buy") }}>
+                          <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
+                            <FiShoppingCart color="white" size="1.2em"/>
+                          </Badge>
+                        </IconButton>
+                        <IconButton 
+                          size={'small'}
+                          onClick={()=>{ navigate("/bookmarks") }}>
+                          <MdOutlineBookmarkAddedIcon color="white" size="1.2em"/>
+                        </IconButton>
+                        <IconButton 
+                          size={'small'}
+                          onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
+                          <Avatar 
+                            src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
+                            alt="profile"
+                          />
+                        </IconButton>
+                      </Stack>
+                    : <Stack direction={"row"} spacing={2} alignItems="center">
+                         <IconButton 
+                          size={'small'}
+                          onClick={()=>{ setDialogLogin(true) }}>
+                          <LoginIcon color="white" size="1.2em"/>
+                        </IconButton>
+                      </Stack>
+                  }
+                </>
               }
             </Toolbar>
           </AppBar>
@@ -712,7 +1101,7 @@ const App =(props) =>{
                   )}
                 </List>
               <Divider />
-              <Typography variant="caption" display="block" gutterBottom>© 2023 BERTHONG LLC</Typography>
+              <Typography variant="caption" display="block" gutterBottom><div className="text-center p-1">© 2023 BERTHONG LLC</div></Typography>
             </Drawer>
           </ClickAwayListener>
           <main className={clsx(classes.content, { [classes.contentShift]: open })} >
@@ -729,9 +1118,7 @@ const App =(props) =>{
                                                 search={search} 
                                                 onLogin={()=>setDialogLogin(true)} 
                                                 onSearchChange={(evt)=>setSearch(evt)}
-                                                onMutationFollow={(evt)=>onMutationFollow(evt)} />} 
-                                            />
-
+                                                onMutationFollow={(evt)=>onMutationFollow(evt)} />} />
             <Route path="/d" element={<DetailPage 
                                         {...props}
                                         onLogin={()=>setDialogLogin(true)} 
@@ -740,34 +1127,34 @@ const App =(props) =>{
                                         onMutationBook={(evt)=>onMutationBook(evt)}
                                         onMutationBuy={(evt)=>{
                                           console.log("onMutationBuy :", evt)
-                                          // onMutationBuy
                                         }}
-                                        onMutationComment={(evt)=>onMutationComment(evt)}/>} 
-                                    />
-
+                                        onMutationComment={(evt)=>onMutationComment(evt)}/>} />
             <Route path="/user/login" element={<LoginPage {...props} />} />
             <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
-            <Route path="/supplier" element={<SupplierPage />} />
-            <Route path="/p" element={<ProfilePage onLightbox={(value)=>setLightbox(value)} />}/>
+            <Route path="/supplier" element={<SupplierPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
+            <Route path="/p" element={<ProfilePage {...props} onLightbox={(value)=>setLightbox(value)} />}/>
+            <Route path="/login-with-line" element={<LoginWithLine />}  />
+            <Route path="/contact-us" element={<ContactUsPage onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
-              <Route path="/me" element={<MePage  {...props} />} />
-              <Route path="/deposit" element={<DepositPage {...props} />} />
+              <Route path="/me" element={<MePage {...props} onLightbox={(v)=>setLightbox(v)} />} />
+              <Route path="/deposit" element={<DepositPage {...props} onMutationDeposit={(evt)=>onMutationContactUs(evt)} />} />
               <Route path="/withdraw" element={<WithdrawPage {...props} />} />
               <Route path="/history-transitions" {...props} element={<HistoryTransitionsPage {...props} />} />
               <Route path="/bank" element={<BankPage {...props} />} />
               <Route path="/banks" element={<BanksPage {...props} />} />
               <Route path="/book-buy" element={<MeBookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/notifications" element={<NotificationsPage {...props} />} />
+              <Route path="/notifications" element={<NotificationsPage {...props} onMutationNotification={(evt)=>onMutationNotification(evt)} />} />
+              <Route path="/bookmarks" element={<BookMarksPage {...props} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
               <Route path="/deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/withdraws" element={<WithdrawsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/withdraws" element={<WithdrawsPage {...props} onMutationWithdraw={(evt)=>onMutationWithdraw(evt)} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/date-lotterys" element={<DateLotterysPage />} />
               <Route path="/date-lottery" element={<DateLotteryPage />} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/user" element={<UserPage />} />
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
-              <Route path="/taxonomy-bank" element={<TaxonomyBankPage />} />
+              <Route path="/taxonomy-bank" element={<TaxonomyBankPage  {...props} onMutationBank={(evt)=>onMutationBank(evt)}/>} />
             </Route>
             <Route path="*" element={<p>There's nothing here: 404!</p>} />
           </Routes>
@@ -788,5 +1175,4 @@ const mapDispatchToProps = {
   logout
 }
 
-export default connect( mapStateToProps, mapDispatchToProps )(App);
-
+export default connect( mapStateToProps, mapDispatchToProps )(App)

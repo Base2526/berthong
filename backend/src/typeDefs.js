@@ -493,6 +493,8 @@ export default gql`
     adminHome: JSON
 
     commentById(_id: ID!): JSON
+
+    bookmarks: JSON
   }  
   
   input RoomInput {
@@ -747,6 +749,12 @@ export default gql`
     description: String
   }
 
+  input ContactUsInput{
+    title: String!
+    description: String!
+    files: [JSON]
+  }
+
   type Mutation {
     login(input: LoginInput): JSON
     loginWithSocial(input: LoginWithSocialInput): JSON
@@ -765,6 +773,8 @@ export default gql`
     notification(_id: ID!): JSON 
 
     comment(input: JSON): JSON
+
+    contactUs(input: ContactUsInput): JSON
   }
 
   type Subscription {

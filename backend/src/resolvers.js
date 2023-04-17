@@ -7,10 +7,26 @@ deepdash(_);
 import * as fs from "fs";
 import { __TypeKind } from 'graphql';
 import mongoose from 'mongoose';
-import { User, Supplier, Bank, Role, Deposit, Withdraw, DateLottery, Transition, Comment } from './model'
+import {  User, 
+          Supplier, 
+          Bank, 
+          Role, 
+          Deposit, 
+          Withdraw, 
+          DateLottery, 
+          Transition, 
+          Comment,
+          ContactUs } from './model'
 import pubsub from './pubsub'
-import { emailValidate, checkBalance, checkBalanceBook, fileRenamer, 
-        checkAuthorization, checkAuthorizationWithSessionId, getSessionId, checkRole} from "./utils"
+import {  emailValidate, 
+          checkBalance, 
+          checkBalanceBook, 
+          fileRenamer, 
+          checkAuthorization, 
+          checkAuthorizationWithSessionId, 
+          getSessionId, 
+          checkRole, 
+          getUser } from "./utils"
 import { BAD_USER_INPUT, ERROR, FORCE_LOGOUT, DATA_NOT_FOUND, 
         USER_NOT_FOUND, UNAUTHENTICATED, AMDINISTRATOR, AUTHENTICATED,
         _ID_AMDINISTRATOR } from "./constants"
@@ -28,6 +44,9 @@ export default {
     async ping(parent, args, context, info){
       let { req } = context
 
+      // let user  = await getUser({_id: mongoose.Types.ObjectId(_ID_AMDINISTRATOR)})
+
+      // console.log("user doc :", user?._doc, user)
       // let { status, code, pathname, current_user } =  await checkAuthorization(req);
       // if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
@@ -66,13 +85,12 @@ export default {
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
       if(!status && code == USER_NOT_FOUND) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
-      let user = await User.findById(current_user?._id)
+      let user = await getUser({_id: current_user?._id}) 
       if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
-      user =_.omit( { ...user._doc, 
-                      // balance: (await checkBalance(current_user?._id)).balance,
-                      ...await checkBalance(current_user?._id),
-                      balanceBook: await checkBalanceBook(current_user?._id)}, ["password", "__v"])
+      user =  { ...user?._doc, 
+                ...await checkBalance(current_user?._id),
+                balanceBook: await checkBalanceBook(current_user?._id)}
 
       return {  status: true,
                 data: user,
@@ -97,7 +115,7 @@ export default {
       return { 
               status: true,
               data: users,
-              total: (await User.find({roles: {$nin:[AMDINISTRATOR]}}) ).length,
+              total: ( await getUser({roles: {$nin:[AMDINISTRATOR]}}) )?.length,
               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
             }
     },
@@ -112,7 +130,7 @@ export default {
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
       // if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
 
-      let user = await User.findById(_id)
+      let user = await getUser({_id})
       if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
       return {  status: true,
@@ -157,15 +175,19 @@ export default {
 
     async suppliers(parent, args, context, info){
       let start = Date.now()
+      let { req } = context
+      let { status, code, pathname, current_user } = await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+
       let { PAGE, LIMIT } = args
       let skip = (PAGE - 1) * LIMIT;
 
       let suppliers = await Supplier.find({}).skip(skip).limit(LIMIT); 
 
       suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-        let user = await User.findOne({_id: item.ownerId});
-        if(_.isNull(user)) return null;
-        return {...item._doc,  owner: user?._doc }
+        let owner = await getUser({ _id: item.ownerId })
+        if(_.isNull(owner)) return null;
+        return { ...item._doc, owner }
       }).filter(i=>!_.isNull(i)))
 
       return {  
@@ -254,7 +276,6 @@ export default {
     //         if(_.isNull(user)) return null;
     //         return {...item._doc,  owner: user?._doc }
     //       }).filter(i=>!_.isNull(i)))
-
     //       return {  
     //         status: true,
     //         data: suppliers,
@@ -371,7 +392,7 @@ export default {
           let withdraws = await Withdraw.find({status: Constants.WAIT})
 
           withdraws = await Promise.all(_.map(withdraws, async(i)=>{
-                                                let user = await User.findById(i.userIdRequest)
+                                                let user = await getUser({_id: i.userIdRequest})
                                                 return _.isEmpty(user) ? null : {...i._doc, userNameRequest: user?.displayName}
                                               }).filter(i=>!_.isNull(i)))
           return {  status: true,
@@ -381,7 +402,7 @@ export default {
 
         let withdraws = await Withdraw.find({userIdRequest: current_user?._id})
         withdraws = await Promise.all(_.map(withdraws, async(item)=>{
-                                              let user = await User.findById(item.userIdApprove)
+                                              let user = await getUser({_id: item.userIdApprove})
                                               return {...item._doc, userNameApprove: user?.displayName}
                                             }))
 
@@ -423,7 +444,7 @@ export default {
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
       if(is_admin){
-        let user  = await User.findById(mongoose.Types.ObjectId(_ID_AMDINISTRATOR))
+        let user  = await getUser({_id: mongoose.Types.ObjectId(_ID_AMDINISTRATOR)})
         if(_.isNull(user)) throw new AppError(DATA_NOT_FOUND, 'User not found.')
   
         let banks =_.filter(await Promise.all(_.map(user?.banks, async(item)=>{
@@ -504,14 +525,14 @@ export default {
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      let user = await User.findById(_id);
+      let user = await getUser({_id})
       if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
       let suppliers = await Supplier.find({ownerId: _id});
       if(_.isNull(suppliers)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
       return {  status: true,
-                data: {...user._doc, suppliers},
+                data: {...user?._doc, suppliers},
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
     },
@@ -686,14 +707,39 @@ export default {
         let { _id } = args
         let { req } = context
 
-        console.log("commentById :", args)
-
         let { status, code, pathname, current_user } =  await checkAuthorization(req);
         if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
         let comm = await Comment.findOne({_id});
         return {  status: true,
                   data: _.isNull(comm) ? [] : comm,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }catch(error){
+        console.log("commentById error :", error)
+        return {  status: false,
+                  error: error?.message,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
+    async bookmarks(parent, args, context, info){
+      try{
+        let start = Date.now()
+        let { req } = context
+
+        let { status, code, pathname, current_user } =  await checkAuthorization(req);
+        if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+
+        let suppliers = await Supplier.find({follows: {$elemMatch: {userId: current_user?._id} }})
+
+        suppliers = await Promise.all(_.map(suppliers, async(item)=>{
+                      let owner = await getUser({_id: item.ownerId})
+                      if(_.isNull(owner)) return null;
+                      return { ...item._doc,  owner }
+                    }).filter(i=>!_.isNull(i)))
+
+        return {  status: true,
+                  data: suppliers,
+                  total: suppliers.length,
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
       }catch(error){
         console.log("commentById error :", error)
@@ -709,32 +755,43 @@ export default {
       let start = Date.now()
       let {input} = args
 
-      let user = emailValidate().test(input.username) ?  await User.findOne({email: input.username}) : await User.findOne({username: input.username})
-      
-      if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
+      try{
 
-      await User.updateOne({ _id: user?._id }, { lastAccess : Date.now() });
-      user = await User.findOne({ _id: user?._id}, 
-                                { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 })
-      // let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
-      //   return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
-      // }))  
-      let banks = _.filter(await Promise.all(_.map(user?.banks, async(item)=>{
-                    let bank = await Bank.findById(item.bankId)
-                    return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
-                  })), e=>!_.isNull(e) ) 
+        let user = emailValidate().test(input.username) ? await getUser({email: input.username}) : await getUser({username: input.username})
+        
+        if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
-      user = {...user._doc, 
-              banks,
-              // balance: (await checkBalance(user?._id)).balance,
-              ...await checkBalance(user?._id),
-              balanceBook: await checkBalanceBook(user?._id)}
+        await User.updateOne({ _id: user?._id }, { lastAccess : Date.now() });
+        user = await getUser({_id: user?._id}) 
 
-      return {
-        status: true,
-        data: user,
-        sessionId: await getSessionId(user?._id, input),
-        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        // let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
+        //   return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
+        // }))  
+        
+        let banks = _.filter(await Promise.all(_.map(user?.banks, async(item)=>{
+                      let bank = await Bank.findById(item.bankId)
+                      return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
+                    })), e=>!_.isNull(e) ) 
+
+        user = {  ...user?._doc, 
+                  banks,
+                  ...await checkBalance(user?._id),
+                  balanceBook: await checkBalanceBook(user?._id)
+                }
+
+        return {
+          status: true,
+          data: user,
+          sessionId: await getSessionId(user?._id, input),
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }catch(error){
+        console.log("error :", error)
+        return {
+          status: false,
+          error: error.message,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
       }
     },
 
@@ -793,7 +850,7 @@ export default {
 
           let { data } = input
 
-          let user = await User.findOne({socialId: data.profileObj.googleId, socialType: 'google'});
+          let user = await getUser({socialId: data.profileObj.googleId, socialType: 'google'});
           if(_.isEmpty(user)){
 
             /*
@@ -839,7 +896,7 @@ export default {
         case "github":{
           let { data } = input
 
-          let user = await User.findOne({socialId: data.code, socialType: 'github'});
+          let user = await getUser({socialId: data.code, socialType: 'github'});
 
           let github_user = null;
           if(_.isEmpty(user)){
@@ -994,7 +1051,7 @@ export default {
 
           let { data } = input
 
-          let user = await User.findOne({socialId: data.id, socialType: 'facebook'});
+          let user = await getUser({socialId: data.id, socialType: 'facebook'});
 
           if(_.isEmpty(user)){
             let newInput = {
@@ -1106,7 +1163,7 @@ export default {
 
       console.log("params register : ", input)
 
-      let user = await User.findOne({email: input.email})
+      let user = await getUser({ email: input.email } )
       if(!_.isNull(user)) throw new AppError(ERROR, 'Exiting email.')
 
       let newInput =  {...input,  password: cryptojs.AES.encrypt( input.password, process.env.JWT_SECRET).toString(),
@@ -1225,8 +1282,8 @@ export default {
         // user = {...user._doc, roles}
 
       await User.updateOne({ _id: current_user?._id }, newInput );
-      let user = await User.findById(current_user?._id)
-      user = _.omit(user, ['password'])
+      let user = await getUser({_id: current_user?._id}) 
+      // user = _.omit(user, ['password'])
       
       pubsub.publish("ME", {
         me: { mutation: "UPDATE", data: user },
@@ -1366,7 +1423,6 @@ export default {
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
       if( checkRole(current_user) != AMDINISTRATOR && checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated and Authenticated only!')
-
 
       if(input.test){
         let supplier = await Supplier.create(input);
@@ -1787,7 +1843,7 @@ export default {
       return {
         status: true,
         mode,
-        data: {...supplier._doc, owner: (await User.findById(supplier.ownerId))?._doc },
+        data: {...supplier._doc, owner: await getUser({_id: supplier.ownerId}) },
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
@@ -1933,6 +1989,53 @@ export default {
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
+
+    async contactUs(parent, args, context, info){
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      // if( checkRole(current_user) != AMDINISTRATOR && checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
+
+      let newFiles = [];
+      if(!_.isEmpty(input.files)){
+        for (let i = 0; i < input.files.length; i++) {
+          const { createReadStream, filename, encoding, mimetype } = (await input.files[i]).file //await input.files[i];
+
+          const stream = createReadStream();
+          const assetUniqName = fileRenamer(filename);
+          let pathName = `/app/uploads/${assetUniqName}`;
+
+          const output = fs.createWriteStream(pathName)
+          stream.pipe(output);
+
+          await new Promise(function (resolve, reject) {
+            output.on('close', () => {
+              resolve();
+            });
+      
+            output.on('error', (err) => {
+              logger.error(err.toString());
+
+              reject(err);
+            });
+          });
+
+          const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+          newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+        }
+      }
+
+      let contactUs = await ContactUs.create({ ...input, files:newFiles });
+    
+      return {
+        status: true,
+        data: contactUs,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+    }
   },
   Subscription:{
     subscriptionMe: {

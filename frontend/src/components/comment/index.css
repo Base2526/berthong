@@ -91,8 +91,8 @@
   margin-top: -2px;
 }
 .displayComments {
-  height: 350px;
-  overflow-y: scroll;
+  /* height: 350px;
+  overflow-y: scroll; */
   padding: 10px;
 }
 .displayComments .halfDiv {

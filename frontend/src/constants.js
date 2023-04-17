@@ -43,6 +43,7 @@ export const FORCE_LOGOUT   = "FORCE_LOGOUT";
 export const DATA_NOT_FOUND = "DATA_NOT_FOUND";
 export const USER_NOT_FOUND = "USER_NOT_FOUND";
 export const UNAUTHENTICATED= "UNAUTHENTICATED";
+export const INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
 
 export const INIT_SEARCH = {
     PAGE: 1,

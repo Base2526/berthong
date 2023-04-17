@@ -36,6 +36,8 @@ import TransitionModel from "./TransitionModel"
 
 import DateLotteryModel from "./DateLotteryModel"
 
+import ContactUsModel from "./ContactUsModel"
+
 module.exports =  {
     Bank:BankModel,
     Post:PostModel,
@@ -73,5 +75,7 @@ module.exports =  {
 
     Transition: TransitionModel,
 
-    DateLottery: DateLotteryModel
+    DateLottery: DateLotteryModel,
+
+    ContactUs: ContactUsModel
 };

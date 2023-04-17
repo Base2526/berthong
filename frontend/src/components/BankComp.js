@@ -5,7 +5,7 @@ import { useQuery } from "@apollo/client";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 
 import { queryBankById } from "../gqlQuery"
-import { getHeaders } from "../util"
+import { getHeaders, handlerErrorApollo } from "../util"
 
 const BankComp = (props) => {
     const navigate = useNavigate();
@@ -22,18 +22,8 @@ const BankComp = (props) => {
                                                                 nextFetchPolicy: 'network-only', // Used for subsequent executions
                                                                 notifyOnNetworkStatusChange: true 
                                                             });
-    if(!_.isEmpty(errorBankById)){
-        _.map(errorBankById?.graphQLErrors, (e)=>{
-            console.log("e :", e)
-            // switch(e?.extensions?.code){
-            //     case UNAUTHENTICATED:{
-            //         showToast("error", e?.message)
-            //     break;
-            //     }
-            // }
-        })
-    }
-
+    if(!_.isEmpty(errorBankById)) handlerErrorApollo( props, errorBankById )
+    
     useEffect(() => {
         if(!loadingBankById){
             if (dataBankById?.bankById) {

@@ -5,11 +5,19 @@ import { useTranslation } from "react-i18next";
 import { Node, Path, Transforms } from "slate";
 import { slateToHtml } from 'slate-serializers'
 
-import Button from "../common/Button";
+// import Button from "../common/Button";
 import Icon from "../common/Icon";
 import { toggleMark, isMarkActive } from "../utils/SlateUtilityFunctions.js";
 import defaultToolbarGroups from "./toolbarGroups.js";
 import _ from "lodash";
+
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button
+} from "@material-ui/core";
 
 const Toolbar = (props) => {
   const { t } = useTranslation();
@@ -138,24 +146,29 @@ const Toolbar = (props) => {
       ))}
       <div className="toolbar-button">
       {( !_.isEmpty( pureText() ) || parentId) && 
-        <button
+        <Button
+          className="p-1 m-1"
           onClick={(evt) => {
             evt.preventDefault();
             onCancel();
           }}
+          variant="contained" color="secondary"
         >
           {t("cancel")}
-        </button>
+        </Button>
       }
-        <button
+        <Button
+          className="p-1 m-1"
           disabled={ _.isEmpty(pureText()) ? true : false }
+          variant="contained" 
+          color="primary"
           onClick={(evt) => {
             evt.preventDefault();
             onPost();            
           }}
         >
           {t("posts")}
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import "./wallet.css";
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import queryString from 'query-string';
-import { useMutation, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import _ from "lodash"
 import {
   LinearProgress,
@@ -22,8 +22,8 @@ import DetailPanelRight from "./DetailPanelRight"
 import DetailPanelLeft from "./DetailPanelLeft"
 import PopupCart from "./PopupCart";
 import PopupWallet from "./PopupWallet";
-import { getHeaders, showToast } from "../../util";
-import * as Constants from "../../constants"
+import { getHeaders, showToast, handlerErrorApollo } from "../../util";
+// import * as Constants from "../../constants"
 
 import {  querySupplierById, 
           subscriptionSupplierById, 
@@ -52,7 +52,6 @@ const Detail = (props) => {
           subscribeToMore: subscribeToMoreSupplierById, 
           networkStatus } = useQuery( querySupplierById, { 
                                       context: { headers: getHeaders(location) }, 
-                                      // variables: { id }, 
                                       fetchPolicy: 'cache-first', 
                                       nextFetchPolicy: 'network-only', 
                                       notifyOnNetworkStatusChange: true});
@@ -67,18 +66,7 @@ const Detail = (props) => {
                                                         notifyOnNetworkStatusChange: true 
                                                     });
 
-  if(!_.isEmpty(errorUserById)){
-    _.map(errorUserById?.graphQLErrors, (e)=>{
-
-      console.log("e :", e)
-      // switch(e?.extensions?.code){
-      //   case FORCE_LOGOUT:{
-      //     logout()
-      //     break;
-      //   }
-      // }
-    })
-  }
+  if(!_.isEmpty(errorUserById)) handlerErrorApollo( props, errorUserById )
 
   useEffect(() => {
     if(!loadingUserById){
@@ -219,7 +207,7 @@ const Detail = (props) => {
         loadingSupplierById || _.isEmpty(data)
         ? <LinearProgress />
         : <>
-            <DetailPanelLeft data={data}/>
+            <DetailPanelLeft {...props} data={data}/>
             <DetailPanelRight 
               {...props}
               data={data}

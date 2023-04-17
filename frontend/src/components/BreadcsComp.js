@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import MuiLink from "@material-ui/core/Link";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Breadcrumbs, Typography, LinearProgress } from "@mui/material";
 import queryString from 'query-string';
@@ -20,6 +20,7 @@ import * as Constants from "../constants"
 const BreadcsComp = (props) => {
   const location = useLocation();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const params = useParams();
   const { user } = props
 
@@ -58,6 +59,7 @@ const BreadcsComp = (props) => {
       case "/":{
         return [<Typography key="0" color="text.primary"><HomeIcon size={18}/>{t("home")}</Typography>]
       }
+
       case "/d":{
         return [  
                   <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18}/> {t("home")}</MuiLink>,
@@ -94,11 +96,9 @@ const BreadcsComp = (props) => {
             ]
           }
         }
-        
       }
 
       case "/users":{
-        // let [total, setTotal] = useState(0)
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายชื่อบุคคลทั้งหมด</Typography>
@@ -231,7 +231,15 @@ const BreadcsComp = (props) => {
 
       case "/notifications":{
         return [  
-          <Typography key="1" color="text.primary"><MdCircleNotificationsIcon  size={"1.5em"} /> {t("Notifications")} </Typography>
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">{t("Notifications")}</Typography>
+        ]
+      }
+
+      case "/bookmarks":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">{t("bookmark")}</Typography>
         ]
       }
 
@@ -242,11 +250,25 @@ const BreadcsComp = (props) => {
         ]
       }
 
+      case "/contact-us":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">ติดต่อเรา</Typography>
+        ]
+      }
+
       case "/bank":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <MuiLink key="0" component={Link} to="/banks">รายการ บัญชีธนาคาร</MuiLink>,
           <Typography key="1" color="text.primary">บัญชีธนาคาร</Typography>
+        ]
+      }
+
+      case "/me":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">Profile</Typography>
         ]
       }
    

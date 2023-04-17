@@ -1,28 +1,30 @@
 import _ from "lodash"
 import { toast } from 'react-toastify';
 import i18n from './translations/i18n';
-import { AMDINISTRATOR, AUTHENTICATED, ANONYMOUS } from "./constants"
+// import { AMDINISTRATOR, AUTHENTICATED, ANONYMOUS } from "./constants"
  
+import * as Constants from "./constants"
 /**
  * Convert a `File` object returned by the upload input into a base 64 string.
  * That's not the most optimized way to store images in production, but it's
  * enough to illustrate the idea of data provider decoration.
  */
 export const convertFileToBase64 = file =>
-new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
 
-    console.log("convertFileToBase64 :", file)
-    reader.onload = () => resolve({
-        fileName:_.isEmpty(file.fileName) ? (_.isEmpty(file.title) ? file.name: "") : file.fileName,
-        base64: reader.result,
-        type: file.type,
-        size: file.size,
-        lastModified: file.lastModified
-    });
-    reader.onerror = reject;
-});
+        console.log("convertFileToBase64 :", file)
+        reader.onload = () => resolve({
+            fileName:_.isEmpty(file.fileName) ? (_.isEmpty(file.title) ? file.name: "") : file.fileName,
+            base64: reader.result,
+            type: file.type,
+            size: file.size,
+            lastModified: file.lastModified
+        });
+        reader.onerror = reject;
+    }
+);
 
 export const convertDate = (date) =>{
     const monthNamesThai = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.", "ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
@@ -90,13 +92,13 @@ export const getCurrentDate =(separator='')=>{
 export const checkRole = (user) =>{
     if(user?.roles){
         if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a2") || _.includes( user?.roles, "administrator")){
-            return AMDINISTRATOR;
+            return Constants.AMDINISTRATOR;
         }
         // else if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a6")){
-        return AUTHENTICATED;
+        return Constants.AUTHENTICATED;
         // }
     }
-    return ANONYMOUS;
+    return Constants.ANONYMOUS;
 }
 
 export const bookView = (val) =>{
@@ -113,7 +115,8 @@ export const showToast = (type, text) =>{
     toast(
         <p style={{ fontSize: 16 }}>{text}</p>, 
         {
-          position: "top-right",
+        //   position: "top-right",
+          position:"bottom-right",
           autoClose: 1000,
           hideProgressBar: true,
           newestOnTop: false,
@@ -124,4 +127,34 @@ export const showToast = (type, text) =>{
           pauseOnHover: false,
           type /* "success", error*/ 
         }); 
+}
+
+export const handlerErrorApollo = (props, error) =>{
+    _.map(error?.graphQLErrors, (e)=>{
+        switch(e?.extensions?.code){
+          case Constants.FORCE_LOGOUT:{
+            let { logout } = props
+
+            showToast("error", "Force logout")
+            logout()
+            break;
+          }
+
+          case Constants.DATA_NOT_FOUND:
+          case Constants.UNAUTHENTICATED:
+          case Constants.ERROR:{
+            showToast("error", e?.message)
+            break;
+          }
+
+          case Constants.INTERNAL_SERVER_ERROR: {
+            showToast("error", e?.message)
+            break;
+          }
+
+          default:{
+            console.log("handlerErrorApollo :", e)
+          }
+        }
+    })
 }

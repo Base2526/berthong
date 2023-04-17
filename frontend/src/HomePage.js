@@ -9,7 +9,7 @@ import { ErrorOutline as ErrorOutlineIcon } from "@material-ui/icons";
 import { lightGreen, blueGrey } from "@material-ui/core/colors";
 
 import { querySuppliers, subscriptionSuppliers} from "./gqlQuery";
-import { getHeaders, showToast } from "./util";
+import { handlerErrorApollo,  getHeaders, showToast } from "./util";
 import HomeItem from "./item/HomeItem"
 import SearchComp from "./components/SearchComp"
 import SkeletonComp from "./components/SkeletonComp"
@@ -101,21 +101,11 @@ const HomePage = (props) => {
                                         variables: { input: search },
                                         fetchPolicy: 'cache-first',
                                         nextFetchPolicy: 'network-only', 
-                                        // fetchPolicy: 'cache-and-network', // cache all pages in the Apollo cache
                                         notifyOnNetworkStatusChange: true
                                       }
                                     );
 
-  if(!_.isEmpty(errorSuppliers)){
-    _.map(errorSuppliers?.graphQLErrors, (e)=>{
-      switch(e?.extensions?.code){
-        case Constants.FORCE_LOGOUT:{
-          logout()
-          break;
-        }
-      }
-    })
-  }
+  if(!_.isEmpty(errorSuppliers)) handlerErrorApollo( props, errorSuppliers )
 
   useEffect(()=>{
     onSearchChange({...search, PAGE: 1 })
@@ -279,7 +269,7 @@ const HomePage = (props) => {
                         loader={<SkeletonComp />}
                         scrollThreshold={0.5}
                         scrollableTarget="scrollableDiv"
-                        endMessage={<h1>You have reached the end</h1>}
+                        endMessage={<div className="text-center">You have reached the end</div>}
                         
                         // below props only if you need pull down functionality
                         refreshFunction={handleRefresh}

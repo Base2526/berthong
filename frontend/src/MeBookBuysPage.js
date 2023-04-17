@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
-import { connect } from "react-redux";
 import {
   Stack,
   CircularProgress,
@@ -193,9 +192,4 @@ const MeBookBuysPage = (props) => {
   );
 };
 
-const mapStateToProps = (state, ownProps) => {
-  return { }
-};
-
-const mapDispatchToProps = { }
-export default connect( mapStateToProps, mapDispatchToProps )(MeBookBuysPage);
+export default MeBookBuysPage
