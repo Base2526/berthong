@@ -127,7 +127,11 @@ import { queryNotifications,
           mutationBank,
           mutationSupplier,
           mutationNotification,
-          mutationDeposit } from "./gqlQuery"
+          mutationDeposit,
+          queryBanks,
+          queryBankById,
+          queryDeposits,
+          queryWithdraws} from "./gqlQuery"
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
@@ -473,7 +477,7 @@ const App =(props) =>{
         localStorage.setItem('token', sessionId)
 
         updateProfile(data)
-        onComplete()
+        // onComplete()
       }
     },
     onCompleted(data) {
@@ -496,7 +500,7 @@ const App =(props) =>{
         if(status){
           localStorage.setItem('token', sessionId)
 
-          onComplete(data)
+          // onComplete(data)
         }
 
         // let newBanks = {...data1.banks}
@@ -534,7 +538,7 @@ const App =(props) =>{
               data: { withdraws: {...data1.withdraws, data: dataFilter} }
             });
 
-            handleClose()
+            // handleClose()
             break;
           }
         }
@@ -690,7 +694,7 @@ const App =(props) =>{
       }
     },
     onCompleted(data) {
-      if(_.isEqual(checkRole(user) , AMDINISTRATOR)){
+      if(_.isEqual(checkRole(user) , Constants.AMDINISTRATOR)){
         navigate(-1);
       }else {
         showToast("success", "ได้รับเรื่องแล้ว กำลังดำเนินการ")
