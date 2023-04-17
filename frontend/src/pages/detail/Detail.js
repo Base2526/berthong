@@ -5,7 +5,7 @@ import "./wallet.css";
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import queryString from 'query-string';
-import { useMutation, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import _ from "lodash"
 import {
   LinearProgress,

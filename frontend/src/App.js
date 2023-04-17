@@ -122,7 +122,12 @@ import { queryNotifications,
           subscriptionMe,
           mutationContactUs,
           mutationLogin,
-          mutationLoginWithSocial} from "./gqlQuery"
+          mutationLoginWithSocial,
+          mutationWithdraw,
+          mutationBank,
+          mutationSupplier,
+          mutationNotification,
+          mutationDeposit } from "./gqlQuery"
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
@@ -508,10 +513,275 @@ const App =(props) =>{
         navigate("/")
       },
       onError({error}){
-        console.log("onError :")
+        return handlerErrorApollo( props, error )
       }
     }
   );
+
+  const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {withdraw}}) => {
+      let { data, mode, status } = withdraw
+
+      if(status){
+        switch(mode){
+          case "delete":{
+            let data1 = cache.readQuery({ query: queryWithdraws });
+            let dataFilter =_.filter(data1.withdraws.data, (item)=>data._id != item._id)
+
+            cache.writeQuery({
+              query: queryWithdraws,
+              data: { withdraws: {...data1.withdraws, data: dataFilter} }
+            });
+
+            handleClose()
+            break;
+          }
+        }
+      }
+    },
+    onCompleted({ data }) {
+      // history.goBack()
+    },
+    onError({error}){
+      return handlerErrorApollo( props, error )
+    }
+  });
+
+  const [onMutationBank, resultMutationBankValues] = useMutation(mutationBank
+    , {
+        update: (cache, {data: {bank}}) => {
+
+          ////////// udpate cache Banks ///////////
+          let banksValue = cache.readQuery({ query: queryBanks });
+          let { status, mode, data } = bank
+          if(status && banksValue){
+            switch(mode){
+              case "new":{
+                cache.writeQuery({
+                  query: queryBanks,
+                  data: { banks: {...banksValue.banks, data: [...banksValue.banks.data, data]} },
+                });
+                break;
+              }
+
+              case "edit":{
+                let newData = _.map(banksValue.banks.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
+                cache.writeQuery({
+                  query: queryBanks,
+                  data: { banks: {...banksValue.banks, data: newData} },
+                });
+                break;
+              }
+            }
+          }
+          ////////// udpate cache Banks ///////////
+
+          ////////// update cache queryBankById ///////////
+          let bankByIdValue = cache.readQuery({ query: queryBankById, variables: {id: data._id}});
+          if(status && bankByIdValue){
+            cache.writeQuery({
+              query: queryBankById,
+              data: { bankById: {...bankByIdValue.bankById, data} },
+              variables: {id: data._id}
+            });
+          }
+          ////////// update cache queryBankById ///////////
+        },
+        onCompleted({ data }) {
+          navigate(-1)
+        }
+      }
+  );
+
+  const [onMutationSupplier, resultSupplier] = useMutation(mutationSupplier, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {supplier}}) => {
+      let { data, mode, status } = supplier
+
+      // if(status){
+      //   switch(mode){
+      //     case "new":{
+      //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+
+      //       if(!_.isNull(querySuppliersValue)){
+      //         let newData = [...querySuppliersValue.suppliers.data, data];
+
+      //         cache.writeQuery({
+      //           query: querySuppliers,
+      //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+      //         });
+      //       }
+      //       break;
+      //     }
+      //     case "edit":{
+      //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+      //       if(!_.isNull(querySuppliersValue)){
+      //         let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
+
+      //         cache.writeQuery({
+      //           query: querySuppliers,
+      //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+      //         });
+      //       }
+      //       break;
+      //     }
+      //   }
+      // }
+    },
+    onCompleted(data) {
+      navigate(-1)
+    },
+    onError(error){
+      return handlerErrorApollo( props, error )
+    }
+  });
+
+  const [onMutationNotification, resultNotification] = useMutation(mutationNotification, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {notification}}) => {
+        let { data, status } = notification
+        console.log("update")
+    },
+    onCompleted(data) {
+        console.log("onCompleted")
+    },
+    onError(error){
+        console.log(error)
+    }
+  });
+
+  const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {deposit}}) => {
+      let { data, mode, status } = deposit
+      if(status){
+        switch(mode){
+          // case "new":{
+          //   const queryDepositsValue = cache.readQuery({ query: queryDeposits });
+          //   if(!_.isNull(queryDepositsValue)){
+          //     let newData = [...queryDepositsValue.deposits.data, data];
+
+          //     cache.writeQuery({
+          //       query: queryDeposits,
+          //       data: { deposits: {...queryDepositsValue.deposits, data: newData} }
+          //     });
+          //   }
+          //   break;
+          // }
+
+          case "edit":{
+            let queryDepositsValue = cache.readQuery({ query: queryDeposits });
+            if(!_.isNull(queryDepositsValue)){
+              let newData = _.map(queryDepositsValue.deposits.data, (item)=> item._id == data._id ? data : item ) 
+
+              if(deposit.data.status == "approved" || deposit.data.status == "reject"){
+                newData = _.filter(queryDepositsValue.deposits.data, (item)=> item._id != data._id ) 
+              }
+
+              cache.writeQuery({
+                query: queryDeposits,
+                data: { deposits: {...queryDepositsValue.deposits, data: newData} }
+              });
+            }
+            break;
+          }
+        }
+      }
+    },
+    onCompleted(data) {
+      if(_.isEqual(checkRole(user) , AMDINISTRATOR)){
+        navigate(-1);
+      }else {
+        showToast("success", "ได้รับเรื่องแล้ว กำลังดำเนินการ")
+        navigate("/");
+      }
+    },
+    onError(error){
+      console.log("onError :", error?.message)
+      showToast("error", error?.message)
+    }
+  });
+
+  // const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
+  //   context: { headers: getHeaders(location) },
+  //   update: (cache, {data: {withdraw}}) => {
+  //     let { data, mode, status } = withdraw
+
+  //     if(status){
+        
+  //       switch(mode){
+  //         case "new":{
+  //           const queryWithdrawsValue = cache.readQuery({ query: queryWithdraws });
+  //           if(!_.isEmpty(queryWithdrawsValue)){
+  //             let newData = [...queryWithdrawsValue.withdraws.data, withdraw.data];
+
+  //             cache.writeQuery({
+  //               query: queryWithdraws,
+  //               data: { withdraws: {...queryWithdrawsValue.withdraws, data: newData} }
+  //             });
+  //           }
+            
+  //           ////////// update cache queryWithdrawById ///////////
+  //           let queryWithdrawByIdValue = cache.readQuery({ query: queryWithdrawById, variables: {id: data._id}});
+  //           if(!_.isEmpty(queryWithdrawByIdValue)){
+  //             cache.writeQuery({
+  //               query: queryWithdrawById,
+  //               data: { withdrawById: {...queryWithdrawByIdValue.withdrawById, data} },
+  //               variables: {id: data._id}
+  //             });
+  //           }
+  //           ////////// update cache queryWithdrawById ///////////   
+  //           break;
+  //         }
+
+  //         case "edit":{
+  //           const queryWithdrawsValue = cache.readQuery({ query: queryWithdraws });
+  //           let newData = _.map(queryWithdrawsValue.withdraws.data, (item)=> item._id == withdraw.data._id ? withdraw.data : item ) 
+
+  //           if(withdraw.data.status == "approved" || withdraw.data.status == "reject"){
+  //             newData = _.filter(queryWithdrawsValue.withdraws.data, (item)=> item._id != withdraw.data._id ) 
+  //           }
+            
+  //           cache.writeQuery({
+  //             query: queryWithdraws,
+  //             data: { withdraws: {...queryWithdrawsValue.withdraws, data: newData} }
+  //           });
+
+  //           ////////// update cache queryWithdrawById ///////////
+  //           let queryWithdrawByIdValue = cache.readQuery({ query: queryWithdrawById, variables: {id: data._id}});
+  //           if(queryWithdrawByIdValue){
+  //             cache.writeQuery({
+  //               query: queryWithdrawById,
+  //               data: { withdrawById: {...queryWithdrawByIdValue.withdrawById, data} },
+  //               variables: {id: data._id}
+  //             });
+  //           }
+  //           ////////// update cache queryWithdrawById ///////////            
+  //           break;
+  //         }
+  //       }
+        
+  //     }
+  //   },
+  //   onCompleted(data) {
+  //     switch(checkRole(user)){
+  //       case Constants.AMDINISTRATOR:{
+  //         navigate("/withdraws")
+  //         break;
+  //       }
+  
+  //       case Constants.AUTHENTICATED:{
+  //         navigate("/")
+  //         break;
+  //       }
+  //     }
+  //   },
+  //   onError(error){
+  //     console.log("onError :", error)
+  //   }
+  // });
+
 
   useEffect(()=>{
     console.log("search :", search)
@@ -861,30 +1131,30 @@ const App =(props) =>{
                                         onMutationComment={(evt)=>onMutationComment(evt)}/>} />
             <Route path="/user/login" element={<LoginPage {...props} />} />
             <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
-            <Route path="/supplier" element={<SupplierPage />} />
+            <Route path="/supplier" element={<SupplierPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
             <Route path="/p" element={<ProfilePage {...props} onLightbox={(value)=>setLightbox(value)} />}/>
             <Route path="/login-with-line" element={<LoginWithLine />}  />
             <Route path="/contact-us" element={<ContactUsPage onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
               <Route path="/me" element={<MePage {...props} onLightbox={(v)=>setLightbox(v)} />} />
-              <Route path="/deposit" element={<DepositPage {...props} />} />
+              <Route path="/deposit" element={<DepositPage {...props} onMutationDeposit={(evt)=>onMutationContactUs(evt)} />} />
               <Route path="/withdraw" element={<WithdrawPage {...props} />} />
               <Route path="/history-transitions" {...props} element={<HistoryTransitionsPage {...props} />} />
               <Route path="/bank" element={<BankPage {...props} />} />
               <Route path="/banks" element={<BanksPage {...props} />} />
               <Route path="/book-buy" element={<MeBookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/notifications" element={<NotificationsPage {...props} />} />
+              <Route path="/notifications" element={<NotificationsPage {...props} onMutationNotification={(evt)=>onMutationNotification(evt)} />} />
               <Route path="/bookmarks" element={<BookMarksPage {...props} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
               <Route path="/deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/withdraws" element={<WithdrawsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/withdraws" element={<WithdrawsPage {...props} onMutationWithdraw={(evt)=>onMutationWithdraw(evt)} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/date-lotterys" element={<DateLotterysPage />} />
               <Route path="/date-lottery" element={<DateLotteryPage />} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/user" element={<UserPage />} />
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
-              <Route path="/taxonomy-bank" element={<TaxonomyBankPage />} />
+              <Route path="/taxonomy-bank" element={<TaxonomyBankPage  {...props} onMutationBank={(evt)=>onMutationBank(evt)}/>} />
             </Route>
             <Route path="*" element={<p>There's nothing here: 404!</p>} />
           </Routes>

@@ -32,7 +32,7 @@ import {
       } from '@mui/material'
 
 import { makeStyles } from '@material-ui/core/styles';
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
 

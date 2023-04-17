@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useMutation } from "@apollo/client";
 import { 
   Lock as LockIcon,
   Google as GoogleIcon,
@@ -9,8 +8,7 @@ import {
   Dialog,
   DialogContent,
   DialogContentText,
-  DialogTitle, 
-  Typography
+  DialogTitle
 } from "@mui/material";
 import { gapi } from "gapi-script";
 import _ from "lodash";
@@ -20,10 +18,10 @@ import { GoogleLogin } from "react-google-login";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-// import { mutationLogin, mutationLoginWithSocial } from "../gqlQuery";
-// import { handlerErrorApollo } from "../util";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
+import {
+  TextField,
+  Button
+} from "@material-ui/core";
 import line from '../line.svg';
 
 const DialogLoginComp = (props) => {
@@ -34,60 +32,7 @@ const DialogLoginComp = (props) => {
   const deviceData = useDeviceData();
 
   let { onComplete, onClose, open, updateProfile, onMutationLogin, onMutationLoginWithSocial } = props;
-
   let [input, setInput]   = useState({ username: "",  password: ""});
-  
-  // const [onLogin, resultLogin] = useMutation(mutationLogin, {
-  //   update: (cache, {data:{login}}) => {
-  //     let {status, data, sessionId} = login
-  //     if(status){
-  //       localStorage.setItem('token', sessionId)
-
-  //       updateProfile(data)
-  //       onComplete()
-  //     }
-  //   },
-  //   onCompleted(data) {
-  //     console.log("onCompleted :", data)
-  //   },
-  //   onError(error){
-  //     return handlerErrorApollo( props, error )
-  //   }
-  // });
-
-  // const [onLoginWithSocial, resultLoginWithSocial] = useMutation(mutationLoginWithSocial, 
-  //   {
-  //     update: (cache, {data: {loginWithSocial}}) => {
-
-  //       // console.log("loginWithSocial :", loginWithSocial)
-  //       // const data1 = cache.readQuery({ query: gqlBanks });
-
-  //       let {status, data, sessionId} = loginWithSocial
-
-  //       if(status){
-  //         localStorage.setItem('token', sessionId)
-
-  //         onComplete(data)
-  //       }
-
-  //       // let newBanks = {...data1.banks}
-  //       // let newData  = _.map(newBanks.data, bank=>bank._id == updateBank._id ? updateBank : bank)
-
-  //       // newBanks = {...newBanks, data: newData}
-  //       // cache.writeQuery({
-  //       //   query: gqlBanks,
-  //       //   data: { banks: newBanks },
-  //       // });
-  //     },
-  //     onCompleted({ data }) {
-  //       // history.push("/");
-  //       navigate("/")
-  //     },
-  //     onError({error}){
-  //       console.log("onError :")
-  //     }
-  //   }
-  // );
 
   useEffect(()=>{
     const initClient = () =>{

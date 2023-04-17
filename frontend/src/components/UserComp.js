@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { LinearProgress } from "@material-ui/core";
 import _ from "lodash"
 import { useQuery } from "@apollo/client";
@@ -20,8 +20,8 @@ const UserComp = (props) => {
             error: errorUserById} = useQuery(queryUserById, { 
                                                                 context: { headers: getHeaders(location) },
                                                                 variables: {id: userId},
-                                                                fetchPolicy: 'cache-first', // Used for first execution
-                                                                nextFetchPolicy: 'network-only', // Used for subsequent executions
+                                                                fetchPolicy: 'cache-first', 
+                                                                nextFetchPolicy: 'network-only', 
                                                                 notifyOnNetworkStatusChange: true 
                                                             });
 
@@ -38,25 +38,27 @@ const UserComp = (props) => {
         }
     }, [dataUserById, loadingUserById])
 
-    return  <div 
-                onClick={()=>{
-                    navigate({ pathname: `/p`, search: `?${createSearchParams({ id: userId })}` })
-                }}>
-                {   loadingUserById 
-                    ? <LinearProgress /> 
-                    : <div>
-                        <Avatar
-                            alt="Example avatar"
-                            variant="rounded"
-                            src={data?.avatar?.url}
-                            onClick={(e) => {
-                                // onLightbox({ isOpen: true, photoIndex: 0, images:files })
-                            }}
-                            sx={{ width: 56, height: 56 }}
-                        />
-                        <>{data?.displayName}</>
-                    </div>  }
-            </div>
+    return  useMemo(() => {
+                return  <div 
+                            onClick={()=>{
+                                navigate({ pathname: `/p`, search: `?${createSearchParams({ id: userId })}` })
+                            }}>
+                            {   loadingUserById 
+                                ? <LinearProgress /> 
+                                : <div>
+                                    <Avatar
+                                        alt="Example avatar"
+                                        variant="rounded"
+                                        src={data?.avatar?.url}
+                                        onClick={(e) => {
+                                            // onLightbox({ isOpen: true, photoIndex: 0, images:files })
+                                        }}
+                                        sx={{ width: 56, height: 56 }}
+                                    />
+                                    <>{data?.displayName}</>
+                                </div>  }
+                        </div>
+            }, [userId, data]);
 };
 
 export default UserComp;
