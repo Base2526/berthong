@@ -32,7 +32,6 @@ import {
   Assistant as AssistantIcon,
   // Login as LoginIcon
 } from '@mui/icons-material';
-
 import {
   BiWalletAlt as AccountBalanceWalletIcon,
 } from 'react-icons/bi';
@@ -57,11 +56,9 @@ import {
 import {
   MdOutlineBookmarkAdded as MdOutlineBookmarkAddedIcon
 } from "react-icons/md"
-
 import {
-  CiLogin as LoginIcon
-} from "react-icons/ci"
-
+  FiLogIn as LoginIcon
+} from "react-icons/fi"
 import {
   Avatar,
   IconButton,
@@ -478,6 +475,8 @@ const App =(props) =>{
 
         updateProfile(data)
         // onComplete()
+
+        setDialogLogin(false);
       }
     },
     onCompleted(data) {
@@ -501,6 +500,8 @@ const App =(props) =>{
           localStorage.setItem('token', sessionId)
 
           // onComplete(data)
+
+          setDialogLogin(false);
         }
 
         // let newBanks = {...data1.banks}
@@ -512,11 +513,11 @@ const App =(props) =>{
         //   data: { banks: newBanks },
         // });
       },
-      onCompleted({ data }) {
+      onCompleted(data) {
         // history.push("/");
         navigate("/")
       },
-      onError({error}){
+      onError(error){
         return handlerErrorApollo( props, error )
       }
     }
@@ -544,10 +545,10 @@ const App =(props) =>{
         }
       }
     },
-    onCompleted({ data }) {
+    onCompleted(data) {
       // history.goBack()
     },
-    onError({error}){
+    onError(error){
       return handlerErrorApollo( props, error )
     }
   });
@@ -592,7 +593,7 @@ const App =(props) =>{
           }
           ////////// update cache queryBankById ///////////
         },
-        onCompleted({ data }) {
+        onCompleted(data) {
           navigate(-1)
         }
       }
@@ -711,21 +712,17 @@ const App =(props) =>{
   //   context: { headers: getHeaders(location) },
   //   update: (cache, {data: {withdraw}}) => {
   //     let { data, mode, status } = withdraw
-
   //     if(status){
-        
   //       switch(mode){
   //         case "new":{
   //           const queryWithdrawsValue = cache.readQuery({ query: queryWithdraws });
   //           if(!_.isEmpty(queryWithdrawsValue)){
   //             let newData = [...queryWithdrawsValue.withdraws.data, withdraw.data];
-
   //             cache.writeQuery({
   //               query: queryWithdraws,
   //               data: { withdraws: {...queryWithdrawsValue.withdraws, data: newData} }
   //             });
   //           }
-            
   //           ////////// update cache queryWithdrawById ///////////
   //           let queryWithdrawByIdValue = cache.readQuery({ query: queryWithdrawById, variables: {id: data._id}});
   //           if(!_.isEmpty(queryWithdrawByIdValue)){
@@ -738,20 +735,16 @@ const App =(props) =>{
   //           ////////// update cache queryWithdrawById ///////////   
   //           break;
   //         }
-
   //         case "edit":{
   //           const queryWithdrawsValue = cache.readQuery({ query: queryWithdraws });
   //           let newData = _.map(queryWithdrawsValue.withdraws.data, (item)=> item._id == withdraw.data._id ? withdraw.data : item ) 
-
   //           if(withdraw.data.status == "approved" || withdraw.data.status == "reject"){
   //             newData = _.filter(queryWithdrawsValue.withdraws.data, (item)=> item._id != withdraw.data._id ) 
-  //           }
-            
+  //           }     
   //           cache.writeQuery({
   //             query: queryWithdraws,
   //             data: { withdraws: {...queryWithdrawsValue.withdraws, data: newData} }
   //           });
-
   //           ////////// update cache queryWithdrawById ///////////
   //           let queryWithdrawByIdValue = cache.readQuery({ query: queryWithdrawById, variables: {id: data._id}});
   //           if(queryWithdrawByIdValue){
@@ -765,7 +758,6 @@ const App =(props) =>{
   //           break;
   //         }
   //       }
-        
   //     }
   //   },
   //   onCompleted(data) {
@@ -774,7 +766,6 @@ const App =(props) =>{
   //         navigate("/withdraws")
   //         break;
   //       }
-  
   //       case Constants.AUTHENTICATED:{
   //         navigate("/")
   //         break;
@@ -785,7 +776,6 @@ const App =(props) =>{
   //     console.log("onError :", error)
   //   }
   // });
-
 
   useEffect(()=>{
     console.log("search :", search)
