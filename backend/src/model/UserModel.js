@@ -4,6 +4,12 @@ const Schema = mongoose.Schema
 
 import { AMDINISTRATOR, AUTHENTICATED } from "../constants"
 
+const SubscriberInput = new Schema({
+  userId: { type: Schema.Types.ObjectId, required:[true, "User-ID is a required field"]},
+  createdAt : { type : Date, default: Date.now },
+  updatedAt : { type : Date, default: Date.now },
+})
+
 // username, email, displayName, banks, roles, avatar, lastAccess
 const userSchema = new Schema({
   username: { type: String, required:[true, "Username Request is a required field"] },
@@ -32,6 +38,7 @@ const userSchema = new Schema({
     enum : ['website','facebook', 'google', 'github'],
     default: 'website'
   }, 
+  subscriber: [SubscriberInput],
   socialId: { type: String },
   socialObject: { type: String },
 },

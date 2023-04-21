@@ -23,7 +23,6 @@ import DetailPanelLeft from "./DetailPanelLeft"
 import PopupCart from "./PopupCart";
 import PopupWallet from "./PopupWallet";
 import { getHeaders, showToast, handlerErrorApollo } from "../../util";
-// import * as Constants from "../../constants"
 
 import {  querySupplierById, 
           subscriptionSupplierById, 
@@ -142,7 +141,7 @@ const Detail = (props) => {
     if(selected == 0){
       let check = user?.balance - (user?.balanceBook + data.price)
       if(check < 0){
-        showToast("error", `ยอดเงินคงเหลือไม่สามารถจองได้`)
+        showToast("error", `ยอดเงินคงเหลือไม่สามารถจองได้`, 2500)
         return;
       }
     }

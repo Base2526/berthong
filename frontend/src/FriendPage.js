@@ -8,11 +8,13 @@ import {
     Box,
     Stack,
     Avatar,
-    CircularProgress
+    CircularProgress,
+    IconButton
 } from '@mui/material';
 
 import {
-    SlUserFollow
+    SlUserFollow,
+    SlUserFollowing
 } from "react-icons/sl"
 import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
@@ -20,12 +22,12 @@ import moment from "moment";
 import { getHeaders } from "./util"
 import { queryFriendProfile } from "./gqlQuery"
 
-const ProfilePage = (props) => {
+const FriendPage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useTranslation();
 
-    const { onLightbox } = props
+    const { user, onLogin, onLightbox, onMutationSubscribe } = props
 
     let [data, setData] = useState([]);
     let [total, setTotal] = useState(0)
@@ -44,8 +46,8 @@ const ProfilePage = (props) => {
             networkStatus } = useQuery( queryFriendProfile, { 
                                         context: { headers: getHeaders(location) }, 
                                         variables: {id: params.id},
-                                        fetchPolicy: 'network-only', // Used for first execution
-                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        fetchPolicy: 'cache-first', 
+                                        nextFetchPolicy: 'network-only', 
                                         notifyOnNetworkStatusChange: true});
 
     useEffect(() => {
@@ -97,14 +99,24 @@ const ProfilePage = (props) => {
                 <Stack 
                     direction="row" 
                     spacing={2}>
-                    <Avatar
-                        className={"user-profile"}
-                        sx={{ height: 80, width: 80 }}
-                        variant="rounded"
-                        alt="Example Alt"
-                        src={_.isEmpty(data?.avatar) ? "" : data?.avatar?.url }/>
-                    <div> Name : {data?.displayName}</div>    
-                    <SlUserFollow size={"20px"} />
+                    <>
+                        <Avatar
+                            className={"user-profile"}
+                            sx={{ height: 80, width: 80 }}
+                            variant="rounded"
+                            alt="Example Alt"
+                            src={_.isEmpty(data?.avatar) ? "" : data?.avatar?.url }/>
+                        <div> Name : {data?.displayName}</div>   
+                    </>
+                    <Box>
+                        <IconButton onClick={(evt)=> _.isEmpty(user) ? onLogin(true) : onMutationSubscribe({ variables: { id: params.id } }) }>
+                            {   
+                                _.find( data?.subscriber, (i)=> _.isEqual( i?.userId,  user?._id) ) 
+                                ? <SlUserFollowing size={"20px"} color="blue" />  
+                                : <SlUserFollow size={"20px"} /> 
+                            } 
+                        </IconButton> 
+                    </Box>
                 </Stack>
                 {/* <TableComp
                     columns={columns}
@@ -127,7 +139,7 @@ const ProfilePage = (props) => {
                                 loader={<h4>Loading...</h4>}>
                                 { 
                                 _.map(data?.suppliers, (item, index) => {
-                                    console.log("suppliers :", item)
+                                    // console.log("suppliers :", item)
 
                                     let title         = item?.title;
                                     let description   = item?.description;
@@ -189,4 +201,4 @@ const ProfilePage = (props) => {
             </div>);
 }
 
-export default ProfilePage
+export default FriendPage

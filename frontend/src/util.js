@@ -111,13 +111,13 @@ export const sellView = (val) =>{
     return fn.length;
 }
 
-export const showToast = (type, text) =>{
+export const showToast = (type, text, autoClose=1000) =>{
     toast(
         <p style={{ fontSize: 16 }}>{text}</p>, 
         {
         //   position: "top-right",
           position:"bottom-right",
-          autoClose: 1000,
+          autoClose,
           hideProgressBar: true,
           newestOnTop: false,
           closeOnClick: true,

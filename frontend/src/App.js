@@ -73,6 +73,10 @@ import {
   GrContactInfo as GrContactInfoIcon
 } from "react-icons/gr"
 
+import {
+  SlUserFollowing
+} from "react-icons/sl"
+
 import _ from "lodash"
 
 import TaxonomyBankPage from "./TaxonomyBankPage";
@@ -92,7 +96,7 @@ import BankPage from "./BankPage";
 import BanksPage from "./BanksPage";
 import { editedUserBalace, editedUserBalaceBook } from "./redux/actions/auth";
 import SupplierPage from "./SupplierPage";
-import ProfilePage from "./ProfilePage";
+import FriendPage from "./FriendPage";
 import SuppliersPage from "./SuppliersPage";
 import UserPage from "./UserPage";
 import UsersPage from "./UsersPage";
@@ -107,6 +111,7 @@ import LightboxComp from "./components/LightboxComp";
 import DialogLoginComp from "./components/DialogLoginComp";
 import BookMarksPage from "./BookMarksPage";
 import ContactUsPage from "./ContactUsPage";
+import SubscribesPage from "./SubscribesPage";
 
 import { queryNotifications, 
           mutationFollow, 
@@ -128,7 +133,9 @@ import { queryNotifications,
           queryBanks,
           queryBankById,
           queryDeposits,
-          queryWithdraws} from "./gqlQuery"
+          queryWithdraws,
+          mutationSubscribe,
+          queryFriendProfile} from "./gqlQuery"
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
@@ -708,6 +715,37 @@ const App =(props) =>{
     }
   });
 
+  const [onMutationSubscribe, resultSubscribe] = useMutation(mutationSubscribe, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {subscribe}}) => {
+      let { data, isSubscribe, status } = subscribe
+
+      if(isSubscribe){
+        showToast("success", `Subscribe`)
+      }else{
+        showToast("error", `Unsubscribe`)
+      }
+
+      if(status){
+        const queryFriendProfileValue = cache.readQuery({ query: queryFriendProfile, variables: {id: data?._id} });
+        if(!_.isNull(queryFriendProfileValue)){
+          let updateData =   {...queryFriendProfileValue.friendProfile.data, ...data}
+          cache.writeQuery({
+            query: queryFriendProfile,
+            variables: {id: data?._id},
+            data: { friendProfile: {...queryFriendProfileValue.friendProfile, data: updateData } }
+          });
+        }
+      }
+    },
+    onCompleted(data) {
+      console.log("onCompleted")
+    },
+    onError(error){
+      return handlerErrorApollo( props, error )
+    }
+  });
+
   // const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
   //   context: { headers: getHeaders(location) },
   //   update: (cache, {data: {withdraw}}) => {
@@ -1016,6 +1054,12 @@ const App =(props) =>{
                           onClick={()=>{ navigate("/bookmarks") }}>
                           <MdOutlineBookmarkAddedIcon color="white" size="1.2em"/>
                         </IconButton>
+
+                        <IconButton 
+                          size={'small'}
+                          onClick={()=>{ navigate("/subscribes") }}>
+                          <SlUserFollowing color="white" size="1.2em"/>
+                        </IconButton>
                         <IconButton 
                           size={'small'}
                           onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
@@ -1126,7 +1170,11 @@ const App =(props) =>{
             <Route path="/user/login" element={<LoginPage {...props} />} />
             <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
             <Route path="/supplier" element={<SupplierPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
-            <Route path="/p" element={<ProfilePage {...props} onLightbox={(value)=>setLightbox(value)} />}/>
+            <Route path="/p" element={<FriendPage 
+                                        {...props} 
+                                        onLogin={()=>setDialogLogin(true)}
+                                        onLightbox={(value)=>setLightbox(value)} 
+                                        onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />}/>
             <Route path="/login-with-line" element={<LoginWithLine />}  />
             <Route path="/contact-us" element={<ContactUsPage onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
@@ -1138,7 +1186,8 @@ const App =(props) =>{
               <Route path="/banks" element={<BanksPage {...props} />} />
               <Route path="/book-buy" element={<MeBookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/notifications" element={<NotificationsPage {...props} onMutationNotification={(evt)=>onMutationNotification(evt)} />} />
-              <Route path="/bookmarks" element={<BookMarksPage {...props} />} />
+              <Route path="/bookmarks" element={<BookMarksPage {...props} onMutationFollow={(evt)=>onMutationFollow(evt) } />} />
+              <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
               <Route path="/deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
