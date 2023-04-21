@@ -42,38 +42,6 @@ const HistoryTransitionsPage = (props) => {
                                                                                                   notifyOnNetworkStatusChange: true 
                                                                                                 });
 
-
-  // const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
-  //   context: { headers: getHeaders(location) },
-  //   update: (cache, {data: {deposit}}) => {
-  //     let { data, mode, status } = deposit
-
-  //     if(status){
-  //       switch(mode){
-  //         case "delete":{
-  //           let data1 = cache.readQuery({ query: queryDeposits });
-  //           let dataFilter =_.filter(data1.deposits.data, (item)=>data._id != item._id)
-
-  //           cache.writeQuery({
-  //             query: queryDeposits,
-  //             data: { deposits: {...data1.deposits, data: dataFilter} }
-  //           });
-
-  //           handleClose()
-  //           break;
-  //         }
-  //       }
-  //     }
-  //   },
-  //   onCompleted({ data }) {
-  //     // history.goBack()
-  //   },
-  //   onError({error}){
-  //     console.log("onError :")
-  //   }
-  // });
-  // console.log("resultMutationDeposit :", resultMutationDeposit)
-
   /*
   ฝาก
   - จำนวนเงิน

@@ -57,29 +57,6 @@ const MeBookBuysPage = (props) => {
     }
   }, [dataBookBuyTransitions, loadingBookBuyTransitions])
 
-  // const [onDeleteBank, resultDeleteBank] = useMutation(gqlDeleteBank, 
-  //   {
-  //     update: (cache, {data: {deleteBank}}) => {
-  //       const data1 = cache.readQuery({
-  //         query: gqlBanks,
-  //       });
-
-  //       let newBanks = {...data1.banks}
-  //       let newData   = _.filter(data1.banks.data, bank => bank._id !== deleteBank._id)
-  //       newBanks = {...newBanks, total: newData.length, data:newData }
-
-  //       cache.writeQuery({
-  //         query: gqlBanks,
-  //         data: { banks: newBanks },
-  //       });
-  //     },
-  //     onCompleted({ data }) {
-  //       history.push("/banks");
-  //     }
-  //   }
-  // );
-  // console.log("resultDeleteBank :", resultDeleteBank)
-
   const handleClose = () => {
     setOpenDialogDelete({ ...openDialogDelete, isOpen: false });
   };

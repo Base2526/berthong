@@ -73,31 +73,6 @@ const UsersPage = (props) => {
     }
   }, [dataUsers, loadingUsers])
 
-  // const [onDeleteUser, resultDeleteUser] = useMutation(gqlDeleteUser, 
-  //   {
-  //     update: (cache, {data: {deleteUser}}) => {
-  //       const data1 = cache.readQuery({
-  //         query: gqlUsers,
-  //         variables: {page: pageIndex, perPage: pageSize},
-  //       });
-
-  //       let newUsers = {...data1.users}
-  //       let newData   = _.filter(data1.users.data, user => user._id !== deleteUser._id)
-  //       newUsers = {...newUsers, total: newData.length, data:newData }
-
-  //       cache.writeQuery({
-  //         query: gqlUsers,
-  //         data: { users: newUsers },
-  //         variables: {page: pageIndex, perPage: pageSize},
-  //       });
-  //     },
-  //     onCompleted({ data }) {
-  //       history.push("/users");
-  //     }
-  //   }
-  // );
-  // console.log("resultDeleteUser :", resultDeleteUser)
-
   const handleDelete = (id) => {
   };
 

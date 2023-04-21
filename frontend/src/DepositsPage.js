@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import deepdash from "deepdash";
-import { useQuery, useMutation, useApolloClient } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import {
   Edit as EditIcon,
@@ -40,7 +40,7 @@ const DepositsPage = (props) => {
   const location = useLocation();
   const { t } = useTranslation();
 
-  let { user, logout, onLightbox } = props
+  let { user, logout, onLightbox, onMutationDeposit } = props
 
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
   const [pageIndex, setPageIndex]     = useState(0);  
@@ -64,36 +64,6 @@ const DepositsPage = (props) => {
                                     );
 
   if(!_.isEmpty(errorDeposits)) handlerErrorApollo( props, errorDeposits )
-
-  const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {deposit}}) => {
-      let { data, mode, status } = deposit
-
-      if(status){
-        switch(mode){
-          case "delete":{
-            let data1 = cache.readQuery({ query: queryDeposits });
-            let dataFilter =_.filter(data1.deposits.data, (item)=>data._id != item._id)
-
-            cache.writeQuery({
-              query: queryDeposits,
-              data: { deposits: {...data1.deposits, data: dataFilter} }
-            });
-
-            handleClose()
-            break;
-          }
-        }
-      }
-    },
-    onCompleted({ data }) {
-      // history.goBack()
-    },
-    onError({error}){
-      console.log("onError :")
-    }
-  });
 
   useEffect(() => {
     if(!loadingDeposits){

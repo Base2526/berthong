@@ -132,7 +132,12 @@ import { queryNotifications,
           queryDeposits,
           queryWithdraws,
           mutationSubscribe,
-          queryFriendProfile} from "./gqlQuery"
+          queryFriendProfile,
+          mutationMe, 
+          queryMe,
+          mutationDatesLottery, 
+          queryDateLotterys, 
+          queryDateLotteryById} from "./gqlQuery"
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
@@ -744,6 +749,172 @@ const App =(props) =>{
     }
   });
 
+  const [onMutationMe, resultMutationMe] = useMutation(mutationMe, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {me}}) => {
+      if(me.status){
+        const queryMeValue = cache.readQuery({ query: queryMe });
+        if(!_.isNull(queryMeValue)){
+          cache.writeQuery({
+            query: queryMe,
+            data: { me: {...queryMeValue.me, data: me.data} }
+          });
+        }
+      }
+    },
+    onCompleted(data) {
+      navigate(-1)
+    },
+    onError(error){
+      console.log("onError :", error)
+    }
+  });
+
+  const [onMutationDateLottery, resultMutationDateLotteryValues] = useMutation(mutationDatesLottery
+    , {
+        update: (cache, {data: {dateLottery}}) => {
+
+          console.log("DateLottery :", dateLottery)
+          
+          ////////// udpate cache Banks ///////////
+          let queryDateLotterysValue = cache.readQuery({ query: queryDateLotterys });
+          let { status, mode, data } = dateLottery
+          if(status && queryDateLotterysValue){
+            switch(mode){
+              case "new":{
+                cache.writeQuery({
+                  query: queryDateLotterys,
+                  data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: [...queryDateLotterysValue.dateLotterys.data, data]} },
+                });
+                break;
+              }
+
+              case "edit":{
+                let newData = _.map(queryDateLotterysValue.dateLotterys.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
+                cache.writeQuery({
+                  query: queryDateLotterys,
+                  data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: newData} },
+                });
+                break;
+              }
+            }
+          }
+          ////////// udpate cache Banks ///////////
+        
+
+          ////////// update cache queryDateLotteryById ///////////
+          let dateLotteryByIdValue = cache.readQuery({ query: queryDateLotteryById, variables: {id: data._id}});
+          if(status && dateLotteryByIdValue){
+            cache.writeQuery({
+              query: queryDateLotteryById,
+              data: { dateLotteryById: {...dateLotteryByIdValue.dateLotteryById, data} },
+              variables: {id: data._id}
+            });
+          }
+          ////////// update cache queryDateLotteryById ///////////
+
+        },
+        onCompleted(data) {
+          // history.goBack();
+          navigate(-1);
+        },
+        onError(error){
+          console.log("error :", error)
+        }
+      }
+  );
+
+  const [onMutationDatesLottery, resultMutationDatesLottery] = useMutation(mutationDatesLottery
+    , {
+        update: (cache, {data: {datesLottery}}) => {
+
+          console.log("datesLottery :", datesLottery)
+          
+          //////////// udpate cache Banks ///////////
+          let queryDateLotterysValue = cache.readQuery({ query: queryDateLotterys });
+          // let { status, mode, data } = datesLottery
+          console.log("")
+          /*
+          if(status && queryDateLotterysValue){
+            switch(mode){
+              case "new":{
+                cache.writeQuery({
+                  query: queryDateLotterys,
+                  data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: [...queryDateLotterysValue.dateLotterys.data, data]} },
+                });
+                break;
+              }
+
+              case "edit":{
+                let newData = _.map(queryDateLotterysValue.dateLotterys.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
+                cache.writeQuery({
+                  query: queryDateLotterys,
+                  data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: newData} },
+                });
+                break;
+              }
+            }
+          }
+          */
+          ////////// udpate cache Banks ///////////
+        
+
+          // ////////// update cache queryDateLotteryById ///////////
+          // let dateLotteryByIdValue = cache.readQuery({ query: queryDateLotteryById, variables: {id: data._id}});
+          // if(status && dateLotteryByIdValue){
+          //   cache.writeQuery({
+          //     query: queryDateLotteryById,
+          //     data: { dateLotteryById: {...dateLotteryByIdValue.dateLotteryById, data} },
+          //     variables: {id: data._id}
+          //   });
+          // }
+          // ////////// update cache queryDateLotteryById ///////////
+
+        },
+        onCompleted(data) {
+          // history.goBack();
+          // navigate(-1);
+
+          console.log("onCompleted")
+        },
+        onError(error){
+          // console.log("error :", error)
+
+          console.log("onError")
+        }
+      }
+  );
+
+  // const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
+  //   context: { headers: getHeaders(location) },
+  //   update: (cache, {data: {deposit}}) => {
+  //     let { data, mode, status } = deposit
+
+  //     if(status){
+  //       switch(mode){
+  //         case "delete":{
+  //           let data1 = cache.readQuery({ query: queryDeposits });
+  //           let dataFilter =_.filter(data1.deposits.data, (item)=>data._id != item._id)
+
+  //           cache.writeQuery({
+  //             query: queryDeposits,
+  //             data: { deposits: {...data1.deposits, data: dataFilter} }
+  //           });
+
+  //           handleClose()
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   },
+  //   onCompleted(data) {
+  //     // history.goBack()
+  //   },
+  //   onError(error){
+  //     console.log("onError :")
+  //   }
+  // });
+
   // const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
   //   context: { headers: getHeaders(location) },
   //   update: (cache, {data: {withdraw}}) => {
@@ -1190,7 +1361,7 @@ const App =(props) =>{
               <Route path="/deposit" element={<DepositPage {...props} onMutationDeposit={(evt)=>onMutationContactUs(evt)} />} />
               <Route path="/withdraw" element={<WithdrawPage {...props} />} />
               <Route path="/history-transitions" {...props} element={<HistoryTransitionsPage {...props} />} />
-              <Route path="/bank" element={<BankPage {...props} />} />
+              <Route path="/bank" element={<BankPage {...props} onMutationMe={(evt)=>onMutationMe(evt)} />} />
               <Route path="/banks" element={<BanksPage {...props} />} />
               <Route path="/book-buy" element={<MeBookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/notifications" element={<NotificationsPage {...props} onMutationNotification={(evt)=>onMutationNotification(evt)} />} />
@@ -1198,10 +1369,10 @@ const App =(props) =>{
               <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
-              <Route path="/deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} onMutationDeposit={(evt)=>onMutationDeposit(evt)} />} />
               <Route path="/withdraws" element={<WithdrawsPage {...props} onMutationWithdraw={(evt)=>onMutationWithdraw(evt)} onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/date-lotterys" element={<DateLotterysPage />} />
-              <Route path="/date-lottery" element={<DateLotteryPage />} />
+              <Route path="/date-lotterys" element={<DateLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
+              <Route path="/date-lottery" element={<DateLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/user" element={<UserPage />} />
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />

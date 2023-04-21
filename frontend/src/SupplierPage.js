@@ -56,49 +56,6 @@ const SupplierPage = (props) => {
                                                   notifyOnNetworkStatusChange: true,
                                                 })
 
-  // const [onMutationSupplier, resultSupplier] = useMutation(mutationSupplier, {
-  //   context: { headers: getHeaders(location) },
-  //   update: (cache, {data: {supplier}}) => {
-  //     let { data, mode, status } = supplier
-
-  //     // if(status){
-  //     //   switch(mode){
-  //     //     case "new":{
-  //     //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
-
-  //     //       if(!_.isNull(querySuppliersValue)){
-  //     //         let newData = [...querySuppliersValue.suppliers.data, data];
-
-  //     //         cache.writeQuery({
-  //     //           query: querySuppliers,
-  //     //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-  //     //         });
-  //     //       }
-  //     //       break;
-  //     //     }
-  //     //     case "edit":{
-  //     //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
-  //     //       if(!_.isNull(querySuppliersValue)){
-  //     //         let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
-
-  //     //         cache.writeQuery({
-  //     //           query: querySuppliers,
-  //     //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-  //     //         });
-  //     //       }
-  //     //       break;
-  //     //     }
-  //     //   }
-  //     // }
-  //   },
-  //   onCompleted(data) {
-  //     navigate(-1)
-  //   },
-  //   onError(error){
-  //     return handlerErrorApollo( props, error )
-  //   }
-  // });
-
   useEffect(()=>{
     if( !loadingSupplierById && mode == "edit"){
       if(!_.isEmpty(dataSupplierById?.supplierById)){

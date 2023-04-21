@@ -3,18 +3,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import deepdash from "deepdash";
-import { useMutation } from "@apollo/client";
 import mongoose from "mongoose";
+import { Button, Stack } from "@mui/material"
 
-import {
-  Button,
-  Stack
-} from "@mui/material"
-
-import { getHeaders } from "./util"
-import { mutationMe, queryMe } from "./gqlQuery"
 import BankInputField from "./fields/BankInputField"
-
 deepdash(_);
 
 const BankPage = (props) => {
@@ -26,26 +18,7 @@ const BankPage = (props) => {
   let [input, setInput]       = useState([]);
   let { mode, id } = location?.state
 
-  const [onMutationMe, resultMutationMe] = useMutation(mutationMe, {
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {me}}) => {
-      if(me.status){
-        const queryMeValue = cache.readQuery({ query: queryMe });
-        if(!_.isNull(queryMeValue)){
-          cache.writeQuery({
-            query: queryMe,
-            data: { me: {...queryMeValue.me, data: me.data} }
-          });
-        }
-      }
-    },
-    onCompleted({ data }) {
-      navigate(-1)
-    },
-    onError(error){
-      console.log("onError :", error)
-    }
-  });
+  let { onMutationMe }  = props
 
   useEffect(()=>{
     switch(mode){

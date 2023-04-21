@@ -50,58 +50,6 @@ const DepositPage = (props) => {
                                         nextFetchPolicy: 'cache-first', // Used for subsequent executions
                                         notifyOnNetworkStatusChange: true });
 
-  // const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
-  //   context: { headers: getHeaders(location) },
-  //   update: (cache, {data: {deposit}}) => {
-  //     let { data, mode, status } = deposit
-  //     if(status){
-  //       switch(mode){
-  //         // case "new":{
-  //         //   const queryDepositsValue = cache.readQuery({ query: queryDeposits });
-  //         //   if(!_.isNull(queryDepositsValue)){
-  //         //     let newData = [...queryDepositsValue.deposits.data, data];
-
-  //         //     cache.writeQuery({
-  //         //       query: queryDeposits,
-  //         //       data: { deposits: {...queryDepositsValue.deposits, data: newData} }
-  //         //     });
-  //         //   }
-  //         //   break;
-  //         // }
-
-  //         case "edit":{
-  //           let queryDepositsValue = cache.readQuery({ query: queryDeposits });
-  //           if(!_.isNull(queryDepositsValue)){
-  //             let newData = _.map(queryDepositsValue.deposits.data, (item)=> item._id == data._id ? data : item ) 
-
-  //             if(deposit.data.status == "approved" || deposit.data.status == "reject"){
-  //               newData = _.filter(queryDepositsValue.deposits.data, (item)=> item._id != data._id ) 
-  //             }
-
-  //             cache.writeQuery({
-  //               query: queryDeposits,
-  //               data: { deposits: {...queryDepositsValue.deposits, data: newData} }
-  //             });
-  //           }
-  //           break;
-  //         }
-  //       }
-  //     }
-  //   },
-  //   onCompleted(data) {
-  //     if(_.isEqual(checkRole(user) , AMDINISTRATOR)){
-  //       navigate(-1);
-  //     }else {
-  //       showToast("success", "ได้รับเรื่องแล้ว กำลังดำเนินการ")
-  //       navigate("/");
-  //     }
-  //   },
-  //   onError(error){
-  //     console.log("onError :", error?.message)
-  //     showToast("error", error?.message)
-  //   }
-  // });
-
   let { loading: loadingDepositById, 
         data: dataDepositById, 
         error: errorDepositById,
