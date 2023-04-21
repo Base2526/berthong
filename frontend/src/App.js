@@ -720,14 +720,7 @@ const App =(props) =>{
   const [onMutationSubscribe, resultSubscribe] = useMutation(mutationSubscribe, {
     context: { headers: getHeaders(location) },
     update: (cache, {data: {subscribe}}) => {
-      let { data, isSubscribe, status } = subscribe
-
-      if(isSubscribe){
-        showToast("success", `Subscribe`)
-      }else{
-        showToast("error", `Unsubscribe`)
-      }
-
+      let { data, status } = subscribe
       if(status){
         const queryFriendProfileValue = cache.readQuery({ query: queryFriendProfile, variables: {id: data?._id} });
         if(!_.isNull(queryFriendProfileValue)){
@@ -738,6 +731,10 @@ const App =(props) =>{
             data: { friendProfile: {...queryFriendProfileValue.friendProfile, data: updateData } }
           });
         }
+
+        _.find( data?.subscriber, (i)=> _.isEqual( i?.userId,  user?._id) ) 
+        ? showToast("success", `Subscribe`)
+        : showToast("error", `Unsubscribe`)
       }
     },
     onCompleted(data) {
@@ -840,6 +837,10 @@ const App =(props) =>{
     }
   }, [dataNotifications, loadingNotifications])
   // console.log("ws :", location)
+
+  useEffect(()=>{
+    console.log("location?.pathname :", location?.pathname)
+  }, [location?.pathname])
   
   /////////////////////// ping ///////////////////////////////////
   // const pingValues =useQuery(queryPing, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true});
@@ -1046,30 +1047,27 @@ const App =(props) =>{
                     ? <Stack direction={"row"} spacing={2} alignItems="center">
                         <IconButton 
                           size={'small'}
-                          onClick={()=>{
-                            navigate("/notifications")
-                          }}>
+                          onClick={()=> navigate("/notifications") }>
                           <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
-                            <MdCircleNotificationsIcon color="white" size="1.2em"/>
+                            <MdCircleNotificationsIcon color={ _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
                           </Badge>
                         </IconButton>
                         <IconButton 
                           size={'small'}
-                          onClick={()=>{ navigate("/book-buy") }}>
+                          onClick={()=> navigate("/book-buy")}>
                           <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
-                            <FiShoppingCart color="white" size="1.2em"/>
+                            <FiShoppingCart color={ _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
                           </Badge>
                         </IconButton>
                         <IconButton 
                           size={'small'}
-                          onClick={()=>{ navigate("/bookmarks") }}>
-                          <MdOutlineBookmarkAddedIcon color="white" size="1.2em"/>
+                          onClick={()=> navigate("/bookmarks")}>
+                          <MdOutlineBookmarkAddedIcon color={ _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
                         </IconButton>
-
                         <IconButton 
                           size={'small'}
-                          onClick={()=>{ navigate("/subscribes") }}>
-                          <SlUserFollowing color="white" size="1.2em"/>
+                          onClick={()=> navigate("/subscribes")}>
+                          <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
                         </IconButton>
                         <IconButton 
                           size={'small'}
@@ -1185,7 +1183,7 @@ const App =(props) =>{
                                         {...props} 
                                         onLogin={()=>setDialogLogin(true)}
                                         onLightbox={(value)=>setLightbox(value)} 
-                                        onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />}/>
+                                        onMutationSubscribe={(evt)=>{ onMutationSubscribe(evt) }} />}/>
             <Route path="/login-with-line" element={<LoginWithLine />}  />
             <Route path="/contact-us" element={<ContactUsPage onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>

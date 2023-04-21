@@ -2068,22 +2068,17 @@ export default {
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
       if( checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
 
-      let { subscriber } = await getUser({ _id });
-      let isSubscribe = true
+      let { subscriber } = await getUser({ _id })
       if( _.find(subscriber, (item)=> _.isEqual(item.userId, current_user?._id)) ) {
-        await User.updateOne({ _id }, { subscriber: _.filter(subscriber, (item)=> !_.isEqual(item.userId, current_user?._id)) });
-      
-        isSubscribe = false
+        await User.updateOne({ _id }, { subscriber: _.filter(subscriber, (item)=> !_.isEqual(item.userId, current_user?._id)) })
       }else{
-        await User.updateOne({ _id }, { subscriber: [...subscriber, {userId: current_user?._id}] });
+        await User.updateOne({ _id }, { subscriber: [...subscriber, {userId: current_user?._id}] })
       }
-
       return {
         status: true,
         data: await getUser({ _id }),
-        isSubscribe,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-      }
+      }      
     },
   },
   Subscription:{
