@@ -7,7 +7,7 @@ import Editor from "../editable/SlateEditor/Editor";
 
 
 const InputField = (props) => {
-  let { cancellor, parentId, child, value, edit, main } = props
+  const { cancellor, parentId, child, value, edit, main } = props
   const { t } = useTranslation();
   const actions = useContext(ActionContext);
   const [text, setText] = useState(value);
@@ -32,9 +32,7 @@ const InputField = (props) => {
             : actions.submit(cancellor, text, parentId, false, setText);
           }}
           onCancel={()=>{
-            edit
-            ? actions.handleCancel(cancellor, edit)
-            : actions.handleCancel(cancellor)
+            edit ? actions.handleCancel(cancellor, edit) : actions.handleCancel(cancellor)
           }}/>
       </div>
     </form>
