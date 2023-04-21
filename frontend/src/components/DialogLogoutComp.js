@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React  from "react";
 import {
   DialogTitle,
   DialogContentText,
@@ -7,15 +7,9 @@ import {
   DialogActions,
   Button
 } from "@mui/material"
-import _ from "lodash";
 
 const DialogLogoutComp = (props) => {
-  const {open, logout, onClose} = props
-
-  const handleLogout = () =>{
-    logout()
-    onClose(true);
-  }
+  const {open, onLogout, onClose} = props
 
   const handleClose = () => {
     onClose(true);
@@ -38,7 +32,7 @@ const DialogLogoutComp = (props) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Close</Button>
-          <Button onClick={handleLogout} autoFocus>Logout</Button>
+          <Button onClick={()=>onLogout()} autoFocus>Logout</Button>
         </DialogActions>
       </Dialog> 
   );

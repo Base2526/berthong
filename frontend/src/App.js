@@ -239,7 +239,7 @@ const App =(props) =>{
   const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
   let [notifications, setNotifications] =useState([])
   let [search, setSearch] = useState(Constants.INIT_SEARCH)
-  let { ws, user, updateProfile, editedUserBalace, editedUserBalaceBook } = props
+  let { ws, user, updateProfile, editedUserBalace, editedUserBalaceBook, logout } = props
 
   const { loading: loadingNotifications, 
           data: dataNotifications, 
@@ -488,6 +488,8 @@ const App =(props) =>{
     },
     onCompleted(data) {
       console.log("onCompleted :", data)
+
+      window.location.reload();
     },
     onError(error){
       return handlerErrorApollo( props, error )
@@ -993,7 +995,15 @@ const App =(props) =>{
       <ToastContainer />
       {
         openDialogLogout 
-        && <DialogLogoutComp {...props} open={openDialogLogout} onClose={()=>setOpenDialogLogout(false)}/>
+        && <DialogLogoutComp 
+            {...props} 
+            open={openDialogLogout} 
+            onLogout={()=>{
+              logout()
+              setOpenDialogLogout(false)
+              window.location.reload()
+            }}
+            onClose={()=>setOpenDialogLogout(false)}/>
       }
       {
         dialogLogin 
@@ -1002,6 +1012,7 @@ const App =(props) =>{
             open={dialogLogin}
             onComplete={async(data)=>{
               setDialogLogin(false);
+              
             }}
             onClose={() => {
               setDialogLogin(false);
