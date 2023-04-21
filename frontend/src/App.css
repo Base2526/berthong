@@ -1070,4 +1070,5 @@ tbody, td, tfoot, th, thead, tr {
   position: fixed !important;
   right: 25px;
   z-index: 20;
+  border: 1px solid #cec6c6 !important;
 }

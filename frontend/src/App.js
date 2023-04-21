@@ -68,15 +68,12 @@ import {
   Menu,
   MenuItem
 } from "@mui/material";
-
 import {
   GrContactInfo as GrContactInfoIcon
 } from "react-icons/gr"
-
 import {
   SlUserFollowing
 } from "react-icons/sl"
-
 import _ from "lodash"
 
 import TaxonomyBankPage from "./TaxonomyBankPage";
@@ -139,6 +136,8 @@ import { queryNotifications,
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
+
+let { REACT_APP_SITE_TITLE } = process.env
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme) => ({
@@ -1041,7 +1040,7 @@ const App =(props) =>{
                     edge="start"
                     className={clsx(classes.menuButton, open && classes.hide)}
                   ><MenuIcon /></IconButton>
-                  <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">Berthong.com</div></Typography>
+                  <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">{ REACT_APP_SITE_TITLE }</div></Typography>
                   {
                     !_.isEmpty(user) && checkRole(user) === Constants.AUTHENTICATED 
                     ? <Stack direction={"row"} spacing={2} alignItems="center">

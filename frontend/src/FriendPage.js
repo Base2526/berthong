@@ -101,6 +101,7 @@ const FriendPage = (props) => {
                     spacing={2}>
                     <>
                         <Avatar
+                            style={{ cursor: 'pointer' }}
                             className={"user-profile"}
                             sx={{ height: 80, width: 80 }}
                             variant="rounded"
@@ -142,6 +143,7 @@ const FriendPage = (props) => {
                                     return  <Stack direction="row" spacing={2} >
                                                 <Box sx={{ width: '10%' }}>
                                                     <Avatar
+                                                        style={{ cursor: 'pointer' }}
                                                         alt=""
                                                         variant="rounded"
                                                         src={files[0]?.url}
