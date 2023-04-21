@@ -26,7 +26,8 @@ import {  emailValidate,
           checkAuthorizationWithSessionId, 
           getSessionId, 
           checkRole, 
-          getUser } from "./utils"
+          getUser,
+          getUsers } from "./utils"
 import { BAD_USER_INPUT, ERROR, FORCE_LOGOUT, DATA_NOT_FOUND, 
         USER_NOT_FOUND, UNAUTHENTICATED, AMDINISTRATOR, AUTHENTICATED,
         _ID_AMDINISTRATOR } from "./constants"
@@ -757,7 +758,7 @@ export default {
         let { status, code, pathname, current_user } =  await checkAuthorization(req);
         if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-        let users = await User.find({subscriber: { $elemMatch : {userId: current_user?._id }}})
+        let users = await getUsers({subscriber: { $elemMatch : {userId: current_user?._id }}})
         
         return {  status: true,
                   data: users,
