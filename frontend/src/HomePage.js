@@ -8,12 +8,15 @@ import { makeStyles } from "@material-ui/core/styles";
 import { ErrorOutline as ErrorOutlineIcon } from "@material-ui/icons";
 import { lightGreen, blueGrey } from "@material-ui/core/colors";
 
+import { FaAngleUp } from 'react-icons/fa';
+
 import { querySuppliers, subscriptionSuppliers} from "./gqlQuery";
 import { handlerErrorApollo,  getHeaders, showToast } from "./util";
 import HomeItem from "./item/HomeItem"
 import SearchComp from "./components/SearchComp"
 import SkeletonComp from "./components/SkeletonComp"
 import * as Constants from "./constants"
+import { IconButton } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -311,7 +314,17 @@ const HomePage = (props) => {
                       </InfiniteScroll>
                     }
                   </div>
-                  <button onClick={()=>scrollToTop()}>scrollToTop</button>
+                  <div>
+                    {
+                      scrollPosition > 400 
+                      ? <IconButton 
+                          className="btn-position-top"
+                          onClick={(evt)=>scrollToTop()}>
+                          <FaAngleUp />
+                        </IconButton>
+                      : "" 
+                    }
+                  </div>
                 </div>
                 }
             </div>
