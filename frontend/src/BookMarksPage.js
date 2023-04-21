@@ -64,45 +64,47 @@ const BookMarksPage = (props) => {
 
     return (<div>
                 {
-                loadingBookmarks || input.data.length == 0 
+                loadingBookmarks 
                 ?   <LinearProgress />
-                :   <InfiniteScroll
-                        dataLength={input.slice}
-                        next={fetchMoreData}
-                        hasMore={input.hasMore}
-                        loader={<h4>Loading...</h4>}>
-                        { 
-                            _.map(input.data, (item, index) => {
-                                return  <Stack direction="row" spacing={2}>
-                                            <Box>
-                                                <Avatar
-                                                    className={"image"}
-                                                    sx={{ height: 40, width: 40 }}
-                                                    variant="rounded"
-                                                    overlap="circular"
-                                                    alt="Example Alt"
-                                                    src={ !_.isEmpty(item?.files) ? item?.files[0].url : "" }/>
-                                            </Box>
-                                            <Box>
-                                                <div onClick={()=>{
-                                                    navigate({
-                                                    pathname: "/d",
-                                                    search: `?${createSearchParams({ id: item?._id})}`,
-                                                    state: { id: item?._id }
-                                                })}} key={index}>{item?.title}</div>
-                                            </Box>
-                                            <Box>
-                                                <Button 
-                                                    variant="outlined"
-                                                    size="small"
-                                                    onClick={(evt)=> onMutationFollow({ variables: { id: item?._id } }) }>
-                                                    { _.find(item?.follows, (f)=> _.isEqual(f?.userId, user?._id) ) ? "Unbookmark" : "Bookmark" }
-                                                </Button>
-                                            </Box>
-                                        </Stack>
-                            }) 
-                        }
-                    </InfiniteScroll>
+                :   input.data.length == 0 
+                    ?   <div>Empty data</div>
+                    :   <InfiniteScroll
+                            dataLength={input.slice}
+                            next={fetchMoreData}
+                            hasMore={input.hasMore}
+                            loader={<h4>Loading...</h4>}>
+                            { 
+                                _.map(input.data, (item, index) => {
+                                    return  <Stack direction="row" spacing={2}>
+                                                <Box>
+                                                    <Avatar
+                                                        className={"image"}
+                                                        sx={{ height: 40, width: 40 }}
+                                                        variant="rounded"
+                                                        overlap="circular"
+                                                        alt="Example Alt"
+                                                        src={ !_.isEmpty(item?.files) ? item?.files[0].url : "" }/>
+                                                </Box>
+                                                <Box>
+                                                    <div onClick={()=>{
+                                                        navigate({
+                                                        pathname: "/d",
+                                                        search: `?${createSearchParams({ id: item?._id})}`,
+                                                        state: { id: item?._id }
+                                                    })}} key={index}>{item?.title}</div>
+                                                </Box>
+                                                <Box>
+                                                    <Button 
+                                                        variant="outlined"
+                                                        size="small"
+                                                        onClick={(evt)=> onMutationFollow({ variables: { id: item?._id } }) }>
+                                                        { _.find(item?.follows, (f)=> _.isEqual(f?.userId, user?._id) ) ? "Unbookmark" : "Bookmark" }
+                                                    </Button>
+                                                </Box>
+                                            </Stack>
+                                }) 
+                            }
+                        </InfiniteScroll>
                 }
             </div>);
 }
