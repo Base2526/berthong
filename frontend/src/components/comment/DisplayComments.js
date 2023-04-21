@@ -87,7 +87,6 @@ const DisplayComments = (props) => {
         ))}
       </div>
     )
-  }, [comments]);
+  }, [comments, actions]);
 }
-
 export default DisplayComments
