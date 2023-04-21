@@ -80,12 +80,11 @@ const HomePage = (props) => {
   const classes = useStyles();
   let [datas, setDatas] = useState([]);
   let [total, setTotal] = useState(0);
-
   const [loading, setLoading] = useState(true);
   let [reset, setReset] = useState(false)
-
   const [slice, setSlice] = useState(12);
   const [hasMore, setHasMore] = useState(true);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   let { user, logout, ws, search, onLogin, onSearchChange, onMutationFollow } = props
 
@@ -107,12 +106,25 @@ const HomePage = (props) => {
 
   if(!_.isEmpty(errorSuppliers)) handlerErrorApollo( props, errorSuppliers )
 
+  const handleScroll = () => {
+    setScrollPosition(window.pageYOffset);
+  };
+
+  useEffect(()=>{
+    console.log("scrollPosition :", scrollPosition)
+  }, [scrollPosition])
+
   useEffect(()=>{
     onSearchChange({...search, PAGE: 1 })
+
+    window.addEventListener('scroll', handleScroll);
+
     return () => {
       unsubscribeSuppliers && unsubscribeSuppliers()
       unsubscribeSuppliers = null;
-    };
+
+      window.removeEventListener('scroll', handleScroll);
+    }
   }, [])
 
   useEffect(() => {
@@ -177,6 +189,10 @@ const HomePage = (props) => {
       setReset(false)
     }
   }, [search, reset])
+
+  const scrollToTop = () => {
+    window?.scrollTo(0, 0);
+  }
 
   const handleRefresh = async() => {
     onSearchChange({...search, PAGE: 1})
@@ -268,7 +284,7 @@ const HomePage = (props) => {
                         hasMore={hasMore}
                         loader={<SkeletonComp />}
                         scrollThreshold={0.5}
-                        scrollableTarget="scrollableDiv"
+                        // scrollableTarget="scrollableDiv"
                         endMessage={<div className="text-center">You have reached the end</div>}
                         
                         // below props only if you need pull down functionality
@@ -280,8 +296,7 @@ const HomePage = (props) => {
                         }
                         releaseToRefreshContent={
                           <h3 style={{ textAlign: 'center' }}>&#8593; Release to refresh</h3>
-                        }
-                        >
+                        }>
                         <div className="row">
                           {_.map(datas, (item, index) =>{
                             return <HomeItem 
@@ -296,6 +311,7 @@ const HomePage = (props) => {
                       </InfiniteScroll>
                     }
                   </div>
+                  <button onClick={()=>scrollToTop()}>scrollToTop</button>
                 </div>
                 }
             </div>
