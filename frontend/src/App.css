@@ -1054,3 +1054,13 @@ tbody, td, tfoot, th, thead, tr {
   /* font-family: "Segoe Script", sans-serif; */
 }
 
+.login-button-close{
+  position: absolute !important;
+  z-index: 300;
+  right: 0;
+  top: 0;
+}
+
+.ReactModal__Overlay--after-open{
+  z-index: 10000000 !important;
+}

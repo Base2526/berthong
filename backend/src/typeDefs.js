@@ -456,45 +456,31 @@ export default gql`
 
   type Query {
     ping: JSON
-
     me: JSON
     users(input: PagingInput): JSON
     userById(_id: ID): JSON
     roles: JSON
     roleByIds(input: [String]): JSON
-
     homes: JSON
-
     suppliers( input:SearchInput ): JSON
     supplierById(_id: ID!): JSON
-
     deposits: JSON
     depositById(_id: ID!): JSON
-
     withdraws: JSON
     withdrawById(_id: ID!): JSON
-
     banks(is_admin: Boolean = false): JSON
     bankById(_id: ID!): JSON
-
     bookBuyTransitions: JSON
-
     historyTransitions: JSON
-
     friendProfile(_id: ID): JSON
-
     dateLotterys: JSON
     dateLotteryById(_id: ID!): JSON
-
     buys: JSON
-
     notifications: JSON
-
     adminHome: JSON
-
     commentById(_id: ID!): JSON
-
     bookmarks: JSON
+    subscribes: JSON
   }  
   
   input RoomInput {
@@ -775,6 +761,8 @@ export default gql`
     comment(input: JSON): JSON
 
     contactUs(input: ContactUsInput): JSON
+
+    subscribe(_id: ID!): JSON 
   }
 
   type Subscription {

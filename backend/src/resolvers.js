@@ -748,6 +748,28 @@ export default {
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
       }
     },
+
+    async subscribes(parent, args, context, info){
+      try{
+        let start = Date.now()
+        let { req } = context
+
+        let { status, code, pathname, current_user } =  await checkAuthorization(req);
+        if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+
+        let users = await User.find({subscriber: { $elemMatch : {userId: current_user?._id }}})
+        
+        return {  status: true,
+                  data: users,
+                  total: users.length,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }catch(error){
+        console.log("commentById error :", error)
+        return {  status: false,
+                  error: error?.message,
+                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      }
+    },
   },
   Upload: GraphQLUpload,
   Mutation: {
@@ -2035,7 +2057,33 @@ export default {
         data: contactUs,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
-    }
+    },
+    async subscribe(parent, args, context, info) {
+      let start = Date.now()
+      let { _id } = args
+      let { req } = context
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
+
+      let { subscriber } = await getUser({ _id });
+      let isSubscribe = true
+      if( _.find(subscriber, (item)=> _.isEqual(item.userId, current_user?._id)) ) {
+        await User.updateOne({ _id }, { subscriber: _.filter(subscriber, (item)=> !_.isEqual(item.userId, current_user?._id)) });
+      
+        isSubscribe = false
+      }else{
+        await User.updateOne({ _id }, { subscriber: [...subscriber, {userId: current_user?._id}] });
+      }
+
+      return {
+        status: true,
+        data: await getUser({ _id }),
+        isSubscribe,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+    },
   },
   Subscription:{
     subscriptionMe: {

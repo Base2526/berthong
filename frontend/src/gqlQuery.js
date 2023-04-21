@@ -25,6 +25,7 @@ export const queryNotifications   = gql`query notifications { notifications }`;
 export const queryAdminHome       = gql`query adminHome { adminHome }`;
 export const queryCommentById     = gql`query commentById($id: ID!) { commentById(_id: $id) }`;
 export const queryBookmarks       = gql`query bookmarks{ bookmarks }`;
+export const querySubscribes      = gql`query subscribes{ subscribes }`;
 
 // mutation
 export const mutationLogin      = gql`mutation login($input: LoginInput) { login(input: $input) }`;
@@ -40,11 +41,9 @@ export const mutationBank       = gql`mutation bank($input: BankInput){ bank(inp
 export const mutationFollow     = gql`mutation follow($id: ID!) { follow(_id: $id) }`;
 export const mutationDatesLottery = gql`mutation datesLottery($input: [Date]){ datesLottery(input: $input) }`;
 export const mutationNotification = gql`mutation notification($id: ID!) { notification(_id: $id) }`;
-
 export const mutationComment    = gql`mutation comment($input: JSON) { comment(input: $input) }`;
-
 export const mutationContactUs    = gql`mutation contactUs($input: ContactUsInput) { contactUs(input: $input) }`;
-
+export const mutationSubscribe    = gql`mutation subscribe($id: ID!) { subscribe(_id: $id) }`;
 
 // subscription 
 export const subscriptionMe            = gql`subscription subscriptionMe($sessionId: ID!){ subscriptionMe(sessionId: $sessionId) }`;

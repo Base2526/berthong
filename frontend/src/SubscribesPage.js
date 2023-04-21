@@ -7,42 +7,44 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import {
     Stack,
     LinearProgress,
-    Avatar,
     Box,
+    Avatar,
     Button
 } from '@mui/material';
 
 import { getHeaders } from "./util"
-import { queryBookmarks } from "./gqlQuery"
+import { querySubscribes } from "./gqlQuery"
 
 const initialValue = { data: [], slice: 20, total: 0, hasMore: true}
-const BookMarksPage = (props) => {
+
+const SubscribesPage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useTranslation();
+    
     let [input, setInput] = useState(initialValue)
 
-    let { user, onMutationFollow } = props
+    let { user, onMutationSubscribe } = props
 
-    const { loading: loadingBookmarks, 
-            data: dataBookmarks, 
-            error: errorBookmarks,
-            fetchMore: fetchMoreBookmarks } = useQuery( queryBookmarks, { 
+    const { loading: loadingSubscribes, 
+            data: dataSubscribes, 
+            error: errorSubscribes,
+            fetchMore: fetchMoreSubscribes } = useQuery( querySubscribes, { 
                                                         context: { headers: getHeaders(location) }, 
-                                                        fetchPolicy: 'network-only', 
-                                                        nextFetchPolicy: 'cache-first',
+                                                        fetchPolicy: 'network-only',  
+                                                        nextFetchPolicy: 'cache-first', 
                                                         notifyOnNetworkStatusChange: true});
 
     useEffect(() => {
-        if (!loadingBookmarks) {
-            if(dataBookmarks?.bookmarks){
-                let { status, data, total } = dataBookmarks?.bookmarks
+        if (!loadingSubscribes) {
+            if(dataSubscribes?.subscribes){
+                let { status, data, total } = dataSubscribes?.subscribes
                 if(status){
                     setInput({...input, data, total})
                 }
             }
         }
-    }, [dataBookmarks, loadingBookmarks])
+    }, [dataSubscribes, loadingSubscribes])
       
     const fetchMoreData = async() =>{
 
@@ -64,7 +66,7 @@ const BookMarksPage = (props) => {
 
     return (<div>
                 {
-                loadingBookmarks || input.data.length == 0 
+                loadingSubscribes || input.data.length == 0 
                 ?   <LinearProgress />
                 :   <InfiniteScroll
                         dataLength={input.slice}
@@ -72,31 +74,32 @@ const BookMarksPage = (props) => {
                         hasMore={input.hasMore}
                         loader={<h4>Loading...</h4>}>
                         { 
-                            _.map(input.data, (item, index) => {
+                            _.map(input.data, (item, index) => {                                
                                 return  <Stack direction="row" spacing={2}>
                                             <Box>
                                                 <Avatar
-                                                    className={"image"}
+                                                    className={"user-profile"}
                                                     sx={{ height: 40, width: 40 }}
                                                     variant="rounded"
                                                     overlap="circular"
                                                     alt="Example Alt"
-                                                    src={ !_.isEmpty(item?.files) ? item?.files[0].url : "" }/>
+                                                    src={_.isEmpty(item?.avatar) ? "" : item?.avatar?.url }/>
                                             </Box>
                                             <Box>
-                                                <div onClick={()=>{
-                                                    navigate({
-                                                    pathname: "/d",
-                                                    search: `?${createSearchParams({ id: item?._id})}`,
-                                                    state: { id: item?._id }
-                                                })}} key={index}>{item?.title}</div>
+                                                <div 
+                                                    onClick={()=>{
+                                                        navigate({ pathname: `/p`, search: `?${createSearchParams({ id: item?._id})}` })  
+                                                    }} 
+                                                    key={index}>
+                                                    {item?.displayName}
+                                                </div>
                                             </Box>
                                             <Box>
                                                 <Button 
                                                     variant="outlined"
                                                     size="small"
-                                                    onClick={(evt)=> onMutationFollow({ variables: { id: item?._id } }) }>
-                                                    { _.find(item?.follows, (f)=> _.isEqual(f?.userId, user?._id) ) ? "Unbookmark" : "Bookmark" }
+                                                    onClick={(evt)=>onMutationSubscribe({ variables: { id: item?._id } })}>
+                                                    { _.find( item?.subscriber, (i)=> _.isEqual( i?.userId,  user?._id) ) ? "Unsubscribe" : "Subscribe" }
                                                 </Button>
                                             </Box>
                                         </Stack>
@@ -107,4 +110,4 @@ const BookMarksPage = (props) => {
             </div>);
 }
 
-export default BookMarksPage
+export default SubscribesPage

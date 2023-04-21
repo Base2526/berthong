@@ -252,7 +252,7 @@ export const checkRole = (user) =>{
 }
 
 export const getUser = async(query) =>{
-    return await User.findOne(query, { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 } )
+    return await User.findOne(query, { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 } )
 }
 
 export const getUsers = () =>{
