@@ -904,105 +904,6 @@ const App =(props) =>{
       }
   );
 
-  // const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
-  //   context: { headers: getHeaders(location) },
-  //   update: (cache, {data: {deposit}}) => {
-  //     let { data, mode, status } = deposit
-
-  //     if(status){
-  //       switch(mode){
-  //         case "delete":{
-  //           let data1 = cache.readQuery({ query: queryDeposits });
-  //           let dataFilter =_.filter(data1.deposits.data, (item)=>data._id != item._id)
-
-  //           cache.writeQuery({
-  //             query: queryDeposits,
-  //             data: { deposits: {...data1.deposits, data: dataFilter} }
-  //           });
-
-  //           handleClose()
-  //           break;
-  //         }
-  //       }
-  //     }
-  //   },
-  //   onCompleted(data) {
-  //     // history.goBack()
-  //   },
-  //   onError(error){
-  //     console.log("onError :")
-  //   }
-  // });
-
-  // const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
-  //   context: { headers: getHeaders(location) },
-  //   update: (cache, {data: {withdraw}}) => {
-  //     let { data, mode, status } = withdraw
-  //     if(status){
-  //       switch(mode){
-  //         case "new":{
-  //           const queryWithdrawsValue = cache.readQuery({ query: queryWithdraws });
-  //           if(!_.isEmpty(queryWithdrawsValue)){
-  //             let newData = [...queryWithdrawsValue.withdraws.data, withdraw.data];
-  //             cache.writeQuery({
-  //               query: queryWithdraws,
-  //               data: { withdraws: {...queryWithdrawsValue.withdraws, data: newData} }
-  //             });
-  //           }
-  //           ////////// update cache queryWithdrawById ///////////
-  //           let queryWithdrawByIdValue = cache.readQuery({ query: queryWithdrawById, variables: {id: data._id}});
-  //           if(!_.isEmpty(queryWithdrawByIdValue)){
-  //             cache.writeQuery({
-  //               query: queryWithdrawById,
-  //               data: { withdrawById: {...queryWithdrawByIdValue.withdrawById, data} },
-  //               variables: {id: data._id}
-  //             });
-  //           }
-  //           ////////// update cache queryWithdrawById ///////////   
-  //           break;
-  //         }
-  //         case "edit":{
-  //           const queryWithdrawsValue = cache.readQuery({ query: queryWithdraws });
-  //           let newData = _.map(queryWithdrawsValue.withdraws.data, (item)=> item._id == withdraw.data._id ? withdraw.data : item ) 
-  //           if(withdraw.data.status == "approved" || withdraw.data.status == "reject"){
-  //             newData = _.filter(queryWithdrawsValue.withdraws.data, (item)=> item._id != withdraw.data._id ) 
-  //           }     
-  //           cache.writeQuery({
-  //             query: queryWithdraws,
-  //             data: { withdraws: {...queryWithdrawsValue.withdraws, data: newData} }
-  //           });
-  //           ////////// update cache queryWithdrawById ///////////
-  //           let queryWithdrawByIdValue = cache.readQuery({ query: queryWithdrawById, variables: {id: data._id}});
-  //           if(queryWithdrawByIdValue){
-  //             cache.writeQuery({
-  //               query: queryWithdrawById,
-  //               data: { withdrawById: {...queryWithdrawByIdValue.withdrawById, data} },
-  //               variables: {id: data._id}
-  //             });
-  //           }
-  //           ////////// update cache queryWithdrawById ///////////            
-  //           break;
-  //         }
-  //       }
-  //     }
-  //   },
-  //   onCompleted(data) {
-  //     switch(checkRole(user)){
-  //       case Constants.AMDINISTRATOR:{
-  //         navigate("/withdraws")
-  //         break;
-  //       }
-  //       case Constants.AUTHENTICATED:{
-  //         navigate("/")
-  //         break;
-  //       }
-  //     }
-  //   },
-  //   onError(error){
-  //     console.log("onError :", error)
-  //   }
-  // });
-
   useEffect(()=>{
     console.log("search :", search)
   }, [search])
@@ -1025,15 +926,11 @@ const App =(props) =>{
       }
     }
   }, [dataNotifications, loadingNotifications])
-  // console.log("ws :", location)
 
   useEffect(()=>{
     console.log("location?.pathname :", location?.pathname)
   }, [location?.pathname])
   
-  /////////////////////// ping ///////////////////////////////////
-  // const pingValues =useQuery(queryPing, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true});
-
   useSubscription(subscriptionMe, {
     onSubscriptionData: useCallback((res) => {
       console.log("subscriptionMe :", res)
