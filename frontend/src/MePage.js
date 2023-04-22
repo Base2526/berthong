@@ -2,20 +2,48 @@ import React, { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import queryString from 'query-string';
 import { useTranslation } from "react-i18next";
-import { createSearchParams, useLocation, useNavigate } from "react-router-dom";
+import { createSearchParams, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
-    Avatar
+    Avatar,
+    Typography 
 } from '@mui/material';
 import {
     AiFillCamera as CameraIcon,
     AiOutlineZoomIn as ZoomInIcon
 } from "react-icons/ai" 
+import {
+    RiAddBoxFill
+} from "react-icons/ri"
 import { IconButton, LinearProgress } from "@material-ui/core";
 import _ from "lodash"
 import { styled } from "@mui/material/styles";
 
+
+
+import Box from '@mui/material/Box';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+// import Avatar from '@mui/material/Avatar';
+// import IconButton from '@mui/material/IconButton';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import Grid from '@mui/material/Grid';
+// import Typography from '@mui/material/Typography';
+import FolderIcon from '@mui/icons-material/Folder';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+// import Typography from '@mui/material/Typography';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
 import { AMDINISTRATOR, AUTHENTICATED } from "./constants";
-import { queryMe } from "./gqlQuery";
+import { queryBanks } from "./gqlQuery";
 import { checkRole, getHeaders } from "./util";
 import AutoGenerationContent from "./AutoGenerationContent";
 const Input = styled("input")({ display: "none" });
@@ -24,40 +52,34 @@ const MePage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useTranslation();
+    const params = queryString.parse(location.search)
+    const { user, onDialogDeleteBank, onLightbox } = props
 
-    let params = queryString.parse(location.search)
-    
-    let { user, updateProfile, logout, onLightbox } = props
+    const [banks, setBanks] = useState([])
+    const [expanded, setExpanded] = useState(false)
 
-    const [data, setData] = useState()
-
-    const { loading: loadingMe, 
-            data: dataMe, 
-            error: errorMe, 
-            refetch: refetchMe,
-            networkStatus } = useQuery(queryMe, 
+    const { loading: loadingBanks, 
+            data: dataBanks, 
+            error: errorBanks, 
+            networkStatus } = useQuery(queryBanks, 
                                         { 
                                             context: { headers: getHeaders(location) }, 
-                                            fetchPolicy: 'cache-first',
+                                            fetchPolicy: 'cache-first', 
                                             nextFetchPolicy: 'network-only',
                                             notifyOnNetworkStatusChange: true
                                         }
-                                    );
+                                        );
 
-    useEffect(()=>{
-        if(!loadingMe){
-            if(!_.isEmpty(dataMe?.me)){
-                let { status, data } = dataMe?.me
-
-                console.log("data : ", data)
+    useEffect(() => {
+        if(!loadingBanks){
+            if(!_.isEmpty(dataBanks?.banks)){
+                let { status, data } = dataBanks?.banks
                 if(status){
-                    updateProfile(data)
-
-                    setData(data)
+                    setBanks(data)
                 }
             }
         }
-    }, [dataMe, loadingMe])
+    }, [dataBanks, loadingBanks])
 
     const managementView = () =>{
         switch(checkRole(user)){
@@ -144,52 +166,126 @@ const MePage = (props) => {
         }
     }
 
+    const findNameBank = (id) =>{
+        let bank = _.find(banks, (bank)=> _.isEqual(bank?._id, id) )
+        return bank ? bank.name : ""
+    }
+
     return (<div style={{flex:1}}>
-                {
-                    loadingMe || _.isEmpty(data)
-                    ?  <LinearProgress />
-                    :  <>
-                            <div>
-                                <Avatar 
-                                    sx={{ width: 80, height: 80 }} 
-                                    src= { _.isEmpty(data?.avatar) ? "" :  data?.avatar?.url ? data?.avatar?.url : URL.createObjectURL(data?.avatar) }
-                                    variant="rounded" />
-                                <>
-                                    <label htmlFor="contained-button-file">
-                                        <Input
-                                            accept="image/*"
-                                            id="contained-button-file"
-                                            name="file"
-                                            multiple={ false }
-                                            type="file"
-                                            onChange={(e) => setData({...data, avatar: e.target.files[0]}) } />
-                                        <IconButton
-                                            color="primary"
-                                            aria-label="upload picture"
-                                            component="span">
-                                            <CameraIcon size="0.8em"/>
-                                        </IconButton>
-                                    </label>
-                                    { data?.avatar?.url &&  <IconButton onClick={(evt)=> onLightbox({ isOpen: true, photoIndex: 0, images:[data?.avatar] }) }><ZoomInIcon size="0.8em" /></IconButton> }
-                                </>
-                            </div>
-                            <div> Display name : {data.displayName} </div>
-                            <div> Email : {data.email} </div>
-                            <button onClick={()=>{
-                                navigate("/user",  {
-                                                        search: `?${createSearchParams({ u: data._id})}`,
-                                                        state: {from: "/", mode: "edit", id: data._id }
-                                                    })
-                            }}>แก้ไขข้อมูล</button>
-                            <div> Balance : { data?.balance }[-{ data?.balanceBook }]</div>
-                            {managementView()}
-                            {/* <button onClick={()=>{
-                                logout()
-                                // history.push("/");
-                                navigate("/")
-                            }}>Logout</button> */}
+                <>
+                    <div>
+                        <Avatar 
+                            sx={{ width: 80, height: 80 }} 
+                            src= { _.isEmpty(user?.avatar) ? "" :  user?.avatar?.url ? user?.avatar?.url : URL.createObjectURL(user?.avatar) }
+                            variant="rounded" />
+                        <>
+                            <label htmlFor="contained-button-file">
+                                <Input
+                                    accept="image/*"
+                                    id="contained-button-file"
+                                    name="file"
+                                    multiple={ false }
+                                    type="file"
+                                    onChange={(e) => {} /*setData({...data, avatar: e.target.files[0]})*/ } />
+                                <IconButton
+                                    color="primary"
+                                    aria-label="upload picture"
+                                    component="span">
+                                    <CameraIcon size="0.8em"/>
+                                </IconButton>
+                            </label>
+                            { user?.avatar?.url &&  <IconButton onClick={(evt)=> onLightbox({ isOpen: true, photoIndex: 0, images:[user?.avatar] }) }><ZoomInIcon size="0.8em" /></IconButton> }
                         </>
-                }
+                    </div>
+                    <div> Display name : {user.displayName} </div>
+                    <div> Email : {user.email} </div>
+                    <div>
+                        <Accordion 
+                            expanded={expanded}
+                            onChange={(event, isExpanded)=>setExpanded(isExpanded)}>
+                            <AccordionSummary
+                                expandIcon={<ExpandMoreIcon />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header">
+                                <Typography>บัญชีธนาคาร ({user?.banks?.length})
+                                    <IconButton onClick={(evt)=>navigate("/bank") }>
+                                        <RiAddBoxFill />
+                                    </IconButton>
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <List>
+                                    {
+                                        _.map(user?.banks, (value, index)=>{
+                                            console.log("bank: ", value)
+                                            return  <ListItem
+                                                        key={index}
+                                                        secondaryAction={
+                                                            <IconButton 
+                                                                edge="end" 
+                                                                aria-label="delete"
+                                                                onClick={()=>onDialogDeleteBank(value?._id)}>
+                                                                <DeleteIcon />
+                                                            </IconButton>
+                                                        }>
+                                                        <ListItemAvatar>
+                                                            <Avatar><FolderIcon /></Avatar>
+                                                        </ListItemAvatar>
+                                                        <ListItemText
+                                                            primary={value?.bankNumber}
+                                                            secondary={ loadingBanks ? <LinearProgress/> : findNameBank(value?.bankId) }
+                                                        />
+                                                    </ListItem>
+                                        })
+                                    }
+                                </List>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        {/* <Typography variant="h6" component="div">
+                            บัญชีธนาคาร 
+                            <IconButton
+                                onClick={(evt)=>navigate("/bank") }>
+                                <RiAddBoxFill />
+                            </IconButton>
+                        </Typography>
+                        <List>
+                            {
+                                _.map(user?.banks, (value, index)=>{
+                                    return  <ListItem
+                                                key={index}
+                                                secondaryAction={
+                                                    <IconButton edge="end" aria-label="delete">
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                }>
+                                                <ListItemAvatar>
+                                                    <Avatar><FolderIcon /></Avatar>
+                                                </ListItemAvatar>
+                                                <ListItemText
+                                                    primary={value?.bankNumber}
+                                                    secondary={ loadingBanks ? <LinearProgress/> : findNameBank(value?.bankId) }
+                                                />
+                                            </ListItem>
+                                })
+                            }
+                        </List> */}
+                    </div>
+
+                    {/* <button onClick={()=>{
+                        navigate("/user",  {
+                                                search: `?${createSearchParams({ u: user?._id})}`,
+                                                state: {from: "/", mode: "edit", id: user?._id }
+                                            })
+                    }}>แก้ไขข้อมูล</button>
+                    <div> Balance : { user?.balance }[-{ user?.balanceBook }]</div> */}
+                    {/* {managementView()} */}
+                    {/* <button onClick={()=>{
+                        logout()
+                        // history.push("/");
+                        navigate("/")
+                    }}>Logout</button> */}
+                </>
             </div>);
 }
 

@@ -32,6 +32,7 @@ export const mutationLogin      = gql`mutation login($input: LoginInput) { login
 export const mutationLoginWithSocial = gql`mutation loginWithSocial($input: LoginWithSocialInput) { loginWithSocial(input: $input) }`;
 export const mutationRegister   = gql`mutation register($input: RegisterInput) { register(input: $input) }`;
 export const mutationMe         = gql`mutation me($input: MeInput){ me(input: $input) }`;
+export const mutationMe_bank    = gql`mutation me_bank($input: JSON){ me_bank(input: $input) }`;
 export const mutationBook       = gql`mutation book($input: BookInput) { book(input: $input) }`;
 export const mutationBuy        = gql`mutation buy($id: ID!) { buy(_id: $id) }`;
 export const mutationSupplier   = gql`mutation supplier($input: SupplierInput) { supplier(input: $input) }`;
@@ -41,7 +42,7 @@ export const mutationBank       = gql`mutation bank($input: BankInput){ bank(inp
 export const mutationFollow     = gql`mutation follow($id: ID!) { follow(_id: $id) }`;
 export const mutationDatesLottery = gql`mutation datesLottery($input: [Date]){ datesLottery(input: $input) }`;
 export const mutationNotification = gql`mutation notification($id: ID!) { notification(_id: $id) }`;
-export const mutationComment    = gql`mutation comment($input: JSON) { comment(input: $input) }`;
+export const mutationComment      = gql`mutation comment($input: JSON) { comment(input: $input) }`;
 export const mutationContactUs    = gql`mutation contactUs($input: ContactUsInput) { contactUs(input: $input) }`;
 export const mutationSubscribe    = gql`mutation subscribe($id: ID!) { subscribe(_id: $id) }`;
 

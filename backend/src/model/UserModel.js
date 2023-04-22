@@ -10,7 +10,6 @@ const SubscriberInput = new Schema({
   updatedAt : { type : Date, default: Date.now },
 })
 
-// username, email, displayName, banks, roles, avatar, lastAccess
 const userSchema = new Schema({
   username: { type: String, required:[true, "Username Request is a required field"] },
   password: { type: String, required:[true, "Password Request is a required field"] },
@@ -38,6 +37,10 @@ const userSchema = new Schema({
     enum : ['website','facebook', 'google', 'github'],
     default: 'website'
   }, 
+  lockAccount: {
+    lock: { type: Boolean, default: false },
+    date: { type : Date, default: Date.now },
+  },
   subscriber: [SubscriberInput],
   socialId: { type: String },
   socialObject: { type: String },

@@ -102,6 +102,7 @@ import WithdrawPage from "./WithdrawPage";
 import WithdrawsPage from "./WithdrawsPage";
 import BreadcsComp from "./components/BreadcsComp";
 import DialogLogoutComp from "./components/DialogLogoutComp";
+import DialogDeleteBankComp from "./components/DialogDeleteBankComp";
 import NotificationsPage from "./NotificationsPage";
 import LoginWithLine from "./LoginWithLine";
 import LightboxComp from "./components/LightboxComp";
@@ -119,6 +120,7 @@ import { queryNotifications,
           queryCommentById,
           mutationBuy,
           subscriptionMe,
+          mutationMe_bank,
           mutationContactUs,
           mutationLogin,
           mutationLoginWithSocial,
@@ -239,6 +241,7 @@ const App =(props) =>{
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [openDialogLogout, setOpenDialogLogout] = useState(false);
+  const [openDialogDeleteBank, setOpenDialogDeleteBank] = useState({ open: false, id: 0});
   const [dialogLogin, setDialogLogin] = useState(false);
   const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
   let [notifications, setNotifications] =useState([])
@@ -770,6 +773,28 @@ const App =(props) =>{
     }
   });
 
+  const [onMutationMe_bank, resultonMutationMe_bank] = useMutation(mutationMe_bank, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {me_bank}}) => {
+      let { status, data } = me_bank
+      if(status){
+        updateProfile(data)
+      }
+    },
+    onCompleted(data) {
+      if(data?.me_bank?.mode === "new"){
+        showToast("success", `Add bank success`)
+        navigate(-1)
+      }else{
+        showToast("success", `Delete bank success`)
+        setOpenDialogDeleteBank({ open: false, id: ""})  
+      } 
+    },
+    onError(error){
+      return handlerErrorApollo( props, error )
+    }
+  });
+
   const [onMutationDateLottery, resultMutationDateLotteryValues] = useMutation(mutationDatesLottery
     , {
         update: (cache, {data: {dateLottery}}) => {
@@ -819,7 +844,7 @@ const App =(props) =>{
           navigate(-1);
         },
         onError(error){
-          console.log("error :", error)
+          return handlerErrorApollo( props, error )
         }
       }
   );
@@ -872,15 +897,9 @@ const App =(props) =>{
 
         },
         onCompleted(data) {
-          // history.goBack();
-          // navigate(-1);
-
-          console.log("onCompleted")
         },
         onError(error){
-          // console.log("error :", error)
-
-          console.log("onError")
+          return handlerErrorApollo( props, error )
         }
       }
   );
@@ -1108,7 +1127,7 @@ const App =(props) =>{
                 {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
                 {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
                 {id: 6, title:"วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/date-lotterys"},
-                {id: 7, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/banks"},
+                // {id: 7, title:"บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/banks"},
                 {id: 8, title:"Logout", icon: <LogoutIcon size="1.5em"/>, path: "/logout"}]
       }
       case Constants.AUTHENTICATED:{
@@ -1117,7 +1136,7 @@ const App =(props) =>{
                 {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
                 {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"},
-                {id: 5, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/banks"},
+                {id: 5, title:"บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/bank"},
                 {id: 6, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
                 {id: 7, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
       }
@@ -1191,6 +1210,23 @@ const App =(props) =>{
             onMutationLogin={(evt)=>onMutationLogin(evt)}
             onMutationLoginWithSocial={(evt)=>onMutationLoginWithSocial(evt)}/>
       }
+      {
+        openDialogDeleteBank.open
+        && <DialogDeleteBankComp 
+            {...props} 
+            // open={openDialogDeleteBank.open} 
+            data={ openDialogDeleteBank }
+            onDelete={(evt)=>{
+              onMutationMe_bank({ variables: { input: { mode: "delete", data: evt } } })
+            }}
+            onClose={()=>setOpenDialogDeleteBank({ open: false, id: ""})}/>
+      }
+
+{/* 
+  // DialogDeleteBankComp
+  const [openDialogDeleteBank, setOpenDialogDeleteBank] = useState(false);
+*/}
+
       {statusView()}
       {menuProfile()}
       <div className="container-fluid">
@@ -1357,11 +1393,14 @@ const App =(props) =>{
             <Route path="/login-with-line" element={<LoginWithLine />}  />
             <Route path="/contact-us" element={<ContactUsPage onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
-              <Route path="/me" element={<MePage {...props} onLightbox={(v)=>setLightbox(v)} />} />
+              <Route path="/me" element={<MePage 
+                                          {...props} 
+                                          onDialogDeleteBank={(id)=>setOpenDialogDeleteBank({open: true, id})} 
+                                          onLightbox={(evt)=>setLightbox(evt)} />} />
               <Route path="/deposit" element={<DepositPage {...props} onMutationDeposit={(evt)=>onMutationContactUs(evt)} />} />
               <Route path="/withdraw" element={<WithdrawPage {...props} />} />
               <Route path="/history-transitions" {...props} element={<HistoryTransitionsPage {...props} />} />
-              <Route path="/bank" element={<BankPage {...props} onMutationMe={(evt)=>onMutationMe(evt)} />} />
+              <Route path="/bank" element={<BankPage {...props} onMutationMe_bank={(evt)=>onMutationMe_bank(evt)} />} />
               <Route path="/banks" element={<BanksPage {...props} />} />
               <Route path="/book-buy" element={<MeBookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/notifications" element={<NotificationsPage {...props} onMutationNotification={(evt)=>onMutationNotification(evt)} />} />

@@ -31,8 +31,8 @@ const BankInputField = (props) => {
           networkStatus } = useQuery(queryBanks, 
                                       { 
                                         context: { headers: getHeaders(location) }, 
-                                        fetchPolicy: 'cache-first', // Used for first execution
-                                        nextFetchPolicy: 'network-only', // Used for subsequent executions
+                                        fetchPolicy: 'cache-first', 
+                                        nextFetchPolicy: 'network-only', 
                                         notifyOnNetworkStatusChange: true
                                       }
                                     );
@@ -43,6 +43,8 @@ const BankInputField = (props) => {
         let { status, data } = dataBanks?.banks
         if(status){
           setBanks(data)
+
+          console.log("banks :", data)
         }
       }
     }
@@ -100,17 +102,18 @@ const BankInputField = (props) => {
                   </IconButton>
                 </Stack>
             }
-            {_.map(inputList, (x, i) => {
+            {_.map(inputList, (value, index) => {
               return (
-                <Stack spacing={2} key={i} >
+                <Stack spacing={2} key={index} >
                   <TextField
                     id="input-bank-account-name"
+                    type="number"
                     name="bankNumber"
                     label={t("bank_account_number")}
                     variant="filled"
-                    value={x.bankNumber}
+                    value={value.bankNumber}
                     required
-                    onChange={(e) => onInputChange(e, i)} />
+                    onChange={(e) => onInputChange(e, index)} />
                   { 
                     loadingBanks || _.isEmpty(banks) 
                     ? <LinearProgress sx={{width:"100px"}} /> 
@@ -119,9 +122,9 @@ const BankInputField = (props) => {
                         id="input-bank-id"
                         options={banks}
                         getOptionLabel={(option) => option.name || ""}
-                        defaultValue={()=>_.find(banks, (v)=>{return _.isEqual(x.bankId, v._id)} )}
-                        renderInput={(params) => <TextField {...params} label={t("bank_account_name")} required={_.isEmpty(x.bankId) ? true : false} />}
-                        onChange={(event, values) => onBankIdChange(event, values, i)}
+                        defaultValue={()=>_.find(banks, (bank)=>{return _.isEqual(bank?._id, value.bankId)} )}
+                        renderInput={(params) => <TextField {...params} label={t("bank_account_name")} required={_.isEmpty(value.bankId) ? true : false} />}
+                        onChange={(event, values) => onBankIdChange(event, values, index)}
                       />
                       // : <div />
                   }
@@ -133,7 +136,7 @@ const BankInputField = (props) => {
                           color="primary"
                           aria-label="upload picture"
                           component="span"
-                          onClick={() => handleRemoveClick(i)}>
+                          onClick={() => handleRemoveClick(index)}>
                           <RemoveCircleIcon />
                         </IconButton>
                       </Stack>

@@ -1319,6 +1319,42 @@ export default {
       }
     },
 
+    async me_bank(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      let { mode, data } = input
+      
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+
+      switch(mode){
+        case "new":{
+          let { banks } = await getUser({_id: current_user?._id}) 
+          await User.updateOne({ _id: current_user?._id }, { banks: [...banks, ...data] } );
+          break;
+        }
+
+        case "delete":{
+          let { banks } = await getUser({_id: current_user?._id}) 
+          let newBanks = _.filter(banks, (bank)=>!_.isEqual(bank?._id.toString(), data))
+          console.log("me_bank: ", input, banks, newBanks)
+          await User.updateOne({ _id: current_user?._id }, { banks: newBanks } );
+          break;
+        }
+      }
+      // pubsub.publish("ME", {
+      //   me: { mutation: "UPDATE", data: user },
+      // });
+      return {
+        status: true,
+        mode,
+        data: await getUser({_id: current_user?._id}),
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+    },
+
     async book(parent, args, context, info) {
       let start = Date.now()
       let { input } = args        
