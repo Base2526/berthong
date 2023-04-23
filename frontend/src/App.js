@@ -139,7 +139,8 @@ import { queryNotifications,
           queryMe,
           mutationDatesLottery, 
           queryDateLotterys, 
-          queryDateLotteryById} from "./gqlQuery"
+          queryDateLotteryById,
+          mutationMe_profile} from "./gqlQuery"
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
@@ -795,6 +796,22 @@ const App =(props) =>{
     }
   });
 
+  const [onMutationMe_profile, resultonMutationMe_profile] = useMutation(mutationMe_profile, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {me_profile}}) => {
+      let { status, data } = me_profile
+      if(status){
+        updateProfile(data)
+      }
+    },
+    onCompleted(data) {
+      showToast("success", `Update profile success`)
+    },
+    onError(error){
+      return handlerErrorApollo( props, error )
+    }
+  });
+
   const [onMutationDateLottery, resultMutationDateLotteryValues] = useMutation(mutationDatesLottery
     , {
         update: (cache, {data: {dateLottery}}) => {
@@ -1293,6 +1310,7 @@ const App =(props) =>{
               <Route path="/me" element={<MePage 
                                           {...props} 
                                           onDialogDeleteBank={(id)=>setOpenDialogDeleteBank({open: true, id})} 
+                                          onMutationMe_profile={(evt)=>onMutationMe_profile(evt)}
                                           onLightbox={(evt)=>setLightbox(evt)} />} />
               <Route path="/deposit" element={<DepositPage {...props} onMutationDeposit={(evt)=>onMutationContactUs(evt)} />} />
               <Route path="/withdraw" element={<WithdrawPage {...props} />} />

@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useQuery, makeVar } from "@apollo/client";
+import React, { useState, useMemo } from "react";
 import queryString from 'query-string';
 import { useTranslation } from "react-i18next";
 import { createSearchParams, useLocation, useNavigate, useSearchParams } from "react-router-dom";
@@ -30,14 +29,14 @@ import {
 import {
     AiFillFolder as FolderIcon
 } from "react-icons/ai"
-import { IconButton, LinearProgress } from "@material-ui/core";
+import { IconButton } from "@material-ui/core";
 import _ from "lodash"
 import { styled } from "@mui/material/styles";
 
-import { AMDINISTRATOR, AUTHENTICATED } from "./constants";
-import { queryBanks } from "./gqlQuery";
-import { checkRole, getHeaders } from "./util";
-import AutoGenerationContent from "./AutoGenerationContent";
+// import { AMDINISTRATOR, AUTHENTICATED } from "./constants";
+// import { queryBanks } from "./gqlQuery";
+// import { checkRole, getHeaders } from "./util";
+// import AutoGenerationContent from "./AutoGenerationContent";
 const Input = styled("input")({ display: "none" });
 
 const MePage = (props) => {
@@ -45,122 +44,115 @@ const MePage = (props) => {
     const location = useLocation();
     const { t } = useTranslation();
     const params = queryString.parse(location.search)
-    const { user, onDialogDeleteBank, onLightbox } = props
-    const [banks, setBanks] = useState([])
+    const { user, onMutationMe_profile, onDialogDeleteBank, onLightbox } = props
+    // const [banks, setBanks] = useState([])
     const [expanded, setExpanded] = useState(localStorage.getItem('expanded') ? localStorage.getItem('expanded') : false)
 
-    const { loading: loadingBanks, 
-            data: dataBanks, 
-            error: errorBanks, 
-            networkStatus } = useQuery(queryBanks, 
-                                        { 
-                                            context: { headers: getHeaders(location) }, 
-                                            fetchPolicy: 'cache-first', 
-                                            nextFetchPolicy: 'network-only',
-                                            notifyOnNetworkStatusChange: true
-                                        }
-                                        );
+    // const { loading: loadingBanks, 
+    //         data: dataBanks, 
+    //         error: errorBanks, 
+    //         networkStatus } = useQuery(queryBanks, 
+    //                                     { 
+    //                                         context: { headers: getHeaders(location) }, 
+    //                                         fetchPolicy: 'cache-first', 
+    //                                         nextFetchPolicy: 'network-only',
+    //                                         notifyOnNetworkStatusChange: true
+    //                                     }
+    //                                     );
+    // useEffect(() => {
+    //     if(!loadingBanks){
+    //         if(!_.isEmpty(dataBanks?.banks)){
+    //             let { status, data } = dataBanks?.banks
+    //             if(status){
+    //                 setBanks(data)
+    //             }
+    //         }
+    //     }
+    // }, [dataBanks, loadingBanks])
+    // const managementView = () =>{
+    //     switch(checkRole(user)){
+    //         case AMDINISTRATOR:{
+    //             return  <div>
+    //                         <div className="div-management">
+    //                             <div>Management</div>
+    //                             <div>
+    //                                 <button onClick={()=>{ 
+    //                                     navigate("/withdraws");
+    //                                 }}>รายการถอดเงิน รออนุมัติ</button>
+    //                             </div>
+    //                             <div>
+    //                                 <button onClick={()=>{ 
+    //                                     navigate("/deposits");
+    //                                 }}>รายการฝากเงิน รออนุมัติ</button>
+    //                             </div>
+    //                             <div>
+    //                                 <button onClick={()=>{ 
+    //                                     navigate("/suppliers");
+    //                                 }}>จัดการ Suppliers ทั้งหมด</button>
+    //                             </div>
 
-    useEffect(() => {
-        if(!loadingBanks){
-            if(!_.isEmpty(dataBanks?.banks)){
-                let { status, data } = dataBanks?.banks
-                if(status){
-                    setBanks(data)
-                }
-            }
-        }
-    }, [dataBanks, loadingBanks])
+    //                             <div>
+    //                                 <button onClick={()=>{ 
+    //                                     navigate("/users");
+    //                                 }}>จัดการ รายชือบุคคลทั้งหมด</button>
+    //                             </div>
+    //                             <div>
+    //                                 <button onClick={()=>{ 
+    //                                     navigate("/banks");
+    //                                 }}>จัดการ รายชือธนาคารทั้งหมด</button>
+    //                             </div>
+    //                             <div>
+    //                                 <button onClick={()=>{
+    //                                     navigate("/date-lotterys");
+    //                                 }}>จัดการ วันออกหวยทั้งหมด</button>
+    //                             </div>
 
-    const managementView = () =>{
-        switch(checkRole(user)){
-            case AMDINISTRATOR:{
-                return  <div>
-                            <div className="div-management">
-                                <div>Management</div>
-                                <div>
-                                    <button onClick={()=>{ 
-                                        navigate("/withdraws");
-                                    }}>รายการถอดเงิน รออนุมัติ</button>
-                                </div>
-                                <div>
-                                    <button onClick={()=>{ 
-                                        navigate("/deposits");
-                                    }}>รายการฝากเงิน รออนุมัติ</button>
-                                </div>
-                                <div>
-                                    <button onClick={()=>{ 
-                                        navigate("/suppliers");
-                                    }}>จัดการ Suppliers ทั้งหมด</button>
-                                </div>
+    //                             <div>
+    //                                 <button onClick={()=>{ 
+    //                                     navigate("/bank");
+    //                                 }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
+    //                             </div>
+    //                         </div>
+    //                         <AutoGenerationContent />
+    //                     </div>
+    //         }
+    //         case AUTHENTICATED:{
+    //             return  <div>
+    //                         <div>
+    //                             <button onClick={()=>{ 
+    //                                 navigate("/book+buys");
+    //                             }}>รายการ จอง-ซื้อ</button>
+    //                         </div>
+    //                         <div>
+    //                             <button onClick={()=>{ 
+    //                                 navigate("/deposit", {state: {from: "/", mode: "new"}} )
+    //                             }}>รายการ แจ้งฝากเงิน</button>
+    //                         </div>
+    //                         <div>
+    //                             <button onClick={()=>{ 
+    //                                 navigate("/withdraw", {state: {from: "/", mode: "new"}} )
+    //                             }}>รายการ แจ้งถอนเงิน</button>
+    //                         </div>
+    //                         <div>
+    //                             <button onClick={()=>{ 
+    //                                 navigate("/bank"); 
+    //                             }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
+    //                         </div>
+    //                         <div>
+    //                             <button onClick={()=>{
+    //                                 navigate("/suppliers"); 
+    //                             }}>Supplier list</button>
+    //                         </div>
 
-                                <div>
-                                    <button onClick={()=>{ 
-                                        navigate("/users");
-                                    }}>จัดการ รายชือบุคคลทั้งหมด</button>
-                                </div>
-                                <div>
-                                    <button onClick={()=>{ 
-                                        navigate("/banks");
-                                    }}>จัดการ รายชือธนาคารทั้งหมด</button>
-                                </div>
-                                <div>
-                                    <button onClick={()=>{
-                                        navigate("/date-lotterys");
-                                    }}>จัดการ วันออกหวยทั้งหมด</button>
-                                </div>
-
-                                <div>
-                                    <button onClick={()=>{ 
-                                        navigate("/bank");
-                                    }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
-                                </div>
-                            </div>
-                            <AutoGenerationContent />
-                        </div>
-            }
-            case AUTHENTICATED:{
-                return  <div>
-                            <div>
-                                <button onClick={()=>{ 
-                                    navigate("/book+buys");
-                                }}>รายการ จอง-ซื้อ</button>
-                            </div>
-                            <div>
-                                <button onClick={()=>{ 
-                                    navigate("/deposit", {state: {from: "/", mode: "new"}} )
-                                }}>รายการ แจ้งฝากเงิน</button>
-                            </div>
-                            <div>
-                                <button onClick={()=>{ 
-                                    navigate("/withdraw", {state: {from: "/", mode: "new"}} )
-                                }}>รายการ แจ้งถอนเงิน</button>
-                            </div>
-                            <div>
-                                <button onClick={()=>{ 
-                                    navigate("/bank"); 
-                                }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
-                            </div>
-                            <div>
-                                <button onClick={()=>{
-                                    navigate("/suppliers"); 
-                                }}>Supplier list</button>
-                            </div>
-
-                            <div>
-                                <button onClick={()=>{
-                                    navigate("/history-transitions"); 
-                                }}>History-Transitions</button>
-                            </div>
-                        </div>
-            }
-        }
-    }
-
-    const findNameBank = (id) =>{
-        let bank = _.find(banks, (bank)=> _.isEqual(bank?._id, id) )
-        return bank ? bank.name : ""
-    }
+    //                         <div>
+    //                             <button onClick={()=>{
+    //                                 navigate("/history-transitions"); 
+    //                             }}>History-Transitions</button>
+    //                         </div>
+    //                     </div>
+    //         }
+    //     }
+    // }
 
     return  useMemo(() => {
                 return (<div style={{flex:1}}>
@@ -179,6 +171,8 @@ const MePage = (props) => {
                                             type="file"
                                             onChange={(e) => {
                                                 console.log("e :", e.target.files[0])
+
+                                                onMutationMe_profile({ variables: { input: { avatar: e.target.files[0] } } })
                                             } /*setData({...data, avatar: e.target.files[0]})*/ } />
                                         <IconButton
                                             color="primary"
@@ -213,7 +207,6 @@ const MePage = (props) => {
                                         <List>
                                             {
                                                 _.map(user?.banks, (value, index)=>{
-                                                    console.log("bank: ", value)
                                                     return  <ListItem
                                                                 key={index}
                                                                 secondaryAction={
@@ -227,7 +220,7 @@ const MePage = (props) => {
                                                                 </ListItemAvatar>
                                                                 <ListItemText
                                                                     primary={value?.bankNumber}
-                                                                    secondary={ loadingBanks ? <LinearProgress/> : findNameBank(value?.bankId) }
+                                                                    secondary={ value?.name }
                                                                 />
                                                             </ListItem>
                                                 })
@@ -237,6 +230,6 @@ const MePage = (props) => {
                                 </Accordion>
                             </div>
                         </div>)
-            }, [user, expanded, banks]);
+            }, [ user, expanded ]);
 }
 export default MePage

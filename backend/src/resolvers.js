@@ -45,9 +45,9 @@ export default {
     async ping(parent, args, context, info){
       let { req } = context
 
-      // let user  = await getUser({_id: mongoose.Types.ObjectId(_ID_AMDINISTRATOR)})
+      let user  = await getUser({_id: mongoose.Types.ObjectId("62a2f633cf7946010d3c74fa")})
 
-      // console.log("user doc :", user?._doc, user)
+      console.log("user doc :", user)
       // let { status, code, pathname, current_user } =  await checkAuthorization(req);
       // if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
@@ -89,7 +89,7 @@ export default {
       let user = await getUser({_id: current_user?._id}) 
       if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
-      user =  { ...user?._doc, 
+      user =  { ...user, 
                 ...await checkBalance(current_user?._id),
                 balanceBook: await checkBalanceBook(current_user?._id)}
 
@@ -533,7 +533,7 @@ export default {
       if(_.isNull(suppliers)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
       return {  status: true,
-                data: {...user?._doc, suppliers},
+                data: {...user, suppliers},
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
     },
@@ -791,13 +791,13 @@ export default {
         //   return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
         // }))  
         
-        let banks = _.filter(await Promise.all(_.map(user?.banks, async(item)=>{
-                      let bank = await Bank.findById(item.bankId)
-                      return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
-                    })), e=>!_.isNull(e) ) 
+        // let banks = _.filter(await Promise.all(_.map(user?.banks, async(item)=>{
+        //               let bank = await Bank.findById(item.bankId)
+        //               return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
+        //             })), e=>!_.isNull(e) ) 
 
-        user = {  ...user?._doc, 
-                  banks,
+        user = {  ...user, 
+                  // banks,
                   ...await checkBalance(user?._id),
                   balanceBook: await checkBalanceBook(user?._id)
                 }
@@ -1352,6 +1352,57 @@ export default {
         mode,
         data: await getUser({_id: current_user?._id}),
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+    },
+
+    async me_profile(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+
+      let { avatar } = input
+      try{
+        let fileObject = avatar?.file
+
+        const { createReadStream, filename, encoding, mimetype } = fileObject //await input.files[i];
+        const stream = createReadStream();
+        const assetUniqName = fileRenamer(filename);
+        let pathName = `/app/uploads/${assetUniqName}`;
+        
+        const output = fs.createWriteStream(pathName)
+        stream.pipe(output);
+
+        await new Promise(function (resolve, reject) {
+          output.on('close', () => {
+            resolve();
+          });
+    
+          output.on('error', (err) => {
+            logger.error(err.toString());
+
+            reject(err);
+          });
+        });
+
+        const urlForArray = `${process.env.RA_HOST}${assetUniqName}`
+        await User.updateOne({ _id: current_user?._id }, { avatar: { url: urlForArray, filename, encoding, mimetype } } );
+     
+        return {
+          status: true,
+          data: await getUser({_id: current_user?._id}),
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      } catch(err) {
+        logger.error(err.toString());
+
+        return {
+          status: false,
+          message: err.toString(),
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
       }
     },
 

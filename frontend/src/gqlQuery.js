@@ -33,6 +33,7 @@ export const mutationLoginWithSocial = gql`mutation loginWithSocial($input: Logi
 export const mutationRegister   = gql`mutation register($input: RegisterInput) { register(input: $input) }`;
 export const mutationMe         = gql`mutation me($input: MeInput){ me(input: $input) }`;
 export const mutationMe_bank    = gql`mutation me_bank($input: JSON){ me_bank(input: $input) }`;
+export const mutationMe_profile = gql`mutation me_profile($input: JSON){ me_profile(input: $input) }`;
 export const mutationBook       = gql`mutation book($input: BookInput) { book(input: $input) }`;
 export const mutationBuy        = gql`mutation buy($id: ID!) { buy(_id: $id) }`;
 export const mutationSupplier   = gql`mutation supplier($input: SupplierInput) { supplier(input: $input) }`;
