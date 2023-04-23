@@ -44,7 +44,7 @@ const MePage = (props) => {
     const location = useLocation();
     const { t } = useTranslation();
     const params = queryString.parse(location.search)
-    const { user, onMutationMe_profile, onDialogDeleteBank, onLightbox } = props
+    const { user, onMutationMe, onDialogDeleteBank, onLightbox } = props
     // const [banks, setBanks] = useState([])
     const [expanded, setExpanded] = useState(localStorage.getItem('expanded') ? localStorage.getItem('expanded') : false)
 
@@ -169,11 +169,9 @@ const MePage = (props) => {
                                             name="file"
                                             multiple={ false }
                                             type="file"
-                                            onChange={(e) => {
-                                                console.log("e :", e.target.files[0])
-
-                                                onMutationMe_profile({ variables: { input: { avatar: e.target.files[0] } } })
-                                            } /*setData({...data, avatar: e.target.files[0]})*/ } />
+                                            onChange={(e)=>{
+                                                onMutationMe({ variables: { input: {  type:'avatar', data: e.target.files[0] } } })
+                                            }} />
                                         <IconButton
                                             color="primary"
                                             aria-label="upload picture"
@@ -210,7 +208,7 @@ const MePage = (props) => {
                                                     return  <ListItem
                                                                 key={index}
                                                                 secondaryAction={
-                                                                    <IconButton  edge="end"  aria-label="delete"
+                                                                    <IconButton edge="end" aria-label="delete"
                                                                         onClick={()=>onDialogDeleteBank(value?._id)}>
                                                                         <DeleteIcon />
                                                                     </IconButton>

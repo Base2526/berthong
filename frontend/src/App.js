@@ -120,7 +120,6 @@ import { queryNotifications,
           queryCommentById,
           mutationBuy,
           subscriptionMe,
-          mutationMe_bank,
           mutationContactUs,
           mutationLogin,
           mutationLoginWithSocial,
@@ -139,8 +138,8 @@ import { queryNotifications,
           queryMe,
           mutationDatesLottery, 
           queryDateLotterys, 
-          queryDateLotteryById,
-          mutationMe_profile} from "./gqlQuery"
+          queryDateLotteryById
+        } from "./gqlQuery"
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
@@ -755,62 +754,90 @@ const App =(props) =>{
 
   const [onMutationMe, resultMutationMe] = useMutation(mutationMe, {
     context: { headers: getHeaders(location) },
-    update: (cache, {data: {me}}) => {
-      if(me.status){
-        const queryMeValue = cache.readQuery({ query: queryMe });
-        if(!_.isNull(queryMeValue)){
-          cache.writeQuery({
-            query: queryMe,
-            data: { me: {...queryMeValue.me, data: me.data} }
-          });
-        }
+    update: (cache, {data:{ me }}) => {
+      let { status, data } = me
+      if(status){
+        updateProfile(data)
       }
+
+      // if(me.status){
+      //   const queryMeValue = cache.readQuery({ query: queryMe });
+      //   if(!_.isNull(queryMeValue)){
+      //     cache.writeQuery({
+      //       query: queryMe,
+      //       data: { me: {...queryMeValue.me, data: me.data} }
+      //     });
+      //   }
+      // }
     },
     onCompleted(data) {
-      navigate(-1)
+      let {type, mode} = data?.me
+      switch(type){
+        case "bank":{
+          switch(mode){
+            case "new":{
+              showToast("success", `Add bank success`)
+              navigate(-1)
+              break;
+            }
+            case "delete":{
+              showToast("success", `Delete bank success`)
+              setOpenDialogDeleteBank({ open: false, id: ""})  
+              break;
+            }
+          }
+
+          break;
+        }
+
+        case "avatar":{
+          showToast("success", `Update profile success`)
+          break;
+        }
+      }
     },
     onError(error){
       console.log("onError :", error)
     }
   });
 
-  const [onMutationMe_bank, resultonMutationMe_bank] = useMutation(mutationMe_bank, {
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {me_bank}}) => {
-      let { status, data } = me_bank
-      if(status){
-        updateProfile(data)
-      }
-    },
-    onCompleted(data) {
-      if(data?.me_bank?.mode === "new"){
-        showToast("success", `Add bank success`)
-        navigate(-1)
-      }else{
-        showToast("success", `Delete bank success`)
-        setOpenDialogDeleteBank({ open: false, id: ""})  
-      } 
-    },
-    onError(error){
-      return handlerErrorApollo( props, error )
-    }
-  });
+  // const [onMutationMe_bank, resultonMutationMe_bank] = useMutation(mutationMe_bank, {
+  //   context: { headers: getHeaders(location) },
+  //   update: (cache, {data: {me_bank}}) => {
+  //     let { status, data } = me_bank
+  //     if(status){
+  //       updateProfile(data)
+  //     }
+  //   },
+  //   onCompleted(data) {
+  //     if(data?.me_bank?.mode === "new"){
+  //       showToast("success", `Add bank success`)
+  //       navigate(-1)
+  //     }else{
+  //       showToast("success", `Delete bank success`)
+  //       setOpenDialogDeleteBank({ open: false, id: ""})  
+  //     } 
+  //   },
+  //   onError(error){
+  //     return handlerErrorApollo( props, error )
+  //   }
+  // });
 
-  const [onMutationMe_profile, resultonMutationMe_profile] = useMutation(mutationMe_profile, {
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {me_profile}}) => {
-      let { status, data } = me_profile
-      if(status){
-        updateProfile(data)
-      }
-    },
-    onCompleted(data) {
-      showToast("success", `Update profile success`)
-    },
-    onError(error){
-      return handlerErrorApollo( props, error )
-    }
-  });
+  // const [onMutationMe_profile, resultonMutationMe_profile] = useMutation(mutationMe_profile, {
+  //   context: { headers: getHeaders(location) },
+  //   update: (cache, {data: {me_profile}}) => {
+  //     let { status, data } = me_profile
+  //     if(status){
+  //       updateProfile(data)
+  //     }
+  //   },
+  //   onCompleted(data) {
+  //     showToast("success", `Update profile success`)
+  //   },
+  //   onError(error){
+  //     return handlerErrorApollo( props, error )
+  //   }
+  // });
 
   const [onMutationDateLottery, resultMutationDateLotteryValues] = useMutation(mutationDatesLottery
     , {
@@ -1050,8 +1077,8 @@ const App =(props) =>{
                 {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
                 {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"},
-                {id: 5, title:"บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/bank"},
-                {id: 6, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
+                // {id: 5, title:"บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/bank"},
+                // {id: 6, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
                 {id: 7, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
       }
       default:{
@@ -1095,7 +1122,7 @@ const App =(props) =>{
 
   return (
     <div className="App">
-      {lightbox.isOpen  && <LightboxComp lightbox={lightbox} onLightbox={(v)=>setLightbox(v)}/> }
+      {lightbox.isOpen  && <LightboxComp datas={lightbox} onLightbox={(v)=>setLightbox(v)}/> }
       <ToastContainer />
       {
         openDialogLogout 
@@ -1131,7 +1158,7 @@ const App =(props) =>{
             // open={openDialogDeleteBank.open} 
             data={ openDialogDeleteBank }
             onDelete={(evt)=>{
-              onMutationMe_bank({ variables: { input: { mode: "delete", data: evt } } })
+              onMutationMe({ variables: { input: { type: "bank", mode: "delete", data: evt } } })
             }}
             onClose={()=>setOpenDialogDeleteBank({ open: false, id: ""})}/>
       }
@@ -1310,12 +1337,12 @@ const App =(props) =>{
               <Route path="/me" element={<MePage 
                                           {...props} 
                                           onDialogDeleteBank={(id)=>setOpenDialogDeleteBank({open: true, id})} 
-                                          onMutationMe_profile={(evt)=>onMutationMe_profile(evt)}
+                                          onMutationMe={(evt)=>onMutationMe(evt)}
                                           onLightbox={(evt)=>setLightbox(evt)} />} />
               <Route path="/deposit" element={<DepositPage {...props} onMutationDeposit={(evt)=>onMutationContactUs(evt)} />} />
               <Route path="/withdraw" element={<WithdrawPage {...props} />} />
               <Route path="/history-transitions" {...props} element={<HistoryTransitionsPage {...props} />} />
-              <Route path="/bank" element={<BankPage {...props} onMutationMe_bank={(evt)=>onMutationMe_bank(evt)} />} />
+              <Route path="/bank" element={<BankPage {...props} onMutationMe={(evt)=>onMutationMe(evt)} />} />
               <Route path="/banks" element={<BanksPage {...props} />} />
               <Route path="/book-buy" element={<MeBookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/notifications" element={<NotificationsPage {...props} onMutationNotification={(evt)=>onMutationNotification(evt)} />} />

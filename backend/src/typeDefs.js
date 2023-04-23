@@ -746,9 +746,7 @@ export default gql`
     loginWithSocial(input: LoginWithSocialInput): JSON
     loginWithGithub(code: String!): JSON
     register(input: RegisterInput): JSON
-    me(input: MeInput): JSON
-    me_bank(input: JSON): JSON
-    me_profile(input: JSON): JSON
+    me(input: JSON): JSON
     book(input: BookInput): JSON
     buy(_id: ID!): JSON
     supplier(input: SupplierInput): JSON    

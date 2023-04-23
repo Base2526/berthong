@@ -201,7 +201,7 @@ export const checkBalance = async(userId) =>{
 
                     let books = _.filter(supplier.buys, (buy)=> _.isEqual(buy.userId, userId) && buy.selected == 0)
                     if(!_.isEmpty(books)){
-                        console.log("inTheCarts item :", books, transition?.refId)
+                        // console.log("inTheCarts item :", books, transition?.refId)
                         return transition?.refId
                     }
                     return null;
@@ -213,8 +213,7 @@ export const checkBalance = async(userId) =>{
             }
         })), (i)=> !_.isNull(i))
 
-        console.log("inTheCarts :", balance, inTheCarts)
-
+        // console.log("inTheCarts :", balance, inTheCarts)
         return {balance, transitions, inTheCarts}
     } catch(err) {
         console.log(" err o checkBalance :", err.message)

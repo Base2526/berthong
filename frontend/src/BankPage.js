@@ -18,7 +18,7 @@ const BankPage = (props) => {
   let [input, setInput]       = useState([initValues]);
   // let { mode, id } = location?.state
 
-  let { onMutationMe_bank }  = props
+  let { onMutationMe }  = props
 
   // useEffect(()=>{
   //   switch(mode){
@@ -37,7 +37,7 @@ const BankPage = (props) => {
   // }, [mode])
 
   const submitForm = async(event) => {
-    onMutationMe_bank({ variables: { input: { mode: "new", data: input } } })
+    onMutationMe({ variables: { input: { type: "bank", mode: "new", data: input } } })
 
     // switch(mode){
     //   case "new":{

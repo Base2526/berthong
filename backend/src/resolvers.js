@@ -1209,11 +1209,12 @@ export default {
       let { input } = args
       let { req } = context
 
-      if(input?.roles) throw new AppError(ERROR, 'Error cannot update roles!')
+      // if(input?.roles) throw new AppError(ERROR, 'Error cannot update roles!')
       
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
+      /*
       // image
       let newFiles = [];
       if(!_.isEmpty(input.image)){
@@ -1266,47 +1267,10 @@ export default {
           }
         }
       }
-
       let newInput = {...input, image:newFiles, lastAccess : Date.now()}
-      // newInput = _.omitDeep(newInput, ['roles'])
-
-      /*
-      if( checkRole(current_user) == AMDINISTRATOR ){
-        // let user = await User.findOneAndUpdate({ _id: input.uid }, newInput , { new: true })
-        // let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
-        //   return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
-        // }))  
-        // user = {...user._doc, roles}
-
-        await User.updateOne({ _id: input._id }, newInput );
-        let user = await User.findById(input._id)
-        let roles = await Promise.all(_.map(user?.roles, async(_id)=>{     
-          return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
-        }))  
-        user = {...user._doc, roles}
-
-        user = _.omit(user, ['password'])
-
-        pubsub.publish("ME", {
-          me: { mutation: "UPDATE", data: user },
-        });
-
-        return {
-          status: true,
-          data: user,
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-        }
-      }else{
-        */
-        // let user = await User.findOneAndUpdate({ _id: current_user?._id }, newInput , { new: true })
-        // let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
-        //   return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
-        // }))  
-        // user = {...user._doc, roles}
-
+      
       await User.updateOne({ _id: current_user?._id }, newInput );
       let user = await getUser({_id: current_user?._id}) 
-      // user = _.omit(user, ['password'])
       
       pubsub.publish("ME", {
         me: { mutation: "UPDATE", data: user },
@@ -1317,94 +1281,155 @@ export default {
         data: user,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
-    },
+      */
 
-    async me_bank(parent, args, context, info) {
-      let start = Date.now()
-      let { input } = args
-      let { req } = context
+      let { type, mode, data } = input
 
-      let { mode, data } = input
-      
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
-      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-
-      switch(mode){
-        case "new":{
-          let { banks } = await getUser({_id: current_user?._id}) 
-          await User.updateOne({ _id: current_user?._id }, { banks: [...banks, ...data] } );
+      switch(type){
+        case "bank":{
+          switch(mode){
+            case "new":{
+              let { banks } = await getUser({_id: current_user?._id}) 
+              await User.updateOne({ _id: current_user?._id }, { banks: [...banks, ...data] } );
+              break;
+            }
+    
+            case "delete":{
+              let { banks } = await getUser({_id: current_user?._id}) 
+              let newBanks = _.filter(banks, (bank)=>!_.isEqual(bank?._id.toString(), data))
+              console.log("me_bank: ", input, banks, newBanks)
+              await User.updateOne({ _id: current_user?._id }, { banks: newBanks } );
+              break;
+            }
+          }
           break;
         }
 
-        case "delete":{
-          let { banks } = await getUser({_id: current_user?._id}) 
-          let newBanks = _.filter(banks, (bank)=>!_.isEqual(bank?._id.toString(), data))
-          console.log("me_bank: ", input, banks, newBanks)
-          await User.updateOne({ _id: current_user?._id }, { banks: newBanks } );
+        case "avatar":{
+          let fileObject = data?.file
+  
+          const { createReadStream, filename, encoding, mimetype } = fileObject //await input.files[i];
+          const stream = createReadStream();
+          const assetUniqName = fileRenamer(filename);
+          let pathName = `/app/uploads/${assetUniqName}`;
+          
+          const output = fs.createWriteStream(pathName)
+          stream.pipe(output);
+  
+          await new Promise(function (resolve, reject) {
+            output.on('close', () => {
+              resolve();
+            });
+      
+            output.on('error', (err) => {
+              logger.error(err.toString());
+  
+              reject(err);
+            });
+          });
+  
+          const urlForArray = `${process.env.RA_HOST}${assetUniqName}`
+          await User.updateOne({ _id: current_user?._id }, { avatar: { url: urlForArray, filename, encoding, mimetype } } );
+        
           break;
         }
       }
-      // pubsub.publish("ME", {
-      //   me: { mutation: "UPDATE", data: user },
-      // });
+
       return {
         status: true,
+        type,
         mode,
         data: await getUser({_id: current_user?._id}),
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
 
-    async me_profile(parent, args, context, info) {
-      let start = Date.now()
-      let { input } = args
-      let { req } = context
+    // async me_bank(parent, args, context, info) {
+    //   let start = Date.now()
+    //   let { input } = args
+    //   let { req } = context
 
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
-      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+    //   let { mode, data } = input
+      
+    //   let { status, code, pathname, current_user } =  await checkAuthorization(req);
+    //   if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      let { avatar } = input
-      try{
-        let fileObject = avatar?.file
+    //   switch(mode){
+    //     case "new":{
+    //       let { banks } = await getUser({_id: current_user?._id}) 
+    //       await User.updateOne({ _id: current_user?._id }, { banks: [...banks, ...data] } );
+    //       break;
+    //     }
 
-        const { createReadStream, filename, encoding, mimetype } = fileObject //await input.files[i];
-        const stream = createReadStream();
-        const assetUniqName = fileRenamer(filename);
-        let pathName = `/app/uploads/${assetUniqName}`;
+    //     case "delete":{
+    //       let { banks } = await getUser({_id: current_user?._id}) 
+    //       let newBanks = _.filter(banks, (bank)=>!_.isEqual(bank?._id.toString(), data))
+    //       console.log("me_bank: ", input, banks, newBanks)
+    //       await User.updateOne({ _id: current_user?._id }, { banks: newBanks } );
+    //       break;
+    //     }
+    //   }
+    //   // pubsub.publish("ME", {
+    //   //   me: { mutation: "UPDATE", data: user },
+    //   // });
+    //   return {
+    //     status: true,
+    //     mode,
+    //     data: await getUser({_id: current_user?._id}),
+    //     executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+    //   }
+    // },
+
+    // async me_profile(parent, args, context, info) {
+    //   let start = Date.now()
+    //   let { input } = args
+    //   let { req } = context
+
+    //   let { status, code, pathname, current_user } =  await checkAuthorization(req);
+    //   if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+
+    //   let { avatar } = input
+    //   try{
+    //     let fileObject = avatar?.file
+
+    //     const { createReadStream, filename, encoding, mimetype } = fileObject //await input.files[i];
+    //     const stream = createReadStream();
+    //     const assetUniqName = fileRenamer(filename);
+    //     let pathName = `/app/uploads/${assetUniqName}`;
         
-        const output = fs.createWriteStream(pathName)
-        stream.pipe(output);
+    //     const output = fs.createWriteStream(pathName)
+    //     stream.pipe(output);
 
-        await new Promise(function (resolve, reject) {
-          output.on('close', () => {
-            resolve();
-          });
+    //     await new Promise(function (resolve, reject) {
+    //       output.on('close', () => {
+    //         resolve();
+    //       });
     
-          output.on('error', (err) => {
-            logger.error(err.toString());
+    //       output.on('error', (err) => {
+    //         logger.error(err.toString());
 
-            reject(err);
-          });
-        });
+    //         reject(err);
+    //       });
+    //     });
 
-        const urlForArray = `${process.env.RA_HOST}${assetUniqName}`
-        await User.updateOne({ _id: current_user?._id }, { avatar: { url: urlForArray, filename, encoding, mimetype } } );
+    //     const urlForArray = `${process.env.RA_HOST}${assetUniqName}`
+    //     await User.updateOne({ _id: current_user?._id }, { avatar: { url: urlForArray, filename, encoding, mimetype } } );
      
-        return {
-          status: true,
-          data: await getUser({_id: current_user?._id}),
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-        }
-      } catch(err) {
-        logger.error(err.toString());
+    //     return {
+    //       status: true,
+    //       data: await getUser({_id: current_user?._id}),
+    //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+    //     }
+    //   } catch(err) {
+    //     logger.error(err.toString());
 
-        return {
-          status: false,
-          message: err.toString(),
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-        }
-      }
-    },
+    //     return {
+    //       status: false,
+    //       message: err.toString(),
+    //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+    //     }
+    //   }
+    // },
 
     async book(parent, args, context, info) {
       let start = Date.now()
