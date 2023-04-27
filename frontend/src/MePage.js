@@ -184,6 +184,9 @@ const MePage = (props) => {
                             </div>
                             <div> Display name : {user?.displayName} </div>
                             <div> Email : {user?.email} </div>
+
+                            <div> Balance : {user?.balance} [-{user?.balanceBook}] </div>
+                            {/* <div> Balance book : {user?.balanceBook} </div> */}
                             <div>
                                 <Accordion 
                                     expanded={expanded}

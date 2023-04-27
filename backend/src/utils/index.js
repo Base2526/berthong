@@ -213,16 +213,6 @@ export const checkBalance = async(userId) =>{
             }
         })), (i)=> !_.isNull(i))
 
-        // console.log("inTheCarts :", balance, inTheCarts)
-        return {balance, transitions, inTheCarts}
-    } catch(err) {
-        console.log(" err o checkBalance :", err.message)
-        return {balance: 0, transitions: [], inTheCarts: []}
-    }
-}
-
-export const checkBalanceBook = async(userId) =>{
-    try{
         let suppliers = await Supplier.find({buys: { $elemMatch : {userId}}})
         let prices  =   _.filter( await Promise.all(_.map(suppliers, async(supplier)=>{
                             let { price, buys } = supplier;
@@ -230,12 +220,30 @@ export const checkBalanceBook = async(userId) =>{
                             return price * filters.length
                         })), (p)=>p!=0)
 
-        return _.reduce(prices, (ps, i) => ps + i, 0);
+        let balanceBook =  _.reduce(prices, (ps, i) => ps + i, 0);
+
+        return {balance, transitions, inTheCarts, balanceBook}
     } catch(err) {
-        console.log("error :", err)
-        return 0;
+        console.log(" err o checkBalance :", err.message)
+        return {balance: 0, transitions: [], inTheCarts: []}
     }
 }
+
+// export const checkBalanceBook = async(userId) =>{
+//     try{
+//         let suppliers = await Supplier.find({buys: { $elemMatch : {userId}}})
+//         let prices  =   _.filter( await Promise.all(_.map(suppliers, async(supplier)=>{
+//                             let { price, buys } = supplier;
+//                             let filters = _.filter(buys, (buy)=> _.isEqual(buy.userId, userId) && buy.selected == 0 )
+//                             return price * filters.length
+//                         })), (p)=>p!=0)
+
+//         return _.reduce(prices, (ps, i) => ps + i, 0);
+//     } catch(err) {
+//         console.log("error :", err)
+//         return 0;
+//     }
+// }
 
 export const checkRole = (user) =>{
     if(user?.roles){

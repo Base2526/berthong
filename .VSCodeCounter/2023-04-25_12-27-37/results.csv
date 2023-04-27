@@ -1,0 +1,207 @@
+"filename", "language", "Shell Script", "Markdown", "JSON", "JavaScript", "XML", "SCSS", "CSS", "HTML", "JavaScript JSX", "YAML", "comment", "blank", "total"
+"d:\Documents\GitHub\berthong\README.md", "Markdown", 0, 217, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 217
+"d:\Documents\GitHub\berthong\backend\README.md", "Markdown", 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2
+"d:\Documents\GitHub\berthong\backend\package-lock.json", "JSON", 0, 0, 16686, 0, 0, 0, 0, 0, 0, 0, 0, 1, 16687
+"d:\Documents\GitHub\berthong\backend\package.json", "JSON", 0, 0, 67, 0, 0, 0, 0, 0, 0, 0, 0, 1, 68
+"d:\Documents\GitHub\berthong\backend\src\cache\index.js", "JavaScript", 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 6, 26
+"d:\Documents\GitHub\berthong\backend\src\constants.js", "JavaScript", 0, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 5, 24
+"d:\Documents\GitHub\berthong\backend\src\cron-jobs.js", "JavaScript", 0, 0, 0, 53, 0, 0, 0, 0, 0, 0, 6, 15, 74
+"d:\Documents\GitHub\berthong\backend\src\elastic\index.js", "JavaScript", 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 1, 3, 15
+"d:\Documents\GitHub\berthong\backend\src\index-v3.js", "JavaScript", 0, 0, 0, 88, 0, 0, 0, 0, 0, 0, 100, 32, 220
+"d:\Documents\GitHub\berthong\backend\src\index.js", "JavaScript", 0, 0, 0, 102, 0, 0, 0, 0, 0, 0, 156, 48, 306
+"d:\Documents\GitHub\berthong\backend\src\model\BankModel.js", "JavaScript", 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 3, 15
+"d:\Documents\GitHub\berthong\backend\src\model\BasicContentModel.js", "JavaScript", 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 3, 14
+"d:\Documents\GitHub\berthong\backend\src\model\BookmarkModel.js", "JavaScript", 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 4, 17
+"d:\Documents\GitHub\berthong\backend\src\model\CommentModel.js", "JavaScript", 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 26, 3, 53
+"d:\Documents\GitHub\berthong\backend\src\model\ContactUsModel.js", "JavaScript", 0, 0, 0, 18, 0, 0, 0, 0, 0, 0, 0, 3, 21
+"d:\Documents\GitHub\berthong\backend\src\model\ConversationModel.js", "JavaScript", 0, 0, 0, 19, 0, 0, 0, 0, 0, 0, 22, 8, 49
+"d:\Documents\GitHub\berthong\backend\src\model\DateLotteryModel.js", "JavaScript", 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 1, 2, 15
+"d:\Documents\GitHub\berthong\backend\src\model\DblogModel.js", "JavaScript", 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 3, 16
+"d:\Documents\GitHub\berthong\backend\src\model\DepositModel.js", "JavaScript", 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 5, 5, 42
+"d:\Documents\GitHub\berthong\backend\src\model\FollowModel.js", "JavaScript", 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 4, 17
+"d:\Documents\GitHub\berthong\backend\src\model\MailModel.js", "JavaScript", 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 3, 15
+"d:\Documents\GitHub\berthong\backend\src\model\MessageModel.js", "JavaScript", 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 5, 29
+"d:\Documents\GitHub\berthong\backend\src\model\NotificationModel.js", "JavaScript", 0, 0, 0, 18, 0, 0, 0, 0, 0, 0, 0, 2, 20
+"d:\Documents\GitHub\berthong\backend\src\model\PhoneModel.js", "JavaScript", 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 3, 15
+"d:\Documents\GitHub\berthong\backend\src\model\PostModel.js", "JavaScript", 0, 0, 0, 42, 0, 0, 0, 0, 0, 0, 0, 8, 50
+"d:\Documents\GitHub\berthong\backend\src\model\ReportModel.js", "JavaScript", 0, 0, 0, 14, 0, 0, 0, 0, 0, 0, 0, 4, 18
+"d:\Documents\GitHub\berthong\backend\src\model\RoleModel.js", "JavaScript", 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 3, 15
+"d:\Documents\GitHub\berthong\backend\src\model\RoomModel.js", "JavaScript", 0, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 3, 22
+"d:\Documents\GitHub\berthong\backend\src\model\SessionModel.js", "JavaScript", 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 2, 15
+"d:\Documents\GitHub\berthong\backend\src\model\ShareModel.js", "JavaScript", 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 4, 17
+"d:\Documents\GitHub\berthong\backend\src\model\SocketModel.js", "JavaScript", 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 4, 16
+"d:\Documents\GitHub\berthong\backend\src\model\SupplierModel.js", "JavaScript", 0, 0, 0, 53, 0, 0, 0, 0, 0, 0, 0, 6, 59
+"d:\Documents\GitHub\berthong\backend\src\model\TransitionModel.js", "JavaScript", 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 4, 28
+"d:\Documents\GitHub\berthong\backend\src\model\UserModel.js", "JavaScript", 0, 0, 0, 48, 0, 0, 0, 0, 0, 0, 0, 5, 53
+"d:\Documents\GitHub\berthong\backend\src\model\WithdrawModel.js", "JavaScript", 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 1, 3, 28
+"d:\Documents\GitHub\berthong\backend\src\model\index.js", "JavaScript", 0, 0, 0, 52, 0, 0, 0, 0, 0, 0, 0, 29, 81
+"d:\Documents\GitHub\berthong\backend\src\model\tReportModel.js", "JavaScript", 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 1, 13
+"d:\Documents\GitHub\berthong\backend\src\mongo\index.js", "JavaScript", 0, 0, 0, 281, 0, 0, 0, 0, 0, 0, 45, 52, 378
+"d:\Documents\GitHub\berthong\backend\src\pubsub.js", "JavaScript", 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 2, 6
+"d:\Documents\GitHub\berthong\backend\src\resolvers.js", "JavaScript", 0, 0, 0, 1315, 0, 0, 0, 0, 0, 0, 452, 401, 2168
+"d:\Documents\GitHub\berthong\backend\src\typeDefs.js", "JavaScript", 0, 0, 0, 702, 0, 0, 0, 0, 0, 0, 0, 116, 818
+"d:\Documents\GitHub\berthong\backend\src\utils\AppError.js", "JavaScript", 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 9, 8, 25
+"d:\Documents\GitHub\berthong\backend\src\utils\index.js", "JavaScript", 0, 0, 0, 183, 0, 0, 0, 0, 0, 0, 44, 53, 280
+"d:\Documents\GitHub\berthong\backend\src\utils\logger.js", "JavaScript", 0, 0, 0, 116, 0, 0, 0, 0, 0, 0, 79, 28, 223
+"d:\Documents\GitHub\berthong\docker-compose.dev.yml", "YAML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 41, 74, 7, 122
+"d:\Documents\GitHub\berthong\docker-compose.prod.yml", "YAML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 54, 21, 4, 79
+"d:\Documents\GitHub\berthong\docker-compose.ui.yml", "YAML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 0, 1, 13
+"d:\Documents\GitHub\berthong\frontend\README.md", "Markdown", 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 6
+"d:\Documents\GitHub\berthong\frontend\package-lock.json", "JSON", 0, 0, 42683, 0, 0, 0, 0, 0, 0, 0, 0, 1, 42684
+"d:\Documents\GitHub\berthong\frontend\package.json", "JSON", 0, 0, 137, 0, 0, 0, 0, 0, 0, 0, 0, 1, 138
+"d:\Documents\GitHub\berthong\frontend\public\index.html", "HTML", 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 23, 1, 44
+"d:\Documents\GitHub\berthong\frontend\public\manifest.json", "JSON", 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0, 1, 26
+"d:\Documents\GitHub\berthong\frontend\src\AdminHomePage.js", "JavaScript", 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 160, 21, 327
+"d:\Documents\GitHub\berthong\frontend\src\Apollo.js", "JavaScript", 0, 0, 0, 151, 0, 0, 0, 0, 0, 0, 74, 31, 256
+"d:\Documents\GitHub\berthong\frontend\src\App.css", "CSS", 0, 0, 0, 0, 0, 0, 954, 0, 0, 0, 39, 82, 1075
+"d:\Documents\GitHub\berthong\frontend\src\App.js", "JavaScript", 0, 0, 0, 1026, 0, 0, 0, 0, 0, 0, 227, 110, 1363
+"d:\Documents\GitHub\berthong\frontend\src\AttackFileField.js", "JavaScript", 0, 0, 0, 34, 0, 0, 0, 0, 0, 0, 126, 4, 164
+"d:\Documents\GitHub\berthong\frontend\src\AutoGenerationContent.js", "JavaScript", 0, 0, 0, 137, 0, 0, 0, 0, 0, 0, 6, 17, 160
+"d:\Documents\GitHub\berthong\frontend\src\BankPage.js", "JavaScript", 0, 0, 0, 37, 0, 0, 0, 0, 0, 0, 39, 13, 89
+"d:\Documents\GitHub\berthong\frontend\src\BanksPage.js", "JavaScript", 0, 0, 0, 135, 0, 0, 0, 0, 0, 0, 6, 15, 156
+"d:\Documents\GitHub\berthong\frontend\src\BookMarksPage.js", "JavaScript", 0, 0, 0, 95, 0, 0, 0, 0, 0, 0, 7, 10, 112
+"d:\Documents\GitHub\berthong\frontend\src\ContactUsPage.js", "JavaScript", 0, 0, 0, 86, 0, 0, 0, 0, 0, 0, 0, 10, 96
+"d:\Documents\GitHub\berthong\frontend\src\DateLotteryPage.js", "JavaScript", 0, 0, 0, 118, 0, 0, 0, 0, 0, 0, 28, 24, 170
+"d:\Documents\GitHub\berthong\frontend\src\DateLotterysPage.js", "JavaScript", 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 138, 23, 307
+"d:\Documents\GitHub\berthong\frontend\src\DepositPage.js", "JavaScript", 0, 0, 0, 256, 0, 0, 0, 0, 0, 0, 4, 22, 282
+"d:\Documents\GitHub\berthong\frontend\src\DepositsPage.js", "JavaScript", 0, 0, 0, 315, 0, 0, 0, 0, 0, 0, 33, 32, 380
+"d:\Documents\GitHub\berthong\frontend\src\DialogBuy.js", "JavaScript", 0, 0, 0, 67, 0, 0, 0, 0, 0, 0, 3, 11, 81
+"d:\Documents\GitHub\berthong\frontend\src\FriendPage.js", "JavaScript", 0, 0, 0, 143, 0, 0, 0, 0, 0, 0, 16, 19, 178
+"d:\Documents\GitHub\berthong\frontend\src\HistoryTransitionsPage.js", "JavaScript", 0, 0, 0, 109, 0, 0, 0, 0, 0, 0, 160, 26, 295
+"d:\Documents\GitHub\berthong\frontend\src\HomePage.js", "JavaScript", 0, 0, 0, 295, 0, 0, 0, 0, 0, 0, 5, 36, 336
+"d:\Documents\GitHub\berthong\frontend\src\LoginPage.js", "JavaScript", 0, 0, 0, 69, 0, 0, 0, 0, 0, 0, 0, 12, 81
+"d:\Documents\GitHub\berthong\frontend\src\LoginWithLine.js", "JavaScript", 0, 0, 0, 55, 0, 0, 0, 0, 0, 0, 0, 11, 66
+"d:\Documents\GitHub\berthong\frontend\src\MeBookBuysPage.js", "JavaScript", 0, 0, 0, 149, 0, 0, 0, 0, 0, 0, 7, 16, 172
+"d:\Documents\GitHub\berthong\frontend\src\MePage.js", "JavaScript", 0, 0, 0, 101, 0, 0, 0, 0, 0, 0, 128, 7, 236
+"d:\Documents\GitHub\berthong\frontend\src\NotificationsPage.js", "JavaScript", 0, 0, 0, 110, 0, 0, 0, 0, 0, 0, 7, 18, 135
+"d:\Documents\GitHub\berthong\frontend\src\Redux.js", "JavaScript", 0, 0, 0, 48, 0, 0, 0, 0, 0, 0, 12, 14, 74
+"d:\Documents\GitHub\berthong\frontend\src\Store.js", "JavaScript", 0, 0, 0, 51, 0, 0, 0, 0, 0, 0, 0, 6, 57
+"d:\Documents\GitHub\berthong\frontend\src\SubscribesPage.js", "JavaScript", 0, 0, 0, 96, 0, 0, 0, 0, 0, 0, 7, 11, 114
+"d:\Documents\GitHub\berthong\frontend\src\SupplierPage.js", "JavaScript", 0, 0, 0, 277, 0, 0, 0, 0, 0, 0, 3, 26, 306
+"d:\Documents\GitHub\berthong\frontend\src\SuppliersPage.js", "JavaScript", 0, 0, 0, 182, 0, 0, 0, 0, 0, 0, 8, 20, 210
+"d:\Documents\GitHub\berthong\frontend\src\TaxonomyBankPage.js", "JavaScript", 0, 0, 0, 90, 0, 0, 0, 0, 0, 0, 24, 17, 131
+"d:\Documents\GitHub\berthong\frontend\src\TaxonomyBanksPage.js", "JavaScript", 0, 0, 0, 125, 0, 0, 0, 0, 0, 0, 9, 13, 147
+"d:\Documents\GitHub\berthong\frontend\src\UserPage.js", "JavaScript", 0, 0, 0, 130, 0, 0, 0, 0, 0, 0, 108, 18, 256
+"d:\Documents\GitHub\berthong\frontend\src\UsersPage.js", "JavaScript", 0, 0, 0, 166, 0, 0, 0, 0, 0, 0, 4, 19, 189
+"d:\Documents\GitHub\berthong\frontend\src\WithdrawPage.js", "JavaScript", 0, 0, 0, 124, 0, 0, 0, 0, 0, 0, 46, 14, 184
+"d:\Documents\GitHub\berthong\frontend\src\WithdrawsPage.js", "JavaScript", 0, 0, 0, 204, 0, 0, 0, 0, 0, 0, 33, 25, 262
+"d:\Documents\GitHub\berthong\frontend\src\components\BankComp.js", "JavaScript", 0, 0, 0, 35, 0, 0, 0, 0, 0, 0, 0, 7, 42
+"d:\Documents\GitHub\berthong\frontend\src\components\BreadcsComp.js", "JavaScript", 0, 0, 0, 262, 0, 0, 0, 0, 0, 0, 1, 36, 299
+"d:\Documents\GitHub\berthong\frontend\src\components\CommentComp.js", "JavaScript", 0, 0, 0, 88, 0, 0, 0, 0, 0, 0, 0, 15, 103
+"d:\Documents\GitHub\berthong\frontend\src\components\DialogDeleteBankComp.js", "JavaScript", 0, 0, 0, 35, 0, 0, 0, 0, 0, 0, 0, 5, 40
+"d:\Documents\GitHub\berthong\frontend\src\components\DialogLoginComp.js", "JavaScript", 0, 0, 0, 161, 0, 0, 0, 0, 0, 0, 15, 19, 195
+"d:\Documents\GitHub\berthong\frontend\src\components\DialogLogoutComp.js", "JavaScript", 0, 0, 0, 34, 0, 0, 0, 0, 0, 0, 0, 4, 38
+"d:\Documents\GitHub\berthong\frontend\src\components\LightboxComp.js", "JavaScript", 0, 0, 0, 41, 0, 0, 0, 0, 0, 0, 0, 5, 46
+"d:\Documents\GitHub\berthong\frontend\src\components\RolesComp.js", "JavaScript", 0, 0, 0, 35, 0, 0, 0, 0, 0, 0, 0, 8, 43
+"d:\Documents\GitHub\berthong\frontend\src\components\SearchComp.js", "JavaScript", 0, 0, 0, 202, 0, 0, 0, 0, 0, 0, 33, 12, 247
+"d:\Documents\GitHub\berthong\frontend\src\components\SkeletonComp.js", "JavaScript", 0, 0, 0, 27, 0, 0, 0, 0, 0, 0, 0, 2, 29
+"d:\Documents\GitHub\berthong\frontend\src\components\TableComp.js", "JavaScript", 0, 0, 0, 250, 0, 0, 0, 0, 0, 0, 57, 23, 330
+"d:\Documents\GitHub\berthong\frontend\src\components\UserComp.js", "JavaScript", 0, 0, 0, 55, 0, 0, 0, 0, 0, 0, 1, 9, 65
+"d:\Documents\GitHub\berthong\frontend\src\components\comment\ActionContext.js", "JavaScript", 0, 0, 0, 140, 0, 0, 0, 0, 0, 0, 27, 16, 183
+"d:\Documents\GitHub\berthong\frontend\src\components\comment\CommentSection.js", "JavaScript", 0, 0, 0, 44, 0, 0, 0, 0, 0, 0, 0, 6, 50
+"d:\Documents\GitHub\berthong\frontend\src\components\comment\CommentStructure.js", "JavaScript", 0, 0, 0, 224, 0, 0, 0, 0, 0, 0, 29, 31, 284
+"d:\Documents\GitHub\berthong\frontend\src\components\comment\DisplayComments.js", "JavaScript", 0, 0, 0, 91, 0, 0, 0, 0, 0, 0, 0, 1, 92
+"d:\Documents\GitHub\berthong\frontend\src\components\comment\Input.js", "JavaScript", 0, 0, 0, 17, 0, 0, 0, 0, 0, 0, 0, 3, 20
+"d:\Documents\GitHub\berthong\frontend\src\components\comment\InputField.js", "JavaScript", 0, 0, 0, 37, 0, 0, 0, 0, 0, 0, 0, 6, 43
+"d:\Documents\GitHub\berthong\frontend\src\components\comment\SignField.js", "JavaScript", 0, 0, 0, 27, 0, 0, 0, 0, 0, 0, 10, 7, 44
+"d:\Documents\GitHub\berthong\frontend\src\components\comment\index.css", "CSS", 0, 0, 0, 0, 0, 0, 194, 0, 0, 0, 17, 3, 214
+"d:\Documents\GitHub\berthong\frontend\src\components\comment\index.js", "JavaScript", 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\App.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 2, 12
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\QuillEditor\CustomToolbar.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 41, 0, 0, 1, 42
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\QuillEditor\Editor.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 41, 0, 2, 7, 50
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\QuillEditor\Editor2.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 125, 0, 0, 5, 130
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\QuillEditor\ToolbarOptions.js", "JavaScript", 0, 0, 0, 84, 0, 0, 0, 0, 0, 0, 0, 3, 87
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\QuillEditor\tools.js", "JavaScript", 0, 0, 0, 33, 0, 0, 0, 0, 0, 0, 1, 1, 35
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Editor.css", "CSS", 0, 0, 0, 0, 0, 0, 45, 0, 0, 0, 10, 1, 56
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Editor.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 170, 0, 4, 16, 190
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Color Picker\ColorPicker.css", "CSS", 0, 0, 0, 0, 0, 0, 36, 0, 0, 0, 0, 3, 39
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Color Picker\ColorPicker.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 104, 0, 0, 7, 111
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Color Picker\defaultColors.js", "JavaScript", 0, 0, 0, 34, 0, 0, 0, 0, 0, 0, 0, 0, 34
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Embed\Embed.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 48, 0, 0, 2, 50
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Image\Image.css", "CSS", 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Image\Image.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 1, 23
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Link\Link.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 2, 24
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Link\LinkButton.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 17, 0, 0, 2, 19
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Link\styles.css", "CSS", 0, 0, 0, 0, 0, 0, 19, 0, 0, 0, 0, 0, 19
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Table\InTable.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 39, 0, 0, 4, 43
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Table\Table.css", "CSS", 0, 0, 0, 0, 0, 0, 18, 0, 0, 0, 0, 1, 19
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Table\Table.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 81, 0, 0, 5, 86
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Video\Video.css", "CSS", 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 1, 9
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Video\Video.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 3, 23
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\Toolbar.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 83, 0, 81, 14, 178
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\styles.css", "CSS", 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 3, 2, 35
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarGroups.js", "JavaScript", 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 125, 3, 153
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\align-center.svg", "XML", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\align-left.svg", "XML", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\align-right.svg", "XML", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\blockquote.svg", "XML", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\fontColor.svg", "XML", 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 1, 5
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\headingOne.svg", "XML", 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\headingTwo.svg", "XML", 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\link.svg", "XML", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\orderedList.svg", "XML", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\subscript.svg", "XML", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\superscript.svg", "XML", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\unlink.svg", "XML", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\unorderedList.svg", "XML", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\common\Button.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 2, 12
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\common\Icon.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 36, 10, 64
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\plugins\withEmbeds.js", "JavaScript", 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 4, 11
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\plugins\withLinks.js", "JavaScript", 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 2, 9
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\plugins\withTable.js", "JavaScript", 0, 0, 0, 75, 0, 0, 0, 0, 0, 0, 0, 16, 91
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\utils\SlateUtilityFunctions.js", "JavaScript", 0, 0, 0, 89, 0, 0, 0, 0, 0, 0, 3, 10, 102
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\utils\embed.js", "JavaScript", 0, 0, 0, 27, 0, 0, 0, 0, 0, 0, 0, 3, 30
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\utils\link.js", "JavaScript", 0, 0, 0, 44, 0, 0, 0, 0, 0, 0, 1, 7, 52
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\utils\paragraph.js", "JavaScript", 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 4
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\utils\table.js", "JavaScript", 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 12, 112
+"d:\Documents\GitHub\berthong\frontend\src\components\editable\TestComp.jsx", "JavaScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 1, 4, 20
+"d:\Documents\GitHub\berthong\frontend\src\constants.js", "JavaScript", 0, 0, 0, 42, 0, 0, 0, 0, 0, 0, 3, 15, 60
+"d:\Documents\GitHub\berthong\frontend\src\editor\Editor.js", "JavaScript", 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 2, 7, 41
+"d:\Documents\GitHub\berthong\frontend\src\fields\BankInputField.js", "JavaScript", 0, 0, 0, 132, 0, 0, 0, 0, 0, 0, 2, 17, 151
+"d:\Documents\GitHub\berthong\frontend\src\fields\InputPasswordField.js", "JavaScript", 0, 0, 0, 21, 0, 0, 0, 0, 0, 0, 0, 3, 24
+"d:\Documents\GitHub\berthong\frontend\src\gqlQuery.js", "JavaScript", 0, 0, 0, 47, 0, 0, 0, 0, 0, 0, 5, 4, 56
+"d:\Documents\GitHub\berthong\frontend\src\helpers\ReadMoreMaster.js", "JavaScript", 0, 0, 0, 55, 0, 0, 0, 0, 0, 0, 1, 9, 65
+"d:\Documents\GitHub\berthong\frontend\src\helpers\data.js", "JavaScript", 0, 0, 0, 500, 0, 0, 0, 0, 0, 0, 1, 20, 521
+"d:\Documents\GitHub\berthong\frontend\src\index.js", "JavaScript", 0, 0, 0, 42, 0, 0, 0, 0, 0, 0, 5, 7, 54
+"d:\Documents\GitHub\berthong\frontend\src\item\AdminHomeItem.js", "JavaScript", 0, 0, 0, 31, 0, 0, 0, 0, 0, 0, 9, 5, 45
+"d:\Documents\GitHub\berthong\frontend\src\item\HomeItem.js", "JavaScript", 0, 0, 0, 165, 0, 0, 0, 0, 0, 0, 7, 6, 178
+"d:\Documents\GitHub\berthong\frontend\src\item\ItemShare.js", "JavaScript", 0, 0, 0, 19, 0, 0, 0, 0, 0, 0, 42, 16, 77
+"d:\Documents\GitHub\berthong\frontend\src\line.svg", "XML", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1
+"d:\Documents\GitHub\berthong\frontend\src\logo.svg", "XML", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1
+"d:\Documents\GitHub\berthong\frontend\src\pages\detail\Detail.js", "JavaScript", 0, 0, 0, 191, 0, 0, 0, 0, 0, 0, 2, 37, 230
+"d:\Documents\GitHub\berthong\frontend\src\pages\detail\DetailPanelLeft.js", "JavaScript", 0, 0, 0, 41, 0, 0, 0, 0, 0, 0, 0, 3, 44
+"d:\Documents\GitHub\berthong\frontend\src\pages\detail\DetailPanelRight.js", "JavaScript", 0, 0, 0, 291, 0, 0, 0, 0, 0, 0, 47, 15, 353
+"d:\Documents\GitHub\berthong\frontend\src\pages\detail\PopupCart.js", "JavaScript", 0, 0, 0, 52, 0, 0, 0, 0, 0, 0, 0, 7, 59
+"d:\Documents\GitHub\berthong\frontend\src\pages\detail\PopupWallet.js", "JavaScript", 0, 0, 0, 54, 0, 0, 0, 0, 0, 0, 0, 5, 59
+"d:\Documents\GitHub\berthong\frontend\src\pages\detail\detail.css", "CSS", 0, 0, 0, 0, 0, 0, 2134, 0, 0, 0, 311, 194, 2639
+"d:\Documents\GitHub\berthong\frontend\src\pages\detail\index.js", "JavaScript", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1
+"d:\Documents\GitHub\berthong\frontend\src\pages\detail\seat.css", "CSS", 0, 0, 0, 0, 0, 0, 262, 0, 0, 0, 74, 25, 361
+"d:\Documents\GitHub\berthong\frontend\src\pages\detail\wallet.css", "CSS", 0, 0, 0, 0, 0, 0, 407, 0, 0, 0, 43, 76, 526
+"d:\Documents\GitHub\berthong\frontend\src\redux\actions\auth.js", "JavaScript", 0, 0, 0, 70, 0, 0, 0, 0, 0, 0, 1, 26, 97
+"d:\Documents\GitHub\berthong\frontend\src\redux\actions\ws.js", "JavaScript", 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 3, 12
+"d:\Documents\GitHub\berthong\frontend\src\redux\reducers\auth.js", "JavaScript", 0, 0, 0, 129, 0, 0, 0, 0, 0, 0, 34, 43, 206
+"d:\Documents\GitHub\berthong\frontend\src\redux\reducers\index.js", "JavaScript", 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 2, 9
+"d:\Documents\GitHub\berthong\frontend\src\redux\reducers\ws.js", "JavaScript", 0, 0, 0, 17, 0, 0, 0, 0, 0, 0, 1, 3, 21
+"d:\Documents\GitHub\berthong\frontend\src\reportWebVitals.js", "JavaScript", 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 2, 14
+"d:\Documents\GitHub\berthong\frontend\src\setupTests.js", "JavaScript", 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 4, 1, 6
+"d:\Documents\GitHub\berthong\frontend\src\skeleton.scss", "SCSS", 0, 0, 0, 0, 0, 49, 0, 0, 0, 0, 0, 11, 60
+"d:\Documents\GitHub\berthong\frontend\src\sum.js", "JavaScript", 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 4
+"d:\Documents\GitHub\berthong\frontend\src\sum.test.js", "JavaScript", 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 4
+"d:\Documents\GitHub\berthong\frontend\src\translations\en\translations.js", "JavaScript", 0, 0, 0, 54, 0, 0, 0, 0, 0, 0, 0, 0, 54
+"d:\Documents\GitHub\berthong\frontend\src\translations\i18n.js", "JavaScript", 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 6, 26
+"d:\Documents\GitHub\berthong\frontend\src\translations\th\translations.js", "JavaScript", 0, 0, 0, 55, 0, 0, 0, 0, 0, 0, 0, 30, 85
+"d:\Documents\GitHub\berthong\frontend\src\util.js", "JavaScript", 0, 0, 0, 124, 0, 0, 0, 0, 0, 0, 9, 27, 160
+"d:\Documents\GitHub\berthong\restore\16-11-2022\bank.json", "JSON", 0, 0, 443, 0, 0, 0, 0, 0, 0, 0, 0, 0, 443
+"d:\Documents\GitHub\berthong\restore\16-11-2022\basicContent.json", "JSON", 0, 0, 69, 0, 0, 0, 0, 0, 0, 0, 0, 0, 69
+"d:\Documents\GitHub\berthong\restore\16-11-2022\bookmark.json", "JSON", 0, 0, 217, 0, 0, 0, 0, 0, 0, 0, 0, 0, 217
+"d:\Documents\GitHub\berthong\restore\16-11-2022\comment.json", "JSON", 0, 0, 162, 0, 0, 0, 0, 0, 0, 0, 0, 0, 162
+"d:\Documents\GitHub\berthong\restore\16-11-2022\conversation.json", "JSON", 0, 0, 187, 0, 0, 0, 0, 0, 0, 0, 0, 0, 187
+"d:\Documents\GitHub\berthong\restore\16-11-2022\message.json", "JSON", 0, 0, 596, 0, 0, 0, 0, 0, 0, 0, 0, 0, 596
+"d:\Documents\GitHub\berthong\restore\16-11-2022\phone.json", "JSON", 0, 0, 49013, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49013
+"d:\Documents\GitHub\berthong\restore\16-11-2022\post.json", "JSON", 0, 0, 1459868, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1459868
+"d:\Documents\GitHub\berthong\restore\16-11-2022\role.json", "JSON", 0, 0, 52, 0, 0, 0, 0, 0, 0, 0, 0, 0, 52
+"d:\Documents\GitHub\berthong\restore\16-11-2022\tContactUs.json", "JSON", 0, 0, 52, 0, 0, 0, 0, 0, 0, 0, 0, 0, 52
+"d:\Documents\GitHub\berthong\restore\16-11-2022\user.json", "JSON", 0, 0, 52886, 0, 0, 0, 0, 0, 0, 0, 0, 0, 52886
+"d:\Documents\GitHub\berthong\restore\basicContent.json", "JSON", 0, 0, 52, 0, 0, 0, 0, 0, 0, 0, 0, 0, 52
+"d:\Documents\GitHub\berthong\restore\rs-setup.sh", "Shell Script", 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 6
+"Total", "-", 4, 223, 1623195, 13306, 22, 49, 4114, 20, 866, 107, 3593, 2672, 1648171

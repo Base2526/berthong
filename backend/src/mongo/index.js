@@ -281,11 +281,7 @@ const modelExists =()=>{
         let newDeposit = new Deposit({ accountNumber: "test", 
                                        userIdRequest: new mongoose.Types.ObjectId(), 
                                        userIdApprove: new mongoose.Types.ObjectId(),
-                                       bank: {
-                                        _id: new mongoose.Types.ObjectId(),
-                                        bankId: new mongoose.Types.ObjectId(),
-                                        bankNumber: "xx"
-                                       } });
+                                       bankId: "bankId" });
         await newDeposit.save();
         await Deposit.deleteMany({})
       }

@@ -57,3 +57,5 @@ export const INIT_SEARCH = {
     CHK_MONEY: false,
     CHK_GOLD: false
 }
+
+export const BANKS=[{label: '(xxx-x-xxxxx-x)ธนาคารไทยพาณิชย์', id: "bank-01" },{ label: '(xxx-x-xxxxx-x)ธนาคารกสิกรไทย', id: "bank-02" }]

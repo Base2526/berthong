@@ -27,6 +27,8 @@ if (REACT_APP_NODE_ENV === 'production') {
   console.debug = () => {}
 }
 
+// console.log("process.env :", process.env)
+
 // const styleLink = document.createElement("link");
 // styleLink.rel = "stylesheet";
 // styleLink.href = "https://use.fontawesome.com/releases/v5.15.3/css/all.css";

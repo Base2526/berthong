@@ -76,12 +76,9 @@ export const TRANSLATIONS_TH = {
 
     bank_account_number: "เลขบัญชีธนาคาร",
     bank_account_name: "ชื่อบัญชีธนาคาร",
-
     report: "รายงาน",
-
     editable_placeholder: "กรอกรายละเอียด คอมเม้นต์?",
-
     bookmark: "บุ๊กมาร์ก",
-
-    send: "ส่ง"
+    send: "ส่ง",
+    withdraw: "ถอดเงิน"
 };

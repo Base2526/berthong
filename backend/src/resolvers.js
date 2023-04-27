@@ -20,7 +20,6 @@ import {  User,
 import pubsub from './pubsub'
 import {  emailValidate, 
           checkBalance, 
-          checkBalanceBook, 
           fileRenamer, 
           checkAuthorization, 
           checkAuthorizationWithSessionId, 
@@ -87,14 +86,9 @@ export default {
       if(!status && code == USER_NOT_FOUND) throw new AppError(USER_NOT_FOUND, 'User not found.')
 
       let user = await getUser({_id: current_user?._id}) 
-      if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
-
-      user =  { ...user, 
-                ...await checkBalance(current_user?._id),
-                balanceBook: await checkBalanceBook(current_user?._id)}
 
       return {  status: true,
-                data: user,
+                data: { ...user, ...await checkBalance(current_user?._id) },
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
               }
     },
@@ -779,7 +773,6 @@ export default {
       let {input} = args
 
       try{
-
         let user = emailValidate().test(input.username) ? await getUser({email: input.username}) : await getUser({username: input.username})
         
         if(_.isNull(user)) throw new AppError(USER_NOT_FOUND, 'User not found.')
@@ -787,20 +780,7 @@ export default {
         await User.updateOne({ _id: user?._id }, { lastAccess : Date.now() });
         user = await getUser({_id: user?._id}) 
 
-        // let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
-        //   return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
-        // }))  
-        
-        // let banks = _.filter(await Promise.all(_.map(user?.banks, async(item)=>{
-        //               let bank = await Bank.findById(item.bankId)
-        //               return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
-        //             })), e=>!_.isNull(e) ) 
-
-        user = {  ...user, 
-                  // banks,
-                  ...await checkBalance(user?._id),
-                  balanceBook: await checkBalanceBook(user?._id)
-                }
+        user = {  ...user, ...await checkBalance(user?._id) }
 
         return {
           status: true,
@@ -809,7 +789,6 @@ export default {
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
       }catch(error){
-        console.log("error :", error)
         return {
           status: false,
           error: error.message,
@@ -1184,8 +1163,6 @@ export default {
       let start = Date.now()
       let {input} = args
 
-      console.log("params register : ", input)
-
       let user = await getUser({ email: input.email } )
       if(!_.isNull(user)) throw new AppError(ERROR, 'Exiting email.')
 
@@ -1197,7 +1174,6 @@ export default {
                                   isOnline: true}
               
       await User.create(newInput);
-      // console.log("register : ", newInput)
       return {
         status: true,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
@@ -1208,83 +1184,11 @@ export default {
       let start = Date.now()
       let { input } = args
       let { req } = context
-
-      // if(input?.roles) throw new AppError(ERROR, 'Error cannot update roles!')
       
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      /*
-      // image
-      let newFiles = [];
-      if(!_.isEmpty(input.image)){
-
-        for (let i = 0; i < input.image.length; i++) {
-          try{
-            let fileObject = (await input.image[i]).file
-
-            if(!_.isEmpty(fileObject)){
-              const { createReadStream, filename, encoding, mimetype } = fileObject //await input.files[i];
-              const stream = createReadStream();
-              const assetUniqName = fileRenamer(filename);
-              let pathName = `/app/uploads/${assetUniqName}`;
-              
-              const output = fs.createWriteStream(pathName)
-              stream.pipe(output);
-    
-              await new Promise(function (resolve, reject) {
-                output.on('close', () => {
-                  resolve();
-                });
-          
-                output.on('error', (err) => {
-                  logger.error(err.toString());
-    
-                  reject(err);
-                });
-              });
-    
-              const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
-              newFiles.push({ url: urlForArray, filename, encoding, mimetype });
-            }else{
-              if(input.image[i].delete){
-                let pathUnlink = '/app/uploads/' + input.files[i].url.split('/').pop()
-                fs.unlink(pathUnlink, (err)=>{
-                    if (err) {
-                      logger.error(err);
-                    }else{
-                      // if no error, file has been deleted successfully
-                      console.log('File has been deleted successfully ', pathUnlink);
-                    }
-                });
-              }else{
-                newFiles = [...newFiles, input.image[i]]
-              }
-            }
-            // console.log("updatePost #6:", newFiles)
-          } catch(err) {
-            logger.error(err.toString());
-          }
-        }
-      }
-      let newInput = {...input, image:newFiles, lastAccess : Date.now()}
-      
-      await User.updateOne({ _id: current_user?._id }, newInput );
-      let user = await getUser({_id: current_user?._id}) 
-      
-      pubsub.publish("ME", {
-        me: { mutation: "UPDATE", data: user },
-      });
-
-      return {
-        status: true,
-        data: user,
-        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-      }
-      */
-
       let { type, mode, data } = input
-
       switch(type){
         case "bank":{
           switch(mode){
@@ -1335,101 +1239,21 @@ export default {
         }
       }
 
+      let user = await getUser({_id: current_user?._id}) 
+      user =  { ...user, ...await checkBalance(user?._id) }
+      
+      pubsub.publish("ME", {
+        me: { mutation: "UPDATE", data: user },
+      });
+
       return {
         status: true,
         type,
         mode,
-        data: await getUser({_id: current_user?._id}),
+        data: user,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
-
-    // async me_bank(parent, args, context, info) {
-    //   let start = Date.now()
-    //   let { input } = args
-    //   let { req } = context
-
-    //   let { mode, data } = input
-      
-    //   let { status, code, pathname, current_user } =  await checkAuthorization(req);
-    //   if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-
-    //   switch(mode){
-    //     case "new":{
-    //       let { banks } = await getUser({_id: current_user?._id}) 
-    //       await User.updateOne({ _id: current_user?._id }, { banks: [...banks, ...data] } );
-    //       break;
-    //     }
-
-    //     case "delete":{
-    //       let { banks } = await getUser({_id: current_user?._id}) 
-    //       let newBanks = _.filter(banks, (bank)=>!_.isEqual(bank?._id.toString(), data))
-    //       console.log("me_bank: ", input, banks, newBanks)
-    //       await User.updateOne({ _id: current_user?._id }, { banks: newBanks } );
-    //       break;
-    //     }
-    //   }
-    //   // pubsub.publish("ME", {
-    //   //   me: { mutation: "UPDATE", data: user },
-    //   // });
-    //   return {
-    //     status: true,
-    //     mode,
-    //     data: await getUser({_id: current_user?._id}),
-    //     executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-    //   }
-    // },
-
-    // async me_profile(parent, args, context, info) {
-    //   let start = Date.now()
-    //   let { input } = args
-    //   let { req } = context
-
-    //   let { status, code, pathname, current_user } =  await checkAuthorization(req);
-    //   if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-
-    //   let { avatar } = input
-    //   try{
-    //     let fileObject = avatar?.file
-
-    //     const { createReadStream, filename, encoding, mimetype } = fileObject //await input.files[i];
-    //     const stream = createReadStream();
-    //     const assetUniqName = fileRenamer(filename);
-    //     let pathName = `/app/uploads/${assetUniqName}`;
-        
-    //     const output = fs.createWriteStream(pathName)
-    //     stream.pipe(output);
-
-    //     await new Promise(function (resolve, reject) {
-    //       output.on('close', () => {
-    //         resolve();
-    //       });
-    
-    //       output.on('error', (err) => {
-    //         logger.error(err.toString());
-
-    //         reject(err);
-    //       });
-    //     });
-
-    //     const urlForArray = `${process.env.RA_HOST}${assetUniqName}`
-    //     await User.updateOne({ _id: current_user?._id }, { avatar: { url: urlForArray, filename, encoding, mimetype } } );
-     
-    //     return {
-    //       status: true,
-    //       data: await getUser({_id: current_user?._id}),
-    //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-    //     }
-    //   } catch(err) {
-    //     logger.error(err.toString());
-
-    //     return {
-    //       status: false,
-    //       message: err.toString(),
-    //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-    //     }
-    //   }
-    // },
 
     async book(parent, args, context, info) {
       let start = Date.now()
@@ -1468,15 +1292,11 @@ export default {
             suppliers: { mutation: "BOOK", data: newSupplier },
           });
 
+
+          let user = await getUser({_id: current_user?._id}) 
+          user =  { ...user, ...await checkBalance(current_user?._id) }
           pubsub.publish("ME", {
-            me: { mutation: "BOOK", data: { userId: current_user?._id, 
-                                            data: { 
-                                              // balance, transitions, inTheCarts
-                                                    // balance: (await checkBalance(current_user?._id)).balance,
-                                                    ...await checkBalance(current_user?._id),
-                                                    balanceBook: await checkBalanceBook(current_user?._id) 
-                                                  } 
-                                          } },
+            me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } },
           });
 
           return {
@@ -1503,16 +1323,10 @@ export default {
           suppliers: { mutation: "UNBOOK", data: newSupplier },
         });
 
+        let user = await getUser({_id: current_user?._id }) 
+        user =  { ...user, ...await checkBalance(current_user?._id) }
         pubsub.publish("ME", {
-          me: { mutation: "BOOK", 
-                data: { 
-                      userId: current_user?._id, 
-                      data: { 
-                        // balance: (await checkBalance(current_user?._id)).balance, 
-                        ...await checkBalance(current_user?._id),
-                        balanceBook: await checkBalanceBook(current_user?._id) 
-                      } 
-                } 
+            me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } 
           },
         });
 
@@ -1540,8 +1354,12 @@ export default {
       let buys =  _.map(supplier.buys, (buy)=> buy.userId == current_user?._id.toString() ? {...buy._doc, selected: 1} : buy )
       await Supplier.updateOne({ _id }, {buys });
 
+
+      let user = await getUser({_id: current_user?._id}) 
+      user =  { ...user, ...await checkBalance(current_user?._id) }
+
       pubsub.publish("ME", {
-        me: { mutation: "BUY", data: {userId: current_user?._id, data: {...await checkBalance(current_user?._id), balanceBook: await checkBalanceBook(current_user?._id) }  } },
+        me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
       });
 
       return {
@@ -1704,101 +1522,137 @@ export default {
 
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if(checkRole(current_user) != AUTHENTICATED) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
 
-      switch(input.mode.toLowerCase()){
-        case "new":{
-          console.log("new deposit : ", input, current_user, current_user?._id )
+      const { createReadStream, filename, encoding, mimetype } = (await input.file).file
 
-          if(checkRole(current_user) != AUTHENTICATED) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
+      const stream = createReadStream();
+      const assetUniqName = fileRenamer(filename);
+      let pathName = `/app/uploads/${assetUniqName}`;
 
-          let newFiles = [];
-          if(!_.isEmpty(input.files)){
-            for (let i = 0; i < input.files.length; i++) {
-              const { createReadStream, filename, encoding, mimetype } = (await input.files[i]).file //await input.files[i];
+      const output = fs.createWriteStream(pathName)
+      stream.pipe(output);
+
+      await new Promise(function (resolve, reject) {
+        output.on('close', () => {
+          resolve();
+        });
   
-              const stream = createReadStream();
-              const assetUniqName = fileRenamer(filename);
-              let pathName = `/app/uploads/${assetUniqName}`;
-    
-              const output = fs.createWriteStream(pathName)
-              stream.pipe(output);
-    
-              await new Promise(function (resolve, reject) {
-                output.on('close', () => {
-                  resolve();
-                });
-          
-                output.on('error', (err) => {
-                  logger.error(err.toString());
-    
-                  reject(err);
-                });
-              });
-    
-              const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
-              newFiles.push({ url: urlForArray, filename, encoding, mimetype });
-            }
-          }
+        output.on('error', (err) => {
+          logger.error(err.toString());
 
-          return {
-            status: true,
-            mode: input.mode.toLowerCase(),
-            data: await Deposit.create({ ...input, files:newFiles, userIdRequest: current_user?._id }),
-            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          }
-        }
+          reject(err);
+        });
+      });
 
-        case "edit":{
-          let { input } = args
+      const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
 
-          console.log("edit deposit :", input)
-          if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Administrator only!')
-          
-          await Deposit.updateOne( { _id: input?._id }, { status: input?.status } );
-          let deposit = await Deposit.findOne({_id: input?._id })
-
-          if(input.status == 1){
-            await Transition.create({
-                                      type: Constants.DEPOSIT, 
-                                      refId: deposit?._id, 
-                                      userId: deposit?.userIdRequest
-                                    })
-
-            pubsub.publish("ME", {
-              me: { mutation: "DEPOSIT", data: {userId: deposit?.userIdRequest, data: await checkBalance(deposit?.userIdRequest) } },
-            });
-          }
-
-          return {
-            status: true,
-            mode: input.mode.toLowerCase(),
-            data: deposit,
-            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          }
-        }
-
-        case "delete":{
-          let deposit = await Deposit.findByIdAndRemove({_id: input._id})
-          console.log("delete deposit : ", input, deposit )
-          if(_.isEmpty(deposit)){
-            return {
-              status: false,
-              data: `error : cannot delete : ${ input._id }`,
-              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-            }
-          }
-          return {
-            status: true,
-            mode: input.mode.toLowerCase(),
-            data: deposit,
-            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          }
-        }
-
-        default:{
-          throw new AppError(ERROR, 'Other case')
-        }
+      let deposit = await Deposit.create({ ...input, file: { url: urlForArray, filename, encoding, mimetype } , userIdRequest: current_user?._id })
+      return {
+        status: true,
+        data: deposit,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
+      //   }
+      // }
+
+      // switch(input.mode.toLowerCase()){
+      //   case "new":{
+      //     console.log("new deposit : ", input, current_user, current_user?._id )
+
+      //     if(checkRole(current_user) != AUTHENTICATED) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
+
+      //     let newFiles = [];
+      //     if(!_.isEmpty(input.files)){
+      //       for (let i = 0; i < input.files.length; i++) {
+      //         const { createReadStream, filename, encoding, mimetype } = (await input.files[i]).file //await input.files[i];
+  
+      //         const stream = createReadStream();
+      //         const assetUniqName = fileRenamer(filename);
+      //         let pathName = `/app/uploads/${assetUniqName}`;
+    
+      //         const output = fs.createWriteStream(pathName)
+      //         stream.pipe(output);
+    
+      //         await new Promise(function (resolve, reject) {
+      //           output.on('close', () => {
+      //             resolve();
+      //           });
+          
+      //           output.on('error', (err) => {
+      //             logger.error(err.toString());
+    
+      //             reject(err);
+      //           });
+      //         });
+    
+      //         const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+      //         newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+      //       }
+      //     }
+
+      //     return {
+      //       status: true,
+      //       mode: input.mode.toLowerCase(),
+      //       data: await Deposit.create({ ...input, files:newFiles, userIdRequest: current_user?._id }),
+      //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      //     }
+      //   }
+
+      //   case "edit":{
+      //     let { input } = args
+
+      //     console.log("edit deposit :", input)
+      //     if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Administrator only!')
+          
+      //     await Deposit.updateOne( { _id: input?._id }, { status: input?.status } );
+      //     let deposit = await Deposit.findOne({_id: input?._id })
+
+      //     if(input.status == 1){
+      //       await Transition.create({
+      //                                 type: Constants.DEPOSIT, 
+      //                                 refId: deposit?._id, 
+      //                                 userId: deposit?.userIdRequest
+      //                               })
+
+      //       let user = await getUser({_id: deposit?.userIdRequest}) 
+      //       user =  { ...user, ...await checkBalance(deposit?.userIdRequest) }
+
+      //       pubsub.publish("ME", {
+      //         me: { mutation: "DEPOSIT", data: {userId: deposit?.userIdRequest, data: user } },
+      //       });
+      //     }
+
+      //     return {
+      //       status: true,
+      //       mode: input.mode.toLowerCase(),
+      //       data: deposit,
+      //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      //     }
+      //   }
+
+      //   case "delete":{
+      //     let deposit = await Deposit.findByIdAndRemove({_id: input._id})
+      //     console.log("delete deposit : ", input, deposit )
+      //     if(_.isEmpty(deposit)){
+      //       return {
+      //         status: false,
+      //         data: `error : cannot delete : ${ input._id }`,
+      //         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      //       }
+      //     }
+      //     return {
+      //       status: true,
+      //       mode: input.mode.toLowerCase(),
+      //       data: deposit,
+      //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      //     }
+      //   }
+
+      //   default:{
+      //     throw new AppError(ERROR, 'Other case')
+      //   }
+      // }
     },
 
     async withdraw(parent, args, context, info) {
@@ -1809,96 +1663,110 @@ export default {
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      switch(input.mode.toLowerCase()){
-        case "new":{
-          console.log("new withdraw : ", input )
+      let { balance, balanceBook } =  await checkBalance(current_user?._id)
 
-          let withdraw = await Withdraw.create({ ...input,  userIdRequest: current_user?._id });
-          return {
-            status: true,
-            mode: input.mode.toLowerCase(),
-            data: withdraw,
-            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          }
-        }
+      console.log("new withdraw : ", input, balance, balanceBook )
 
-        case "edit":{
-          console.log("edit withdraw :", input)
-
-          if(_.includes([1, 2], input.status)){
-            if( checkRole(current_user) == AMDINISTRATOR ){
-              let newInput = {...input, userIdApprove: current_user?._id}
-              let withdraw = await Withdraw.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
-
-              if(input.status == 1){
-                await Transition.create({
-                                          type: Constants.WITHDRAW, 
-                                          refId: withdraw?._id, 
-                                          userId: withdraw.userIdRequest
-                                        })
-
-                pubsub.publish("ME", {
-                  me: { mutation: "WITHDRAW", data: {userId: withdraw.userIdRequest, data: await checkBalance(withdraw.userIdRequest) } },
-                });
-              }
-
-              return {
-                status: true,
-                mode: input.mode.toLowerCase(),
-                data: withdraw,
-                // transition,
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-              }
-
-
-              return {
-                status: false,
-                mode: input.mode.toLowerCase(),
-                message: "Cannot approve & reject",
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-              }
-            }else{
-              return {
-                status: false,
-                mode: input.mode.toLowerCase(),
-                message: "Cannot approve & reject",
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-              }
-            }
-          }
-
-          let withdraw = await Withdraw.findOneAndUpdate({ _id: input._id }, input, { new: true });
-
-          return {
-            status: true,
-            mode: input.mode.toLowerCase(),
-            data: withdraw,
-            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          }
-        }
-
-        case "delete":{
-          let withdraw = await Withdraw.findByIdAndRemove({_id: input._id})
-          console.log("delete deposit : ", input, withdraw )
-          if(_.isEmpty(withdraw)){
-            return {
-              status: false,
-              data: `error : cannot delete : ${ input._id }`,
-              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-            }
-          }
-          return {
-            status: true,
-            mode: input.mode.toLowerCase(),
-            data: withdraw,
-            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          }
-        }
-
-        default:{
-          throw new AppError(ERROR, 'Other case')
-        }
+      // let withdraw = await Withdraw.create({ ...input,  userIdRequest: current_user?._id });
+      return {
+        status: true,
+        // data: withdraw,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
+
+      // switch(input.mode.toLowerCase()){
+      //   case "new":{
+      //     console.log("new withdraw : ", input )
+
+      //     let withdraw = await Withdraw.create({ ...input,  userIdRequest: current_user?._id });
+      //     return {
+      //       status: true,
+      //       mode: input.mode.toLowerCase(),
+      //       data: withdraw,
+      //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      //     }
+      //   }
+
+      //   case "edit":{
+      //     console.log("edit withdraw :", input)
+
+      //     if(_.includes([1, 2], input.status)){
+      //       if( checkRole(current_user) == AMDINISTRATOR ){
+      //         let newInput = {...input, userIdApprove: current_user?._id}
+      //         let withdraw = await Withdraw.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
+
+      //         if(input.status == 1){
+      //           await Transition.create({
+      //                                     type: Constants.WITHDRAW, 
+      //                                     refId: withdraw?._id, 
+      //                                     userId: withdraw?.userIdRequest
+      //                                   })
+
+      //           let user = await getUser({_id: withdraw?.userIdRequest}) 
+      //           user =  { ...user, ...await checkBalance(withdraw?.userIdRequest) }
+
+      //           pubsub.publish("ME", {
+      //             me: { mutation: "WITHDRAW", data: {userId: withdraw.userIdRequest, data: user } },
+      //           });
+      //         }
+
+      //         return {
+      //           status: true,
+      //           mode: input.mode.toLowerCase(),
+      //           data: withdraw,
+      //           // transition,
+      //           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      //         }
+
+
+      //         return {
+      //           status: false,
+      //           mode: input.mode.toLowerCase(),
+      //           message: "Cannot approve & reject",
+      //           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      //         }
+      //       }else{
+      //         return {
+      //           status: false,
+      //           mode: input.mode.toLowerCase(),
+      //           message: "Cannot approve & reject",
+      //           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      //         }
+      //       }
+      //     }
+
+      //     let withdraw = await Withdraw.findOneAndUpdate({ _id: input._id }, input, { new: true });
+
+      //     return {
+      //       status: true,
+      //       mode: input.mode.toLowerCase(),
+      //       data: withdraw,
+      //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      //     }
+      //   }
+
+      //   case "delete":{
+      //     let withdraw = await Withdraw.findByIdAndRemove({_id: input._id})
+      //     console.log("delete deposit : ", input, withdraw )
+      //     if(_.isEmpty(withdraw)){
+      //       return {
+      //         status: false,
+      //         data: `error : cannot delete : ${ input._id }`,
+      //         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      //       }
+      //     }
+      //     return {
+      //       status: true,
+      //       mode: input.mode.toLowerCase(),
+      //       data: withdraw,
+      //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      //     }
+      //   }
+
+      //   default:{
+      //     throw new AppError(ERROR, 'Other case')
+      //   }
+      // }
     },
 
     async bank(parent, args, context, info) {

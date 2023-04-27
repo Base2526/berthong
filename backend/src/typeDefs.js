@@ -680,11 +680,8 @@ export default gql`
   }
 
   input WithdrawInput{
-    mode: WithdrawModeType!
-    _id: ID
     bank: JSON!
     balance: Int!
-    status: String
   }
 
   enum DepositModeType {
@@ -694,13 +691,10 @@ export default gql`
   }
 
   input DepositInput{
-    mode: DepositModeType!
-    _id: ID
-    balance: Int
-    dateTranfer: DATETIME
-    bank: JSON
-    files: [JSON]
-    status: Int
+    balance: String!
+    date: DATETIME
+    bankId: String!
+    file: JSON!
   }
 
   input MeInput{

@@ -56,9 +56,9 @@ const AttackFileField = (props) => {
                   direction="row"
                   spacing={2}>
                   {_.map(
-                    _.filter(values, (v, key) => !v.delete),
+                    _.filter(values, (v, key) => !v?.delete),
                     (file, index) => {
-                      if (!file.url) {
+                      if (!file?.url) {
                         // new file
                         try {
                           return (
@@ -118,7 +118,7 @@ const AttackFileField = (props) => {
                               }}
                               variant="rounded"
                               alt="Example Alt"
-                              src={file.url}
+                              src={file?.url}
                             />
                             <IconButton
                               style={{
