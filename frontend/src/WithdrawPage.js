@@ -12,10 +12,8 @@ import {
   TextField
 } from "@mui/material";
 
-import { mutationWithdraw, queryBanks, queryWithdrawById, queryWithdraws } from "./gqlQuery";
-import { getHeaders, checkRole, handlerErrorApollo } from "./util";
-import  * as Constants from "./constants";
-import BankComp from "./components/BankComp"
+import { queryBanks } from "./gqlQuery";
+import { getHeaders } from "./util";
 
 let initValues = { bank: null,  balance: "" }
 
@@ -37,32 +35,6 @@ const WithdrawPage = (props) => {
                                                       nextFetchPolicy:  'network-only', 
                                                     });
 
-  // let { loading: loadingWithdrawById, 
-  //       data: dataWithdrawById, 
-  //       error: errorWithdrawById,
-  //       refetch: refetchWithdrawById } =  useQuery(queryWithdrawById, {
-  //                                                 context: { headers: getHeaders(location) },
-  //                                                 variables: {id},
-  //                                                 fetchPolicy: 'network-only', 
-  //                                                 nextFetchPolicy: 'cache-first',
-  //                                                 notifyOnNetworkStatusChange: true,
-  //                                               })
-  // if(!_.isEmpty(errorWithdrawById)) handlerErrorApollo( props, errorWithdrawById )
-  // useEffect(()=>{
-  //   if( !loadingWithdrawById && mode == "edit"){
-  //     if(!_.isEmpty(dataWithdrawById?.withdrawById)){
-  //       let { status, data } = dataWithdrawById.withdrawById
-  //       if(status){
-  //         setInput({
-  //           balance: data.balance, 
-  //           bank: data?.bank, 
-  //           status: data.status
-  //         })
-  //       }
-  //     }
-  //   }
-  // }, [dataWithdrawById, loadingWithdrawById])
-
   useEffect(()=>{
     if(!loadingBanks){
       if(!_.isEmpty(dataBanks?.banks)){
@@ -80,7 +52,6 @@ const WithdrawPage = (props) => {
     console.log("submitForm")
     /*
     event.preventDefault();
-
     switch(mode){
       case "new":{
         let newInput =  {

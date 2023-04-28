@@ -744,7 +744,7 @@ export default gql`
     book(input: BookInput): JSON
     buy(_id: ID!): JSON
     supplier(input: SupplierInput): JSON    
-    deposit(input: DepositInput): JSON 
+    deposit(input: DepositInput): JSON
     withdraw(input: WithdrawInput): JSON 
     bank(input: BankInput): JSON 
     follow(_id: ID!): JSON 

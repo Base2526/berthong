@@ -713,7 +713,7 @@ const App =(props) =>{
     },
     onCompleted(data) {
       showToast("success", "ได้รับเรื่องแล้ว กำลังดำเนินการ")
-      navigate(-1);
+      navigate("/");    
     },
     onError(error){
       return handlerErrorApollo( props, error )

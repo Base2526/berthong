@@ -3,6 +3,7 @@ import "./skeleton.scss";
 import "react-toastify/dist/ReactToastify.css";
 import "react-image-lightbox/style.css";
 import 'font-awesome/css/font-awesome.min.css';
+import "react-datepicker/dist/react-datepicker.css";
 
 import { ApolloProvider } from "@apollo/client";
 import { StrictMode } from "react";

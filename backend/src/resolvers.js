@@ -506,10 +506,43 @@ export default {
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      return {  status: true,
-                data: (await checkBalance(current_user?._id)).transitions,
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      let userId = current_user?._id
+      let transitions = await Transition.find({ userId });
 
+      transitions = await Promise.all(_.map(transitions, async(transition)=>{
+          // export const SUPPLIER       = 10;
+          // export const DEPOSIT        = 11;
+          // export const WITHDRAW       = 12;
+          switch(transition.type){ 
+            case Constants.SUPPLIER:{
+                let supplier = await Supplier.findById(transition?.refId)
+                let buys = _.filter(supplier?.buys, (buy)=> _.isEqual(buy?.userId, userId))
+                
+                let balance = buys?.length * supplier?.price
+                return {...transition?._doc, 
+                        title: supplier?.title, 
+                        balance, 
+                        description: supplier?.description, 
+                        dateLottery: supplier?.dateLottery}
+            }
+            case Constants.DEPOSIT:{
+                let deposit = await Deposit.findById(transition.refId)
+                return {...transition?._doc, ...deposit?._doc}
+            }
+            case Constants.WITHDRAW:{
+                let withdraw = await Withdraw.findById(transition.refId)
+                return {...transition?._doc, 
+                        title: "title", 
+                        balance: withdraw.balance, 
+                        description: "description", 
+                        dateLottery: "dateLottery"}
+            }
+          }
+      }))
+
+      return {  status: true,
+                data: transitions,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
     async friendProfile(parent, args, context, info){
@@ -716,6 +749,7 @@ export default {
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
       }
     },
+
     async bookmarks(parent, args, context, info){
       try{
         let start = Date.now()
@@ -1545,14 +1579,27 @@ export default {
         });
       });
 
-      const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+      let deposit = await Deposit.create({balance: input?.balance, 
+                                          date: input?.date, 
+                                          bankId: input?.bankId, 
+                                          file: { url: `${process.env.RA_HOST}${assetUniqName}`, filename, encoding, mimetype }, 
+                                          userIdRequest: current_user?._id })
 
-      let deposit = await Deposit.create({ ...input, file: { url: urlForArray, filename, encoding, mimetype } , userIdRequest: current_user?._id })
+      if(deposit?._id){
+        await Transition.create({
+                                  type: Constants.DEPOSIT, 
+                                  refId: deposit?._id, 
+                                  userId: current_user?._id
+                                })
+      }
+      
       return {
         status: true,
         data: deposit,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
+
+      
       //   }
       // }
 
