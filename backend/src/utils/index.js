@@ -3,7 +3,7 @@ import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
 
-import { User, Session, Transition, Supplier, Deposit, Withdraw } from '../model'
+import { User, Session, Transition, Supplier, Deposit, Withdraw, Bank } from '../model'
 
 import { AMDINISTRATOR, AUTHENTICATED, ANONYMOUS, SUCCESS, ERROR, FORCE_LOGOUT, DATA_NOT_FOUND, USER_NOT_FOUND } from "../constants"
 
@@ -29,8 +29,7 @@ export const getSessionId = async(userId, input) => {
 
     let session = await Session.create({...input, 
                                         userId, 
-                                        token: jwt.sign(userId.toString(), 
-                                        process.env.JWT_SECRET)});
+                                        token: jwt.sign(userId.toString(), process.env.JWT_SECRET)});
   
     return session?._id.toString()
 }
@@ -52,7 +51,7 @@ export const checkAuthorization = async(req) => {
         if (bearer == "Bearer") {
             // let decode = jwt.verify(token, process.env.JWT_SECRET);
             // console.log("sessionId > ", sessionId)
-            let session = await Session.findById(sessionId)   
+            let session = await Session.findOne({_id:sessionId})   
             if(!_.isEmpty(session)){
                 var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));
                 // code
@@ -63,14 +62,14 @@ export const checkAuthorization = async(req) => {
                     let userId  = jwt.verify(session.token, process.env.JWT_SECRET);
     
     
-                    console.log("checkAuthorization expiredDays : ", session.token, userId, expiredDays )
+                    // console.log("checkAuthorization expiredDays : ", session.token, userId, expiredDays )
                     // return {...req, currentUser: await User.findById(userId)} 
     
                     return {
                         status: true,
                         code: SUCCESS,
                         pathname,
-                        current_user: await User.findById(userId),
+                        current_user: await User.findOne({_id: userId}),
                     }
                 }
             }
@@ -202,7 +201,7 @@ export const checkBalance = async(userId) =>{
 
                     let books = _.filter(supplier.buys, (buy)=> _.isEqual(buy.userId, userId) && buy.selected == 0)
                     if(!_.isEmpty(books)){
-                        console.log("inTheCarts item :", books, transition?.refId)
+                        // console.log("inTheCarts item :", books, transition?.refId)
                         return transition?.refId
                     }
                     return null;
@@ -214,17 +213,6 @@ export const checkBalance = async(userId) =>{
             }
         })), (i)=> !_.isNull(i))
 
-        console.log("inTheCarts :", balance, inTheCarts)
-
-        return {balance, transitions, inTheCarts}
-    } catch(err) {
-        console.log(" err o checkBalance :", err.message)
-        return {balance: 0, transitions: [], inTheCarts: []}
-    }
-}
-
-export const checkBalanceBook = async(userId) =>{
-    try{
         let suppliers = await Supplier.find({buys: { $elemMatch : {userId}}})
         let prices  =   _.filter( await Promise.all(_.map(suppliers, async(supplier)=>{
                             let { price, buys } = supplier;
@@ -232,12 +220,30 @@ export const checkBalanceBook = async(userId) =>{
                             return price * filters.length
                         })), (p)=>p!=0)
 
-        return _.reduce(prices, (ps, i) => ps + i, 0);
+        let balanceBook =  _.reduce(prices, (ps, i) => ps + i, 0);
+
+        return {balance, transitions, inTheCarts, balanceBook}
     } catch(err) {
-        console.log("error :", err)
-        return 0;
+        console.log(" err o checkBalance :", err.message)
+        return {balance: 0, transitions: [], inTheCarts: []}
     }
 }
+
+// export const checkBalanceBook = async(userId) =>{
+//     try{
+//         let suppliers = await Supplier.find({buys: { $elemMatch : {userId}}})
+//         let prices  =   _.filter( await Promise.all(_.map(suppliers, async(supplier)=>{
+//                             let { price, buys } = supplier;
+//                             let filters = _.filter(buys, (buy)=> _.isEqual(buy.userId, userId) && buy.selected == 0 )
+//                             return price * filters.length
+//                         })), (p)=>p!=0)
+
+//         return _.reduce(prices, (ps, i) => ps + i, 0);
+//     } catch(err) {
+//         console.log("error :", err)
+//         return 0;
+//     }
+// }
 
 export const checkRole = (user) =>{
     if(user?.roles){
@@ -252,9 +258,22 @@ export const checkRole = (user) =>{
 }
 
 export const getUser = async(query) =>{
-    return await User.findOne(query, { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 } )
+    let user =  await User.findOne(query, { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 } )
+
+    if(user) {
+        let { banks } = user
+        
+        banks = _.filter(await Promise.all(_.map(banks, async(value)=>{
+                    let bank = await Bank.findOne({_id: value.bankId})
+                    return _.isNull(bank) ? null : {...value._doc, name:bank?.name}
+                })), e=>!_.isNull(e) ) 
+
+        return {...user?._doc, banks}
+    }else{
+        return null
+    }
 }
 
-export const getUsers = () =>{
-
+export const getUsers = async(query) =>{
+    return await User.find(query, { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 })
 }

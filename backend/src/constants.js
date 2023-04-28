@@ -12,13 +12,16 @@ export const BAD_USER_INPUT = "BAD_USER_INPUT";
 
 export const _ID_AMDINISTRATOR = "62a2f633cf7946010d3c74fc";
 
-export const WAIT           = 0;
-export const APPROVED       = 1;
-export const REJECT         = 2;
-
-export const SUPPLIER       = 0;
-export const DEPOSIT        = 1;
-export const WITHDRAW       = 2;
-
 export const CANCEL       = 0;
 export const OK           = 1;
+
+export const SUPPLIER       = 10;
+export const DEPOSIT        = 11;
+export const WITHDRAW       = 12;
+
+export const WAIT           = 13;
+export const APPROVED       = 14;
+export const REJECT         = 15;
+
+export const NEW            = 16;
+export const DELETE         = 17;

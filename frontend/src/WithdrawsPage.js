@@ -72,38 +72,6 @@ const WithdrawsPage = (props) => {
     }
   }, [dataWithdraws, loadingWithdraws])
 
-
-  // const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
-  //   context: { headers: getHeaders(location) },
-  //   update: (cache, {data: {withdraw}}) => {
-  //     let { data, mode, status } = withdraw
-
-  //     if(status){
-  //       switch(mode){
-  //         case "delete":{
-  //           let data1 = cache.readQuery({ query: queryWithdraws });
-  //           let dataFilter =_.filter(data1.withdraws.data, (item)=>data._id != item._id)
-
-  //           cache.writeQuery({
-  //             query: queryWithdraws,
-  //             data: { withdraws: {...data1.withdraws, data: dataFilter} }
-  //           });
-
-  //           handleClose()
-  //           break;
-  //         }
-  //       }
-  //     }
-  //   },
-  //   onCompleted({ data }) {
-  //     // history.goBack()
-  //   },
-  //   onError({error}){
-  //     console.log("onError :")
-  //   }
-  // });
-  // console.log("resultMutationWithdraw :", resultMutationWithdraw)
-
   const handleClose = () => {
     setOpenDialogDelete({ ...openDialogDelete, isOpen: false, description: "" });
   };

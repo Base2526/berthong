@@ -8,12 +8,15 @@ import { makeStyles } from "@material-ui/core/styles";
 import { ErrorOutline as ErrorOutlineIcon } from "@material-ui/icons";
 import { lightGreen, blueGrey } from "@material-ui/core/colors";
 
+import { FaAngleUp } from 'react-icons/fa';
+
 import { querySuppliers, subscriptionSuppliers} from "./gqlQuery";
 import { handlerErrorApollo,  getHeaders, showToast } from "./util";
 import HomeItem from "./item/HomeItem"
 import SearchComp from "./components/SearchComp"
 import SkeletonComp from "./components/SkeletonComp"
 import * as Constants from "./constants"
+import { IconButton } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -80,12 +83,11 @@ const HomePage = (props) => {
   const classes = useStyles();
   let [datas, setDatas] = useState([]);
   let [total, setTotal] = useState(0);
-
   const [loading, setLoading] = useState(true);
   let [reset, setReset] = useState(false)
-
   const [slice, setSlice] = useState(12);
   const [hasMore, setHasMore] = useState(true);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   let { user, logout, ws, search, onLogin, onSearchChange, onMutationFollow } = props
 
@@ -107,12 +109,25 @@ const HomePage = (props) => {
 
   if(!_.isEmpty(errorSuppliers)) handlerErrorApollo( props, errorSuppliers )
 
+  const handleScroll = () => {
+    setScrollPosition(window.pageYOffset);
+  };
+
+  useEffect(()=>{
+    console.log("scrollPosition :", scrollPosition)
+  }, [scrollPosition])
+
   useEffect(()=>{
     onSearchChange({...search, PAGE: 1 })
+
+    window.addEventListener('scroll', handleScroll);
+
     return () => {
       unsubscribeSuppliers && unsubscribeSuppliers()
       unsubscribeSuppliers = null;
-    };
+
+      window.removeEventListener('scroll', handleScroll);
+    }
   }, [])
 
   useEffect(() => {
@@ -177,6 +192,10 @@ const HomePage = (props) => {
       setReset(false)
     }
   }, [search, reset])
+
+  const scrollToTop = () => {
+    window?.scrollTo(0, 0);
+  }
 
   const handleRefresh = async() => {
     onSearchChange({...search, PAGE: 1})
@@ -268,7 +287,7 @@ const HomePage = (props) => {
                         hasMore={hasMore}
                         loader={<SkeletonComp />}
                         scrollThreshold={0.5}
-                        scrollableTarget="scrollableDiv"
+                        // scrollableTarget="scrollableDiv"
                         endMessage={<div className="text-center">You have reached the end</div>}
                         
                         // below props only if you need pull down functionality
@@ -280,8 +299,7 @@ const HomePage = (props) => {
                         }
                         releaseToRefreshContent={
                           <h3 style={{ textAlign: 'center' }}>&#8593; Release to refresh</h3>
-                        }
-                        >
+                        }>
                         <div className="row">
                           {_.map(datas, (item, index) =>{
                             return <HomeItem 
@@ -294,6 +312,17 @@ const HomePage = (props) => {
                           } )}
                         </div>
                       </InfiniteScroll>
+                    }
+                  </div>
+                  <div>
+                    {
+                      scrollPosition > 400 
+                      ? <IconButton 
+                          className="btn-position-top"
+                          onClick={(evt)=>scrollToTop()}>
+                          <FaAngleUp />
+                        </IconButton>
+                      : "" 
                     }
                   </div>
                 </div>

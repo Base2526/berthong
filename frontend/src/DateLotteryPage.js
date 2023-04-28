@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import CircularProgress from '@mui/material/CircularProgress';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -24,7 +24,7 @@ const DateLotteryPage = (props) => {
 
   let { mode, _id } = location.state
 
-  console.log("mode, id :", mode, _id)
+  let { onMutationDateLottery } = props
 
   const { loading: loadingDateLotteryById, 
           data: dataDateLotteryById, 
@@ -32,62 +32,6 @@ const DateLotteryPage = (props) => {
           refetch: refetchDateLotteryById} =  useQuery(queryDateLotteryById, {
                                                 notifyOnNetworkStatusChange: true,
                                               });
-
-  const [onMutationDateLottery, resultMutationDateLotteryValues] = useMutation(mutationDatesLottery
-    , {
-        update: (cache, {data: {dateLottery}}) => {
-
-          console.log("DateLottery :", dateLottery)
-          
-          ////////// udpate cache Banks ///////////
-          let queryDateLotterysValue = cache.readQuery({ query: queryDateLotterys });
-          let { status, mode, data } = dateLottery
-          if(status && queryDateLotterysValue){
-            switch(mode){
-              case "new":{
-                cache.writeQuery({
-                  query: queryDateLotterys,
-                  data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: [...queryDateLotterysValue.dateLotterys.data, data]} },
-                });
-                break;
-              }
-
-              case "edit":{
-                let newData = _.map(queryDateLotterysValue.dateLotterys.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
-                cache.writeQuery({
-                  query: queryDateLotterys,
-                  data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: newData} },
-                });
-                break;
-              }
-            }
-          }
-          ////////// udpate cache Banks ///////////
-        
-
-          ////////// update cache queryDateLotteryById ///////////
-          let dateLotteryByIdValue = cache.readQuery({ query: queryDateLotteryById, variables: {id: data._id}});
-          if(status && dateLotteryByIdValue){
-            cache.writeQuery({
-              query: queryDateLotteryById,
-              data: { dateLotteryById: {...dateLotteryByIdValue.dateLotteryById, data} },
-              variables: {id: data._id}
-            });
-          }
-          ////////// update cache queryDateLotteryById ///////////
-
-        },
-        onCompleted({ data }) {
-          // history.goBack();
-          navigate(-1);
-        },
-        onError({error}){
-          console.log("error :", error)
-        }
-      }
-  );
-
-  // console.log("resultMutationDateLotteryValues :", resultMutationDateLotteryValues)
 
   useEffect(()=>{
     if(mode == "edit" && _id){

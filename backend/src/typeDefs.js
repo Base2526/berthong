@@ -680,11 +680,8 @@ export default gql`
   }
 
   input WithdrawInput{
-    mode: WithdrawModeType!
-    _id: ID
     bank: JSON!
     balance: Int!
-    status: String
   }
 
   enum DepositModeType {
@@ -694,13 +691,10 @@ export default gql`
   }
 
   input DepositInput{
-    mode: DepositModeType!
-    _id: ID
-    balance: Int
-    dateTranfer: DATETIME
-    bank: JSON
-    files: [JSON]
-    status: Int
+    balance: String!
+    date: DATETIME
+    bankId: String!
+    file: JSON!
   }
 
   input MeInput{
@@ -746,11 +740,11 @@ export default gql`
     loginWithSocial(input: LoginWithSocialInput): JSON
     loginWithGithub(code: String!): JSON
     register(input: RegisterInput): JSON
-    me(input: MeInput): JSON
+    me(input: JSON): JSON
     book(input: BookInput): JSON
     buy(_id: ID!): JSON
     supplier(input: SupplierInput): JSON    
-    deposit(input: DepositInput): JSON 
+    deposit(input: DepositInput): JSON
     withdraw(input: WithdrawInput): JSON 
     bank(input: BankInput): JSON 
     follow(_id: ID!): JSON 

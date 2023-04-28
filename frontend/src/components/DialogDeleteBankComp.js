@@ -8,30 +8,32 @@ import {
   Button
 } from "@mui/material"
 
-const DialogLogoutComp = (props) => {
-  const {open, onLogout, onClose} = props
+const DialogDeleteBankComp = (props) => {
+  const {data, onDelete, onClose} = props
+
+  console.log("DialogDeleteBankComp :", data)
 
   const handleClose = () => onClose(true)
   return (
     <Dialog
-      open={open}
+      open={data?.open}
       onClose={handleClose}
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description">
       <DialogTitle id="alert-dialog-title">
-        Comfirm logout
+        Comfirm delete
       </DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
-          Are you such logout?
+          Are you such delete bank?
         </DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Close</Button>
-        <Button onClick={()=>onLogout()} autoFocus>Logout</Button>
+        <Button onClick={()=>onDelete(data?.id)} autoFocus>Delete</Button>
       </DialogActions>
     </Dialog> 
   )
 }
 
-export default DialogLogoutComp;
+export default DialogDeleteBankComp;

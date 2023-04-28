@@ -42,51 +42,6 @@ const UserPage = (props) => {
                                                               notifyOnNetworkStatusChange: true 
                                                             });
 
-  // const [onMutationMe, resultMutationMe] = useMutation(mutationMe, {
-  //   context: { headers: getHeaders(location) },
-  //   update: (cache, {data: {me}}) => {
-  //     let { data, status } = me
-
-  //     let queryUsersValue = cache.readQuery({ query: queryUsers });
-  //     if(!_.isEmpty(queryUsersValue)){
-  //       let newData = _.map(queryUsersValue.users.data, (item)=> item._id == data._id ? data : item )     
-  //       cache.writeQuery({
-  //         query: queryUsers,
-  //         data: { users: {...queryUsersValue.users, data: newData} }
-  //       });
-  //     }
-      
-  //     ////////// update cache queryUserById ///////////
-  //     let queryUserByIdValue = cache.readQuery({ query: queryUserById, variables: {id: data._id}});
-  //     if(queryUserByIdValue){
-  //       cache.writeQuery({
-  //         query: queryUserById,
-  //         data: { userById: {...queryUserByIdValue.userById, data} },
-  //         variables: {id: data._id}
-  //       });
-  //     }
-  //     ////////// update cache queryUserById ///////////    
-  //   },
-  //   onCompleted({ data }) {
-  //     switch(checkRole(user)){
-  //       case AMDINISTRATOR:{
-  //         // history.push("/users")
-  //         navigate("/users")
-  //         break
-  //       }
-
-  //       case AUTHENTICATED:{
-  //         // history.goBack()
-  //         navigate(-1)
-  //         break;
-  //       }
-  //     }
-  //   },
-  //   onError({error}){
-  //     console.log("onError :")
-  //   }
-  // });
-
   useEffect(()=>{
     if(mode == "edit" && id){
       refetchUserById({id});

@@ -57,3 +57,19 @@ export const INIT_SEARCH = {
     CHK_MONEY: false,
     CHK_GOLD: false
 }
+
+export const CANCEL         = 0;
+export const OK             = 1;
+
+export const SUPPLIER       = 10;
+export const DEPOSIT        = 11;
+export const WITHDRAW       = 12;
+
+export const WAIT           = 13;
+export const APPROVED       = 14;
+export const REJECT         = 15;
+
+export const NEW            = 16;
+export const DELETE         = 17;
+
+export const BANKS=[{label: '(xxx-x-xxxxx-x)ธนาคารไทยพาณิชย์', id: "bank-01" },{ label: '(xxx-x-xxxxx-x)ธนาคารกสิกรไทย', id: "bank-02" }]

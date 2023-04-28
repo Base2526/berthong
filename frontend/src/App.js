@@ -68,15 +68,12 @@ import {
   Menu,
   MenuItem
 } from "@mui/material";
-
 import {
   GrContactInfo as GrContactInfoIcon
 } from "react-icons/gr"
-
 import {
   SlUserFollowing
 } from "react-icons/sl"
-
 import _ from "lodash"
 
 import TaxonomyBankPage from "./TaxonomyBankPage";
@@ -105,6 +102,7 @@ import WithdrawPage from "./WithdrawPage";
 import WithdrawsPage from "./WithdrawsPage";
 import BreadcsComp from "./components/BreadcsComp";
 import DialogLogoutComp from "./components/DialogLogoutComp";
+import DialogDeleteBankComp from "./components/DialogDeleteBankComp";
 import NotificationsPage from "./NotificationsPage";
 import LoginWithLine from "./LoginWithLine";
 import LightboxComp from "./components/LightboxComp";
@@ -135,10 +133,17 @@ import { queryNotifications,
           queryDeposits,
           queryWithdraws,
           mutationSubscribe,
-          queryFriendProfile} from "./gqlQuery"
+          queryFriendProfile,
+          mutationMe, 
+          mutationDatesLottery, 
+          queryDateLotterys, 
+          queryDateLotteryById
+        } from "./gqlQuery"
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
+
+let { REACT_APP_SITE_TITLE } = process.env
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme) => ({
@@ -235,11 +240,12 @@ const App =(props) =>{
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [openDialogLogout, setOpenDialogLogout] = useState(false);
+  const [openDialogDeleteBank, setOpenDialogDeleteBank] = useState({ open: false, id: 0});
   const [dialogLogin, setDialogLogin] = useState(false);
   const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
   let [notifications, setNotifications] =useState([])
   let [search, setSearch] = useState(Constants.INIT_SEARCH)
-  let { ws, user, updateProfile, editedUserBalace, editedUserBalaceBook } = props
+  let { ws, user, updateProfile, editedUserBalace, editedUserBalaceBook, logout } = props
 
   const { loading: loadingNotifications, 
           data: dataNotifications, 
@@ -488,6 +494,8 @@ const App =(props) =>{
     },
     onCompleted(data) {
       console.log("onCompleted :", data)
+
+      window.location.reload();
     },
     onError(error){
       return handlerErrorApollo( props, error )
@@ -535,22 +543,23 @@ const App =(props) =>{
     update: (cache, {data: {withdraw}}) => {
       let { data, mode, status } = withdraw
 
-      if(status){
-        switch(mode){
-          case "delete":{
-            let data1 = cache.readQuery({ query: queryWithdraws });
-            let dataFilter =_.filter(data1.withdraws.data, (item)=>data._id != item._id)
+      console.log("")
+      // if(status){
+      //   switch(mode){
+      //     case "delete":{
+      //       let data1 = cache.readQuery({ query: queryWithdraws });
+      //       let dataFilter =_.filter(data1.withdraws.data, (item)=>data._id != item._id)
 
-            cache.writeQuery({
-              query: queryWithdraws,
-              data: { withdraws: {...data1.withdraws, data: dataFilter} }
-            });
+      //       cache.writeQuery({
+      //         query: queryWithdraws,
+      //         data: { withdraws: {...data1.withdraws, data: dataFilter} }
+      //       });
 
-            // handleClose()
-            break;
-          }
-        }
-      }
+      //       // handleClose()
+      //       break;
+      //     }
+      //   }
+      // }
     },
     onCompleted(data) {
       // history.goBack()
@@ -652,80 +661,69 @@ const App =(props) =>{
   const [onMutationNotification, resultNotification] = useMutation(mutationNotification, {
     context: { headers: getHeaders(location) },
     update: (cache, {data: {notification}}) => {
-        let { data, status } = notification
-        console.log("update")
+      let { data, status } = notification
+      console.log("update")
     },
     onCompleted(data) {
-        console.log("onCompleted")
+      console.log("onCompleted")
     },
     onError(error){
-        console.log(error)
+      return handlerErrorApollo( props, error )
     }
   });
 
   const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
     context: { headers: getHeaders(location) },
     update: (cache, {data: {deposit}}) => {
-      let { data, mode, status } = deposit
-      if(status){
-        switch(mode){
-          // case "new":{
-          //   const queryDepositsValue = cache.readQuery({ query: queryDeposits });
-          //   if(!_.isNull(queryDepositsValue)){
-          //     let newData = [...queryDepositsValue.deposits.data, data];
+      let { data, status } = deposit
+      console.log("")
+      // if(status){
+      //   switch(mode){
+      //     // case "new":{
+      //     //   const queryDepositsValue = cache.readQuery({ query: queryDeposits });
+      //     //   if(!_.isNull(queryDepositsValue)){
+      //     //     let newData = [...queryDepositsValue.deposits.data, data];
 
-          //     cache.writeQuery({
-          //       query: queryDeposits,
-          //       data: { deposits: {...queryDepositsValue.deposits, data: newData} }
-          //     });
-          //   }
-          //   break;
-          // }
+      //     //     cache.writeQuery({
+      //     //       query: queryDeposits,
+      //     //       data: { deposits: {...queryDepositsValue.deposits, data: newData} }
+      //     //     });
+      //     //   }
+      //     //   break;
+      //     // }
 
-          case "edit":{
-            let queryDepositsValue = cache.readQuery({ query: queryDeposits });
-            if(!_.isNull(queryDepositsValue)){
-              let newData = _.map(queryDepositsValue.deposits.data, (item)=> item._id == data._id ? data : item ) 
+      //     case "edit":{
+      //       let queryDepositsValue = cache.readQuery({ query: queryDeposits });
+      //       if(!_.isNull(queryDepositsValue)){
+      //         let newData = _.map(queryDepositsValue.deposits.data, (item)=> item._id == data._id ? data : item ) 
 
-              if(deposit.data.status == "approved" || deposit.data.status == "reject"){
-                newData = _.filter(queryDepositsValue.deposits.data, (item)=> item._id != data._id ) 
-              }
+      //         if(deposit.data.status == "approved" || deposit.data.status == "reject"){
+      //           newData = _.filter(queryDepositsValue.deposits.data, (item)=> item._id != data._id ) 
+      //         }
 
-              cache.writeQuery({
-                query: queryDeposits,
-                data: { deposits: {...queryDepositsValue.deposits, data: newData} }
-              });
-            }
-            break;
-          }
-        }
-      }
+      //         cache.writeQuery({
+      //           query: queryDeposits,
+      //           data: { deposits: {...queryDepositsValue.deposits, data: newData} }
+      //         });
+      //       }
+      //       break;
+      //     }
+      //   }
+      // }
     },
     onCompleted(data) {
-      if(_.isEqual(checkRole(user) , Constants.AMDINISTRATOR)){
-        navigate(-1);
-      }else {
-        showToast("success", "ได้รับเรื่องแล้ว กำลังดำเนินการ")
-        navigate("/");
-      }
+      showToast("success", "ได้รับเรื่องแล้ว กำลังดำเนินการ")
+      navigate("/");    
     },
     onError(error){
-      console.log("onError :", error?.message)
-      showToast("error", error?.message)
+      return handlerErrorApollo( props, error )
     }
   });
 
   const [onMutationSubscribe, resultSubscribe] = useMutation(mutationSubscribe, {
     context: { headers: getHeaders(location) },
     update: (cache, {data: {subscribe}}) => {
-      let { data, isSubscribe, status } = subscribe
-
-      if(isSubscribe){
-        showToast("success", `Subscribe`)
-      }else{
-        showToast("error", `Unsubscribe`)
-      }
-
+      let { data, status } = subscribe
       if(status){
         const queryFriendProfileValue = cache.readQuery({ query: queryFriendProfile, variables: {id: data?._id} });
         if(!_.isNull(queryFriendProfileValue)){
@@ -736,6 +734,10 @@ const App =(props) =>{
             data: { friendProfile: {...queryFriendProfileValue.friendProfile, data: updateData } }
           });
         }
+
+        _.find( data?.subscriber, (i)=> _.isEqual( i?.userId,  user?._id) ) 
+        ? showToast("success", `Subscribe`)
+        : showToast("error", `Unsubscribe`)
       }
     },
     onCompleted(data) {
@@ -746,74 +748,191 @@ const App =(props) =>{
     }
   });
 
-  // const [onMutationWithdraw, resultMutationWithdraw] = useMutation(mutationWithdraw, {
+  const [onMutationMe, resultMutationMe] = useMutation(mutationMe, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data:{ me }}) => {
+      let { status, data } = me
+      if(status){
+        updateProfile(data)
+      }
+    },
+    onCompleted(data) {
+      let {type, mode} = data?.me
+      switch(type){
+        case "bank":{
+          switch(mode){
+            case "new":{
+              showToast("success", `Add bank success`)
+              navigate(-1)
+              break;
+            }
+            case "delete":{
+              showToast("success", `Delete bank success`)
+              setOpenDialogDeleteBank({ open: false, id: ""})  
+              break;
+            }
+          }
+
+          break;
+        }
+
+        case "avatar":{
+          showToast("success", `Update profile success`)
+          break;
+        }
+      }
+    },
+    onError(error){
+      return handlerErrorApollo( props, error )
+    }
+  });
+
+  // const [onMutationMe_bank, resultonMutationMe_bank] = useMutation(mutationMe_bank, {
   //   context: { headers: getHeaders(location) },
-  //   update: (cache, {data: {withdraw}}) => {
-  //     let { data, mode, status } = withdraw
+  //   update: (cache, {data: {me_bank}}) => {
+  //     let { status, data } = me_bank
   //     if(status){
-  //       switch(mode){
-  //         case "new":{
-  //           const queryWithdrawsValue = cache.readQuery({ query: queryWithdraws });
-  //           if(!_.isEmpty(queryWithdrawsValue)){
-  //             let newData = [...queryWithdrawsValue.withdraws.data, withdraw.data];
-  //             cache.writeQuery({
-  //               query: queryWithdraws,
-  //               data: { withdraws: {...queryWithdrawsValue.withdraws, data: newData} }
-  //             });
-  //           }
-  //           ////////// update cache queryWithdrawById ///////////
-  //           let queryWithdrawByIdValue = cache.readQuery({ query: queryWithdrawById, variables: {id: data._id}});
-  //           if(!_.isEmpty(queryWithdrawByIdValue)){
-  //             cache.writeQuery({
-  //               query: queryWithdrawById,
-  //               data: { withdrawById: {...queryWithdrawByIdValue.withdrawById, data} },
-  //               variables: {id: data._id}
-  //             });
-  //           }
-  //           ////////// update cache queryWithdrawById ///////////   
-  //           break;
-  //         }
-  //         case "edit":{
-  //           const queryWithdrawsValue = cache.readQuery({ query: queryWithdraws });
-  //           let newData = _.map(queryWithdrawsValue.withdraws.data, (item)=> item._id == withdraw.data._id ? withdraw.data : item ) 
-  //           if(withdraw.data.status == "approved" || withdraw.data.status == "reject"){
-  //             newData = _.filter(queryWithdrawsValue.withdraws.data, (item)=> item._id != withdraw.data._id ) 
-  //           }     
-  //           cache.writeQuery({
-  //             query: queryWithdraws,
-  //             data: { withdraws: {...queryWithdrawsValue.withdraws, data: newData} }
-  //           });
-  //           ////////// update cache queryWithdrawById ///////////
-  //           let queryWithdrawByIdValue = cache.readQuery({ query: queryWithdrawById, variables: {id: data._id}});
-  //           if(queryWithdrawByIdValue){
-  //             cache.writeQuery({
-  //               query: queryWithdrawById,
-  //               data: { withdrawById: {...queryWithdrawByIdValue.withdrawById, data} },
-  //               variables: {id: data._id}
-  //             });
-  //           }
-  //           ////////// update cache queryWithdrawById ///////////            
-  //           break;
-  //         }
-  //       }
+  //       updateProfile(data)
   //     }
   //   },
   //   onCompleted(data) {
-  //     switch(checkRole(user)){
-  //       case Constants.AMDINISTRATOR:{
-  //         navigate("/withdraws")
-  //         break;
-  //       }
-  //       case Constants.AUTHENTICATED:{
-  //         navigate("/")
-  //         break;
-  //       }
-  //     }
+  //     if(data?.me_bank?.mode === "new"){
+  //       showToast("success", `Add bank success`)
+  //       navigate(-1)
+  //     }else{
+  //       showToast("success", `Delete bank success`)
+  //       setOpenDialogDeleteBank({ open: false, id: ""})  
+  //     } 
   //   },
   //   onError(error){
-  //     console.log("onError :", error)
+  //     return handlerErrorApollo( props, error )
   //   }
   // });
+
+  // const [onMutationMe_profile, resultonMutationMe_profile] = useMutation(mutationMe_profile, {
+  //   context: { headers: getHeaders(location) },
+  //   update: (cache, {data: {me_profile}}) => {
+  //     let { status, data } = me_profile
+  //     if(status){
+  //       updateProfile(data)
+  //     }
+  //   },
+  //   onCompleted(data) {
+  //     showToast("success", `Update profile success`)
+  //   },
+  //   onError(error){
+  //     return handlerErrorApollo( props, error )
+  //   }
+  // });
+
+  const [onMutationDateLottery, resultMutationDateLotteryValues] = useMutation(mutationDatesLottery
+    , {
+        update: (cache, {data: {dateLottery}}) => {
+
+          console.log("DateLottery :", dateLottery)
+          
+          ////////// udpate cache Banks ///////////
+          let queryDateLotterysValue = cache.readQuery({ query: queryDateLotterys });
+          let { status, mode, data } = dateLottery
+          if(status && queryDateLotterysValue){
+            switch(mode){
+              case "new":{
+                cache.writeQuery({
+                  query: queryDateLotterys,
+                  data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: [...queryDateLotterysValue.dateLotterys.data, data]} },
+                });
+                break;
+              }
+
+              case "edit":{
+                let newData = _.map(queryDateLotterysValue.dateLotterys.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
+                cache.writeQuery({
+                  query: queryDateLotterys,
+                  data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: newData} },
+                });
+                break;
+              }
+            }
+          }
+          ////////// udpate cache Banks ///////////
+        
+
+          ////////// update cache queryDateLotteryById ///////////
+          let dateLotteryByIdValue = cache.readQuery({ query: queryDateLotteryById, variables: {id: data._id}});
+          if(status && dateLotteryByIdValue){
+            cache.writeQuery({
+              query: queryDateLotteryById,
+              data: { dateLotteryById: {...dateLotteryByIdValue.dateLotteryById, data} },
+              variables: {id: data._id}
+            });
+          }
+          ////////// update cache queryDateLotteryById ///////////
+
+        },
+        onCompleted(data) {
+          // history.goBack();
+          navigate(-1);
+        },
+        onError(error){
+          return handlerErrorApollo( props, error )
+        }
+      }
+  );
+
+  const [onMutationDatesLottery, resultMutationDatesLottery] = useMutation(mutationDatesLottery
+    , {
+        update: (cache, {data: {datesLottery}}) => {
+
+          console.log("datesLottery :", datesLottery)
+          
+          //////////// udpate cache Banks ///////////
+          let queryDateLotterysValue = cache.readQuery({ query: queryDateLotterys });
+          // let { status, mode, data } = datesLottery
+          console.log("")
+          /*
+          if(status && queryDateLotterysValue){
+            switch(mode){
+              case "new":{
+                cache.writeQuery({
+                  query: queryDateLotterys,
+                  data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: [...queryDateLotterysValue.dateLotterys.data, data]} },
+                });
+                break;
+              }
+
+              case "edit":{
+                let newData = _.map(queryDateLotterysValue.dateLotterys.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
+                cache.writeQuery({
+                  query: queryDateLotterys,
+                  data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: newData} },
+                });
+                break;
+              }
+            }
+          }
+          */
+          ////////// udpate cache Banks ///////////
+        
+
+          // ////////// update cache queryDateLotteryById ///////////
+          // let dateLotteryByIdValue = cache.readQuery({ query: queryDateLotteryById, variables: {id: data._id}});
+          // if(status && dateLotteryByIdValue){
+          //   cache.writeQuery({
+          //     query: queryDateLotteryById,
+          //     data: { dateLotteryById: {...dateLotteryByIdValue.dateLotteryById, data} },
+          //     variables: {id: data._id}
+          //   });
+          // }
+          // ////////// update cache queryDateLotteryById ///////////
+
+        },
+        onCompleted(data) {
+        },
+        onError(error){
+          return handlerErrorApollo( props, error )
+        }
+      }
+  );
 
   useEffect(()=>{
     console.log("search :", search)
@@ -837,11 +956,11 @@ const App =(props) =>{
       }
     }
   }, [dataNotifications, loadingNotifications])
-  // console.log("ws :", location)
-  
-  /////////////////////// ping ///////////////////////////////////
-  // const pingValues =useQuery(queryPing, { context: { headers: getHeaders(location) }, notifyOnNetworkStatusChange: true});
 
+  useEffect(()=>{
+    console.log("location?.pathname :", location?.pathname)
+  }, [location?.pathname])
+  
   useSubscription(subscriptionMe, {
     onSubscriptionData: useCallback((res) => {
       console.log("subscriptionMe :", res)
@@ -851,16 +970,8 @@ const App =(props) =>{
         switch(mutation){
           case "DEPOSIT":
           case "WITHDRAW":
-          case "BUY":{
-            editedUserBalace(data)
-            break;
-          }
-
-          case "BOOK":{
-            editedUserBalaceBook(data)
-            break;
-          }
-
+          case "BUY":
+          case "BOOK":
           case "UPDATE":{
             updateProfile(data)
             break;
@@ -935,17 +1046,17 @@ const App =(props) =>{
                 {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
                 {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
                 {id: 6, title:"วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/date-lotterys"},
-                {id: 7, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/banks"},
+                // {id: 7, title:"บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/banks"},
                 {id: 8, title:"Logout", icon: <LogoutIcon size="1.5em"/>, path: "/logout"}]
       }
       case Constants.AUTHENTICATED:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
-                {id: 1, title:"รายการ จอง-ซื้อ", icon: <AssistantIcon />, path: "/book-buy"},
+                // {id: 1, title:"รายการ จอง-ซื้อ", icon: <AssistantIcon />, path: "/book-buy"},
                 {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
                 {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"},
-                {id: 5, title:"รายการ บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/banks"},
-                {id: 6, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
+                // {id: 5, title:"บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/bank"},
+                // {id: 6, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
                 {id: 7, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
       }
       default:{
@@ -989,26 +1100,41 @@ const App =(props) =>{
 
   return (
     <div className="App">
-      {lightbox.isOpen  && <LightboxComp lightbox={lightbox} onLightbox={(v)=>setLightbox(v)}/> }
+      {lightbox.isOpen  && <LightboxComp datas={lightbox} onLightbox={(v)=>setLightbox(v)}/> }
       <ToastContainer />
       {
         openDialogLogout 
-        && <DialogLogoutComp {...props} open={openDialogLogout} onClose={()=>setOpenDialogLogout(false)}/>
+        && <DialogLogoutComp 
+            {...props} 
+            open={openDialogLogout} 
+            onLogout={()=>{
+              logout()
+              setOpenDialogLogout(false)
+              window.location.reload()
+            }}
+            onClose={()=>setOpenDialogLogout(false)}/>
       }
       {
         dialogLogin 
         && <DialogLoginComp   
             {...props}
             open={dialogLogin}
-            onComplete={async(data)=>{
-              setDialogLogin(false);
-            }}
-            onClose={() => {
-              setDialogLogin(false);
-            }}
+            onComplete={async(data)=> setDialogLogin(false) }
+            onClose={()=> setDialogLogin(false) }
             onMutationLogin={(evt)=>onMutationLogin(evt)}
             onMutationLoginWithSocial={(evt)=>onMutationLoginWithSocial(evt)}/>
       }
+      {
+        openDialogDeleteBank.open
+        && <DialogDeleteBankComp 
+            {...props} 
+            data={ openDialogDeleteBank }
+            onDelete={(evt)=>{
+              onMutationMe({ variables: { input: { type: "bank", mode: "delete", data: evt } } })
+            }}
+            onClose={()=>setOpenDialogDeleteBank({ open: false, id: ""})}/>
+      }
+
       {statusView()}
       {menuProfile()}
       <div className="container-fluid">
@@ -1029,36 +1155,33 @@ const App =(props) =>{
                     edge="start"
                     className={clsx(classes.menuButton, open && classes.hide)}
                   ><MenuIcon /></IconButton>
-                  <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">Berthong.com</div></Typography>
+                  <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">{ REACT_APP_SITE_TITLE }</div></Typography>
                   {
                     !_.isEmpty(user) && checkRole(user) === Constants.AUTHENTICATED 
                     ? <Stack direction={"row"} spacing={2} alignItems="center">
                         <IconButton 
                           size={'small'}
-                          onClick={()=>{
-                            navigate("/notifications")
-                          }}>
+                          onClick={()=> navigate("/notifications") }>
                           <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
-                            <MdCircleNotificationsIcon color="white" size="1.2em"/>
+                            <MdCircleNotificationsIcon color={ _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
                           </Badge>
                         </IconButton>
                         <IconButton 
                           size={'small'}
-                          onClick={()=>{ navigate("/book-buy") }}>
+                          onClick={()=> navigate("/book-buy")}>
                           <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
-                            <FiShoppingCart color="white" size="1.2em"/>
+                            <FiShoppingCart color={ _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
                           </Badge>
                         </IconButton>
                         <IconButton 
                           size={'small'}
-                          onClick={()=>{ navigate("/bookmarks") }}>
-                          <MdOutlineBookmarkAddedIcon color="white" size="1.2em"/>
+                          onClick={()=> navigate("/bookmarks")}>
+                          <MdOutlineBookmarkAddedIcon color={ _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
                         </IconButton>
-
                         <IconButton 
                           size={'small'}
-                          onClick={()=>{ navigate("/subscribes") }}>
-                          <SlUserFollowing color="white" size="1.2em"/>
+                          onClick={()=> navigate("/subscribes")}>
+                          <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
                         </IconButton>
                         <IconButton 
                           size={'small'}
@@ -1116,13 +1239,12 @@ const App =(props) =>{
                                     break;
                                   }
                                   case "/logout":{
-                                    handleDrawerClose();
                                     setOpenDialogLogout(true)
                                     break;
                                   }
                                   case "/withdraw":
                                   case "/deposit":{
-                                    navigate(item.path, {state: {from: "/", mode: "new" }})
+                                    navigate(item.path)
                                     break;
                                   }
 
@@ -1130,6 +1252,8 @@ const App =(props) =>{
                                     navigate(item.path)
                                   }
                                 }
+
+                                handleDrawerClose();
                               }}>
                               <ListItemIcon>{item.icon}</ListItemIcon>
                               <ListItemText 
@@ -1174,15 +1298,23 @@ const App =(props) =>{
                                         {...props} 
                                         onLogin={()=>setDialogLogin(true)}
                                         onLightbox={(value)=>setLightbox(value)} 
-                                        onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />}/>
+                                        onMutationSubscribe={(evt)=>{ onMutationSubscribe(evt) }} />}/>
             <Route path="/login-with-line" element={<LoginWithLine />}  />
             <Route path="/contact-us" element={<ContactUsPage onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
-              <Route path="/me" element={<MePage {...props} onLightbox={(v)=>setLightbox(v)} />} />
-              <Route path="/deposit" element={<DepositPage {...props} onMutationDeposit={(evt)=>onMutationContactUs(evt)} />} />
+              <Route path="/me" element={<MePage 
+                                          {...props} 
+                                          onDialogDeleteBank={(id)=>setOpenDialogDeleteBank({open: true, id})} 
+                                          onMutationMe={(evt)=>onMutationMe(evt)}
+                                          onLightbox={(evt)=>setLightbox(evt)} />} />
+              <Route path="/deposit" element={<DepositPage 
+                                                {...props} 
+                                                onMutationDeposit={(evt)=>{
+                                                  onMutationDeposit(evt)
+                                                }} />} />
               <Route path="/withdraw" element={<WithdrawPage {...props} />} />
               <Route path="/history-transitions" {...props} element={<HistoryTransitionsPage {...props} />} />
-              <Route path="/bank" element={<BankPage {...props} />} />
+              <Route path="/bank" element={<BankPage {...props} onMutationMe={(evt)=>onMutationMe(evt)} />} />
               <Route path="/banks" element={<BanksPage {...props} />} />
               <Route path="/book-buy" element={<MeBookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/notifications" element={<NotificationsPage {...props} onMutationNotification={(evt)=>onMutationNotification(evt)} />} />
@@ -1190,10 +1322,10 @@ const App =(props) =>{
               <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
-              <Route path="/deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} onMutationDeposit={(evt)=>onMutationDeposit(evt)} />} />
               <Route path="/withdraws" element={<WithdrawsPage {...props} onMutationWithdraw={(evt)=>onMutationWithdraw(evt)} onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/date-lotterys" element={<DateLotterysPage />} />
-              <Route path="/date-lottery" element={<DateLotteryPage />} />
+              <Route path="/date-lotterys" element={<DateLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
+              <Route path="/date-lottery" element={<DateLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/user" element={<UserPage />} />
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />

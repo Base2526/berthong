@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -16,9 +16,11 @@ import {
   Box
 } from "@mui/material"
 import InfiniteScroll from "react-infinite-scroll-component";
+import moment from "moment";
 
 import { getHeaders } from "./util"
-import { queryHistoryTransitions, mutationDeposit, queryDeposits } from "./gqlQuery"
+import { queryHistoryTransitions } from "./gqlQuery"
+import * as Constants from "./constants"
 deepdash(_);
 
 const HistoryTransitionsPage = (props) => {
@@ -37,42 +39,10 @@ const HistoryTransitionsPage = (props) => {
           subscribeToMore: subscribeToMoreHistoryTransitions, 
           networkStatus: networkStatusHistoryTransitions } = useQuery(queryHistoryTransitions, { 
                                                                                                   context: { headers: getHeaders(location) }, 
-                                                                                                  fetchPolicy: 'cache-first',
-                                                                                                  nextFetchPolicy: 'network-only', 
+                                                                                                  fetchPolicy: 'network-only',
+                                                                                                  nextFetchPolicy: 'cache-first',
                                                                                                   notifyOnNetworkStatusChange: true 
                                                                                                 });
-
-
-  // const [onMutationDeposit, resultMutationDeposit] = useMutation(mutationDeposit, {
-  //   context: { headers: getHeaders(location) },
-  //   update: (cache, {data: {deposit}}) => {
-  //     let { data, mode, status } = deposit
-
-  //     if(status){
-  //       switch(mode){
-  //         case "delete":{
-  //           let data1 = cache.readQuery({ query: queryDeposits });
-  //           let dataFilter =_.filter(data1.deposits.data, (item)=>data._id != item._id)
-
-  //           cache.writeQuery({
-  //             query: queryDeposits,
-  //             data: { deposits: {...data1.deposits, data: dataFilter} }
-  //           });
-
-  //           handleClose()
-  //           break;
-  //         }
-  //       }
-  //     }
-  //   },
-  //   onCompleted({ data }) {
-  //     // history.goBack()
-  //   },
-  //   onError({error}){
-  //     console.log("onError :")
-  //   }
-  // });
-  // console.log("resultMutationDeposit :", resultMutationDeposit)
 
   /*
   ฝาก
@@ -141,7 +111,6 @@ const HistoryTransitionsPage = (props) => {
   //                 return <div>{bank[0].bankName} {bank[0].bankNumber}</div>
   //               }
   //             },
-
   //             // 
   //             {
   //               Header: 'User Approve',
@@ -161,7 +130,6 @@ const HistoryTransitionsPage = (props) => {
   //             }
   //           ]
   //         }
-    
   //         case AUTHENTICATED:{
   //           return [
   //             {
@@ -202,7 +170,6 @@ const HistoryTransitionsPage = (props) => {
   //               Cell: props => {
   //                 let {createdAt} = props.row.values
   //                 createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-
   //                 return <div>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
   //               }
   //             }, 
@@ -211,9 +178,7 @@ const HistoryTransitionsPage = (props) => {
   //               accessor: 'updatedAt',
   //               Cell: props => {
   //                   let {updatedAt} = props.row.values
-
   //                   updatedAt = new Date(updatedAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-
   //                   return <div>{ (moment(updatedAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
   //               }
   //             },
@@ -268,6 +233,48 @@ const HistoryTransitionsPage = (props) => {
     }
   }
 
+  const ItemView = (value, index) =>{
+    switch(value?.type){
+      case Constants.SUPPLIER:{
+        return  <Stack key={index} direction="row" spacing={2}>
+                  <Box>Supplier</Box>
+                  <Box>ยอดฝาก : { value.balance }</Box>
+                  <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
+                  <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
+                </Stack>
+      }
+
+      case Constants.DEPOSIT:{
+        return  <Stack key={index} direction="row" spacing={2}>
+                  <Box>Deposit</Box>
+                  <Box>ยอดฝาก : { value?.balance }</Box>
+                  <Box>{ _.find(Constants.BANKS, (bank)=>_.isEqual(value?.bankId, bank.id))?.label }</Box>
+                  <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
+                  <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
+                  {/* {
+                    value.status == Constants.WAIT
+                    ? <Button 
+                        variant="outlined" 
+                        onClick={(evt)=>{
+                          onMutationDeposit({ variables: { input: {_id: value?._id, type: Constants.CANCEL } } });
+                        }}>ยกเลิก</Button>
+                    :""
+                  } */}
+                </Stack>
+      }
+
+      case Constants.WITHDRAW:{
+        return  <Stack key={index} direction="row" spacing={2}>
+                  <Box>Withdraw</Box>
+                  <Box>ยอดฝาก : { value.balance }</Box>
+                  <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
+                  <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
+                </Stack>
+      }
+    }
+  }
+
+  // return  useMemo(() => {
   return (<div style={{flex:1}}>
             {
               loadingHistoryTransitions
@@ -281,12 +288,16 @@ const HistoryTransitionsPage = (props) => {
                           loader={<h4>Loading...</h4>}>
                           { 
                           _.map(datas, (item, index) => {
-                            console.log("datas :", datas)
-                            return  <Stack direction="row" spacing={2}>
-                                      <Box>{item.balance}</Box>
-                                      <Box>{item.title}</Box>
-                                      <Box>{item.createdAt}</Box>
-                                    </Stack>
+                            console.log("item :", item)
+                            return ItemView(item, index)
+                            // console.log("datas :", datas)
+                            // 0: 'supplier', 1: 'deposit',  2: 'withdraw'
+                            // return  <Stack key={index} direction="row" spacing={2}>
+                            //           <Box>{ item.type == 0 ? "Supplier" : item.type == 1 ? "Deposit" : "Withdraw" }</Box>
+                            //           <Box>ยอดฝาก : { item.balance }</Box>
+                            //           <Box>{ item.status == Constants.WAIT ? "รอดำเนินการ" : item.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
+                            //           <Box>{ moment(item.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
+                            //         </Stack>
                           })
                         }
                       </InfiniteScroll>
@@ -321,7 +332,8 @@ const HistoryTransitionsPage = (props) => {
                 </DialogActions>
               </Dialog>
             )}
-          </div>);
+          </div>)
+          // }, [datas, loadingHistoryTransitions]);
 }
 
 export default HistoryTransitionsPage

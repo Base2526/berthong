@@ -179,7 +179,10 @@ const SlateEditor = (props) => {
           onPost()
           reset()
         }} 
-        onCancel={onCancel} />
+        onCancel={()=>{
+          onCancel()
+          reset()
+        }} />
     </Slate>
   );
 };

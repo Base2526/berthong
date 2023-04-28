@@ -1,0 +1,290 @@
+Date : 2023-04-25 12:27:37
+Directory : d:\Documents\GitHub\berthong
+Total : 205 files,  1641906 codes, 3593 comments, 2672 blanks, all 1648171 lines
+
+Languages
++----------------+------------+------------+------------+------------+------------+
+| language       | files      | code       | comment    | blank      | total      |
++----------------+------------+------------+------------+------------+------------+
+| JSON           |         17 |  1,623,195 |          0 |          5 |  1,623,200 |
+| JavaScript     |        135 |     13,306 |      2,853 |      2,164 |     18,323 |
+| CSS            |         12 |      4,114 |        497 |        388 |      4,999 |
+| JavaScript JSX |         17 |        866 |        124 |         87 |      1,077 |
+| Markdown       |          3 |        223 |          0 |          2 |        225 |
+| YAML           |          3 |        107 |         95 |         12 |        214 |
+| SCSS           |          1 |         49 |          0 |         11 |         60 |
+| XML            |         15 |         22 |          0 |          1 |         23 |
+| HTML           |          1 |         20 |         23 |          1 |         44 |
+| Shell Script   |          1 |          4 |          1 |          1 |          6 |
++----------------+------------+------------+------------+------------+------------+
+
+Directories
++------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                             | files      | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                                |        205 |  1,641,906 |      3,593 |      2,672 |  1,648,171 |
+| . (Files)                                                                                                        |          4 |        324 |         95 |         12 |        431 |
+| backend                                                                                                          |         43 |     20,228 |        947 |        898 |     22,073 |
+| backend (Files)                                                                                                  |          3 |     16,755 |          0 |          2 |     16,757 |
+| backend\src                                                                                                      |         40 |      3,473 |        947 |        896 |      5,316 |
+| backend\src (Files)                                                                                              |          7 |      2,283 |        714 |        619 |      3,616 |
+| backend\src\cache                                                                                                |          1 |         20 |          0 |          6 |         26 |
+| backend\src\elastic                                                                                              |          1 |         11 |          1 |          3 |         15 |
+| backend\src\model                                                                                                |         27 |        571 |         55 |        127 |        753 |
+| backend\src\mongo                                                                                                |          1 |        281 |         45 |         52 |        378 |
+| backend\src\utils                                                                                                |          3 |        307 |        132 |         89 |        528 |
+| frontend                                                                                                         |        145 |     57,753 |      2,550 |      1,761 |     62,064 |
+| frontend (Files)                                                                                                 |          3 |     42,824 |          0 |          4 |     42,828 |
+| frontend\public                                                                                                  |          2 |         45 |         23 |          2 |         70 |
+| frontend\src                                                                                                     |        140 |     14,884 |      2,527 |      1,755 |     19,166 |
+| frontend\src (Files)                                                                                             |         45 |      6,554 |      1,493 |        820 |      8,867 |
+| frontend\src\components                                                                                          |         70 |      3,582 |        457 |        376 |      4,415 |
+| frontend\src\components (Files)                                                                                  |         12 |      1,225 |        107 |        145 |      1,477 |
+| frontend\src\components\comment                                                                                  |          9 |        779 |         83 |         74 |        936 |
+| frontend\src\components\editable                                                                                 |         49 |      1,578 |        267 |        157 |      2,002 |
+| frontend\src\components\editable (Files)                                                                         |          2 |         25 |          1 |          6 |         32 |
+| frontend\src\components\editable\QuillEditor                                                                     |          5 |        324 |          3 |         17 |        344 |
+| frontend\src\components\editable\SlateEditor                                                                     |         42 |      1,229 |        263 |        134 |      1,626 |
+| frontend\src\components\editable\SlateEditor (Files)                                                             |          2 |        215 |         14 |         17 |        246 |
+| frontend\src\components\editable\SlateEditor\Elements                                                            |         14 |        475 |          0 |         31 |        506 |
+| frontend\src\components\editable\SlateEditor\Elements\Color Picker                                               |          3 |        174 |          0 |         10 |        184 |
+| frontend\src\components\editable\SlateEditor\Elements\Embed                                                      |          1 |         48 |          0 |          2 |         50 |
+| frontend\src\components\editable\SlateEditor\Elements\Image                                                      |          2 |         29 |          0 |          1 |         30 |
+| frontend\src\components\editable\SlateEditor\Elements\Link                                                       |          3 |         58 |          0 |          4 |         62 |
+| frontend\src\components\editable\SlateEditor\Elements\Table                                                      |          3 |        138 |          0 |         10 |        148 |
+| frontend\src\components\editable\SlateEditor\Elements\Video                                                      |          2 |         28 |          0 |          4 |         32 |
+| frontend\src\components\editable\SlateEditor\Toolbar                                                             |         16 |        158 |        209 |         20 |        387 |
+| frontend\src\components\editable\SlateEditor\Toolbar (Files)                                                     |          3 |        138 |        209 |         19 |        366 |
+| frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons                                                |         13 |         20 |          0 |          1 |         21 |
+| frontend\src\components\editable\SlateEditor\common                                                              |          2 |         28 |         36 |         12 |         76 |
+| frontend\src\components\editable\SlateEditor\plugins                                                             |          3 |         89 |          0 |         22 |        111 |
+| frontend\src\components\editable\SlateEditor\utils                                                               |          5 |        264 |          4 |         32 |        300 |
+| frontend\src\editor                                                                                              |          1 |         32 |          2 |          7 |         41 |
+| frontend\src\fields                                                                                              |          2 |        153 |          2 |         20 |        175 |
+| frontend\src\helpers                                                                                             |          2 |        555 |          2 |         29 |        586 |
+| frontend\src\item                                                                                                |          3 |        215 |         58 |         27 |        300 |
+| frontend\src\pages                                                                                               |          9 |      3,432 |        477 |        363 |      4,272 |
+| frontend\src\pages\detail                                                                                        |          9 |      3,432 |        477 |        363 |      4,272 |
+| frontend\src\redux                                                                                               |          5 |        232 |         36 |         77 |        345 |
+| frontend\src\redux\actions                                                                                       |          2 |         79 |          1 |         29 |        109 |
+| frontend\src\redux\reducers                                                                                      |          3 |        153 |         35 |         48 |        236 |
+| frontend\src\translations                                                                                        |          3 |        129 |          0 |         36 |        165 |
+| frontend\src\translations (Files)                                                                                |          1 |         20 |          0 |          6 |         26 |
+| frontend\src\translations\en                                                                                     |          1 |         54 |          0 |          0 |         54 |
+| frontend\src\translations\th                                                                                     |          1 |         55 |          0 |         30 |         85 |
+| restore                                                                                                          |         13 |  1,563,601 |          1 |          1 |  1,563,603 |
+| restore (Files)                                                                                                  |          2 |         56 |          1 |          1 |         58 |
+| restore\16-11-2022                                                                                               |         11 |  1,563,545 |          0 |          0 |  1,563,545 |
++------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++------------------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+
+| filename                                                                                                         | language       | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+
+| d:\Documents\GitHub\berthong\README.md                                                                           | Markdown       |        217 |          0 |          0 |        217 |
+| d:\Documents\GitHub\berthong\backend\README.md                                                                   | Markdown       |          2 |          0 |          0 |          2 |
+| d:\Documents\GitHub\berthong\backend\package-lock.json                                                           | JSON           |     16,686 |          0 |          1 |     16,687 |
+| d:\Documents\GitHub\berthong\backend\package.json                                                                | JSON           |         67 |          0 |          1 |         68 |
+| d:\Documents\GitHub\berthong\backend\src\cache\index.js                                                          | JavaScript     |         20 |          0 |          6 |         26 |
+| d:\Documents\GitHub\berthong\backend\src\constants.js                                                            | JavaScript     |         19 |          0 |          5 |         24 |
+| d:\Documents\GitHub\berthong\backend\src\cron-jobs.js                                                            | JavaScript     |         53 |          6 |         15 |         74 |
+| d:\Documents\GitHub\berthong\backend\src\elastic\index.js                                                        | JavaScript     |         11 |          1 |          3 |         15 |
+| d:\Documents\GitHub\berthong\backend\src\index-v3.js                                                             | JavaScript     |         88 |        100 |         32 |        220 |
+| d:\Documents\GitHub\berthong\backend\src\index.js                                                                | JavaScript     |        102 |        156 |         48 |        306 |
+| d:\Documents\GitHub\berthong\backend\src\model\BankModel.js                                                      | JavaScript     |         12 |          0 |          3 |         15 |
+| d:\Documents\GitHub\berthong\backend\src\model\BasicContentModel.js                                              | JavaScript     |         11 |          0 |          3 |         14 |
+| d:\Documents\GitHub\berthong\backend\src\model\BookmarkModel.js                                                  | JavaScript     |         13 |          0 |          4 |         17 |
+| d:\Documents\GitHub\berthong\backend\src\model\CommentModel.js                                                   | JavaScript     |         24 |         26 |          3 |         53 |
+| d:\Documents\GitHub\berthong\backend\src\model\ContactUsModel.js                                                 | JavaScript     |         18 |          0 |          3 |         21 |
+| d:\Documents\GitHub\berthong\backend\src\model\ConversationModel.js                                              | JavaScript     |         19 |         22 |          8 |         49 |
+| d:\Documents\GitHub\berthong\backend\src\model\DateLotteryModel.js                                               | JavaScript     |         12 |          1 |          2 |         15 |
+| d:\Documents\GitHub\berthong\backend\src\model\DblogModel.js                                                     | JavaScript     |         13 |          0 |          3 |         16 |
+| d:\Documents\GitHub\berthong\backend\src\model\DepositModel.js                                                   | JavaScript     |         32 |          5 |          5 |         42 |
+| d:\Documents\GitHub\berthong\backend\src\model\FollowModel.js                                                    | JavaScript     |         13 |          0 |          4 |         17 |
+| d:\Documents\GitHub\berthong\backend\src\model\MailModel.js                                                      | JavaScript     |         12 |          0 |          3 |         15 |
+| d:\Documents\GitHub\berthong\backend\src\model\MessageModel.js                                                   | JavaScript     |         24 |          0 |          5 |         29 |
+| d:\Documents\GitHub\berthong\backend\src\model\NotificationModel.js                                              | JavaScript     |         18 |          0 |          2 |         20 |
+| d:\Documents\GitHub\berthong\backend\src\model\PhoneModel.js                                                     | JavaScript     |         12 |          0 |          3 |         15 |
+| d:\Documents\GitHub\berthong\backend\src\model\PostModel.js                                                      | JavaScript     |         42 |          0 |          8 |         50 |
+| d:\Documents\GitHub\berthong\backend\src\model\ReportModel.js                                                    | JavaScript     |         14 |          0 |          4 |         18 |
+| d:\Documents\GitHub\berthong\backend\src\model\RoleModel.js                                                      | JavaScript     |         12 |          0 |          3 |         15 |
+| d:\Documents\GitHub\berthong\backend\src\model\RoomModel.js                                                      | JavaScript     |         19 |          0 |          3 |         22 |
+| d:\Documents\GitHub\berthong\backend\src\model\SessionModel.js                                                   | JavaScript     |         13 |          0 |          2 |         15 |
+| d:\Documents\GitHub\berthong\backend\src\model\ShareModel.js                                                     | JavaScript     |         13 |          0 |          4 |         17 |
+| d:\Documents\GitHub\berthong\backend\src\model\SocketModel.js                                                    | JavaScript     |         12 |          0 |          4 |         16 |
+| d:\Documents\GitHub\berthong\backend\src\model\SupplierModel.js                                                  | JavaScript     |         53 |          0 |          6 |         59 |
+| d:\Documents\GitHub\berthong\backend\src\model\TransitionModel.js                                                | JavaScript     |         24 |          0 |          4 |         28 |
+| d:\Documents\GitHub\berthong\backend\src\model\UserModel.js                                                      | JavaScript     |         48 |          0 |          5 |         53 |
+| d:\Documents\GitHub\berthong\backend\src\model\WithdrawModel.js                                                  | JavaScript     |         24 |          1 |          3 |         28 |
+| d:\Documents\GitHub\berthong\backend\src\model\index.js                                                          | JavaScript     |         52 |          0 |         29 |         81 |
+| d:\Documents\GitHub\berthong\backend\src\model\tReportModel.js                                                   | JavaScript     |         12 |          0 |          1 |         13 |
+| d:\Documents\GitHub\berthong\backend\src\mongo\index.js                                                          | JavaScript     |        281 |         45 |         52 |        378 |
+| d:\Documents\GitHub\berthong\backend\src\pubsub.js                                                               | JavaScript     |          4 |          0 |          2 |          6 |
+| d:\Documents\GitHub\berthong\backend\src\resolvers.js                                                            | JavaScript     |      1,315 |        452 |        401 |      2,168 |
+| d:\Documents\GitHub\berthong\backend\src\typeDefs.js                                                             | JavaScript     |        702 |          0 |        116 |        818 |
+| d:\Documents\GitHub\berthong\backend\src\utils\AppError.js                                                       | JavaScript     |          8 |          9 |          8 |         25 |
+| d:\Documents\GitHub\berthong\backend\src\utils\index.js                                                          | JavaScript     |        183 |         44 |         53 |        280 |
+| d:\Documents\GitHub\berthong\backend\src\utils\logger.js                                                         | JavaScript     |        116 |         79 |         28 |        223 |
+| d:\Documents\GitHub\berthong\docker-compose.dev.yml                                                              | YAML           |         41 |         74 |          7 |        122 |
+| d:\Documents\GitHub\berthong\docker-compose.prod.yml                                                             | YAML           |         54 |         21 |          4 |         79 |
+| d:\Documents\GitHub\berthong\docker-compose.ui.yml                                                               | YAML           |         12 |          0 |          1 |         13 |
+| d:\Documents\GitHub\berthong\frontend\README.md                                                                  | Markdown       |          4 |          0 |          2 |          6 |
+| d:\Documents\GitHub\berthong\frontend\package-lock.json                                                          | JSON           |     42,683 |          0 |          1 |     42,684 |
+| d:\Documents\GitHub\berthong\frontend\package.json                                                               | JSON           |        137 |          0 |          1 |        138 |
+| d:\Documents\GitHub\berthong\frontend\public\index.html                                                          | HTML           |         20 |         23 |          1 |         44 |
+| d:\Documents\GitHub\berthong\frontend\public\manifest.json                                                       | JSON           |         25 |          0 |          1 |         26 |
+| d:\Documents\GitHub\berthong\frontend\src\AdminHomePage.js                                                       | JavaScript     |        146 |        160 |         21 |        327 |
+| d:\Documents\GitHub\berthong\frontend\src\Apollo.js                                                              | JavaScript     |        151 |         74 |         31 |        256 |
+| d:\Documents\GitHub\berthong\frontend\src\App.css                                                                | CSS            |        954 |         39 |         82 |      1,075 |
+| d:\Documents\GitHub\berthong\frontend\src\App.js                                                                 | JavaScript     |      1,026 |        227 |        110 |      1,363 |
+| d:\Documents\GitHub\berthong\frontend\src\AttackFileField.js                                                     | JavaScript     |         34 |        126 |          4 |        164 |
+| d:\Documents\GitHub\berthong\frontend\src\AutoGenerationContent.js                                               | JavaScript     |        137 |          6 |         17 |        160 |
+| d:\Documents\GitHub\berthong\frontend\src\BankPage.js                                                            | JavaScript     |         37 |         39 |         13 |         89 |
+| d:\Documents\GitHub\berthong\frontend\src\BanksPage.js                                                           | JavaScript     |        135 |          6 |         15 |        156 |
+| d:\Documents\GitHub\berthong\frontend\src\BookMarksPage.js                                                       | JavaScript     |         95 |          7 |         10 |        112 |
+| d:\Documents\GitHub\berthong\frontend\src\ContactUsPage.js                                                       | JavaScript     |         86 |          0 |         10 |         96 |
+| d:\Documents\GitHub\berthong\frontend\src\DateLotteryPage.js                                                     | JavaScript     |        118 |         28 |         24 |        170 |
+| d:\Documents\GitHub\berthong\frontend\src\DateLotterysPage.js                                                    | JavaScript     |        146 |        138 |         23 |        307 |
+| d:\Documents\GitHub\berthong\frontend\src\DepositPage.js                                                         | JavaScript     |        256 |          4 |         22 |        282 |
+| d:\Documents\GitHub\berthong\frontend\src\DepositsPage.js                                                        | JavaScript     |        315 |         33 |         32 |        380 |
+| d:\Documents\GitHub\berthong\frontend\src\DialogBuy.js                                                           | JavaScript     |         67 |          3 |         11 |         81 |
+| d:\Documents\GitHub\berthong\frontend\src\FriendPage.js                                                          | JavaScript     |        143 |         16 |         19 |        178 |
+| d:\Documents\GitHub\berthong\frontend\src\HistoryTransitionsPage.js                                              | JavaScript     |        109 |        160 |         26 |        295 |
+| d:\Documents\GitHub\berthong\frontend\src\HomePage.js                                                            | JavaScript     |        295 |          5 |         36 |        336 |
+| d:\Documents\GitHub\berthong\frontend\src\LoginPage.js                                                           | JavaScript     |         69 |          0 |         12 |         81 |
+| d:\Documents\GitHub\berthong\frontend\src\LoginWithLine.js                                                       | JavaScript     |         55 |          0 |         11 |         66 |
+| d:\Documents\GitHub\berthong\frontend\src\MeBookBuysPage.js                                                      | JavaScript     |        149 |          7 |         16 |        172 |
+| d:\Documents\GitHub\berthong\frontend\src\MePage.js                                                              | JavaScript     |        101 |        128 |          7 |        236 |
+| d:\Documents\GitHub\berthong\frontend\src\NotificationsPage.js                                                   | JavaScript     |        110 |          7 |         18 |        135 |
+| d:\Documents\GitHub\berthong\frontend\src\Redux.js                                                               | JavaScript     |         48 |         12 |         14 |         74 |
+| d:\Documents\GitHub\berthong\frontend\src\Store.js                                                               | JavaScript     |         51 |          0 |          6 |         57 |
+| d:\Documents\GitHub\berthong\frontend\src\SubscribesPage.js                                                      | JavaScript     |         96 |          7 |         11 |        114 |
+| d:\Documents\GitHub\berthong\frontend\src\SupplierPage.js                                                        | JavaScript     |        277 |          3 |         26 |        306 |
+| d:\Documents\GitHub\berthong\frontend\src\SuppliersPage.js                                                       | JavaScript     |        182 |          8 |         20 |        210 |
+| d:\Documents\GitHub\berthong\frontend\src\TaxonomyBankPage.js                                                    | JavaScript     |         90 |         24 |         17 |        131 |
+| d:\Documents\GitHub\berthong\frontend\src\TaxonomyBanksPage.js                                                   | JavaScript     |        125 |          9 |         13 |        147 |
+| d:\Documents\GitHub\berthong\frontend\src\UserPage.js                                                            | JavaScript     |        130 |        108 |         18 |        256 |
+| d:\Documents\GitHub\berthong\frontend\src\UsersPage.js                                                           | JavaScript     |        166 |          4 |         19 |        189 |
+| d:\Documents\GitHub\berthong\frontend\src\WithdrawPage.js                                                        | JavaScript     |        124 |         46 |         14 |        184 |
+| d:\Documents\GitHub\berthong\frontend\src\WithdrawsPage.js                                                       | JavaScript     |        204 |         33 |         25 |        262 |
+| d:\Documents\GitHub\berthong\frontend\src\components\BankComp.js                                                 | JavaScript     |         35 |          0 |          7 |         42 |
+| d:\Documents\GitHub\berthong\frontend\src\components\BreadcsComp.js                                              | JavaScript     |        262 |          1 |         36 |        299 |
+| d:\Documents\GitHub\berthong\frontend\src\components\CommentComp.js                                              | JavaScript     |         88 |          0 |         15 |        103 |
+| d:\Documents\GitHub\berthong\frontend\src\components\DialogDeleteBankComp.js                                     | JavaScript     |         35 |          0 |          5 |         40 |
+| d:\Documents\GitHub\berthong\frontend\src\components\DialogLoginComp.js                                          | JavaScript     |        161 |         15 |         19 |        195 |
+| d:\Documents\GitHub\berthong\frontend\src\components\DialogLogoutComp.js                                         | JavaScript     |         34 |          0 |          4 |         38 |
+| d:\Documents\GitHub\berthong\frontend\src\components\LightboxComp.js                                             | JavaScript     |         41 |          0 |          5 |         46 |
+| d:\Documents\GitHub\berthong\frontend\src\components\RolesComp.js                                                | JavaScript     |         35 |          0 |          8 |         43 |
+| d:\Documents\GitHub\berthong\frontend\src\components\SearchComp.js                                               | JavaScript     |        202 |         33 |         12 |        247 |
+| d:\Documents\GitHub\berthong\frontend\src\components\SkeletonComp.js                                             | JavaScript     |         27 |          0 |          2 |         29 |
+| d:\Documents\GitHub\berthong\frontend\src\components\TableComp.js                                                | JavaScript     |        250 |         57 |         23 |        330 |
+| d:\Documents\GitHub\berthong\frontend\src\components\UserComp.js                                                 | JavaScript     |         55 |          1 |          9 |         65 |
+| d:\Documents\GitHub\berthong\frontend\src\components\comment\ActionContext.js                                    | JavaScript     |        140 |         27 |         16 |        183 |
+| d:\Documents\GitHub\berthong\frontend\src\components\comment\CommentSection.js                                   | JavaScript     |         44 |          0 |          6 |         50 |
+| d:\Documents\GitHub\berthong\frontend\src\components\comment\CommentStructure.js                                 | JavaScript     |        224 |         29 |         31 |        284 |
+| d:\Documents\GitHub\berthong\frontend\src\components\comment\DisplayComments.js                                  | JavaScript     |         91 |          0 |          1 |         92 |
+| d:\Documents\GitHub\berthong\frontend\src\components\comment\Input.js                                            | JavaScript     |         17 |          0 |          3 |         20 |
+| d:\Documents\GitHub\berthong\frontend\src\components\comment\InputField.js                                       | JavaScript     |         37 |          0 |          6 |         43 |
+| d:\Documents\GitHub\berthong\frontend\src\components\comment\SignField.js                                        | JavaScript     |         27 |         10 |          7 |         44 |
+| d:\Documents\GitHub\berthong\frontend\src\components\comment\index.css                                           | CSS            |        194 |         17 |          3 |        214 |
+| d:\Documents\GitHub\berthong\frontend\src\components\comment\index.js                                            | JavaScript     |          5 |          0 |          1 |          6 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\App.jsx                                            | JavaScript JSX |         10 |          0 |          2 |         12 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\QuillEditor\CustomToolbar.jsx                      | JavaScript JSX |         41 |          0 |          1 |         42 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\QuillEditor\Editor.jsx                             | JavaScript JSX |         41 |          2 |          7 |         50 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\QuillEditor\Editor2.jsx                            | JavaScript JSX |        125 |          0 |          5 |        130 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\QuillEditor\ToolbarOptions.js                      | JavaScript     |         84 |          0 |          3 |         87 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\QuillEditor\tools.js                               | JavaScript     |         33 |          1 |          1 |         35 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Editor.css                             | CSS            |         45 |         10 |          1 |         56 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Editor.jsx                             | JavaScript JSX |        170 |          4 |         16 |        190 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Color Picker\ColorPicker.css  | CSS            |         36 |          0 |          3 |         39 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Color Picker\ColorPicker.jsx  | JavaScript JSX |        104 |          0 |          7 |        111 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Color Picker\defaultColors.js | JavaScript     |         34 |          0 |          0 |         34 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Embed\Embed.jsx               | JavaScript JSX |         48 |          0 |          2 |         50 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Image\Image.css               | CSS            |          7 |          0 |          0 |          7 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Image\Image.jsx               | JavaScript JSX |         22 |          0 |          1 |         23 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Link\Link.jsx                 | JavaScript JSX |         22 |          0 |          2 |         24 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Link\LinkButton.jsx           | JavaScript JSX |         17 |          0 |          2 |         19 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Link\styles.css               | CSS            |         19 |          0 |          0 |         19 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Table\InTable.jsx             | JavaScript JSX |         39 |          0 |          4 |         43 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Table\Table.css               | CSS            |         18 |          0 |          1 |         19 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Table\Table.jsx               | JavaScript JSX |         81 |          0 |          5 |         86 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Video\Video.css               | CSS            |          8 |          0 |          1 |          9 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Elements\Video\Video.jsx               | JavaScript JSX |         20 |          0 |          3 |         23 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\Toolbar.jsx                    | JavaScript JSX |         83 |         81 |         14 |        178 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\styles.css                     | CSS            |         30 |          3 |          2 |         35 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarGroups.js               | JavaScript     |         25 |        125 |          3 |        153 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\align-center.svg  | XML            |          1 |          0 |          0 |          1 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\align-left.svg    | XML            |          1 |          0 |          0 |          1 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\align-right.svg   | XML            |          1 |          0 |          0 |          1 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\blockquote.svg    | XML            |          1 |          0 |          0 |          1 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\fontColor.svg     | XML            |          4 |          0 |          1 |          5 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\headingOne.svg    | XML            |          3 |          0 |          0 |          3 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\headingTwo.svg    | XML            |          3 |          0 |          0 |          3 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\link.svg          | XML            |          1 |          0 |          0 |          1 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\orderedList.svg   | XML            |          1 |          0 |          0 |          1 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\subscript.svg     | XML            |          1 |          0 |          0 |          1 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\superscript.svg   | XML            |          1 |          0 |          0 |          1 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\unlink.svg        | XML            |          1 |          0 |          0 |          1 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\Toolbar\toolbarIcons\unorderedList.svg | XML            |          1 |          0 |          0 |          1 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\common\Button.jsx                      | JavaScript JSX |         10 |          0 |          2 |         12 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\common\Icon.jsx                        | JavaScript JSX |         18 |         36 |         10 |         64 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\plugins\withEmbeds.js                  | JavaScript     |          7 |          0 |          4 |         11 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\plugins\withLinks.js                   | JavaScript     |          7 |          0 |          2 |          9 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\plugins\withTable.js                   | JavaScript     |         75 |          0 |         16 |         91 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\utils\SlateUtilityFunctions.js         | JavaScript     |         89 |          3 |         10 |        102 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\utils\embed.js                         | JavaScript     |         27 |          0 |          3 |         30 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\utils\link.js                          | JavaScript     |         44 |          1 |          7 |         52 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\utils\paragraph.js                     | JavaScript     |          4 |          0 |          0 |          4 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\SlateEditor\utils\table.js                         | JavaScript     |        100 |          0 |         12 |        112 |
+| d:\Documents\GitHub\berthong\frontend\src\components\editable\TestComp.jsx                                       | JavaScript JSX |         15 |          1 |          4 |         20 |
+| d:\Documents\GitHub\berthong\frontend\src\constants.js                                                           | JavaScript     |         42 |          3 |         15 |         60 |
+| d:\Documents\GitHub\berthong\frontend\src\editor\Editor.js                                                       | JavaScript     |         32 |          2 |          7 |         41 |
+| d:\Documents\GitHub\berthong\frontend\src\fields\BankInputField.js                                               | JavaScript     |        132 |          2 |         17 |        151 |
+| d:\Documents\GitHub\berthong\frontend\src\fields\InputPasswordField.js                                           | JavaScript     |         21 |          0 |          3 |         24 |
+| d:\Documents\GitHub\berthong\frontend\src\gqlQuery.js                                                            | JavaScript     |         47 |          5 |          4 |         56 |
+| d:\Documents\GitHub\berthong\frontend\src\helpers\ReadMoreMaster.js                                              | JavaScript     |         55 |          1 |          9 |         65 |
+| d:\Documents\GitHub\berthong\frontend\src\helpers\data.js                                                        | JavaScript     |        500 |          1 |         20 |        521 |
+| d:\Documents\GitHub\berthong\frontend\src\index.js                                                               | JavaScript     |         42 |          5 |          7 |         54 |
+| d:\Documents\GitHub\berthong\frontend\src\item\AdminHomeItem.js                                                  | JavaScript     |         31 |          9 |          5 |         45 |
+| d:\Documents\GitHub\berthong\frontend\src\item\HomeItem.js                                                       | JavaScript     |        165 |          7 |          6 |        178 |
+| d:\Documents\GitHub\berthong\frontend\src\item\ItemShare.js                                                      | JavaScript     |         19 |         42 |         16 |         77 |
+| d:\Documents\GitHub\berthong\frontend\src\line.svg                                                               | XML            |          1 |          0 |          0 |          1 |
+| d:\Documents\GitHub\berthong\frontend\src\logo.svg                                                               | XML            |          1 |          0 |          0 |          1 |
+| d:\Documents\GitHub\berthong\frontend\src\pages\detail\Detail.js                                                 | JavaScript     |        191 |          2 |         37 |        230 |
+| d:\Documents\GitHub\berthong\frontend\src\pages\detail\DetailPanelLeft.js                                        | JavaScript     |         41 |          0 |          3 |         44 |
+| d:\Documents\GitHub\berthong\frontend\src\pages\detail\DetailPanelRight.js                                       | JavaScript     |        291 |         47 |         15 |        353 |
+| d:\Documents\GitHub\berthong\frontend\src\pages\detail\PopupCart.js                                              | JavaScript     |         52 |          0 |          7 |         59 |
+| d:\Documents\GitHub\berthong\frontend\src\pages\detail\PopupWallet.js                                            | JavaScript     |         54 |          0 |          5 |         59 |
+| d:\Documents\GitHub\berthong\frontend\src\pages\detail\detail.css                                                | CSS            |      2,134 |        311 |        194 |      2,639 |
+| d:\Documents\GitHub\berthong\frontend\src\pages\detail\index.js                                                  | JavaScript     |          0 |          0 |          1 |          1 |
+| d:\Documents\GitHub\berthong\frontend\src\pages\detail\seat.css                                                  | CSS            |        262 |         74 |         25 |        361 |
+| d:\Documents\GitHub\berthong\frontend\src\pages\detail\wallet.css                                                | CSS            |        407 |         43 |         76 |        526 |
+| d:\Documents\GitHub\berthong\frontend\src\redux\actions\auth.js                                                  | JavaScript     |         70 |          1 |         26 |         97 |
+| d:\Documents\GitHub\berthong\frontend\src\redux\actions\ws.js                                                    | JavaScript     |          9 |          0 |          3 |         12 |
+| d:\Documents\GitHub\berthong\frontend\src\redux\reducers\auth.js                                                 | JavaScript     |        129 |         34 |         43 |        206 |
+| d:\Documents\GitHub\berthong\frontend\src\redux\reducers\index.js                                                | JavaScript     |          7 |          0 |          2 |          9 |
+| d:\Documents\GitHub\berthong\frontend\src\redux\reducers\ws.js                                                   | JavaScript     |         17 |          1 |          3 |         21 |
+| d:\Documents\GitHub\berthong\frontend\src\reportWebVitals.js                                                     | JavaScript     |         12 |          0 |          2 |         14 |
+| d:\Documents\GitHub\berthong\frontend\src\setupTests.js                                                          | JavaScript     |          1 |          4 |          1 |          6 |
+| d:\Documents\GitHub\berthong\frontend\src\skeleton.scss                                                          | SCSS           |         49 |          0 |         11 |         60 |
+| d:\Documents\GitHub\berthong\frontend\src\sum.js                                                                 | JavaScript     |          4 |          0 |          0 |          4 |
+| d:\Documents\GitHub\berthong\frontend\src\sum.test.js                                                            | JavaScript     |          4 |          0 |          0 |          4 |
+| d:\Documents\GitHub\berthong\frontend\src\translations\en\translations.js                                        | JavaScript     |         54 |          0 |          0 |         54 |
+| d:\Documents\GitHub\berthong\frontend\src\translations\i18n.js                                                   | JavaScript     |         20 |          0 |          6 |         26 |
+| d:\Documents\GitHub\berthong\frontend\src\translations\th\translations.js                                        | JavaScript     |         55 |          0 |         30 |         85 |
+| d:\Documents\GitHub\berthong\frontend\src\util.js                                                                | JavaScript     |        124 |          9 |         27 |        160 |
+| d:\Documents\GitHub\berthong\restore\16-11-2022\bank.json                                                        | JSON           |        443 |          0 |          0 |        443 |
+| d:\Documents\GitHub\berthong\restore\16-11-2022\basicContent.json                                                | JSON           |         69 |          0 |          0 |         69 |
+| d:\Documents\GitHub\berthong\restore\16-11-2022\bookmark.json                                                    | JSON           |        217 |          0 |          0 |        217 |
+| d:\Documents\GitHub\berthong\restore\16-11-2022\comment.json                                                     | JSON           |        162 |          0 |          0 |        162 |
+| d:\Documents\GitHub\berthong\restore\16-11-2022\conversation.json                                                | JSON           |        187 |          0 |          0 |        187 |
+| d:\Documents\GitHub\berthong\restore\16-11-2022\message.json                                                     | JSON           |        596 |          0 |          0 |        596 |
+| d:\Documents\GitHub\berthong\restore\16-11-2022\phone.json                                                       | JSON           |     49,013 |          0 |          0 |     49,013 |
+| d:\Documents\GitHub\berthong\restore\16-11-2022\post.json                                                        | JSON           |  1,459,868 |          0 |          0 |  1,459,868 |
+| d:\Documents\GitHub\berthong\restore\16-11-2022\role.json                                                        | JSON           |         52 |          0 |          0 |         52 |
+| d:\Documents\GitHub\berthong\restore\16-11-2022\tContactUs.json                                                  | JSON           |         52 |          0 |          0 |         52 |
+| d:\Documents\GitHub\berthong\restore\16-11-2022\user.json                                                        | JSON           |     52,886 |          0 |          0 |     52,886 |
+| d:\Documents\GitHub\berthong\restore\basicContent.json                                                           | JSON           |         52 |          0 |          0 |         52 |
+| d:\Documents\GitHub\berthong\restore\rs-setup.sh                                                                 | Shell Script   |          4 |          1 |          1 |          6 |
+| Total                                                                                                            |                |  1,641,906 |      3,593 |      2,672 |  1,648,171 |
++------------------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+

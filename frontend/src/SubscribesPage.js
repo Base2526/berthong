@@ -21,7 +21,6 @@ const SubscribesPage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useTranslation();
-    
     let [input, setInput] = useState(initialValue)
 
     let { user, onMutationSubscribe } = props
@@ -66,46 +65,48 @@ const SubscribesPage = (props) => {
 
     return (<div>
                 {
-                loadingSubscribes || input.data.length == 0 
+                loadingSubscribes
                 ?   <LinearProgress />
-                :   <InfiniteScroll
-                        dataLength={input.slice}
-                        next={fetchMoreData}
-                        hasMore={input.hasMore}
-                        loader={<h4>Loading...</h4>}>
-                        { 
-                            _.map(input.data, (item, index) => {                                
-                                return  <Stack direction="row" spacing={2}>
-                                            <Box>
-                                                <Avatar
-                                                    className={"user-profile"}
-                                                    sx={{ height: 40, width: 40 }}
-                                                    variant="rounded"
-                                                    overlap="circular"
-                                                    alt="Example Alt"
-                                                    src={_.isEmpty(item?.avatar) ? "" : item?.avatar?.url }/>
-                                            </Box>
-                                            <Box>
-                                                <div 
-                                                    onClick={()=>{
-                                                        navigate({ pathname: `/p`, search: `?${createSearchParams({ id: item?._id})}` })  
-                                                    }} 
-                                                    key={index}>
-                                                    {item?.displayName}
-                                                </div>
-                                            </Box>
-                                            <Box>
-                                                <Button 
-                                                    variant="outlined"
-                                                    size="small"
-                                                    onClick={(evt)=>onMutationSubscribe({ variables: { id: item?._id } })}>
-                                                    { _.find( item?.subscriber, (i)=> _.isEqual( i?.userId,  user?._id) ) ? "Unsubscribe" : "Subscribe" }
-                                                </Button>
-                                            </Box>
-                                        </Stack>
-                            }) 
-                        }
-                    </InfiniteScroll>
+                :   input.data.length == 0 
+                    ?   <div>Empty data</div>
+                    :   <InfiniteScroll
+                            dataLength={input.slice}
+                            next={fetchMoreData}
+                            hasMore={input.hasMore}
+                            loader={<h4>Loading...</h4>}>
+                            { 
+                                _.map(input.data, (item, index) => {                                
+                                    return  <Stack direction="row" spacing={2}>
+                                                <Box>
+                                                    <Avatar
+                                                        className={"user-profile"}
+                                                        sx={{ height: 40, width: 40 }}
+                                                        variant="rounded"
+                                                        overlap="circular"
+                                                        alt="Example Alt"
+                                                        src={_.isEmpty(item?.avatar) ? "" : item?.avatar?.url }/>
+                                                </Box>
+                                                <Box>
+                                                    <div 
+                                                        onClick={()=>{
+                                                            navigate({ pathname: `/p`, search: `?${createSearchParams({ id: item?._id})}` })  
+                                                        }} 
+                                                        key={index}>
+                                                        {item?.displayName}
+                                                    </div>
+                                                </Box>
+                                                <Box>
+                                                    <Button 
+                                                        variant="outlined"
+                                                        size="small"
+                                                        onClick={(evt)=>onMutationSubscribe({ variables: { id: item?._id } })}>
+                                                        { _.find( item?.subscriber, (i)=> _.isEqual( i?.userId,  user?._id) ) ? "Unsubscribe" : "Subscribe" }
+                                                    </Button>
+                                                </Box>
+                                            </Stack>
+                                }) 
+                            }
+                        </InfiniteScroll>
                 }
             </div>);
 }

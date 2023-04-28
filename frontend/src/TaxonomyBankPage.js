@@ -32,52 +32,6 @@ const TaxonomyBankPage = (props) => {
                                     notifyOnNetworkStatusChange: true,
                                   });
 
-  // const [onMutationBank, resultMutationBankValues] = useMutation(mutationBank
-  //   , {
-  //       update: (cache, {data: {bank}}) => {
-
-  //         ////////// udpate cache Banks ///////////
-  //         let banksValue = cache.readQuery({ query: queryBanks });
-  //         let { status, mode, data } = bank
-  //         if(status && banksValue){
-  //           switch(mode){
-  //             case "new":{
-  //               cache.writeQuery({
-  //                 query: queryBanks,
-  //                 data: { banks: {...banksValue.banks, data: [...banksValue.banks.data, data]} },
-  //               });
-  //               break;
-  //             }
-
-  //             case "edit":{
-  //               let newData = _.map(banksValue.banks.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
-  //               cache.writeQuery({
-  //                 query: queryBanks,
-  //                 data: { banks: {...banksValue.banks, data: newData} },
-  //               });
-  //               break;
-  //             }
-  //           }
-  //         }
-  //         ////////// udpate cache Banks ///////////
-
-  //         ////////// update cache queryBankById ///////////
-  //         let bankByIdValue = cache.readQuery({ query: queryBankById, variables: {id: data._id}});
-  //         if(status && bankByIdValue){
-  //           cache.writeQuery({
-  //             query: queryBankById,
-  //             data: { bankById: {...bankByIdValue.bankById, data} },
-  //             variables: {id: data._id}
-  //           });
-  //         }
-  //         ////////// update cache queryBankById ///////////
-  //       },
-  //       onCompleted({ data }) {
-  //         navigate(-1)
-  //       }
-  //     }
-  // );
-
   useEffect(()=>{
     if(mode == "edit" && _id){
       refetchBankById({id: _id});

@@ -1064,3 +1064,11 @@ tbody, td, tfoot, th, thead, tr {
 .ReactModal__Overlay--after-open{
   z-index: 10000000 !important;
 }
+
+.btn-position-top {
+  bottom: 40px;
+  position: fixed !important;
+  right: 25px;
+  z-index: 20;
+  border: 1px solid #cec6c6 !important;
+}

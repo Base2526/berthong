@@ -14,7 +14,7 @@ import {
   Box
 } from '@mui/material';
 import _ from "lodash"
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 import moment from "moment";
 import DatePicker from "react-multi-date-picker"
@@ -43,6 +43,9 @@ const DateLotterysPage = (props) => {
 
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
+
+  const { onMutationDatesLottery } = props
+
   const { loading: loadingDateLotterys, 
           data: dataDateLotterys, 
           error: errorDateLotterys       } =  useQuery(queryDateLotterys, {
@@ -51,67 +54,6 @@ const DateLotterysPage = (props) => {
                                                 nextFetchPolicy: 'network-only', 
                                                 notifyOnNetworkStatusChange: false,
                                               });
-
-  const [onMutationDatesLottery, resultMutationDatesLottery] = useMutation(mutationDatesLottery
-    , {
-        update: (cache, {data: {datesLottery}}) => {
-
-          console.log("datesLottery :", datesLottery)
-          
-          //////////// udpate cache Banks ///////////
-          let queryDateLotterysValue = cache.readQuery({ query: queryDateLotterys });
-          // let { status, mode, data } = datesLottery
-          console.log("")
-          /*
-          if(status && queryDateLotterysValue){
-            switch(mode){
-              case "new":{
-                cache.writeQuery({
-                  query: queryDateLotterys,
-                  data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: [...queryDateLotterysValue.dateLotterys.data, data]} },
-                });
-                break;
-              }
-
-              case "edit":{
-                let newData = _.map(queryDateLotterysValue.dateLotterys.data, (item)=>item._id.toString() == data._id.toString() ?  data : item ) 
-                cache.writeQuery({
-                  query: queryDateLotterys,
-                  data: { dateLotterys: {...queryDateLotterysValue.dateLotterys, data: newData} },
-                });
-                break;
-              }
-            }
-          }
-          */
-          ////////// udpate cache Banks ///////////
-        
-
-          // ////////// update cache queryDateLotteryById ///////////
-          // let dateLotteryByIdValue = cache.readQuery({ query: queryDateLotteryById, variables: {id: data._id}});
-          // if(status && dateLotteryByIdValue){
-          //   cache.writeQuery({
-          //     query: queryDateLotteryById,
-          //     data: { dateLotteryById: {...dateLotteryByIdValue.dateLotteryById, data} },
-          //     variables: {id: data._id}
-          //   });
-          // }
-          // ////////// update cache queryDateLotteryById ///////////
-
-        },
-        onCompleted(data) {
-          // history.goBack();
-          // navigate(-1);
-
-          console.log("onCompleted")
-        },
-        onError(error){
-          // console.log("error :", error)
-
-          console.log("onError")
-        }
-      }
-  );
 
   useEffect(() => {
     if(!loadingDateLotterys){
@@ -127,36 +69,6 @@ const DateLotterysPage = (props) => {
       }
     }
   }, [dataDateLotterys, loadingDateLotterys])
-
-  // const [onDeleteBank, resultDeleteBank] = useMutation(gqlDeleteBank, 
-  //   {
-  //     update: (cache, {data: {deleteBank}}) => {
-  //       const data1 = cache.readQuery({
-  //         query: gqlBanks,
-  //       });
-
-  //       let newBanks = {...data1.banks}
-  //       let newData   = _.filter(data1.banks.data, bank => bank._id !== deleteBank._id)
-  //       newBanks = {...newBanks, total: newData.length, data:newData }
-
-  //       cache.writeQuery({
-  //         query: gqlBanks,
-  //         data: { banks: newBanks },
-  //       });
-  //     },
-  //     onCompleted({ data }) {
-  //       history.push("/banks");
-  //     }
-  //   }
-  // );
-  // console.log("resultDeleteBank :", resultDeleteBank)
-
-  ///////////////
-  // const fetchData = useCallback(({ pageSize, pageIndex }) => {
-  //   setPageSize(pageSize)
-  //   setPageIndex(pageIndex)
-  // })
-  ///////////////
 
   const handleClose = () => {
     setOpenDialogDelete({ ...openDialogDelete, isOpen: false });

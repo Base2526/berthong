@@ -42,31 +42,6 @@ const SuppliersPage = (props) => {
   let [total, setTotal] = useState(0)
   let [slice, setSlice] = useState(20);
   let [hasMore, setHasMore] = useState(true)
-  /*
-  const [onDeletePhone, resultDeletePhone] = useMutation(gqlDeletePhone, {
-    context: { headers: getHeaders() },
-    update: (cache, {data: {deletePhone}}) => {
-      const data1 = cache.readQuery({
-        query: gqlPhones,
-        variables: {userId: _.isEmpty(user) ? "" : user._id, page: pageIndex, perPage: pageSize},
-      });
-
-      let newPhones = {...data1.phones}
-      let newData   = _.filter(data1.phones.data, phone => phone._id !== deletePhone._id)
-      newPhones = {...newPhones, total: newData.length, data:newData }
-
-      cache.writeQuery({
-        query: gqlPhones,
-        data: { phones: newPhones },
-        variables: {userId: _.isEmpty(user) ? "" : user._id, page: pageIndex, perPage: pageSize},
-      });
-    },
-    onCompleted({ data }) {
-      history.push("/phones");
-    }
-  });
-  console.log("resultDeletePhone :", resultDeletePhone)
-  */
 
   const { loading: loadingSuppliers, 
           data: dataSuppliers, 

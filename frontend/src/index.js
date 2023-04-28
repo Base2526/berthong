@@ -3,6 +3,7 @@ import "./skeleton.scss";
 import "react-toastify/dist/ReactToastify.css";
 import "react-image-lightbox/style.css";
 import 'font-awesome/css/font-awesome.min.css';
+import "react-datepicker/dist/react-datepicker.css";
 
 import { ApolloProvider } from "@apollo/client";
 import { StrictMode } from "react";
@@ -26,6 +27,8 @@ if (REACT_APP_NODE_ENV === 'production') {
   console.error = () => {}
   console.debug = () => {}
 }
+
+// console.log("process.env :", process.env)
 
 // const styleLink = document.createElement("link");
 // styleLink.rel = "stylesheet";

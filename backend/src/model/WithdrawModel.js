@@ -15,9 +15,13 @@ const withdrawSchema = new Schema({
   userIdApprove: { type: Schema.Types.ObjectId },
   status:{
     type: Number,
-    min: 0,
-    max: 2,
-    default: Constants.WAIT // 0: 'wait', 1: 'approved',  2: 'reject'
+    min: 13,
+    max: 15,
+    default: Constants.WAIT 
+
+    // export const WAIT           = 13;
+    // export const APPROVED       = 14;
+    // export const REJECT         = 15;
   }, 
 },
 {

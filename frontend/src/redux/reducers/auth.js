@@ -25,7 +25,6 @@ const initialState = {
     conversations: [],
     bookmarks:[],
     messages:[],
-
     notifications: [],
     terms_and_conditions: false,
 }
@@ -33,7 +32,11 @@ const initialState = {
 const auth = (state = initialState, action) => {
     switch (action.type) {
         case UPDATED_PROFILE:{
-            return _.isEqual(state.user, action.data) ? state : { ...state, user: action.data }
+            if(_.isEqual(state.user, action.data)){
+                return state
+            }else{
+                return { ...state, user: {...state.user, ...action.data} }
+            }
         }
 
         case LOGOUT:{
