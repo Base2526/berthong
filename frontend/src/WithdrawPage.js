@@ -15,7 +15,7 @@ import {
 import { queryBanks } from "./gqlQuery";
 import { getHeaders } from "./util";
 
-let initValues = { bank: null,  balance: "" }
+let initValues = { bankId: "",  balance: "" }
 
 const WithdrawPage = (props) => {
   const navigate                = useNavigate();
@@ -27,22 +27,22 @@ const WithdrawPage = (props) => {
 
   const { user, onMutationWithdraw } = props
 
-  const { loading: loadingBanks, 
-          data: dataBanks, 
-          error: errorBanks} = useQuery(queryBanks, { context: { headers: getHeaders(location) },
-                                                      notifyOnNetworkStatusChange: true, 
-                                                      fetchPolicy: 'cache-first', 
-                                                      nextFetchPolicy:  'network-only', 
-                                                    });
+  // const { loading: loadingBanks, 
+  //         data: dataBanks, 
+  //         error: errorBanks} = useQuery(queryBanks, { context: { headers: getHeaders(location) },
+  //                                                     notifyOnNetworkStatusChange: true, 
+  //                                                     fetchPolicy: 'cache-first', 
+  //                                                     nextFetchPolicy:  'network-only', 
+  //                                                   });
 
-  useEffect(()=>{
-    if(!loadingBanks){
-      if(!_.isEmpty(dataBanks?.banks)){
-        let { status, data } = dataBanks.banks
-        if(status) setBanks(data)
-      }
-    }
-  }, [dataBanks, loadingBanks])
+  // useEffect(()=>{
+  //   if(!loadingBanks){
+  //     if(!_.isEmpty(dataBanks?.banks)){
+  //       let { status, data } = dataBanks.banks
+  //       if(status) setBanks(data)
+  //     }
+  //   }
+  // }, [dataBanks, loadingBanks])
 
   useEffect(()=>{
     console.log( "input :", input, initValues, _.isEqual(input, initValues) )
@@ -50,6 +50,8 @@ const WithdrawPage = (props) => {
 
   const submitForm = async(event) => {
     console.log("submitForm")
+
+    onMutationWithdraw({ variables: { input } });
     /*
     event.preventDefault();
     switch(mode){
@@ -116,10 +118,11 @@ const WithdrawPage = (props) => {
             justifyContent="center"
             alignItems="flex-start"
             spacing={2}>
-            {
+            {/* {
               loadingBanks
               ? <LinearProgress /> 
-              : <Box> 
+              :  */}
+                <Box> 
                   <Autocomplete
                     label={"เลือกบัญชี *"}
                     disablePortal
@@ -128,9 +131,9 @@ const WithdrawPage = (props) => {
                     options={ user?.banks }
                     getOptionLabel={(option)=>`${option.bankNumber} (${option.name})`}
                     renderInput={(params) =><TextField {...params} label={t("bank_account_name")} /> }
-                    onChange={(event, val) => setInput({...input, bank: val}) }/>
+                    onChange={(event, val) => setInput({...input, bankId: val?._id}) }/>
                 </Box>
-            }
+            {/* } */}
             <Box> 
               <TextField 
                 type="number" 
@@ -138,7 +141,9 @@ const WithdrawPage = (props) => {
                 label={"ยอดเงิน *"}
                 value={ input.balance }
                 sx={{ width: 300 }}
-                onChange={ onInputChange }
+                onChange={(e)=>{
+                   setInput({...input, balance: parseInt( e.target?.value ) })
+                } }
                 onBlur={ validateInput } /> 
             </Box>
             <Box>
@@ -147,7 +152,7 @@ const WithdrawPage = (props) => {
             <Button 
               variant="contained" 
               color="primary"
-              disabled={ input.bank != null && input.balance != "" && isWithdraw() > 0 ? false : true }
+              disabled={ input.bankId != "" && input.balance != "" && isWithdraw() > 0 ? false : true }
               onClick={(evt)=>submitForm(evt)}>{t("withdraw")}</Button>
           </Stack>
 }

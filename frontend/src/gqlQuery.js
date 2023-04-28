@@ -27,6 +27,9 @@ export const queryCommentById     = gql`query commentById($id: ID!) { commentByI
 export const queryBookmarks       = gql`query bookmarks{ bookmarks }`;
 export const querySubscribes      = gql`query subscribes{ subscribes }`;
 
+export const queryAdminDeposits   = gql`query adminDeposits{ adminDeposits }`;
+export const queryAdminWithdraws  = gql`query adminWithdraws{ adminWithdraws }`;
+
 // mutation
 export const mutationLogin      = gql`mutation login($input: LoginInput) { login(input: $input) }`;
 export const mutationLoginWithSocial = gql`mutation loginWithSocial($input: LoginWithSocialInput) { loginWithSocial(input: $input) }`;
@@ -46,6 +49,9 @@ export const mutationNotification = gql`mutation notification($id: ID!) { notifi
 export const mutationComment      = gql`mutation comment($input: JSON) { comment(input: $input) }`;
 export const mutationContactUs    = gql`mutation contactUs($input: ContactUsInput) { contactUs(input: $input) }`;
 export const mutationSubscribe    = gql`mutation subscribe($id: ID!) { subscribe(_id: $id) }`;
+
+export const mutationAdminDeposit   = gql`mutation adminDeposit($input: JSON){ adminDeposit(input: $input) }`;
+export const mutationAdminWithdraw  = gql`mutation adminWithdraw($input: JSON){ adminWithdraw(input: $input) }`;
 
 // subscription 
 export const subscriptionMe            = gql`subscription subscriptionMe($sessionId: ID!){ subscriptionMe(sessionId: $sessionId) }`;

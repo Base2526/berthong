@@ -62,7 +62,7 @@ const HistoryTransitionsPage = (props) => {
       if(dataHistoryTransitions?.historyTransitions){
         let { status, data } = dataHistoryTransitions?.historyTransitions
         if(status){
-          setDatas(data)
+          setDatas(_.orderBy(data, i => i.createdAt, 'desc'))
         }
       }
     }

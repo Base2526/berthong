@@ -5,7 +5,7 @@ deepdash(_);
 
 import { User, Session, Transition, Supplier, Deposit, Withdraw, Bank } from '../model'
 
-import { AMDINISTRATOR, AUTHENTICATED, ANONYMOUS, SUCCESS, ERROR, FORCE_LOGOUT, DATA_NOT_FOUND, USER_NOT_FOUND } from "../constants"
+import * as Constants from "../constants"
 
 export const emailValidate = () =>{
     return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
@@ -67,7 +67,7 @@ export const checkAuthorization = async(req) => {
     
                     return {
                         status: true,
-                        code: SUCCESS,
+                        code: Constants.SUCCESS,
                         pathname,
                         current_user: await User.findOne({_id: userId}),
                     }
@@ -80,7 +80,7 @@ export const checkAuthorization = async(req) => {
         // force logout
         return {
             status: false,
-            code: FORCE_LOGOUT,
+            code: Constants.FORCE_LOGOUT,
             message: "session expired days"
         }
     }
@@ -88,7 +88,7 @@ export const checkAuthorization = async(req) => {
     // without user
     return {
         status: false,
-        code: USER_NOT_FOUND,
+        code: Constants.USER_NOT_FOUND,
         message: "without user"
     }
 }
@@ -116,7 +116,7 @@ export const checkAuthorizationWithSessionId = async(sessionId) => {
 
             return {
                 status: true,
-                code: SUCCESS,
+                code: Constants.SUCCESS,
                 current_user: await User.findById(userId),
             }
         }
@@ -126,7 +126,7 @@ export const checkAuthorizationWithSessionId = async(sessionId) => {
         // force logout
         return {
             status: false,
-            code: FORCE_LOGOUT,
+            code: Constants.FORCE_LOGOUT,
             message: "session expired days"
         }
     }
@@ -134,37 +134,31 @@ export const checkAuthorizationWithSessionId = async(sessionId) => {
     // without user
     return {
         status: false,
-        code: USER_NOT_FOUND,
+        code: Constants.USER_NOT_FOUND,
         message: "without user"
     }
 }
 
 export const checkBalance = async(userId) =>{
     try{
-        let transitions = await Transition.find({userId, status: 1 });
-
+        let transitions = await Transition.find({userId, status: Constants.APPROVED });
         transitions = await Promise.all(_.map(transitions, async(transition)=>{
             switch(transition.type){ // 'supplier', 'deposit', 'withdraw'
-                case 0:{
-                    let supplier = await Supplier.findById(transition.refId)
+                case Constants.SUPPLIER:{
+                    let supplier = await Supplier.findOne({_id: transition.refId})
                     let buys = _.filter(supplier.buys, (buy)=> _.isEqual(buy.userId, userId))
 
-                    // let books = _.filter(supplier.buys, (buy)=> _.isEqual(buy.userId, userId) && selected == 0)
-                    // if(!_.isEmpty(books)){
-                    //     inTheCart = [...inTheCart, transition?.refId]
-                    // }
-                    
                     let balance = buys.length * supplier.price
                     return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
                 }
 
-                case 1:{
-                    let deposit = await Deposit.findById(transition.refId)
+                case Constants.DEPOSIT:{
+                    let deposit = await Deposit.findOne({_id: transition.refId})
                     return {...transition._doc, title: "title", balance: deposit.balance, description: "description", dateLottery: "dateLottery"}
                 }
 
-                case 2:{
-                    let withdraw = await Withdraw.findById(transition.refId)
+                case Constants.WITHDRAW:{
+                    let withdraw = await Withdraw.findOne({_id: transition.refId})
                     return {...transition._doc, title: "title", balance: withdraw.balance, description: "description", dateLottery: "dateLottery"}
                 }
             }
@@ -173,17 +167,17 @@ export const checkBalance = async(userId) =>{
         let balance = 0;
         _.map(transitions, (transition) => {
             switch (transition.type) {
-                case 0: {
+                case Constants.SUPPLIER: {
                     balance += -Math.abs(transition.balance);
                 break;
                 }
                 
-                case 1: {
+                case Constants.DEPOSIT: {
                     balance += Math.abs(transition.balance);
                 break;
                 }
 
-                case 2: {
+                case Constants.WITHDRAW: {
                     balance += -Math.abs(transition.balance);
                 break;
                 }
@@ -196,7 +190,7 @@ export const checkBalance = async(userId) =>{
 
         let inTheCarts = _.filter( await Promise.all(_.map(transitions, async(transition)=>{
             switch(transition.type){ // 'supplier', 'deposit', 'withdraw'
-                case 0:{
+                case Constants.SUPPLIER:{
                     let supplier = await Supplier.findById(transition.refId)
 
                     let books = _.filter(supplier.buys, (buy)=> _.isEqual(buy.userId, userId) && buy.selected == 0)
@@ -247,14 +241,14 @@ export const checkBalance = async(userId) =>{
 
 export const checkRole = (user) =>{
     if(user?.roles){
-        if(_.includes( user?.roles, AMDINISTRATOR)){
-            return AMDINISTRATOR;
+        if(_.includes( user?.roles, Constants.AMDINISTRATOR)){
+            return Constants.AMDINISTRATOR;
         }
-        else if(_.includes( user?.roles, AUTHENTICATED)){
-            return AUTHENTICATED;
+        else if(_.includes( user?.roles, Constants.AUTHENTICATED)){
+            return Constants.AUTHENTICATED;
         }
     }
-    return ANONYMOUS;
+    return Constants.ANONYMOUS;
 }
 
 export const getUser = async(query) =>{

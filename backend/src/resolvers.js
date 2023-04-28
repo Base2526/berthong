@@ -799,6 +799,46 @@ export default {
                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
       }
     },
+
+    async adminDeposits(parent, args, context, info){
+      let start = Date.now()
+        
+      let { req } = context
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+
+      let transitions = await Transition.find({ type: Constants.DEPOSIT, status: Constants.WAIT });
+
+      transitions = await Promise.all(_.map(transitions, async(transition)=>{
+                            let deposit = await Deposit.findOne({_id: transition?.refId})
+                            let user    = await getUser({_id: transition?.userId}) 
+                            return {...deposit?._doc, ...transition?._doc, user}
+                          }))
+
+      return {  status:true,
+                data: transitions,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    },
+
+    async adminWithdraws(parent, args, context, info){
+      let start = Date.now()
+        
+      let { req } = context
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+
+      let transitions = await Transition.find({ type: Constants.WITHDRAW, status: Constants.WAIT });
+
+      transitions = await Promise.all(_.map(transitions, async(transition)=>{
+                            let withdraw = await Withdraw.findOne({_id: transition?.refId})
+                            let user    = await getUser({_id: transition?.userId}) 
+                            return {...withdraw?._doc, ...transition?._doc, user}
+                          }))
+
+      return {  status:true,
+                data: transitions,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    },
   },
   Upload: GraphQLUpload,
   Mutation: {
@@ -1707,17 +1747,15 @@ export default {
       let { input } = args
       let { req } = context
 
+      console.log("++++++++++++++ withdraw +++++++++++++++")
+
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      let { balance, balanceBook } =  await checkBalance(current_user?._id)
-
-      console.log("new withdraw : ", input, balance, balanceBook )
-
-      // let withdraw = await Withdraw.create({ ...input,  userIdRequest: current_user?._id });
+      let withdraw = await Withdraw.create({ ...input,  userIdRequest: current_user?._id });
       return {
         status: true,
-        // data: withdraw,
+        data: withdraw,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
 
@@ -2086,6 +2124,7 @@ export default {
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
+
     async subscribe(parent, args, context, info) {
       let start = Date.now()
       let { _id } = args
@@ -2104,6 +2143,64 @@ export default {
       return {
         status: true,
         data: await getUser({ _id }),
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }      
+    },
+
+    async adminDeposit(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'AMDINISTRATOR only!')
+
+      let transition = await Transition.findOne({ _id: input?._id })
+      await Transition.updateOne({ _id: input?._id }, { status : input?.status });
+      await Deposit.updateOne({ _id: transition?.refId }, { status : input?.status })
+
+      if(_.isEqual(input?.status, Constants.APPROVED)){
+        let user = await getUser({_id: transition?.userId}) 
+        user =  { ...user, ...await checkBalance(transition?.userId) }
+
+        pubsub.publish("ME", {
+          me: { mutation: "DEPOSIT", data: {userId: transition?.userId , data: user } },
+        });
+      }
+
+      return {
+        status: true,
+        mode: input?.status,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }      
+    },
+
+    async adminWithdraw(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'AMDINISTRATOR only!')
+
+      let transition = await Transition.findOne({ _id: input?._id })
+      await Transition.updateOne({ _id: input?._id }, { status : input?.status });
+      await Deposit.updateOne({ _id: transition?.refId }, { status : input?.status })
+
+      if(_.isEqual(input?.status, Constants.APPROVED)){
+        let user = await getUser({_id: transition?.userId}) 
+        user =  { ...user, ...await checkBalance(transition?.userId) }
+
+        pubsub.publish("ME", {
+          me: { mutation: "DEPOSIT", data: {userId: transition?.userId , data: user } },
+        });
+      }
+
+      return {
+        status: true,
+        mode: input?.status,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }      
     },
@@ -2130,13 +2227,16 @@ export default {
             let { status, code, current_user } =  authorization
 
             switch(mutation){
-              case "UPDATE":
-                return _.isEqual(data?._id, current_user?._id) ? true : false;
-              case "BOOK":
-              case "BUY":
               case "DEPOSIT":
               case "WITHDRAW":
+              case "BOOK":
+              case "BUY":{
                 return _.isEqual(data?.userId, current_user?._id) ? true : false;
+              }
+
+              case "UPDATE":{
+                return _.isEqual(data?._id, current_user?._id) ? true : false;
+              }
             }
 
             console.log( "Subscription : ME ", data?.userId, current_user?._id, _.isEqual(data?.userId, current_user?._id) )  
