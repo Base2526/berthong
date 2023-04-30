@@ -90,7 +90,7 @@ const DetailPanelRight = (props) =>{
     return `${value}°C`;
   }
 
-  return  <div className="ber-bg1 border col-lg-8 col-md-8 col-sm-12 col-12">
+  return  <div className="ber-bg1 border col-lg-8 col-md-8 col-sm-12 col-12" style={{paddingBottom:"1rem"}}>
             <div className="row" style={{textAlign:"right"}}>
               <h4 className="card-title" style={{ float: "right" }}>
                 <IconButton onClick={(e) => onFollow({ variables: { id: data?._id } }) }> 
@@ -266,14 +266,14 @@ const DetailPanelRight = (props) =>{
                       </div>
                     </div>
                   </div>
-                  <div className="blog-footer"></div>
-                  <div style={{ textAlign: "left", color: "#aaa", fontSize: "12px" }}>
-                    หมายเหตุ : กรุณาชำระเงินภายใน 2 นาที เพราะการจองจะถูกยกเลิก
-                  </div>
+                  {/* <div className="blog-footer"></div> */}
                 </>
             }
            
-            <div>
+            <div style={{paddingLeft: "1rem",paddingRight:"1rem"}}>
+              <div style={{ textAlign: "left", color: "#aaa", fontSize: "12px" }}>
+                    หมายเหตุ : กรุณาชำระเงินภายใน 2 นาที เพราะการจองจะถูกยกเลิก
+              </div>
               <Typography id="discrete-slider-always" gutterBottom>ซื้อไปแล้ว { sellView(data) } เบอร์ , จอง { bookView(data) } เบอร์ </Typography>
               <div className="pt-4">     
                 <Slider

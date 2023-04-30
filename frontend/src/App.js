@@ -111,6 +111,7 @@ import DialogLoginComp from "./components/DialogLoginComp";
 import BookMarksPage from "./BookMarksPage";
 import ContactUsPage from "./ContactUsPage";
 import SubscribesPage from "./SubscribesPage";
+import Footer from "./Footer";
 
 import { queryNotifications, 
           mutationFollow, 
@@ -207,24 +208,24 @@ const useStyles = makeStyles((theme) => ({
 const ListItem = withStyles({
   root: {
     "&$selected": {
-      backgroundColor: "#5F73DF",
-      color: "black",
+      backgroundColor: "#264360",
+      color: "#fff",
       "& .MuiListItemIcon-root": {
-        color: "blue"
+        color: "#fff"
       }
     },
     "&$selected:hover": {
-      backgroundColor: "#5F73DF",
-      color: "black",
+      backgroundColor: "#264360",
+      color: "#fff",
       "& .MuiListItemIcon-root": {
-        color: "blue"
+        color: "#fff"
       }
     },
     "&:hover": {
       backgroundColor: "#EBECF4",
       color: "black",
       "& .MuiListItemIcon-root": {
-        color: "blue"
+        color: "#000"
       }
     }
   },
@@ -1204,6 +1205,7 @@ const App =(props) =>{
                   {
                     !_.isEmpty(user) && checkRole(user) === Constants.AUTHENTICATED 
                     ? <Stack direction={"row"} spacing={2} alignItems="center">
+                      <div className="border-login">
                         <IconButton 
                           size={'small'}
                           onClick={()=> navigate("/notifications") }>
@@ -1236,6 +1238,7 @@ const App =(props) =>{
                             alt="profile"
                           />
                         </IconButton>
+                        </div>
                       </Stack>
                     : <Stack direction={"row"} spacing={2} alignItems="center">
                          <IconButton 
@@ -1394,6 +1397,8 @@ const App =(props) =>{
           </Routes>
         </div>
       </div>
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

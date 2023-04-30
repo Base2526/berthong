@@ -94,7 +94,7 @@ const DialogLoginComp = (props) => {
             return (
               <Dialog open={open}>
                 <DialogTitle className="text-center"> 
-                  <>{t("welcome_to_berthong")}</>  
+                  <div className="fnt text-center">{t("welcome_to_berthong")}</div>  
                   <IconButton className="login-button-close" onClick={(e)=>onClose(false)}>
                     <AiOutlineCloseCircle />
                   </IconButton> 

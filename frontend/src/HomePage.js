@@ -288,7 +288,7 @@ const HomePage = (props) => {
                         loader={<SkeletonComp />}
                         scrollThreshold={0.5}
                         // scrollableTarget="scrollableDiv"
-                        endMessage={<div className="text-center">You have reached the end</div>}
+                        endMessage={<div className="text-center"></div>}
                         
                         // below props only if you need pull down functionality
                         refreshFunction={handleRefresh}
