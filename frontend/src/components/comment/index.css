@@ -98,6 +98,10 @@
 .displayComments .halfDiv {
   display: flex;
   justify-content: space-between;
+  border: 1px solid #ccc!important;
+  border-radius: 5px;
+  padding: 5px;
+  margin: 10px;
 }
 .displayComments .halfDiv .userInfo {
   display: flex;
@@ -150,7 +154,8 @@
 }
 .displayComments .replySection {
   margin-left: 35px;
-  border-left: 2px solid #c7c7c7;
+  /* border-left: 2px solid #c7c7c7; */
+  border-left: 2px solid #6960EC;
   margin-top: 6px;
 }
 .actionDiv {
