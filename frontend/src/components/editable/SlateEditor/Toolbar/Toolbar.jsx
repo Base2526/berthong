@@ -123,18 +123,6 @@ const Toolbar = (props) => {
 
   return (
     <div className="toolbar">
-      <Button onClick={() => setIsOpen(!isOpen)}>
-        <EmojiEmotionsIcon style={{color:"#FFC300"}} />
-      </Button>
-      {isOpen && (
-        <div ref={ref}>
-          <div className="emoji-panel">
-              <Paper elevation={4}>
-                <Picker onEmojiClick={onEmojiClick} />
-              </Paper>
-          </div>
-        </div>
-      )}
       {toolbarGroups.map((group, index) => (
         <span key={index} className="toolbar-grp">
           {group.map((element) => {
@@ -183,6 +171,18 @@ const Toolbar = (props) => {
         </span>
       ))}
       <div className="toolbar-button">
+      <Button onClick={() => setIsOpen(!isOpen)}>
+        <EmojiEmotionsIcon style={{color:"#FFC300"}} />
+      </Button>
+      {isOpen && (
+        <div ref={ref}>
+          <div className="emoji-panel">
+              <Paper elevation={4}>
+                <Picker onEmojiClick={onEmojiClick} />
+              </Paper>
+          </div>
+        </div>
+      )}
       {( !_.isEmpty( pureText() ) || parentId) && 
         <Button
           className="p-1 m-1"
