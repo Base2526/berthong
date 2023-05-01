@@ -63,7 +63,9 @@ const SubscribesPage = (props) => {
         }
     }
 
-    return (<div>
+    return (<div className="content-bottom">
+            <div className="content-page border">   
+            <div className="row">
                 {
                 loadingSubscribes
                 ?   <LinearProgress />
@@ -76,17 +78,21 @@ const SubscribesPage = (props) => {
                             loader={<h4>Loading...</h4>}>
                             { 
                                 _.map(input.data, (item, index) => {                                
-                                    return  <Stack direction="row" spacing={2}>
-                                                <Box>
+                                    return  <div className="row p-2">
+                                            <Stack direction="row" spacing={2}>
+                                                <Box className="pointer">
                                                     <Avatar
                                                         className={"user-profile"}
                                                         sx={{ height: 40, width: 40 }}
                                                         variant="rounded"
                                                         overlap="circular"
                                                         alt="Example Alt"
+                                                        onClick={()=>{
+                                                            navigate({ pathname: `/p`, search: `?${createSearchParams({ id: item?._id})}` })  
+                                                        }} 
                                                         src={_.isEmpty(item?.avatar) ? "" : item?.avatar?.url }/>
                                                 </Box>
-                                                <Box>
+                                                <Box className="pointer">
                                                     <div 
                                                         onClick={()=>{
                                                             navigate({ pathname: `/p`, search: `?${createSearchParams({ id: item?._id})}` })  
@@ -104,11 +110,12 @@ const SubscribesPage = (props) => {
                                                     </Button>
                                                 </Box>
                                             </Stack>
+                                            </div>
                                 }) 
                             }
                         </InfiniteScroll>
                 }
-            </div>);
+            </div></div></div>);
 }
 
 export default SubscribesPage

@@ -93,8 +93,13 @@ const DialogLoginComp = (props) => {
   return  useMemo(() => {
             return (
               <Dialog open={open}>
-                <DialogTitle className="text-center"> 
-                  <div className="fnt text-center">{t("welcome_to_berthong")}</div>  
+                <DialogTitle className="text-center">
+                  <img
+                    style={{width:"160px",height:"130px",borderRadius:"50%"}}
+                    src={"https://dynamic.brandcrowd.com/asset/logo/a673c079-5c9d-45b2-bd75-e739acca30aa/logo-search-grid-1x?logoTemplateVersion=1&v=637637394778200000&text=Berthong"}
+                    alt="Avatar"
+                  />
+                  {/* <div className="fnt text-center">{t("welcome_to_berthong")}</div>   */}
                   <IconButton className="login-button-close" onClick={(e)=>onClose(false)}>
                     <AiOutlineCloseCircle />
                   </IconButton> 

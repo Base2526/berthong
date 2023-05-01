@@ -35,7 +35,10 @@ const ContactUsPage = (props) => {
     }
 
     return  useMemo(() => {
-                return (<Stack
+                return (<div className="content-bottom">
+                         <div className="content-page border">   
+                            <div className="row">
+                    <Stack
                             direction="column"
                             justifyContent="center"
                             alignItems="flex-start"
@@ -89,7 +92,7 @@ const ContactUsPage = (props) => {
                                 color="primary"
                                 disabled={ (_.isEmpty( input.title ) || _.isEmpty(input.description)) || !validateCaptcha(input.captcha, false) }
                                 onClick={(evt)=>submitForm(evt)}>{t("send")}</Button>
-                        </Stack>)
+                        </Stack></div></div></div>)
             }, [input]);
 }
 

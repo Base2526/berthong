@@ -113,7 +113,10 @@ const WithdrawPage = (props) => {
     return user.balance - input.balance - user.balanceBook
   }
 
-  return  <Stack
+  return  <div className="content-bottom">
+        <div className="content-page border">
+        <div className="row">
+        <Stack
             direction="column"
             justifyContent="center"
             alignItems="flex-start"
@@ -154,7 +157,7 @@ const WithdrawPage = (props) => {
               color="primary"
               disabled={ input.bankId != "" && input.balance != "" && isWithdraw() > 0 ? false : true }
               onClick={(evt)=>submitForm(evt)}>{t("withdraw")}</Button>
-          </Stack>
+          </Stack></div></div></div>
 }
 
 export default WithdrawPage

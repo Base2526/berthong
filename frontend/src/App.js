@@ -1145,7 +1145,8 @@ const App =(props) =>{
   }
 
   return (
-    <div className="App">
+    <div className="App page-container">
+      <div className="content-wrap">
       {lightbox.isOpen  && <LightboxComp datas={lightbox} onLightbox={(v)=>setLightbox(v)}/> }
       <ToastContainer />
       {
@@ -1311,6 +1312,13 @@ const App =(props) =>{
                   )}
                 </List>
               <Divider />
+              <div className="text-center">
+              <img
+                    style={{width:"160px",height:"130px",borderRadius:"50%"}}
+                    src={"https://dynamic.brandcrowd.com/asset/logo/a673c079-5c9d-45b2-bd75-e739acca30aa/logo-search-grid-1x?logoTemplateVersion=1&v=637637394778200000&text=Berthong"}
+                    alt="Avatar"
+                  />
+              </div>
               <Typography variant="caption" display="block" gutterBottom><div className="text-center p-1">© 2023 BERTHONG LLC</div></Typography>
             </Drawer>
           </ClickAwayListener>
@@ -1399,6 +1407,7 @@ const App =(props) =>{
       </div>
       {/* Footer */}
       <Footer />
+    </div>
     </div>
   );
 }

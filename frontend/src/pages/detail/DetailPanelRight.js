@@ -90,7 +90,7 @@ const DetailPanelRight = (props) =>{
     return `${value}°C`;
   }
 
-  return  <div className="ber-bg1 border col-lg-8 col-md-8 col-sm-12 col-12" style={{paddingBottom:"1rem"}}>
+  return  <div className="ber-bg1 border col-lg-8 col-md-8 col-sm-12 col-12 mb-3" style={{paddingBottom:"1rem"}}>
             <div className="row" style={{textAlign:"right"}}>
               <h4 className="card-title" style={{ float: "right" }}>
                 <IconButton onClick={(e) => onFollow({ variables: { id: data?._id } }) }> 

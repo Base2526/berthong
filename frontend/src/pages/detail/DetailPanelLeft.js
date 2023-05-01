@@ -6,7 +6,7 @@ const DetailPanelLeft = (props) =>{
   const [currentImage, setCurrentImage] = useState(data?.files[0])
 
   return  useMemo(() => {
-            return  <div className="ber-bg border col-lg-4 col-md-4 col-sm-12 col-12">
+            return  <div className="ber-bg border col-lg-4 col-md-4 col-sm-12 col-12 mb-3">
                       <div className="row" style={{ justifyContent: "space-between" }}>
                         <div className="lang-detail" style={{ width: "px" }}>
                           2 ตัว{data?.type === 0 ? "บน" : "ล่าง"}
