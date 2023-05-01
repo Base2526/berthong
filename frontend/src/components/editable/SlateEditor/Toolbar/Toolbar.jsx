@@ -175,7 +175,7 @@ const Toolbar = (props) => {
         <EmojiEmotionsIcon style={{color:"#FFC300"}} />
       </Button>
       {isOpen && (
-        <div ref={ref}>
+        <div ref={ref} style={{position:"absolute"}}>
           <div className="emoji-panel">
               <Paper elevation={4}>
                 <Picker onEmojiClick={onEmojiClick} />
