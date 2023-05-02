@@ -30,7 +30,7 @@ const Toolbar = (props) => {
   // const isTable = useTable(editor);
   const [toolbarGroups, setToolbarGroups] = useState(defaultToolbarGroups);
 
-  let { setText, onPost, onCancel, edit, parentId, text} = props;
+  let { onPost, onCancel, edit, parentId, text} = props;
 
 
   // useEffect(() => {
