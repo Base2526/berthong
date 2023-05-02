@@ -5,7 +5,6 @@ import _ from "lodash";
 import { ActionContext } from "./ActionContext";
 import Editor from "../editable/SlateEditor/Editor";
 
-
 const InputField = (props) => {
   const { cancellor, parentId, child, value, edit, main } = props
   const { t } = useTranslation();
