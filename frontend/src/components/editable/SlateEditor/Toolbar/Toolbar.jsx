@@ -1,6 +1,6 @@
 import "./styles.css";
 import React, { useEffect, useState, useRef } from "react";
-import { useSlate, useSlateStatic } from "slate-react";
+import { useSlate, ReactEditor } from "slate-react";
 import { useTranslation } from "react-i18next";
 import { Node, Path, Transforms } from "slate";
 import { slateToHtml } from 'slate-serializers'
@@ -13,6 +13,7 @@ import _ from "lodash";
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import Picker from "emoji-picker-react";
 import Paper from "@material-ui/core/Paper";
+
 
 import {
   Dialog,
@@ -29,7 +30,7 @@ const Toolbar = (props) => {
   // const isTable = useTable(editor);
   const [toolbarGroups, setToolbarGroups] = useState(defaultToolbarGroups);
 
-  let { onPost, onCancel, edit, parentId, text} = props;
+  let { setText, onPost, onCancel, edit, parentId, text} = props;
 
 
   // useEffect(() => {
@@ -107,6 +108,7 @@ const Toolbar = (props) => {
 
   useEffect(() => {
     if (isOpen) {
+      ReactEditor.focus(editor)
       document.addEventListener('click', handleClickOutside);
     }
     return () => {
