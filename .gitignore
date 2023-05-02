@@ -16,3 +16,6 @@ uploads
 env
 .env
 .git
+
+
+.VSCodeCounter
