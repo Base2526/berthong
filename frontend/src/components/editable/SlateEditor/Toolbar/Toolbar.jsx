@@ -1,5 +1,5 @@
 import "./styles.css";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useSlate, useSlateStatic } from "slate-react";
 import { useTranslation } from "react-i18next";
 import { Node, Path, Transforms } from "slate";
@@ -10,6 +10,9 @@ import Icon from "../common/Icon";
 import { toggleMark, isMarkActive } from "../utils/SlateUtilityFunctions.js";
 import defaultToolbarGroups from "./toolbarGroups.js";
 import _ from "lodash";
+import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
+import Picker from "emoji-picker-react";
+import Paper from "@material-ui/core/Paper";
 
 import {
   Dialog,
@@ -95,6 +98,29 @@ const Toolbar = (props) => {
     return slateToHtml(text).replace(/(<([^>]+)>)/ig, '')
   }
 
+  // emoji
+  const onEmojiClick = (event, emojiObject) => {
+    editor.insertText(emojiObject.emoji);
+  };
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const handleClickOutside = (event) => {
+    if (ref.current && !ref.current.contains(event.target)) {
+      setIsOpen(false);
+    }
+  };
+  // emoji
+
   return (
     <div className="toolbar">
       {toolbarGroups.map((group, index) => (
@@ -145,6 +171,18 @@ const Toolbar = (props) => {
         </span>
       ))}
       <div className="toolbar-button">
+      <Button onClick={() => setIsOpen(!isOpen)}>
+        <EmojiEmotionsIcon style={{color:"#FFC300"}} />
+      </Button>
+      {isOpen && (
+        <div ref={ref} style={{position:"absolute"}}>
+          <div className="emoji-panel">
+              <Paper elevation={4}>
+                <Picker onEmojiClick={onEmojiClick} />
+              </Paper>
+          </div>
+        </div>
+      )}
       {( !_.isEmpty( pureText() ) || parentId) && 
         <Button
           className="p-1 m-1"

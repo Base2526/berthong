@@ -481,6 +481,9 @@ export default gql`
     commentById(_id: ID!): JSON
     bookmarks: JSON
     subscribes: JSON
+
+    adminDeposits: JSON
+    adminWithdraws: JSON
   }  
   
   input RoomInput {
@@ -680,7 +683,7 @@ export default gql`
   }
 
   input WithdrawInput{
-    bank: JSON!
+    bankId: ID!
     balance: Int!
   }
 
@@ -757,6 +760,9 @@ export default gql`
     contactUs(input: ContactUsInput): JSON
 
     subscribe(_id: ID!): JSON 
+
+    adminDeposit(input: JSON): JSON 
+    adminWithdraw(input: JSON): JSON 
   }
 
   type Subscription {

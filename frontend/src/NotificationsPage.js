@@ -76,7 +76,9 @@ const NotificationsPage = (props) => {
         }
     }
 
-    return (<div>
+    return (<div className="content-bottom">
+    <div className="content-page border">   
+    <div className="row">
                 {
                 loadingNotifications || input.data.length == 0 
                 ?   <LinearProgress />
@@ -89,7 +91,7 @@ const NotificationsPage = (props) => {
                             _.map(input.data, (i, index) => {
                                 switch(i?.type){
                                     case "system":{
-                                        return  <Stack direction="row" spacing={2}>
+                                        return  <div class="alert alert-secondary p-1 m-1" role="alert"><Stack direction="row" spacing={2}>
                                                     <SystemIcon />
                                                     <div 
                                                         onClick={(evt)=>{
@@ -97,11 +99,12 @@ const NotificationsPage = (props) => {
 
                                                             onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
                                                         }
-                                                    } key={index}>{i?.data} {i?.status} </div>
+                                                    } key={index}>05-APR-2023 00:00:01 {i?.data} {i?.status} </div>
                                                 </Stack>
+                                                </div>
                                     }
                                     case "withdraw":{
-                                        return  <Stack direction="row" spacing={2}>
+                                        return  <div class="alert alert-success p-1 m-1" role="alert"><Stack direction="row" spacing={2}>
                                                     <WithdrawIcon />
                                                     <div 
                                                         onClick={(evt)=>{
@@ -109,11 +112,12 @@ const NotificationsPage = (props) => {
 
                                                             onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
                                                         }
-                                                    } key={index}>{i?.data} {i?.status} </div>
+                                                    } key={index}>05-APR-2023 00:00:01 {i?.data} {i?.status} </div>
                                                 </Stack>
+                                                </div>
                                     }
                                     case "deposit":{
-                                        return  <Stack direction="row" spacing={2}>
+                                        return  <div class="alert alert-warning p-1 m-1" role="alert"><Stack direction="row" spacing={2}>
                                                     <DepositIcon />
                                                     <div 
                                                         onClick={(evt)=>{
@@ -121,15 +125,16 @@ const NotificationsPage = (props) => {
 
                                                             onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
                                                         }
-                                                    } key={index}>{i?.data} {i?.status} </div>
+                                                    } key={index}>05-APR-2023 00:00:01 {i?.data} {i?.status} </div>
                                                 </Stack>
+                                                </div>
                                     }
                                 }
                             }) 
                         }
                     </InfiniteScroll>
                 }
-            </div>);
+            </div></div></div>);
 }
 
 export default NotificationsPage

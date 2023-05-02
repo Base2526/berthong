@@ -62,7 +62,7 @@ const HistoryTransitionsPage = (props) => {
       if(dataHistoryTransitions?.historyTransitions){
         let { status, data } = dataHistoryTransitions?.historyTransitions
         if(status){
-          setDatas(data)
+          setDatas(_.orderBy(data, i => i.createdAt, 'desc'))
         }
       }
     }
@@ -236,16 +236,17 @@ const HistoryTransitionsPage = (props) => {
   const ItemView = (value, index) =>{
     switch(value?.type){
       case Constants.SUPPLIER:{
-        return  <Stack key={index} direction="row" spacing={2}>
+        return  <div class="alert alert-danger p-1 m-1" role="alert"><Stack key={index} direction="row" spacing={2}>
                   <Box>Supplier</Box>
                   <Box>ยอดฝาก : { value.balance }</Box>
                   <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
                   <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
                 </Stack>
+                </div>
       }
 
       case Constants.DEPOSIT:{
-        return  <Stack key={index} direction="row" spacing={2}>
+        return  <div class="alert alert-warning p-1 m-1" role="alert"><Stack key={index} direction="row" spacing={2}>
                   <Box>Deposit</Box>
                   <Box>ยอดฝาก : { value?.balance }</Box>
                   <Box>{ _.find(Constants.BANKS, (bank)=>_.isEqual(value?.bankId, bank.id))?.label }</Box>
@@ -260,22 +261,24 @@ const HistoryTransitionsPage = (props) => {
                         }}>ยกเลิก</Button>
                     :""
                   } */}
-                </Stack>
+                </Stack></div>
       }
 
       case Constants.WITHDRAW:{
-        return  <Stack key={index} direction="row" spacing={2}>
+        return  <div class="alert alert-success p-1 m-1" role="alert"><Stack key={index} direction="row" spacing={2}>
                   <Box>Withdraw</Box>
                   <Box>ยอดฝาก : { value.balance }</Box>
                   <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
                   <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
-                </Stack>
+                </Stack></div>
       }
     }
   }
 
   // return  useMemo(() => {
-  return (<div style={{flex:1}}>
+  return (<div className="content-bottom">
+            <div className="content-page border">
+              <div className="row">
             {
               loadingHistoryTransitions
               ?  <LinearProgress />
@@ -332,7 +335,7 @@ const HistoryTransitionsPage = (props) => {
                 </DialogActions>
               </Dialog>
             )}
-          </div>)
+          </div></div></div>)
           // }, [datas, loadingHistoryTransitions]);
 }
 

@@ -106,7 +106,10 @@ const MeBookBuysPage = (props) => {
                     let files   = item?.files
                     let createdAt = new Date(item.createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
           
-                    return <Stack direction="row" spacing={2} >
+                    return <div className="content-bottom">
+                            <div className="content-page border">   
+                              <div className="row">
+                      <Stack direction="row" spacing={2} >
                             <Box sx={{ width: '10%' }}>
                               <Avatar
                                 alt="Example avatar"
@@ -135,7 +138,7 @@ const MeBookBuysPage = (props) => {
                             <Box sx={{ width: '5%' }}>{buys.length}</Box>
                             <Box sx={{ width: '5%' }}>{follows.length}</Box>
                             <Box sx={{ width: '10%' }}>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A') }</Box>
-                          </Stack>
+                          </Stack></div></div></div>
                     })
                   }
                 </InfiniteScroll>

@@ -16,6 +16,8 @@ const DialogDeleteBankComp = (props) => {
   const handleClose = () => onClose(true)
   return (
     <Dialog
+      fullWidth
+      maxWidth="sm"
       open={data?.open}
       onClose={handleClose}
       aria-labelledby="alert-dialog-title"

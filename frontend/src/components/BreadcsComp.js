@@ -67,14 +67,14 @@ const BreadcsComp = (props) => {
                 ]
       }
 
-      case "/withdraws":{
+      case "/admin-withdraws":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายการถอดเงินรออนุมัติ</Typography>
         ]
       }
 
-      case "/deposits":{
+      case "/admin-deposits":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายการฝากเงินรออนุมัติ</Typography>

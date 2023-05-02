@@ -82,7 +82,8 @@ import MeBookBuysPage from "./MeBookBuysPage";
 import DateLotteryPage from "./DateLotteryPage";
 import DateLotterysPage from "./DateLotterysPage";
 import DepositPage from "./DepositPage";
-import DepositsPage from "./DepositsPage";
+import AdminDepositsPage from "./AdminDepositsPage";
+import AdminWithdrawsPage from "./AdminWithdrawsPage";
 import DetailPage from "./pages/detail/Detail";
 import HistoryTransitionsPage from "./HistoryTransitionsPage";
 import HomePage from "./HomePage";
@@ -110,6 +111,7 @@ import DialogLoginComp from "./components/DialogLoginComp";
 import BookMarksPage from "./BookMarksPage";
 import ContactUsPage from "./ContactUsPage";
 import SubscribesPage from "./SubscribesPage";
+import Footer from "./Footer";
 
 import { queryNotifications, 
           mutationFollow, 
@@ -130,14 +132,14 @@ import { queryNotifications,
           mutationDeposit,
           queryBanks,
           queryBankById,
-          queryDeposits,
-          queryWithdraws,
           mutationSubscribe,
           queryFriendProfile,
           mutationMe, 
           mutationDatesLottery, 
           queryDateLotterys, 
-          queryDateLotteryById
+          queryDateLotteryById,
+          mutationAdminDeposit,
+          mutationAdminWithdraw
         } from "./gqlQuery"
           
 import * as Constants from "./constants"
@@ -206,24 +208,24 @@ const useStyles = makeStyles((theme) => ({
 const ListItem = withStyles({
   root: {
     "&$selected": {
-      backgroundColor: "#5F73DF",
-      color: "black",
+      backgroundColor: "#264360",
+      color: "#fff",
       "& .MuiListItemIcon-root": {
-        color: "blue"
+        color: "#fff"
       }
     },
     "&$selected:hover": {
-      backgroundColor: "#5F73DF",
-      color: "black",
+      backgroundColor: "#264360",
+      color: "#fff",
       "& .MuiListItemIcon-root": {
-        color: "blue"
+        color: "#fff"
       }
     },
     "&:hover": {
       backgroundColor: "#EBECF4",
       color: "black",
       "& .MuiListItemIcon-root": {
-        color: "blue"
+        color: "#000"
       }
     }
   },
@@ -562,7 +564,8 @@ const App =(props) =>{
       // }
     },
     onCompleted(data) {
-      // history.goBack()
+      showToast("success", "ได้รับเรื่องแล้ว กำลังดำเนินการ")
+      navigate("/");    
     },
     onError(error){
       return handlerErrorApollo( props, error )
@@ -934,6 +937,46 @@ const App =(props) =>{
       }
   );
 
+  const [onMutationAdminDeposit, resultMutationAdminDeposit] = useMutation(mutationAdminDeposit
+    , {
+        update: (cache, {data: {adminDeposit}}) => {
+          console.log("adminDeposit :", adminDeposit)
+        },
+        onCompleted(data) {
+          let { status, mode } = data?.adminDeposit
+          console.log("onCompleted :", data)
+          if(status){
+            showToast("success", "ดำเนินการเรียบร้อย")
+          }
+        },
+        onError(error){
+          return handlerErrorApollo( props, error )
+        }
+      }
+  );
+
+  const [onMutationAdminWithdraw, resultMutationAdminWithdraw] = useMutation(mutationAdminWithdraw
+    , {
+        update: (cache, {data: {adminWithdraw}}) => {
+          console.log("adminWithdraw :", adminWithdraw)
+        },
+        onCompleted(data) {
+          // let { status, mode } = data?.adminDeposit
+          // console.log("onCompleted :", data)
+          // if(status){
+          //   showToast("success", "ดำเนินการเรียบร้อย")
+          // }
+        },
+        onError(error){
+          return handlerErrorApollo( props, error )
+        }
+      }
+  );
+
+  useEffect(()=>{
+    console.log("+++++++++++++++++++APP+++++++++++++++++++")
+  }, [])
+
   useEffect(()=>{
     console.log("search :", search)
   }, [search])
@@ -968,10 +1011,13 @@ const App =(props) =>{
         let { mutation, data } = res.subscriptionData.data.subscriptionMe
 
         switch(mutation){
-          case "DEPOSIT":
-          case "WITHDRAW":
-          case "BUY":
           case "BOOK":
+          case "BUY":
+          case "DEPOSIT":
+          case "WITHDRAW":{
+            updateProfile(data?.data)
+            break;
+          }
           case "UPDATE":{
             updateProfile(data)
             break;
@@ -1040,8 +1086,8 @@ const App =(props) =>{
     switch(checkRole(user)){
       case Constants.AMDINISTRATOR:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em"/>, path: "/"},
-                {id: 1, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/withdraws"},
-                {id: 2, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/deposits"},
+                {id: 1, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/admin-withdraws"},
+                {id: 2, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/admin-deposits"},
                 {id: 3, title:"รายการสินค้าทั้งหมด", icon: <AdjustIcon />, path: "/suppliers"},
                 {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
                 {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
@@ -1099,7 +1145,8 @@ const App =(props) =>{
   }
 
   return (
-    <div className="App">
+    <div className="App page-container">
+      <div className="content-wrap">
       {lightbox.isOpen  && <LightboxComp datas={lightbox} onLightbox={(v)=>setLightbox(v)}/> }
       <ToastContainer />
       {
@@ -1159,6 +1206,7 @@ const App =(props) =>{
                   {
                     !_.isEmpty(user) && checkRole(user) === Constants.AUTHENTICATED 
                     ? <Stack direction={"row"} spacing={2} alignItems="center">
+                      <div className="border-login">
                         <IconButton 
                           size={'small'}
                           onClick={()=> navigate("/notifications") }>
@@ -1191,6 +1239,7 @@ const App =(props) =>{
                             alt="profile"
                           />
                         </IconButton>
+                        </div>
                       </Stack>
                     : <Stack direction={"row"} spacing={2} alignItems="center">
                          <IconButton 
@@ -1263,6 +1312,13 @@ const App =(props) =>{
                   )}
                 </List>
               <Divider />
+              <div className="text-center">
+              <img
+                    style={{width:"160px",height:"130px",borderRadius:"50%"}}
+                    src={"https://dynamic.brandcrowd.com/asset/logo/a673c079-5c9d-45b2-bd75-e739acca30aa/logo-search-grid-1x?logoTemplateVersion=1&v=637637394778200000&text=Berthong"}
+                    alt="Avatar"
+                  />
+              </div>
               <Typography variant="caption" display="block" gutterBottom><div className="text-center p-1">© 2023 BERTHONG LLC</div></Typography>
             </Drawer>
           </ClickAwayListener>
@@ -1312,7 +1368,11 @@ const App =(props) =>{
                                                 onMutationDeposit={(evt)=>{
                                                   onMutationDeposit(evt)
                                                 }} />} />
-              <Route path="/withdraw" element={<WithdrawPage {...props} />} />
+              <Route path="/withdraw" element={<WithdrawPage 
+                                                {...props} 
+                                                onMutationWithdraw={(evt)=>{
+                                                  onMutationWithdraw(evt)
+                                                }} />} />
               <Route path="/history-transitions" {...props} element={<HistoryTransitionsPage {...props} />} />
               <Route path="/bank" element={<BankPage {...props} onMutationMe={(evt)=>onMutationMe(evt)} />} />
               <Route path="/banks" element={<BanksPage {...props} />} />
@@ -1322,11 +1382,21 @@ const App =(props) =>{
               <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
-              <Route path="/deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} onMutationDeposit={(evt)=>onMutationDeposit(evt)} />} />
-              <Route path="/withdraws" element={<WithdrawsPage {...props} onMutationWithdraw={(evt)=>onMutationWithdraw(evt)} onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/date-lotterys" element={<DateLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
-              <Route path="/date-lottery" element={<DateLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
-              <Route path="/users" element={<UsersPage />} />
+              <Route path="/admin-deposits" element={<AdminDepositsPage 
+                                                      {...props} 
+                                                      onLightbox={(value)=>setLightbox(value)} 
+                                                      onMutationAdminDeposit={(evt)=>onMutationAdminDeposit(evt)} />} />
+              <Route path="/admin-withdraws" element={<AdminWithdrawsPage 
+                                                      {...props} 
+                                                      onMutationAdminWithdraw={(evt)=>{
+
+                                                        console.log("onMutationAdminWithdraw : ", evt)
+                                                        // onMutationAdminWithdraw(evt)
+                                                      }} 
+                                                      onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/admin-date-lotterys" element={<DateLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
+              <Route path="/admin-date-lottery" element={<DateLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
+              <Route path="/admin-users" element={<UsersPage />} />
               <Route path="/user" element={<UserPage />} />
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
               <Route path="/taxonomy-bank" element={<TaxonomyBankPage  {...props} onMutationBank={(evt)=>onMutationBank(evt)}/>} />
@@ -1335,6 +1405,9 @@ const App =(props) =>{
           </Routes>
         </div>
       </div>
+      {/* Footer */}
+      <Footer />
+    </div>
     </div>
   );
 }

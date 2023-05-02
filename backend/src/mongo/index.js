@@ -293,12 +293,7 @@ const modelExists =()=>{
   Withdraw.find({}, async(err, result)=> {
     if (result.length > 0) {
     } else {
-      let newWithdraw = new Withdraw({  bank: {
-                                          _id: new mongoose.Types.ObjectId(),
-                                          bankId: new mongoose.Types.ObjectId(),
-                                          bankNumber: "xx"
-                                        }, 
-                                        userIdRequest: new mongoose.Types.ObjectId() });
+      let newWithdraw = new Withdraw({bankId: new mongoose.Types.ObjectId(), userIdRequest: new mongoose.Types.ObjectId() });
       await newWithdraw.save();
       await Withdraw.deleteMany({})
     }

@@ -523,3 +523,11 @@ p.word {
   font-style: italic;
   text-decoration: underline;
 }
+
+.btn-logins {
+  background-color: #9F50FF !important;
+}
+
+.btn-ligins:hover {
+  background-color: #753ABB !important;
+}

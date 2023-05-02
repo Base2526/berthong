@@ -68,7 +68,10 @@ const BankPage = (props) => {
     // }
   }                    
 
-  return  <Stack
+  return  <div className="content-bottom">
+            <div className="content-page border">
+              <div className="row">
+        <Stack
             direction="column"
             justifyContent="center"
             alignItems="flex-start">
@@ -83,7 +86,7 @@ const BankPage = (props) => {
               size="small"
               disabled={ _.isEmpty(_.filter(input, (b)=>b.bankId == "" || b.bankNumber == "")) ? false : true }
               onClick={(evt)=>submitForm()}>{t("save")}</Button>
-          </Stack>
+          </Stack></div></div></div>
 }
 
 export default BankPage;
