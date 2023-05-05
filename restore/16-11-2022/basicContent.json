@@ -1,0 +1,69 @@
+[{
+  "_id": {
+    "$oid": "62b41f0c4212ba025fa518f0"
+  },
+  "name": "Help",
+  "description": "<p>#&nbsp;กรณีกลั่นแกล้ง คนโดนกลั่นแกล้ง ต้องไปแจ้งความดำเนินคดีมา เพือทีจะสามารถมาขอข้อมูลส่วนบุคคล คนที่ลงข้อมูล ถึงเราจะเอาข้อมูลส่วนบุคคลให้ แล้ว status จะขึ้นว่า hold แต่จะไม่ลบออกจากระบบ</p>\n",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1655971596809"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661486724895"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "631cb30fcc23758543a59ab8"
+  },
+  "name": "Privacy",
+  "description": "<p><img alt=\"⚠️\" src=\"https://static.xx.fbcdn.net/images/emoji.php/v9/t5d/2/16/26a0.png\" style=\"height:16px; width:16px\" />เรื่องตลกอย่างหนึ่ง คือยังมีคนบางกลุ่มกล่าวว่า &quot;ผมพูดเรื่องควอนตัมมันไร้สาระ&quot; แต่ถ้าคุณเปิดกะลาดูโลก แม้แต่นิตยสาร Forbes และ The Economist ก็ลงข่าวว่ายุคของควอนตัมกำลังมาถึง และมันจะเปลี่ยนแปลงโลก น่าเสียดาย พวกคุณบางคนคงแค่ไม่เคยค้นคว้าหาอะไรแบบนี้อ่าน จึงมองได้แค่ในกะลาแคบ ๆ เพียงแค่ว่ามันคือเรื่องไร้สาระ และไม่คิดจะรับตัวรับมือสำหรับการเปลี่ยนแปลงที่คุณไม่รู้ว่ามันจะเกิดขึ้นเมื่อไหร่</p>\n\n<p><a href=\"https://www.facebook.com/hashtag/worldmaker?__eep__=6&amp;__cft__[0]=AZVI5v1OALlcZp6UU4KWrRMjNR0w79lW3NxDh4xRqSYIcan3Nkkw8vlAYTynrfpW7qk4M4sSiVtY8h6-piAt6Q2dG2Ozh2FL1Jc7hTIFHxYqae2nZ6aWAcTfDTBHA6m4V76xWrEO-avITNYn-FclgCmrxKjy_a3YCBHsOH3UcXLSl9Pkt8Q9nM4yfsPxOfXRLHo&amp;__tn__=*NK-R\">#WorldMaker</a></p>\n",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1662825231524"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1662825317228"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "631cb358cc23758fc8a59acb"
+  },
+  "name": "Terms",
+  "description": "<p>แม้ว่าจะอยู่ในสภาวะเงินเฟ้อและปัญหาซัพพลายเชน Apple ก็ยังคงวางจำหน่าย iPhone 14 ด้วยราคาเท่าเดิมในสหรัฐ อย่างไรก็ตาม ราคา iPhone 14 ในยุโรปกลับเพิ่มขึ้นถึงราว $300-$400 (ราว 10,900-14,500 บาท) ซึ่งถือว่าเพิ่มขึ้นมาเกือบ 30% จากปัญหาค่าเงินยูโรอ่อนค่าเมื่อเทียบกับเงินเหรียญสหรัฐโดย 1 ดอลลาร์สหรัฐจะเทียบเท่ากับ 0.9991 ยูโร</p>\n\n<p>ราคา iPhone 14 ในสหรัฐเทียบกับในยุโรปเป็นดังนี้</p>\n\n<ul>\n\t<li>iPhone 14 ในสหรัฐอเมริกาเริ่มต้นที่ $799 ราคาในยุโรปขึ้นมาถึง $999 (&euro;999)</li>\n\t<li>iPhone 14 Plus ในสหรัฐอเมริกาเริ่มต้นที่ $899 ราคาในยุโรปขึ้นมาถึง $1,149 (&euro;1,149)</li>\n\t<li>iPhone 14 Pro ในสหรัฐอเมริกาเริ่มต้นที่ $999 ราคาในยุโรปขึ้นมาถึง $1,299 (&euro; 1,299)</li>\n\t<li>iPhone 14 Pro Max ในสหรัฐอเมริกาเริ่มต้นที่ $1,099 ราคาในยุโรปขึ้นมาถึง $1,449 (&euro;1,299)</li>\n</ul>\n\n<p>เท่ากับว่าราคาของไลน์ iPhone 14 Pro เพิ่มขึ้นมาเกือบ 30%</p>\n",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1662825304950"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1662825304950"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6322fd6fdc8ec2f0e25640d1"
+  },
+  "name": "Developer",
+  "description": "<p>Tool</p>\n\n<p>1. Reactjs&nbsp; &nbsp; &nbsp;&quot;17.0.2&quot;</p>\n\n<p>2. Mongodb&nbsp; &quot;6.0.1&quot;</p>\n\n<p>3. Graphql&nbsp; &nbsp; &quot;^14.5.3&quot;</p>\n\n<p>4. Elasticsearch &quot;7.0&quot;</p>\n",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1663237487806"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1663237915793"
+    }
+  },
+  "__v": 0
+}]

@@ -1,0 +1,533 @@
+* {
+  font-family: "Open Sans", sans-serif;
+  letter-spacing: 1px;
+}
+
+.mobile {
+  align-self: center;
+  color: #fff;
+}
+
+.mobile > div {
+  /* padding: 0px; */
+  padding: 0.5rem;
+}
+
+.header {
+  background: #21223f;
+  border-top-left-radius: 1rem;
+  /* border-top-right-radius: 1rem; */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.headerR {
+  background: #21223f;
+  /* border-top-left-radius: 1rem; */
+  border-top-right-radius: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter {
+  display: flex;
+  padding: 0.5rem;
+  min-width: 80px;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #828393;
+  border-radius: 10px;
+}
+
+.calendar i,
+.select i,
+.total .label {
+  color: #828393;
+}
+
+.content {
+  background: #21223f;
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+  display: grid;
+  min-height: 210px;
+  max-height: 210px;
+}
+.contentR {
+  /* background: #ffaedc; */
+  /* background-image: url("https://thumbs.dreamstime.com/b/gold-coins-close-up-7915904.jpg"); */
+  background-size: cover !important;
+  background-image: url("https://thumbs.dreamstime.com/b/bitcoin-ethereum-ripple-coins-largest-cryptocurrencies-market-capitalization-lying-computer-motherboard-cryptocurrency-117620665.jpg");
+  /* opacity: 0.5; */
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  border-bottom-right-radius: 1rem;
+  border-top-right-radius: 1rem;
+  min-height: 210px;
+  max-height: 210px;
+}
+
+.total {
+  align-self: start;
+  justify-self: center;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+}
+
+.totalR {
+  align-self: start;
+  justify-self: center;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  /* align-items: center; */
+  width: "100%";
+  padding: 1.5rem;
+}
+
+/* .total > div:not(:first-child):not(:last-child) {
+  margin: 0.5rem;
+}
+
+.totalR > div:not(:first-child):not(:last-child) {
+  margin: 0.5rem;
+} */
+
+.total .totlR .label,
+.card .label {
+  text-transform: uppercase;
+  font-weight: 100;
+  font-size: 0.8rem;
+}
+
+.total .value {
+  font-size: 1.8rem;
+}
+
+.totalR .value {
+  font-size: 1.8rem;
+}
+
+.total .valueSale {
+  font-size: 1.5rem;
+  background: rgba(31, 58, 74, 0.7);
+  /* background: #1f3a4a; */
+  width: "100%";
+  color: #02ca8c;
+  word-wrap: break-word;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.totalR .valueSale {
+  font-size: 1.5rem;
+  background: rgba(31, 58, 74, 0.7);
+  /* background: #1f3a4a; */
+  width: "100%";
+  color: #02ca8c;
+  word-wrap: break-word;
+  padding: 0.5rem;
+  border-radius: 5px;
+}
+
+.total .balance {
+  background: #1f3a4a;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  color: #ff3c3c;
+}
+
+.totalR .balance {
+  background: #1f3a4a;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  color: #ff3c3c;
+}
+
+.total .balanceBuy {
+  /* background: #1f3a4a; */
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  color: #fff;
+  background: rgba(31, 58, 74, 0.7);
+}
+
+.totalR .balanceBuy {
+  /* background: #1f3a4a; */
+  padding: 0.5rem;
+  border-radius: 5px;
+  color: #fff;
+  background: rgba(31, 58, 74, 0.7);
+}
+
+.cards {
+  display: grid;
+  overflow-x: auto;
+  overflow-y: hidden;
+  grid-template-columns: repeat(auto-fill, minmax(auto, 0));
+  grid-gap: 10px;
+  align-self: start;
+}
+
+/* .card {
+  min-width: 130px;
+  height: 90px;
+  padding: 1rem;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+} */
+
+.green {
+  background: #00cccc;
+}
+
+.magenta {
+  background: #7359ff;
+}
+
+.gray {
+  background: #7a7faf;
+}
+
+.card .balance {
+  display: flex;
+  align-self: start;
+  padding: 0.5rem 0;
+  width: 60px;
+  justify-content: space-around;
+  font-size: 0.8rem;
+}
+
+.card .label {
+  color: #adffff;
+  font-size: 0.7rem;
+}
+
+.card .item {
+  align-self: start;
+  padding: 0.5rem 0;
+  height: 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card .arrow-up {
+  transform: rotateZ(45deg);
+}
+
+.card .item .value {
+  font-size: 1.3rem;
+}
+
+::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px #21233f;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #676767;
+  border-radius: 10px;
+}
+
+.menu {
+  list-style-type: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 2px;
+}
+
+.menu li {
+  height: 40px;
+  position: relative;
+}
+
+.menu label,
+.menu input {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.7;
+}
+
+.menu input[type="radio"] {
+  opacity: 0.011;
+  z-index: 100;
+}
+
+.menu input[type="radio"]:checked + label {
+  border-bottom: 1px solid #2181ff;
+  opacity: 1;
+}
+
+.menu input[type="radio"]:checked + label i {
+  color: #2181ff;
+}
+
+.menu label {
+  cursor: pointer;
+  z-index: 90;
+  font-size: 0.7rem;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.menu label:hover {
+  opacity: 0.7;
+}
+
+.list {
+  background: #211c3a;
+  display: grid;
+  grid-gap: 5px;
+  padding: 5px 0;
+  height: 180px;
+  overflow-y: auto;
+}
+
+.list div[class^="item"] {
+  display: flex;
+  justify-content: space-between;
+  background: #21223f;
+  padding: 10px 0;
+}
+
+.list div[class^="section"] {
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+}
+
+.list .icon {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.list .icon.up {
+  color: #00ff00;
+  transform: rotateZ(30deg);
+}
+
+.list .icon.down {
+  color: #ff0000;
+  transform: rotateZ(-150deg);
+}
+
+.list .description {
+  color: #7d7d7d;
+}
+
+.list .signal {
+  font-weight: bold;
+}
+
+.list .signal.positive {
+  color: #00ff00;
+}
+
+.list .signal.negative {
+  color: #ff0000;
+}
+
+@media only screen and (max-width: 600px) {
+  .contentR {
+    border-radius: 1rem;
+  }
+  .content {
+    border-radius: 1rem;
+  }
+  .wallet {
+    padding: 0.5rem !important;
+  }
+
+  .buy {
+    padding: 0.5rem !important;
+  }
+
+  .valueSale {
+    font-size: 12px;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .contentR {
+    border-radius: 1rem;
+  }
+  .content {
+    border-radius: 1rem;
+  }
+  .wallet {
+    padding: 0.5rem !important;
+  }
+
+  .buy {
+    padding: 0.5rem !important;
+  }
+}
+
+@media only screen and (max-width: 992px) {
+  .contentR {
+    border-top-left-radius: 1rem !important;
+    border-bottom-left-radius: 1rem !important;
+  }
+  .content {
+    border-top-right-radius: 1rem !important;
+    border-bottom-right-radius: 1rem !important;
+  }
+  .wallet {
+    padding: 0.5rem !important;
+  }
+
+  .buy {
+    padding: 0.5rem !important;
+  }
+  .totalR {
+    padding: 0.5rem !important;
+  }
+  .total {
+    padding: 0.5rem !important;
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  .wallet {
+    padding-right: 0px;
+  }
+
+  .buy {
+    padding-left: 0px;
+  }
+}
+.btn-deposit {
+  background-color: #20b2aa !important;
+}
+
+.btn-deposit:hover {
+  background-color: #167f89 !important;
+}
+
+.btn-withdraw {
+  background-color: #ececec !important;
+}
+
+.btn-withdraw:hover {
+  background-color: #c6c5c5 !important;
+}
+
+.btn-confirm {
+  background-color: #21fc6d !important;
+}
+
+.btn-confirm:hover {
+  background-color: #1dda5f !important;
+}
+
+.btn-dis {
+  background-color: #d8d8d8 !important;
+}
+
+.btn-dis:hover {
+  background-color: #898989 !important;
+}
+
+.balanceBuy {
+  background: rgba(255, 255, 255, 0.8);
+  width: "80%";
+}
+
+.buy-select {
+  color: #fe9b93;
+  /* color: #000;
+  opacity: 1 !important; */
+}
+
+.labelSale {
+  color: #000;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 5px;
+  padding: 5px;
+}
+
+.select-buy {
+  /* background: #21223f; */
+  background-size: cover !important;
+  background-image: url("https://thumbs.dreamstime.com/b/gold-coins-close-up-7915904.jpg");
+  /* background-size: cover !important;est-cryptocurrencies-market-capitalization-lying-computer-motherboard-cryptocurrency-117620665.jpg"); */
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  border-radius: 1rem;
+  min-height: 150px;
+  max-height: 150px;
+  display: grid;
+}
+
+/* @media (min-width: 576px) {
+  .container,
+  .container-sm {
+    max-width: 590px !important;
+  }
+} */
+
+/* @media (max-width: 576px) {
+  .container,
+  .container-sm {
+    max-width: 590px !important;
+  }
+} */
+
+.buySelect {
+  background: #ffe0b2;
+  padding: 0.5rem 2rem;
+  border-radius: 5px;
+  color: red;
+  margin: 0px;
+  padding: 0.5rem 1rem;
+  font-size: 14px;
+  white-space: nowrap !important;
+}
+
+.buyNumber {
+  background: #c5e1a5;
+  padding: 0.5rem 2rem;
+  border-radius: 5px;
+  color: green;
+  margin: 0px;
+  padding: 0.5rem 1rem;
+  font-size: 18px;
+  word-wrap: break-word !important;
+}
+
+p.word {
+  word-wrap: break-word;
+  white-space: normal;
+  font-size: 22px;
+  font-weight: 900;
+  color: #fb8c00;
+  font-style: italic;
+  text-decoration: underline;
+}
+
+.btn-logins {
+  background-color: #9F50FF !important;
+}
+
+.btn-ligins:hover {
+  background-color: #753ABB !important;
+}

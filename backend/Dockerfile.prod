@@ -1,0 +1,23 @@
+#stage1  https://cloudnweb.dev/2020/05/nodejs-graphql-typescript-starter-part-3/
+FROM node:14-slim as builder
+WORKDIR /app
+COPY package*.json ./
+# RUN npm install
+RUN npm i --save --legacy-peer-deps
+COPY . .
+RUN npm run build
+
+#stage 2
+FROM node:14-slim
+WORKDIR /app
+COPY package*.json ./
+# RUN npm install --production
+RUN npm i --save --legacy-peer-deps --production
+COPY --from=builder /app/dist ./dist
+COPY .env .
+# COPY cron-jobs.js cron-jobs.js
+
+# COPY uploads uploads
+RUN mkdir uploads && chmod -R 777 uploads
+
+CMD node dist/index.js

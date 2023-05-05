@@ -1,0 +1,84 @@
+FROM node:12-alpine as builder
+
+ARG REACT_APP_HOST_GRAPHAL 
+ARG REACT_APP_NODE_ENV 
+ARG REACT_APP_GOOGLE_CLIENT_ID 
+ARG REACT_APP_FACEBOOK_APPID 
+
+ARG REACT_APP_GITHUB_CLIENT_ID
+
+ARG REACT_APP_GOOGLE_ANALYTICS4
+
+ENV REACT_APP_HOST_GRAPHAL ${REACT_APP_HOST_GRAPHAL}
+ENV REACT_APP_NODE_ENV ${REACT_APP_NODE_ENV}
+# Google Login
+ENV REACT_APP_GOOGLE_CLIENT_ID ${REACT_APP_GOOGLE_CLIENT_ID}
+# Facebook app id
+ENV REACT_APP_GITHUB_CLIENT_ID ${REACT_APP_GITHUB_CLIENT_ID}
+
+# GITHUB
+ENV GITHUB_CLIENT_ID ${GITHUB_CLIENT_ID}
+
+# Google analytic 4
+ENV REACT_APP_GOOGLE_ANALYTICS4 ${REACT_APP_GOOGLE_ANALYTICS4}
+
+RUN apk add --update --no-cache \
+    make \
+    g++ \
+    jpeg-dev \
+    cairo-dev \
+    giflib-dev \
+    pango-dev \
+    libtool \
+    autoconf \
+    automake
+
+RUN  npm install nodemon -g --save
+WORKDIR /app
+COPY . .
+
+# RUN npm cache clean --force
+RUN npm i --save --legacy-peer-deps
+RUN npm run build 
+
+# Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
+# FROM nginx:1.15
+# COPY --from=build-stage /app/build/ /usr/share/nginx/html
+
+# dev
+# EXPOSE 3000 < Is defualt post not setup
+# CMD [ "npm", "run", "start" ]
+
+
+# nginx state for serving content
+# FROM nginx:1.18.0-alpine
+FROM nginx:1.9.15-alpine
+
+RUN apk update \
+    && apk upgrade \
+    && apk add apache2-utils \ 
+    rm -rf /var/lib/apt/lists/*
+
+# Set working directory to nginx asset directory
+WORKDIR /usr/share/nginx/html
+
+# Remove default nginx static assets
+RUN rm -rf ./*
+# Copy static assets from builder stage
+COPY --from=builder /app/build .
+
+# COPY ./etc/nginx/nginx.conf /etc/nginx/nginx.conf
+#COPY /etc/conf.d/nginx.conf /etc/nginx/conf.d/default.conf
+
+
+# SSL
+COPY ./ssl/FCAD0CB87FF0A54807D4335D436A2719.txt .well-known/pki-validation/FCAD0CB87FF0A54807D4335D436A2719.txt
+COPY ./ssl /etc/nginx-sp/ssl
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+# SSL
+
+
+RUN htpasswd -c -b /etc/nginx/.htpasswd banlist banlist1234
+
+# Containers run nginx with global directives and daemon off
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

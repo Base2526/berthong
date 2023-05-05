@@ -1,0 +1,443 @@
+[{
+  "_id": {
+    "$oid": "62a30415384dbe01f07da2ee"
+  },
+  "name": "ธนาคารกรุงไทย",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1654850581169"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661603157123"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "62a3018677f36a01c16b8978"
+  },
+  "name": "ธนาคารไทยพาณิชย์",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1654849926919"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661603148802"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0bc0e0359b0140ea2ca2"
+  },
+  "name": "ธนาคารกรุงศรีอยุธยา",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602752911"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602752911"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0bd4e0359b0140ea2cb5"
+  },
+  "name": "ธนาคารกรุงเทพ",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602772650"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602772650"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0bffe0359b0140ea2cb8"
+  },
+  "name": "ธนาคารซีไอเอ็มบี",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602815167"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602815167"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0c26e0359b0140ea2cde"
+  },
+  "name": "ธนาคารอิสลาม",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602854162"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602854162"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0c32e0359b0140ea2ce1"
+  },
+  "name": "ธนาคารกสิกรไทย",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602866774"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602866774"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0c3ee0359b0140ea2ce4"
+  },
+  "name": "ธนาคารเกียรตินาคิน",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602878994"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602878994"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0c4ae0359b0140ea2ce7"
+  },
+  "name": "Standard Chartered",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602890547"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602890547"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0c16e0359b0140ea2ccb"
+  },
+  "name": "ธนาคารออมสิน",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602838659"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602838659"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0c58e0359b0140ea2cea"
+  },
+  "name": "ธนาคารธนชาติ",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602904570"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602904570"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0c63e0359b0140ea2ced"
+  },
+  "name": "ทิสโก้แบงค์",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602915448"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602915448"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0c6fe0359b0140ea2cf0"
+  },
+  "name": "ธนาคารทหารไทย",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602927379"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602927379"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0c7be0359b0140ea2cf3"
+  },
+  "name": "ธนาคารยูโอบี",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602939013"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602939013"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0c9be0359b0140ea2d09"
+  },
+  "name": "True Wallet",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602971345"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602971345"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0c87e0359b0140ea2cf6"
+  },
+  "name": "ธนาคารเพื่อการเกษตรและสหกรณ์การเกษตร",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602951557"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602951557"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0ca7e0359b0140ea2d0c"
+  },
+  "name": "พร้อมเพย์ (PromptPay)",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602983654"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602983654"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0cb0e0359b0140ea2d0f"
+  },
+  "name": "ธนาคารอาคารสงเคราะห์",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661602992663"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661602992663"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0cc4e0359b0140ea2d12"
+  },
+  "name": "AirPay (แอร์เพย์)",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661603012107"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661603012107"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0cd4e0359b0140ea2d18"
+  },
+  "name": "123 เซอร์วิส",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661603028555"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661603028555"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0ccbe0359b0140ea2d15"
+  },
+  "name": "mPay",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661603019009"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661603019009"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0cefe0359b0140ea2d1b"
+  },
+  "name": "ธนาคารไทยเครดิตเพื่อรายย่อย",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661603055184"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661603128184"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0cf6e0359b0140ea2d1e"
+  },
+  "name": "ธนาคารแลนด์แอนด์เฮ้าส์",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661603062338"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661603062338"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0cfce0359b0140ea2d21"
+  },
+  "name": "เก็บเงินปลายทาง",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661603068849"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661603068849"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a0d05e0359b0140ea2d24"
+  },
+  "name": "TTB (ทีเอ็มบีธนชาต)",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661603077414"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661603104141"
+    }
+  },
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "630a329fd4fb1002d26ef681"
+  },
+  "name": "ธนาคารซิตี้แบงก์",
+  "description": "",
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1661612703052"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1661612703052"
+    }
+  },
+  "__v": 0
+}]

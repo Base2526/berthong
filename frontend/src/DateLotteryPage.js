@@ -1,0 +1,170 @@
+import React , {useState, useEffect} from "react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useQuery } from "@apollo/client";
+import CircularProgress from '@mui/material/CircularProgress';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
+import Editor from "./editor/Editor";
+import { mutationDatesLottery, queryDateLotteryById, queryDateLotterys } from "./gqlQuery"
+import _ from "lodash";
+
+let editValues = undefined;
+let initValues =  { mode: "NEW",  title : "", date: null, description: "" }
+
+const DateLotteryPage = (props) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [input, setInput] = useState(initValues)
+  let [data, setData] = useState(initValues)
+
+  let { mode, _id } = location.state
+
+  let { onMutationDateLottery } = props
+
+  const { loading: loadingDateLotteryById, 
+          data: dataDateLotteryById, 
+          error: errorDateLotteryById,
+          refetch: refetchDateLotteryById} =  useQuery(queryDateLotteryById, {
+                                                notifyOnNetworkStatusChange: true,
+                                              });
+
+  useEffect(()=>{
+    if(mode == "edit" && _id){
+      refetchDateLotteryById({id: _id});
+    }
+  }, [_id])
+
+  useEffect(()=>{
+    if(mode == "edit"){
+      if (dataDateLotteryById) {
+        let { status, data } = dataDateLotteryById.dateLotteryById
+        if(status){
+          setData(data)
+        }
+      }
+    }
+  }, [dataDateLotteryById])
+
+  switch(mode){
+    case "new":{
+      editValues = undefined
+      break;
+    }
+
+    case "edit":{
+      // editValues = useQuery(queryDateLotteryById, {
+      //   variables: {id: _id},
+      //   notifyOnNetworkStatusChange: true,
+      // });
+     
+      console.log("editValues : ", editValues, input)
+
+      if(_.isEqual(input, initValues)) {
+        // if(!_.isEmpty(editValues)){
+        //   let {loading}  = editValues
+          
+        //   if(!loading){
+        //     let {status, data} = editValues.data.dateLotteryById
+
+        //     if(status){
+        //       setInput({
+        //         title: data.title,
+        //         startDate: new Date(data.startDate),
+        //         endDate: new Date(data.endDate),
+        //         description: data.description
+        //       })
+        //     }
+        //   }
+        // }
+
+        if(!loadingDateLotteryById){
+          setInput({
+                title: data.title,
+                startDate: new Date(data.startDate),
+                endDate: new Date(data.endDate),
+                description: data.description
+              })
+        }
+      }
+      break;
+    }
+  }
+
+  const submitForm = (event) => {
+    event.preventDefault();
+    // startDate: null, endDate: null
+    let newInput = {  mode: mode.toUpperCase(), 
+                      title: input.title, 
+                      date: input.date,
+                      description: input.description }
+    if(mode == "edit"){
+      newInput = {...newInput, _id: editValues.data.dateLotteryById.data._id}
+    }
+
+    onMutationDateLottery({ variables: { input: newInput } })
+  };
+
+  return (
+    <div>
+      {
+        editValues != null && editValues.loading
+        ?<CircularProgress />
+        :<Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }} onSubmit={submitForm} >
+            <TextField
+              id="filled-basic"
+              title="title"
+              label="Title"
+              variant="filled"
+              value={input.title}
+              required
+              onChange={(e) => {
+                console.log("title : ", e.target.value)
+                setInput({...input, title:e.target.value})
+              }}
+            />
+
+            <DatePicker
+              label="วันที่หวยออก"
+              placeholderText="วันที่หวยออก"
+              required={true}
+              selected={input.date}
+              onChange={(date) => {
+                setInput({...input, date})
+              }}
+              timeInputLabel="Time:"
+              dateFormat="MM/dd/yyyy h:mm aa"
+              showTimeInput/>
+
+            {/* <DatePicker
+              label="End date"
+              placeholderText="End date"
+              required={true}
+              selected={input.endDate}
+              onChange={(date) => {
+                setInput({...input, endDate: date})
+              }}
+              timeInputLabel="Time:"
+              dateFormat="MM/dd/yyyy h:mm aa"
+              showTimeInput/> */}
+
+            <Editor 
+              name="description" 
+              label={"Description"}  
+              initData={input.description}
+              onEditorChange={(newValue)=>{
+                setInput({...input, description:newValue})
+              }}/>
+
+            <Button type="submit" variant="contained" color="primary">{mode === 'new' ? "CREATE" : "UPDATE"} </Button>
+          </Box>
+      }
+      </div>
+  );
+};
+
+export default DateLotteryPage;
