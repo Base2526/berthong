@@ -59,6 +59,10 @@ import {
 import {
   FiLogIn as LoginIcon
 } from "react-icons/fi"
+
+import {
+  VscDebug as VscDebugIcon
+} from "react-icons/vsc"
 import {
   Avatar,
   IconButton,
@@ -78,7 +82,7 @@ import _ from "lodash"
 
 import TaxonomyBankPage from "./TaxonomyBankPage";
 import TaxonomyBanksPage from "./TaxonomyBanksPage";
-import MeBookBuysPage from "./MeBookBuysPage";
+import BookBuysPage from "./BookBuysPage";
 import DateLotteryPage from "./DateLotteryPage";
 import DateLotterysPage from "./DateLotterysPage";
 import DepositPage from "./DepositPage";
@@ -100,7 +104,6 @@ import UserPage from "./UserPage";
 import UsersPage from "./UsersPage";
 import { checkRole, getHeaders, handlerErrorApollo, showToast} from "./util";
 import WithdrawPage from "./WithdrawPage";
-import WithdrawsPage from "./WithdrawsPage";
 import BreadcsComp from "./components/BreadcsComp";
 import DialogLogoutComp from "./components/DialogLogoutComp";
 import DialogDeleteBankComp from "./components/DialogDeleteBankComp";
@@ -112,6 +115,7 @@ import BookMarksPage from "./BookMarksPage";
 import ContactUsPage from "./ContactUsPage";
 import SubscribesPage from "./SubscribesPage";
 import Footer from "./Footer";
+import DblogPage from "./DblogPage";
 
 import { queryNotifications, 
           mutationFollow, 
@@ -1092,7 +1096,7 @@ const App =(props) =>{
                 {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
                 {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
                 {id: 6, title:"วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/date-lotterys"},
-                // {id: 7, title:"บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/banks"},
+                {id: 7, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
                 {id: 8, title:"Logout", icon: <LogoutIcon size="1.5em"/>, path: "/logout"}]
       }
       case Constants.AUTHENTICATED:{
@@ -1376,7 +1380,7 @@ const App =(props) =>{
               <Route path="/history-transitions" {...props} element={<HistoryTransitionsPage {...props} />} />
               <Route path="/bank" element={<BankPage {...props} onMutationMe={(evt)=>onMutationMe(evt)} />} />
               <Route path="/banks" element={<BanksPage {...props} />} />
-              <Route path="/book-buy" element={<MeBookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/book-buy" element={<BookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/notifications" element={<NotificationsPage {...props} onMutationNotification={(evt)=>onMutationNotification(evt)} />} />
               <Route path="/bookmarks" element={<BookMarksPage {...props} onMutationFollow={(evt)=>onMutationFollow(evt) } />} />
               <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />} />
@@ -1400,6 +1404,7 @@ const App =(props) =>{
               <Route path="/user" element={<UserPage />} />
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
               <Route path="/taxonomy-bank" element={<TaxonomyBankPage  {...props} onMutationBank={(evt)=>onMutationBank(evt)}/>} />
+              <Route path="/dblog" element={<DblogPage  {...props} />} />
             </Route>
             <Route path="*" element={<p>There's nothing here: 404!</p>} />
           </Routes>

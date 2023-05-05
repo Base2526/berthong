@@ -16,7 +16,9 @@ import {  User,
           DateLottery, 
           Transition, 
           Comment,
-          ContactUs } from './model'
+          ContactUs,
+          Test,
+          Dblog } from './model'
 import pubsub from './pubsub'
 import {  emailValidate, 
           checkBalance, 
@@ -44,9 +46,26 @@ export default {
     async ping(parent, args, context, info){
       let { req } = context
 
-      let user  = await getUser({_id: mongoose.Types.ObjectId("62a2f633cf7946010d3c74fa")})
+      const session = await mongoose.startSession();
+      session.startTransaction()
 
-      console.log("user doc :", user)
+      try {
+        await Test.create({ message: "ACCC" });
+        await session.commitTransaction();
+
+        console.log("ping #1")
+      }catch(error){
+        await session.abortTransaction();
+        console.log(`ping #2 ${err}`)
+      }finally {
+        session.endSession();
+
+        console.log("ping #3")
+      }
+
+      // let user  = await getUser({_id: mongoose.Types.ObjectId("62a2f633cf7946010d3c74fa")})
+
+      // console.log("user doc :", user)
       // let { status, code, pathname, current_user } =  await checkAuthorization(req);
       // if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
@@ -77,22 +96,6 @@ export default {
       return { status:true }
     },
 
-    async me(parent, args, context, info){
-      let start = Date.now()
-      let { req } = context
-
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
-      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-      if(!status && code == USER_NOT_FOUND) throw new AppError(USER_NOT_FOUND, 'User not found.')
-
-      let user = await getUser({_id: current_user?._id}) 
-
-      return {  status: true,
-                data: { ...user, ...await checkBalance(current_user?._id) },
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
-              }
-    },
-
     async users(parent, args, context, info){
       let start = Date.now()
       let { req } = context
@@ -102,7 +105,6 @@ export default {
       if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Administrator only!')
 
       let { OFF_SET, LIMIT } = args?.input
-
       let users = await User.find({roles: {$nin:[AMDINISTRATOR]}}, 
                                   { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 })
                                   .limit(LIMIT)
@@ -133,23 +135,23 @@ export default {
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
-    async roles(parent, args, context, info) {
-      let start = Date.now()
-      let { req } = context
+    // async roles(parent, args, context, info) {
+    //   let start = Date.now()
+    //   let { req } = context
 
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
-      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
+    //   let { status, code, pathname, current_user } =  await checkAuthorization(req);
+    //   if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+    //   if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
 
-      let data = await Role.find({});
-      if(_.isNull(data)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
+    //   let data = await Role.find({});
+    //   if(_.isNull(data)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
-      return {
-        status:true,
-        data,
-        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-      }
-    },
+    //   return {
+    //     status:true,
+    //     data,
+    //     executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+    //   }
+    // },
 
     async roleByIds(parent, args, context, info) {
       let start = Date.now()
@@ -157,9 +159,8 @@ export default {
 
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-      // if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
+      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
 
-      
       let data = await Role.find({_id: {$in: args?.input }})
       return {
         status: true,
@@ -330,127 +331,98 @@ export default {
 
     },
 
-    async deposits(parent, args, context, info){
-      let start = Date.now()
-        
-      let { req } = context
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
-      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+    // async depositById(parent, args, context, info){
+    //   let start = Date.now()
 
-      if( checkRole(current_user) == AMDINISTRATOR ){
-        let deposits = await Deposit.find({status: Constants.WAIT})
+    //   let { _id } = args
+    //   let { req } = context
+    //   let { status, code, pathname, current_user } =  await checkAuthorization(req);
+    //   if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-        deposits  =await Promise.all(_.map(deposits, async(deposit)=>{
-                                      let f = await Bank.findById(deposit.bank.bankId)
-                                      if(_.isNull(f)) return null
-                                      return {...deposit._doc, bank: {...deposit.bank, bankName: f?.name}}
-                                    }))
+    //   return {  status:true,
+    //             data: await Deposit.findById(_id),
+    //             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
-        return {  status: true,
-                  data: _.orderBy(deposits, i => i.updatedAt, 'desc'),
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }       
-      }
+    // },
 
-      let deposits = await Deposit.find({userIdRequest: current_user?._id})
+    // async withdraws(parent, args, context, info){
+    //   let start = Date.now()
+    //   let { req } = context
+    //   try{
+    //     let { status, code, pathname, current_user } =  await checkAuthorization(req);
+    //     if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      deposits = _.orderBy(deposits, i => i.updatedAt, 'desc');
-      return {  status:true,
-                data: deposits,
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-    },
+    //     if( checkRole(current_user) != AMDINISTRATOR && 
+    //         checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Admin or Authenticated only!')
 
-    async depositById(parent, args, context, info){
-      let start = Date.now()
+    //     if( checkRole(current_user) == AMDINISTRATOR ){
+    //       let withdraws = await Withdraw.find({status: Constants.WAIT})
 
-      let { _id } = args
-      let { req } = context
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
-      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+    //       withdraws = await Promise.all(_.map(withdraws, async(i)=>{
+    //                                             let user = await getUser({_id: i.userIdRequest})
+    //                                             return _.isEmpty(user) ? null : {...i._doc, userNameRequest: user?.displayName}
+    //                                           }).filter(i=>!_.isNull(i)))
+    //       return {  status: true,
+    //                 data: _.orderBy(withdraws, i => i.updatedAt, 'desc'),
+    //                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    //     }
 
-      return {  status:true,
-                data: await Deposit.findById(_id),
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    //     let withdraws = await Withdraw.find({userIdRequest: current_user?._id})
+    //     withdraws = await Promise.all(_.map(withdraws, async(item)=>{
+    //                                           let user = await getUser({_id: item.userIdApprove})
+    //                                           return {...item._doc, userNameApprove: user?.displayName}
+    //                                         }))
 
-    },
+    //     return {  status: true,
+    //               data: _.orderBy(withdraws, i => i.updatedAt, 'desc'),
+    //               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    //   }catch(error){
+    //     return {  status: false,
+    //       data: error.toString(),
+    //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    //   }
+    // },
 
-    async withdraws(parent, args, context, info){
-      let start = Date.now()
-      let { req } = context
-      try{
-        let { status, code, pathname, current_user } =  await checkAuthorization(req);
-        if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-
-        if( checkRole(current_user) != AMDINISTRATOR && 
-            checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Admin or Authenticated only!')
-
-        if( checkRole(current_user) == AMDINISTRATOR ){
-          let withdraws = await Withdraw.find({status: Constants.WAIT})
-
-          withdraws = await Promise.all(_.map(withdraws, async(i)=>{
-                                                let user = await getUser({_id: i.userIdRequest})
-                                                return _.isEmpty(user) ? null : {...i._doc, userNameRequest: user?.displayName}
-                                              }).filter(i=>!_.isNull(i)))
-          return {  status: true,
-                    data: _.orderBy(withdraws, i => i.updatedAt, 'desc'),
-                    executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-        }
-
-        let withdraws = await Withdraw.find({userIdRequest: current_user?._id})
-        withdraws = await Promise.all(_.map(withdraws, async(item)=>{
-                                              let user = await getUser({_id: item.userIdApprove})
-                                              return {...item._doc, userNameApprove: user?.displayName}
-                                            }))
-
-        return {  status: true,
-                  data: _.orderBy(withdraws, i => i.updatedAt, 'desc'),
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }catch(error){
-        return {  status: false,
-          data: error.toString(),
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }
-    },
-
-    async withdrawById(parent, args, context, info){
-      let start = Date.now()
-      let { _id } = args
-      let { req } = context
+    // async withdrawById(parent, args, context, info){
+    //   let start = Date.now()
+    //   let { _id } = args
+    //   let { req } = context
       
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
-      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+    //   let { status, code, pathname, current_user } =  await checkAuthorization(req);
+    //   if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      let withdraw = await Withdraw.findById(_id)
-      if(_.isNull(withdraw)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
+    //   let withdraw = await Withdraw.findById(_id)
+    //   if(_.isNull(withdraw)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
-      return {  status:true,
-                data: withdraw,
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-    },
+    //   return {  status:true,
+    //             data: withdraw,
+    //             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    // },
 
     async banks(parent, args, context, info){
       let start = Date.now()
       let { req } = context
 
-      let { is_admin } = args
+      // let { is_admin } = args
 
       // if(!_.isBoolean( isAdmin )) throw new AppError(BAD_USER_INPUT, 'Is-admin true or false only!')
 
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      if(is_admin){
-        let user  = await getUser({_id: mongoose.Types.ObjectId(_ID_AMDINISTRATOR)})
-        if(_.isNull(user)) throw new AppError(DATA_NOT_FOUND, 'User not found.')
+      // if(is_admin){
+      //   let user  = await getUser({_id: mongoose.Types.ObjectId(_ID_AMDINISTRATOR)})
+      //   if(_.isNull(user)) throw new AppError(DATA_NOT_FOUND, 'User not found.')
   
-        let banks =_.filter(await Promise.all(_.map(user?.banks, async(item)=>{
-                          let bank = await Bank.findById(item.bankId)
-                          return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
-                        })), e=>!_.isNull(e) ) 
+      //   let banks =_.filter(await Promise.all(_.map(user?.banks, async(item)=>{
+      //                     let bank = await Bank.findById(item.bankId)
+      //                     return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
+      //                   })), e=>!_.isNull(e) ) 
 
-        return {  status: true,
-                  data: banks,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }
+      //   return {  status: true,
+      //             data: banks,
+      //             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+      // }
 
       let banks = await Bank.find({})
       if(_.isNull(banks)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
@@ -482,13 +454,17 @@ export default {
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
 
-      let transitions = await Transition.find({userId: current_user?._id, type: Constants.SUPPLIER, status: Constants.OK });
+      let transitions = await Transition.find({ userId: current_user?._id, type: Constants.SUPPLIER });
+
+      // console.log("bookBuyTransitions :", current_user?._id, Constants.SUPPLIER , transitions)
       transitions = _.filter( await Promise.all(_.map(transitions, async(transition)=>{
-                      let supplier = await Supplier.findById(transition.refId)
+                      let supplier = await Supplier.findOne({_id: transition.refId})
 
                       let { buys } = supplier
                       let book  = _.filter(buys, buy=> _.isEqual(buy.userId, current_user?._id)  && buy.selected == 0)
                       // let buy  = _.filter(buys, buy=>_.isEqual(buy.userId, current_user?._id)  && buy.selected == 1)
+
+                      // console.log("book :", book, supplier)
 
                       return book.length > 0 /*|| buy.length > 0*/  ? {...transition._doc, ...supplier._doc } : null
                     })), item=>!_.isNull(item) ) 
@@ -565,44 +541,6 @@ export default {
 
     },
 
-    async dateLotterys(parent, args, context, info){
-      let start = Date.now()
-      let { req } = context
-
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
-      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-
-      let dateLotterys = await DateLottery.find({})
-      if(_.isNull(dateLotterys)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
-
-      dateLotterys = await Promise.all( _.map(dateLotterys, async(lo)=>{
-        let suppliers = await Supplier.find({ dateLottery: lo?._id });
-        return  {...lo._doc, suppliers }
-      }) )
-      
-      return {  status: true,
-                data: dateLotterys,
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-
-    },
-
-    async dateLotteryById(parent, args, context, info){
-      let start = Date.now()
-      let { _id } = args
-      let { req } = context
-
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
-      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-
-      let dateLottery = await DateLottery.findById(_id)
-      if(_.isNull(dateLottery)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
-
-      return {  status: true,
-                data: dateLottery,
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-
-    },
-
     async buys(parent, args, context, info){
       let start = Date.now()
       let { req } = context
@@ -643,8 +581,7 @@ export default {
 
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if( !status && code == FORCE_LOGOUT ) throw new AppError(FORCE_LOGOUT, 'Expired!')
-      if( checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
-
+      // if( checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
 
       let data = [{ user_to_notify: '63ff3c0c6637e303283bc40f', 
                     type: "system",
@@ -668,67 +605,6 @@ export default {
 
     },
 
-    async adminHome(parent, args, context, info){
-      let start = Date.now()
-      let { req } = context
-
-      let { status, code, pathname, current_user } =  await checkAuthorization(req);
-
-      /*
-      try{
-
-      }catch(error){
-        console
-      }
-      console.log("adminHome: ", current_user)
-      if( !status && code == FORCE_LOGOUT ) throw new AppError(FORCE_LOGOUT, 'Expired!')
-      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Administrator only!')
-
-      // 0: 'wait', 1: 'approved',  2: 'approved'
-      let deposits = await Deposit.find({status: Constants.WAIT})
-      deposits  = _.filter(await Promise.all(_.map(deposits, async(deposit)=>{
-                                    let f = await Bank.findById(deposit.bank.bankId)
-                                    if(_.isNull(f)) return null
-                                    return {...deposit._doc, bank: {...deposit.bank, bankName: f?.name}}
-                                  })), i=>!_.isEmpty(i))
-
-      let withdraws = await Withdraw.find({status: Constants.WAIT})
-      withdraws = _.filter(await Promise.all(_.map(withdraws, async(i)=>{
-                                            let user = await User.findById(i.userIdRequest)
-                                            return _.isEmpty(user) ? null : {...i._doc, userNameRequest: user?.displayName}
-                                          }), i=>!_.isEmpty(i)))
-
-      let suppliers = await Supplier.find({}); 
-
-
-      let users = await User.find({})
-      users = _.filter( await Promise.all(_.map(users, async(user)=>{
-                if(_.isEqual(user._id, current_user?._id)) return null
-
-                let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
-                  return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
-                }))            
-                
-                let newUser = {...user._doc, roles: _.filter(roles, (role)=>role!=undefined)};
-                return _.omit(newUser, ['password']);
-              })), i => !_.isEmpty(i))
-              */
-
-      let data =  [ 
-                    { title: "รายการ ฝากเงินรออนุมัติ", data: [] },
-                    { title: "รายการ ถอดเงินรออนุมัติ", data: [] }, 
-                    { title: "รายการ สินค้าทั้งหมด", data: [] },
-                    { title: "รายชื่อบุคคลทั้งหมด", data: [] } 
-                  ]
-      
-
-      return {  status: true,
-                data,
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-
-    },
-
-    // 
     async commentById(parent, args, context, info){
       try{
         let start = Date.now()
@@ -800,12 +676,129 @@ export default {
       }
     },
 
+    async dblog(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'AMDINISTRATOR only!')
+
+      let dblogs = await Dblog.find({})
+      
+      return {  status: true,
+                data:dblogs,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
+    async dateLotterys(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'AMDINISTRATOR only!')
+
+      let dateLotterys = await DateLottery.find({})
+      if(_.isNull(dateLotterys)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
+
+      dateLotterys = await Promise.all( _.map(dateLotterys, async(lo)=>{
+        let suppliers = await Supplier.find({ dateLottery: lo?._id });
+        return  {...lo._doc, suppliers }
+      }) )
+      
+      return {  status: true,
+                data: dateLotterys,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
+    async dateLotteryById(parent, args, context, info){
+      let start = Date.now()
+      let { _id } = args
+      let { req } = context
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'AMDINISTRATOR only!')
+
+      let dateLottery = await DateLottery.findById(_id)
+      if(_.isNull(dateLottery)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
+
+      return {  status: true,
+                data: dateLottery,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
+    async adminHome(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+
+      /*
+      try{
+
+      }catch(error){
+        console
+      }
+      console.log("adminHome: ", current_user)
+      if( !status && code == FORCE_LOGOUT ) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Administrator only!')
+
+      // 0: 'wait', 1: 'approved',  2: 'approved'
+      let deposits = await Deposit.find({status: Constants.WAIT})
+      deposits  = _.filter(await Promise.all(_.map(deposits, async(deposit)=>{
+                                    let f = await Bank.findById(deposit.bank.bankId)
+                                    if(_.isNull(f)) return null
+                                    return {...deposit._doc, bank: {...deposit.bank, bankName: f?.name}}
+                                  })), i=>!_.isEmpty(i))
+
+      let withdraws = await Withdraw.find({status: Constants.WAIT})
+      withdraws = _.filter(await Promise.all(_.map(withdraws, async(i)=>{
+                                            let user = await User.findById(i.userIdRequest)
+                                            return _.isEmpty(user) ? null : {...i._doc, userNameRequest: user?.displayName}
+                                          }), i=>!_.isEmpty(i)))
+
+      let suppliers = await Supplier.find({}); 
+
+
+      let users = await User.find({})
+      users = _.filter( await Promise.all(_.map(users, async(user)=>{
+                if(_.isEqual(user._id, current_user?._id)) return null
+
+                let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
+                  return (await Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
+                }))            
+                
+                let newUser = {...user._doc, roles: _.filter(roles, (role)=>role!=undefined)};
+                return _.omit(newUser, ['password']);
+              })), i => !_.isEmpty(i))
+              */
+
+      let data =  [ 
+                    { title: "รายการ ฝากเงินรออนุมัติ", data: [] },
+                    { title: "รายการ ถอดเงินรออนุมัติ", data: [] }, 
+                    { title: "รายการ สินค้าทั้งหมด", data: [] },
+                    { title: "รายชื่อบุคคลทั้งหมด", data: [] } 
+                  ]
+      
+
+      return {  status: true,
+                data,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
     async adminDeposits(parent, args, context, info){
       let start = Date.now()
         
       let { req } = context
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'AMDINISTRATOR only!')
 
       let transitions = await Transition.find({ type: Constants.DEPOSIT, status: Constants.WAIT });
 
@@ -826,6 +819,7 @@ export default {
       let { req } = context
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'AMDINISTRATOR only!')
 
       let transitions = await Transition.find({ type: Constants.WITHDRAW, status: Constants.WAIT });
 

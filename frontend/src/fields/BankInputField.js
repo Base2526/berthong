@@ -43,8 +43,6 @@ const BankInputField = (props) => {
         let { status, data } = dataBanks?.banks
         if(status){
           setBanks(data)
-
-          console.log("banks :", data)
         }
       }
     }

@@ -48,27 +48,6 @@ const MePage = (props) => {
     // const [banks, setBanks] = useState([])
     const [expanded, setExpanded] = useState(localStorage.getItem('expanded') ? localStorage.getItem('expanded') : false)
 
-    // const { loading: loadingBanks, 
-    //         data: dataBanks, 
-    //         error: errorBanks, 
-    //         networkStatus } = useQuery(queryBanks, 
-    //                                     { 
-    //                                         context: { headers: getHeaders(location) }, 
-    //                                         fetchPolicy: 'cache-first', 
-    //                                         nextFetchPolicy: 'network-only',
-    //                                         notifyOnNetworkStatusChange: true
-    //                                     }
-    //                                     );
-    // useEffect(() => {
-    //     if(!loadingBanks){
-    //         if(!_.isEmpty(dataBanks?.banks)){
-    //             let { status, data } = dataBanks?.banks
-    //             if(status){
-    //                 setBanks(data)
-    //             }
-    //         }
-    //     }
-    // }, [dataBanks, loadingBanks])
     // const managementView = () =>{
     //     switch(checkRole(user)){
     //         case AMDINISTRATOR:{
