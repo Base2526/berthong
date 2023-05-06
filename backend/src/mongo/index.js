@@ -63,7 +63,7 @@ const modelExists =()=>{
       // console.log('Found Role');
     } else {
       // console.log('Not found Role, creating');
-      let newRole = new Role({});
+      let newRole = new Role({name: "test"});
       newRole.save();
 
       await Role.deleteMany({})
@@ -348,7 +348,7 @@ const modelExists =()=>{
 mongoose.Promise = global.Promise;
 // mongoose.connect("YOUR_MONGODB_URI", { useNewUrlParser: true });
 
-// console.log("process.env.MONGO_URI :", process.env)
+// console.log(">>>>> process.env.MONGO_URI :", process.env)
 // uri
 mongoose.connect(
   // "mongodb://mongo1:27017,mongo2:27017,mongo3:27017/bl?replicaSet=rs",
