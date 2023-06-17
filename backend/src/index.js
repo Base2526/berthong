@@ -14,7 +14,6 @@ import resolvers from "./resolvers";
 import pubsub from './pubsub'
 import { error } from "console";
 
-
 require('./mongo');
 require('./cron-jobs.js');
 
@@ -268,7 +267,7 @@ async function startApolloServer(typeDefs, resolvers) {
             // This function formats errors returned by your resolvers
             // You can customize this function to format the error messages
             // in any way you like.
-            console.error("formatError :", err, process.env);
+            // console.error("formatError :", err, process.env);
 
             logger.error(err.toString());
             return formatApolloErrors([err], {

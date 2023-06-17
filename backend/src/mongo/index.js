@@ -370,7 +370,7 @@ connection.on("error", (err)=>{
 });
 connection.once("open", async function () {
   // we're connected!
-  console.log("Successfully : Connected to database!");
+  // console.log("Successfully : Connected to database!");
 
   logger.info("Successfully : Connected to database!")
 

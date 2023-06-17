@@ -5,8 +5,10 @@ import cryptojs from "crypto-js";
 import deepdash from "deepdash";
 deepdash(_);
 import * as fs from "fs";
-import { __TypeKind } from 'graphql';
 import mongoose from 'mongoose';
+import fetch from "node-fetch";
+import { GraphQLUpload } from 'graphql-upload';
+
 import {  User, 
           Supplier, 
           Bank, 
@@ -33,8 +35,6 @@ import { BAD_USER_INPUT, ERROR, FORCE_LOGOUT, DATA_NOT_FOUND,
         USER_NOT_FOUND, UNAUTHENTICATED, AMDINISTRATOR, AUTHENTICATED,
         _ID_AMDINISTRATOR } from "./constants"
 import AppError from "./utils/AppError"
-import fetch from "node-fetch";
-import { GraphQLUpload } from 'graphql-upload';
 import logger from "./utils/logger";
 
 import * as cache from "./cache"
@@ -135,24 +135,6 @@ export default {
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
-    // async roles(parent, args, context, info) {
-    //   let start = Date.now()
-    //   let { req } = context
-
-    //   let { status, code, pathname, current_user } =  await checkAuthorization(req);
-    //   if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-    //   if( checkRole(current_user) != AMDINISTRATOR ) throw new AppError(UNAUTHENTICATED, 'Admin only!')
-
-    //   let data = await Role.find({});
-    //   if(_.isNull(data)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
-
-    //   return {
-    //     status:true,
-    //     data,
-    //     executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-    //   }
-    // },
-
     async roleByIds(parent, args, context, info) {
       let start = Date.now()
       let { req } = context
@@ -194,126 +176,6 @@ export default {
       }
     },
 
-    // async suppliers(parent, args, context, info){
-    //   let start = Date.now()
-    //   let { req } = context
-    //   let { status, code, pathname, current_user } = await checkAuthorization(req);
-    //   if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-
-    //   console.log("suppliers args :", args)
-      
-    //   switch(pathname){
-    //     case undefined:
-    //     case "/":{
-
-    //       let {
-    //         OFF_SET,
-    //         LIMIT = 20,
-    //         NUMBER,
-    //         TITLE,
-    //         DETAIL,
-    //         PRICE,
-    //         CHK_BON,
-    //         CHK_LAND,
-    //         CHK_MONEY,
-    //         CHK_GOLD
-    //       } = args?.input
-
-    //       console.log("suppliers: ", args?.input)
-
-    //       /*
-    //         let data = await  User.find({}).limit(perPage).skip(page); 
-    //         let total = (await User.find({})).length;
-    //       */ 
-    //       //  mongoose
-    //       // let condition = {$and: [] }
-    //       if(!_.isEmpty(NUMBER)){
-            
-    //       }
-
-    //       if(!_.isEmpty(TITLE)){
-            
-    //       }
-
-    //       if(!_.isEmpty(DETAIL)){
-            
-    //       }
-
-    //       if(PRICE != 500){
-
-    //       }
-
-    //       if(CHK_BON){
-
-    //       }
-
-    //       if(CHK_LAND){
-
-    //       }
-
-    //       if(CHK_MONEY){
-
-    //       }
-
-    //       if(CHK_GOLD){
-
-    //       }
-
-    //       let total = (await Supplier.find({})).length;
-
-    //       // let skip  = OFF_SET * LIMIT
-
-    //       const skip = (OFF_SET - 1) * LIMIT;
-
-    //       let suppliers = await Supplier.find({}).skip(skip).limit(LIMIT); 
-
-    //       suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-    //         let user = await User.findOne({_id: item.ownerId});
-    //         if(_.isNull(user)) return null;
-    //         return {...item._doc,  owner: user?._doc }
-    //       }).filter(i=>!_.isNull(i)))
-    //       return {  
-    //         status: true,
-    //         data: suppliers,
-    //         total,
-    //         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
-    //       }
-    //     }
-
-    //     default:{
-    //       if( checkRole(current_user) == AMDINISTRATOR ){
-    //         let suppliers = await Supplier.find({});
-
-    //         suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-    //                       let user = await User.findById(item.ownerId);
-    //                       if(_.isNull(user)) return null;
-    //                       return {...item._doc,  owner: user?._doc }
-    //                     }).filter(i=>!_.isNull(i)))
-
-    //         return {  status: true,
-    //                   data: suppliers,
-    //                   total: suppliers.length,
-    //                   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-    //       }
-
-          
-    //       let suppliers = await Supplier.find({ownerId: current_user?._id});
-    //       suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-    //                     let user = await User.findById(item.ownerId);
-    //                     if(_.isNull(user)) return null;
-    //                     return {...item._doc,  owner: user?._doc }
-    //                   }).filter(i=>!_.isNull(i)))
-
-    //       return {  
-    //         status: true,
-    //         data: suppliers,
-    //         total: suppliers.length,
-    //         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
-    //       }
-    //     }
-    //   }
-    // },
-
     async supplierById(parent, args, context, info){
       let start = Date.now()
       let { _id } = args
@@ -330,74 +192,6 @@ export default {
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
     },
-
-    // async depositById(parent, args, context, info){
-    //   let start = Date.now()
-
-    //   let { _id } = args
-    //   let { req } = context
-    //   let { status, code, pathname, current_user } =  await checkAuthorization(req);
-    //   if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-
-    //   return {  status:true,
-    //             data: await Deposit.findById(_id),
-    //             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-
-    // },
-
-    // async withdraws(parent, args, context, info){
-    //   let start = Date.now()
-    //   let { req } = context
-    //   try{
-    //     let { status, code, pathname, current_user } =  await checkAuthorization(req);
-    //     if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-
-    //     if( checkRole(current_user) != AMDINISTRATOR && 
-    //         checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Admin or Authenticated only!')
-
-    //     if( checkRole(current_user) == AMDINISTRATOR ){
-    //       let withdraws = await Withdraw.find({status: Constants.WAIT})
-
-    //       withdraws = await Promise.all(_.map(withdraws, async(i)=>{
-    //                                             let user = await getUser({_id: i.userIdRequest})
-    //                                             return _.isEmpty(user) ? null : {...i._doc, userNameRequest: user?.displayName}
-    //                                           }).filter(i=>!_.isNull(i)))
-    //       return {  status: true,
-    //                 data: _.orderBy(withdraws, i => i.updatedAt, 'desc'),
-    //                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-    //     }
-
-    //     let withdraws = await Withdraw.find({userIdRequest: current_user?._id})
-    //     withdraws = await Promise.all(_.map(withdraws, async(item)=>{
-    //                                           let user = await getUser({_id: item.userIdApprove})
-    //                                           return {...item._doc, userNameApprove: user?.displayName}
-    //                                         }))
-
-    //     return {  status: true,
-    //               data: _.orderBy(withdraws, i => i.updatedAt, 'desc'),
-    //               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-    //   }catch(error){
-    //     return {  status: false,
-    //       data: error.toString(),
-    //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-    //   }
-    // },
-
-    // async withdrawById(parent, args, context, info){
-    //   let start = Date.now()
-    //   let { _id } = args
-    //   let { req } = context
-      
-    //   let { status, code, pathname, current_user } =  await checkAuthorization(req);
-    //   if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
-
-    //   let withdraw = await Withdraw.findById(_id)
-    //   if(_.isNull(withdraw)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
-
-    //   return {  status:true,
-    //             data: withdraw,
-    //             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-    // },
 
     async banks(parent, args, context, info){
       let start = Date.now()
@@ -460,13 +254,16 @@ export default {
       transitions = _.filter( await Promise.all(_.map(transitions, async(transition)=>{
                       let supplier = await Supplier.findOne({_id: transition.refId})
 
-                      let { buys } = supplier
-                      let book  = _.filter(buys, buy=> _.isEqual(buy.userId, current_user?._id)  && buy.selected == 0)
-                      // let buy  = _.filter(buys, buy=>_.isEqual(buy.userId, current_user?._id)  && buy.selected == 1)
-
-                      // console.log("book :", book, supplier)
-
-                      return book.length > 0 /*|| buy.length > 0*/  ? {...transition._doc, ...supplier._doc } : null
+                      if(supplier){
+                        let { buys } = supplier
+                        let book  = _.filter(buys, buy=> _.isEqual(buy.userId, current_user?._id)  && buy.selected == 0)
+                        // let buy  = _.filter(buys, buy=>_.isEqual(buy.userId, current_user?._id)  && buy.selected == 1)
+  
+                        // console.log("book :", book, supplier)
+  
+                        return book?.length > 0 /*|| buy.length > 0*/  ? {...transition._doc, ...supplier._doc } : null
+                      }
+                      return null                
                     })), item=>!_.isNull(item) ) 
 
       return {  status: true,
@@ -1436,6 +1233,7 @@ export default {
       }
     },
 
+    // Add/Edit supplier
     async supplier(parent, args, context, info) {
       let start = Date.now()
       let { input } = args
@@ -1459,7 +1257,6 @@ export default {
       switch(input.mode.toLowerCase()){
         case "new":{
           let newFiles = [];
-          // if(!input.test){
           if(!_.isEmpty(input.files)){
         
             for (let i = 0; i < input.files.length; i++) {
@@ -1497,22 +1294,9 @@ export default {
             data: supplier,
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
-          // }else{
-          //   let supplier = await Supplier.create({ ...input, ownerId: current_user?._id });
-          //   return {
-          //     status: true,
-          //     mode: input.mode.toLowerCase(),
-          //     data: supplier,
-          //     executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          //   }
-          // }
         }
 
-        case "edit":{
-          let { input } = args
-
-          console.log("updateSupplier :", input)
-  
+        case "edit":{  
           let newFiles = [];
           if(!_.isEmpty(input.files)){
   
@@ -1995,7 +1779,6 @@ export default {
       */
     },
 
-    // 
     async notification(parent, args, context, info) {
       let start = Date.now()
       let { _id } = args

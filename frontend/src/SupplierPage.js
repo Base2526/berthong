@@ -41,8 +41,8 @@ const SupplierPage = (props) => {
         data: dataDateLotterys, 
         error: errorDateLotterys } = useQuery(queryDateLotterys, { 
                                               context: { headers: getHeaders(location) },
-                                              fetchPolicy: 'network-only', // Used for first execution
-                                              nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                              fetchPolicy: 'network-only', 
+                                              nextFetchPolicy: 'cache-first', 
                                               notifyOnNetworkStatusChange: true });
 
   let { loading: loadingSupplierById, 

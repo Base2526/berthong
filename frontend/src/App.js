@@ -117,6 +117,8 @@ import SubscribesPage from "./SubscribesPage";
 import Footer from "./Footer";
 import DblogPage from "./DblogPage";
 
+import AutoGenerationContent from "./AutoGenerationContent"
+
 import { queryNotifications, 
           mutationFollow, 
           querySuppliers, 
@@ -1095,7 +1097,7 @@ const App =(props) =>{
                 {id: 3, title:"รายการสินค้าทั้งหมด", icon: <AdjustIcon />, path: "/suppliers"},
                 {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
                 {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
-                {id: 6, title:"วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/date-lotterys"},
+                {id: 6, title:"วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/admin-date-lotterys"},
                 {id: 7, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
                 {id: 8, title:"Logout", icon: <LogoutIcon size="1.5em"/>, path: "/logout"}]
       }
@@ -1208,43 +1210,58 @@ const App =(props) =>{
                   ><MenuIcon /></IconButton>
                   <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">{ REACT_APP_SITE_TITLE }</div></Typography>
                   {
-                    !_.isEmpty(user) && checkRole(user) === Constants.AUTHENTICATED 
-                    ? <Stack direction={"row"} spacing={2} alignItems="center">
-                      <div className="border-login">
-                        <IconButton 
-                          size={'small'}
-                          onClick={()=> navigate("/notifications") }>
-                          <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
-                            <MdCircleNotificationsIcon color={ _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
-                          </Badge>
-                        </IconButton>
-                        <IconButton 
-                          size={'small'}
-                          onClick={()=> navigate("/book-buy")}>
-                          <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
-                            <FiShoppingCart color={ _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
-                          </Badge>
-                        </IconButton>
-                        <IconButton 
-                          size={'small'}
-                          onClick={()=> navigate("/bookmarks")}>
-                          <MdOutlineBookmarkAddedIcon color={ _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
-                        </IconButton>
-                        <IconButton 
-                          size={'small'}
-                          onClick={()=> navigate("/subscribes")}>
-                          <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
-                        </IconButton>
-                        <IconButton 
-                          size={'small'}
-                          onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
-                          <Avatar 
-                            src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
-                            alt="profile"
-                          />
-                        </IconButton>
-                        </div>
-                      </Stack>
+                    !_.isEmpty(user)
+                    ? _.isEqual(checkRole(user), Constants.AUTHENTICATED ) 
+                        ? <Stack direction={"row"} spacing={2} alignItems="center">
+                            <div className="border-login">
+                              <IconButton 
+                                size={'small'}
+                                onClick={()=> navigate("/notifications") }>
+                                <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
+                                  <MdCircleNotificationsIcon color={ _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
+                                </Badge>
+                              </IconButton>
+                              <IconButton 
+                                size={'small'}
+                                onClick={()=> navigate("/book-buy")}>
+                                <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
+                                  <FiShoppingCart color={ _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
+                                </Badge>
+                              </IconButton>
+                              <IconButton 
+                                size={'small'}
+                                onClick={()=> navigate("/bookmarks")}>
+                                <MdOutlineBookmarkAddedIcon color={ _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
+                              </IconButton>
+                              <IconButton 
+                                size={'small'}
+                                onClick={()=> navigate("/subscribes")}>
+                                <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
+                              </IconButton>
+                              <IconButton 
+                                size={'small'}
+                                onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
+                                <Avatar 
+                                  src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
+                                  alt="profile"
+                                />
+                              </IconButton>
+                            </div>
+                          </Stack>
+                        : _.isEqual(checkRole(user), Constants.AMDINISTRATOR ) 
+                           ?  <Stack direction={"row"} spacing={2} alignItems="center">
+                                <div className="border-login">
+                                  <IconButton 
+                                    size={'small'}
+                                    onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
+                                    <Avatar 
+                                      src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
+                                      alt="profile"
+                                    />
+                                  </IconButton>
+                                </div>
+                              </Stack>
+                            : ""
                     : <Stack direction={"row"} spacing={2} alignItems="center">
                          <IconButton 
                           size={'small'}
@@ -1405,6 +1422,8 @@ const App =(props) =>{
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
               <Route path="/taxonomy-bank" element={<TaxonomyBankPage  {...props} onMutationBank={(evt)=>onMutationBank(evt)}/>} />
               <Route path="/dblog" element={<DblogPage  {...props} />} />
+              {/*  */}
+              <Route path="/auto-generation-content" element={<AutoGenerationContent  {...props} />} />
             </Route>
             <Route path="*" element={<p>There's nothing here: 404!</p>} />
           </Routes>

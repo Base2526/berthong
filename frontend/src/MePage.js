@@ -33,12 +33,7 @@ import { IconButton } from "@material-ui/core";
 import _ from "lodash"
 import { styled } from "@mui/material/styles";
 
-// import { AMDINISTRATOR, AUTHENTICATED } from "./constants";
-// import { queryBanks } from "./gqlQuery";
-// import { checkRole, getHeaders } from "./util";
-// import AutoGenerationContent from "./AutoGenerationContent";
 const Input = styled("input")({ display: "none" });
-
 const MePage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();

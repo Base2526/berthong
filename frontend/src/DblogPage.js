@@ -59,11 +59,7 @@ const DblogPage = (props) => {
       if(!_.isEmpty(dataDblog?.dblog)){
         let { status, data } = dataDblog.dblog
         if(status){
-            setDates(data)
-        //   if(!_.isEqual(dateLotterys, data)) setDateLotterys(data)
-          
-        //   let newDates = _.map(data, (i)=>i.date)
-        //   if(!_.isEqual(newDates, dates)) setDates( newDates )
+          setDates(data)
         }
       }
     }
@@ -107,31 +103,21 @@ message
           }
         },
         {
+          Header: 'User',
+          Cell: props => {
+            return  <div>admin</div>
+          }
+        },
+        {
           Header: 'Date',
           accessor: 'timestamp',
           Cell: props => {
             let {timestamp} = props.row.values 
-            console.log("ti :", timestamp)
             let date = new Date(timestamp).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-            return <div>{(moment(date)).format('DD MMM, YYYY h:mm:ss a')}</div>
+            return <div>{moment(date).format('DD MMM, YYYY h:mm:ss a')}</div>
           }
         },
-        // {
-        //   Header: 'Action',
-        //   Cell: props => {
-        //     // console.log("Cell :", props)
-
-        //     let {_id, name} = props.row.original
-        //     return  <Stack direction="row" spacing={2}>
-        //               <button onClick={()=>{
-        //                 navigate("/date-lottery", { state: {from: "/", mode: "edit", _id} })
-        //               }}><EditIcon/>{t("edit")}</button>
-        //               <button onClick={(e)=>{
-        //                 // setOpenDialogDelete({ isOpen: true, id: _id, description: name })
-        //               }}><DeleteForeverIcon/>{t("delete")}</button>
-        //             </Stack>
-        //   }
-        // },
+       
     ],
     []
     )

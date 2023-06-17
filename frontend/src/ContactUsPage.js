@@ -38,61 +38,64 @@ const ContactUsPage = (props) => {
                 return (<div className="content-bottom">
                          <div className="content-page border">   
                             <div className="row">
-                    <Stack
-                            direction="column"
-                            justifyContent="center"
-                            alignItems="flex-start"
-                            spacing={2}>
-                            <TextField
-                                id="outlined-basic"
-                                label="ชื่อเรื่อง"
-                                required={true}
-                                onChange={(e) => {
-                                    setInput({...input, title: e.target.value})
-                                }}
-                                />
-                            <TextField
-                                id="outlined-multiline-flexible"
-                                label="รายละเอียด"
-                                multiline
-                                maxRows={4}
-                                rows={6}
-                                required={true}
-                                onChange={(e) => {
-                                    setInput({...input, description: e.target.value})
-                                }}
-                                />
-                            <AttackFileField
-                                label={t("attack_file")}
-                                values={input.files}
-                                multiple={true}
-                                required={true}
-                                onChange={(values) => {
-                                    setInput({...input, files: values})
-                                }}
-                                onSnackbar={(data) => {
-                                    setSnackbar(data);
-                                }}/>
+                                <Stack
+                                    direction="column"
+                                    justifyContent="center"
+                                    alignItems="flex-start"
+                                    spacing={2}>
+                                    <TextField
+                                        id="outlined-basic"
+                                        label="ชื่อเรื่อง"
+                                        required={true}
+                                        onChange={(e) => {
+                                            setInput({...input, title: e.target.value})
+                                        }}
+                                        />
+                                    <TextField
+                                        id="outlined-multiline-flexible"
+                                        label="รายละเอียด"
+                                        multiline
+                                        maxRows={4}
+                                        rows={6}
+                                        required={true}
+                                        onChange={(e) => {
+                                            setInput({...input, description: e.target.value})
+                                        }}
+                                        />
+                                    <AttackFileField
+                                        label={t("attack_file")}
+                                        values={input.files}
+                                        multiple={true}
+                                        required={true}
+                                        onChange={(values) => {
+                                            setInput({...input, files: values})
+                                        }}
+                                        onSnackbar={(data) => {
+                                            setSnackbar(data);
+                                        }}/>
 
-                            <div className="">
-                                <LoadCanvasTemplate reloadText="Reload Captcha" reloadColor="red" />
-                                <div  className="input-block">
-                                    <input 
-                                        type="text"  
-                                        id="captcha" 
-                                        name="captcha" 
-                                        placeholder="Enter the Captcha"
-                                        onChange={(evt)=> setInput({...input, captcha: evt.target.value}) }
-                                        autoComplete="off"/>
-                                </div>
+                                    <div className="">
+                                        <LoadCanvasTemplate reloadText="Reload Captcha" reloadColor="red" />
+                                        <div  className="input-block">
+                                            <input 
+                                                type="text"  
+                                                id="captcha" 
+                                                name="captcha" 
+                                                placeholder="Enter the Captcha"
+                                                onChange={(evt)=> setInput({...input, captcha: evt.target.value}) }
+                                                autoComplete="off"/>
+                                        </div>
+                                    </div>
+                                    <Button 
+                                        type="submit" 
+                                        variant="contained" 
+                                        color="primary"
+                                        disabled={ (_.isEmpty( input.title ) || _.isEmpty(input.description)) || !validateCaptcha(input.captcha, false) }
+                                        onClick={(evt)=>submitForm(evt)}>{t("send")}</Button>
+                                </Stack>
                             </div>
-                            <Button 
-                                type="submit" 
-                                variant="contained" 
-                                color="primary"
-                                disabled={ (_.isEmpty( input.title ) || _.isEmpty(input.description)) || !validateCaptcha(input.captcha, false) }
-                                onClick={(evt)=>submitForm(evt)}>{t("send")}</Button>
-                        </Stack></div></div></div>)
+                        </div>
+                        </div>)
             }, [input]);
 }
 
