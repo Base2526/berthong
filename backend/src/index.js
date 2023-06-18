@@ -22,7 +22,7 @@ const path = require('path');
 const {
     GraphQLUpload,
     graphqlUploadExpress, // A Koa implementation is also exported.
-  } = require('graphql-upload');
+} = require('graphql-upload');
 
 // const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js');
 

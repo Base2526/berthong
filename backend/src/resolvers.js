@@ -23,7 +23,7 @@ import {  User,
           Dblog } from './model'
 import pubsub from './pubsub'
 import {  emailValidate, 
-          checkBalance, 
+          // checkBalance, 
           fileRenamer, 
           checkAuthorization, 
           checkAuthorizationWithSessionId, 
@@ -644,8 +644,7 @@ export default {
 
         await User.updateOne({ _id: user?._id }, { lastAccess : Date.now() });
         user = await getUser({_id: user?._id}) 
-
-        user = {  ...user, ...await checkBalance(user?._id) }
+        // user = {  ...user, ...await checkBalance(user?._id) }
 
         return {
           status: true,
@@ -1105,7 +1104,7 @@ export default {
       }
 
       let user = await getUser({_id: current_user?._id}) 
-      user =  { ...user, ...await checkBalance(user?._id) }
+      // user =  { ...user, ...await checkBalance(user?._id) }
       
       pubsub.publish("ME", {
         me: { mutation: "UPDATE", data: user },
@@ -1157,9 +1156,9 @@ export default {
             suppliers: { mutation: "BOOK", data: newSupplier },
           });
 
-
           let user = await getUser({_id: current_user?._id}) 
-          user =  { ...user, ...await checkBalance(current_user?._id) }
+          // user =  { ...user, ...await checkBalance(current_user?._id) }
+
           pubsub.publish("ME", {
             me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } },
           });
@@ -1189,7 +1188,8 @@ export default {
         });
 
         let user = await getUser({_id: current_user?._id }) 
-        user =  { ...user, ...await checkBalance(current_user?._id) }
+        // user =  { ...user, ...await checkBalance(current_user?._id) }
+
         pubsub.publish("ME", {
             me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } 
           },
@@ -1206,23 +1206,32 @@ export default {
 
     async buy(parent, args, context, info) {
       let start = Date.now()
-      let {_id} = args
+      let { _id } = args
       let { req } = context
-      
+
       let { status, code, pathname, current_user } =  await checkAuthorization(req);
       if( !status && code == FORCE_LOGOUT ) throw new AppError(FORCE_LOGOUT, 'Expired!')
       if( checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
 
-      let supplier = await Supplier.findById(_id);
-      if(_.isNull(supplier)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
+      // let supplier = await Supplier.findById(_id);
+      // if(_.isNull(supplier)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
 
-      let buys =  _.map(supplier.buys, (buy)=> buy.userId == current_user?._id.toString() ? {...buy._doc, selected: 1} : buy )
-      await Supplier.updateOne({ _id }, {buys });
+      // let buys =  _.map(supplier.buys, (buy)=> buy.userId == current_user?._id.toString() ? {...buy._doc, selected: 1} : buy )
+      // console.log(">>>> buy", buys)
+      // await Supplier.updateOne({ _id }, { buys });
+      // let user = await getUser({_id: current_user?._id}) 
+      // user =  { ...user, ...await checkBalance(current_user?._id) }
+      // pubsub.publish("ME", {
+      //   me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
+      // });
+      // 
 
+      await Supplier.updateMany( { "buys.userId":current_user?._id }, { "$set": { "buys.$[].selected": 1 } } )
+      
+      await Transition.updateOne( { refId: _id, userId: current_user?._id }, {status: Constants.APPROVED} )
 
       let user = await getUser({_id: current_user?._id}) 
-      user =  { ...user, ...await checkBalance(current_user?._id) }
-
+      // user =  { ...user, ...await checkBalance(current_user?._id) }
       pubsub.publish("ME", {
         me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
       });
@@ -1243,6 +1252,7 @@ export default {
       if(!status && code == FORCE_LOGOUT) throw new AppError(FORCE_LOGOUT, 'Expired!')
       if( checkRole(current_user) != AMDINISTRATOR && checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated and Authenticated only!')
 
+      console.log("supplier :", input)
       if(input.test){
         let supplier = await Supplier.create(input);
         
@@ -1540,7 +1550,6 @@ export default {
       // switch(input.mode.toLowerCase()){
       //   case "new":{
       //     console.log("new withdraw : ", input )
-
       //     let withdraw = await Withdraw.create({ ...input,  userIdRequest: current_user?._id });
       //     return {
       //       status: true,
@@ -1549,30 +1558,24 @@ export default {
       //       executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       //     }
       //   }
-
       //   case "edit":{
       //     console.log("edit withdraw :", input)
-
       //     if(_.includes([1, 2], input.status)){
       //       if( checkRole(current_user) == AMDINISTRATOR ){
       //         let newInput = {...input, userIdApprove: current_user?._id}
       //         let withdraw = await Withdraw.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
-
       //         if(input.status == 1){
       //           await Transition.create({
       //                                     type: Constants.WITHDRAW, 
       //                                     refId: withdraw?._id, 
       //                                     userId: withdraw?.userIdRequest
       //                                   })
-
       //           let user = await getUser({_id: withdraw?.userIdRequest}) 
       //           user =  { ...user, ...await checkBalance(withdraw?.userIdRequest) }
-
       //           pubsub.publish("ME", {
       //             me: { mutation: "WITHDRAW", data: {userId: withdraw.userIdRequest, data: user } },
       //           });
       //         }
-
       //         return {
       //           status: true,
       //           mode: input.mode.toLowerCase(),
@@ -1580,8 +1583,6 @@ export default {
       //           // transition,
       //           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       //         }
-
-
       //         return {
       //           status: false,
       //           mode: input.mode.toLowerCase(),
@@ -1939,7 +1940,7 @@ export default {
 
       if(_.isEqual(input?.status, Constants.APPROVED)){
         let user = await getUser({_id: transition?.userId}) 
-        user =  { ...user, ...await checkBalance(transition?.userId) }
+        // user =  { ...user, ...await checkBalance(transition?.userId) }
 
         pubsub.publish("ME", {
           me: { mutation: "DEPOSIT", data: {userId: transition?.userId , data: user } },
@@ -1968,7 +1969,7 @@ export default {
 
       if(_.isEqual(input?.status, Constants.APPROVED)){
         let user = await getUser({_id: transition?.userId}) 
-        user =  { ...user, ...await checkBalance(transition?.userId) }
+        // user =  { ...user, ...await checkBalance(transition?.userId) }
 
         pubsub.publish("ME", {
           me: { mutation: "DEPOSIT", data: {userId: transition?.userId , data: user } },

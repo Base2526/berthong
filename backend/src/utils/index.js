@@ -149,6 +149,8 @@ export const checkBalance = async(userId) =>{
                     let buys = _.filter(supplier.buys, (buy)=> _.isEqual(buy.userId, userId))
 
                     let balance = buys.length * supplier.price
+
+                    console.log("checkBalance >>>> ",  supplier.price , " , >> ", buys ," = ", balance)
                     return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
                 }
 
@@ -262,7 +264,7 @@ export const getUser = async(query) =>{
                     return _.isNull(bank) ? null : {...value._doc, name:bank?.name}
                 })), e=>!_.isNull(e) ) 
 
-        return {...user?._doc, banks}
+        return {...user?._doc, banks, ...await checkBalance(user?._id)}
     }else{
         return null
     }

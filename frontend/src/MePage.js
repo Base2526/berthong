@@ -43,6 +43,9 @@ const MePage = (props) => {
     // const [banks, setBanks] = useState([])
     const [expanded, setExpanded] = useState(localStorage.getItem('expanded') ? localStorage.getItem('expanded') : false)
 
+
+    console.log("user : ", user)
+
     // const managementView = () =>{
     //     switch(checkRole(user)){
     //         case AMDINISTRATOR:{

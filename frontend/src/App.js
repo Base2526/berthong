@@ -362,7 +362,9 @@ const App =(props) =>{
     update: (cache, {data: {buy}}) => {
       let { status, data } = buy
 
-      console.log("")
+      console.log("update : ", buy)
+
+      showToast("success", `การส่งซื้อ complete`)
          
       // ////////// update cache queryUserById ///////////
       // let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
@@ -382,11 +384,13 @@ const App =(props) =>{
       // }
       // ////////// update cache querySuppliers ///////////
     },
-    onCompleted({ data }) {
-      console.log("onCompleted")
+    onCompleted(data) {
+      console.log("onCompleted :", data)
     },
     onError: (err) => {
       console.log("onError :", err)
+
+      showToast("error", `เกิดปัญหาในการสั่งซื้อ`)
     }
   });
 
@@ -1364,9 +1368,7 @@ const App =(props) =>{
                                         onLightbox={(evt)=>setLightbox(evt)} 
                                         onMutationFollow={(evt)=>onMutationFollow(evt)}
                                         onMutationBook={(evt)=>onMutationBook(evt)}
-                                        onMutationBuy={(evt)=>{
-                                          console.log("onMutationBuy :", evt)
-                                        }}
+                                        onMutationBuy={(evt)=>onMutationBuy(evt)}
                                         onMutationComment={(evt)=>onMutationComment(evt)}/>} />
             <Route path="/user/login" element={<LoginPage {...props} />} />
             <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
