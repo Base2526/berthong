@@ -250,13 +250,13 @@ export default {
 
       let transitions = await Transition.find({ userId: current_user?._id, type: Constants.SUPPLIER });
 
-      // console.log("bookBuyTransitions :", current_user?._id, Constants.SUPPLIER , transitions)
+      console.log("bookBuyTransitions >>>> :", current_user?._id, Constants.SUPPLIER , transitions)
       transitions = _.filter( await Promise.all(_.map(transitions, async(transition)=>{
                       let supplier = await Supplier.findOne({_id: transition.refId})
 
                       if(supplier){
                         let { buys } = supplier
-                        let book  = _.filter(buys, buy=> _.isEqual(buy.userId, current_user?._id)  && buy.selected == 0)
+                        let book  = _.filter(buys, buy=> _.isEqual(buy.userId, current_user?._id)  && (buy.selected == 0 || buy.selected == 1))
                         // let buy  = _.filter(buys, buy=>_.isEqual(buy.userId, current_user?._id)  && buy.selected == 1)
   
                         // console.log("book :", book, supplier)
@@ -289,7 +289,12 @@ export default {
           switch(transition.type){ 
             case Constants.SUPPLIER:{
                 let supplier = await Supplier.findById(transition?.refId)
+                
                 let buys = _.filter(supplier?.buys, (buy)=> _.isEqual(buy?.userId, userId))
+                
+                if(_.isEmpty(buys)){
+                  return {};
+                }
                 
                 let balance = buys?.length * supplier?.price
                 return {...transition?._doc, 
@@ -311,7 +316,7 @@ export default {
                         dateLottery: "dateLottery"}
             }
           }
-      }))
+      }).filter(i=>!_.isNull(i)))
 
       return {  status: true,
                 data: transitions,

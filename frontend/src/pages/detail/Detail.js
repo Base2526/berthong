@@ -5,7 +5,7 @@ import "./wallet.css";
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import queryString from 'query-string';
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import _ from "lodash"
 import {
   LinearProgress,
@@ -26,7 +26,8 @@ import { getHeaders, showToast, handlerErrorApollo } from "../../util";
 
 import {  querySupplierById, 
           subscriptionSupplierById, 
-          queryUserById
+          queryUserById,
+          mutationBuy
         } from "../../gqlQuery";
 
 let unsubscribeSupplierById = null;
@@ -43,7 +44,27 @@ const Detail = (props) => {
 
   let { id } = params; 
 
-  let { user, onLogin, onMutationFollow, onMutationBook, onMutationBuy } = props
+  let { user, onLogin, onMutationFollow, onMutationBook } = props
+
+  const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {buy}}) => {
+      let { status, data } = buy
+
+      console.log("update : ", buy)
+      setPopupOpenedShoppingBag(false)
+
+      showToast("success", `การส่งซื้อ complete`)
+    },
+    onCompleted(data) {
+      console.log("onCompleted :", data)
+    },
+    onError: (err) => {
+      console.log("onError :", err)
+
+      showToast("error", `เกิดปัญหาในการสั่งซื้อ`)
+    }
+  });
 
   const { loading: loadingSupplierById, 
           data: dataSupplierById, 
@@ -67,6 +88,8 @@ const Detail = (props) => {
                                                     });
 
   if(!_.isEmpty(errorUserById)) handlerErrorApollo( props, errorUserById )
+
+  
 
   useEffect(() => {
     if(!loadingUserById){
@@ -200,7 +223,7 @@ const Detail = (props) => {
 
   return (
     <div className="row">
-      { isPopupOpenedShoppingBag && <PopupCart {...props} opened={isPopupOpenedShoppingBag} data={data} onClose={() => setPopupOpenedShoppingBag(false) } /> }
+      { isPopupOpenedShoppingBag && <PopupCart {...props} onMutationBuy={(evt)=>onMutationBuy(evt)} opened={isPopupOpenedShoppingBag} data={data} onClose={() => setPopupOpenedShoppingBag(false) } /> }
       { isPopupOpenedWallet  && <PopupWallet opened={isPopupOpenedWallet} onClose={() => setPopupOpenedWallet(false) } /> }
 
       {

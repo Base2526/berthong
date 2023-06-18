@@ -1368,7 +1368,7 @@ const App =(props) =>{
                                         onLightbox={(evt)=>setLightbox(evt)} 
                                         onMutationFollow={(evt)=>onMutationFollow(evt)}
                                         onMutationBook={(evt)=>onMutationBook(evt)}
-                                        onMutationBuy={(evt)=>onMutationBuy(evt)}
+                                        // onMutationBuy={(evt)=>onMutationBuy(evt)}
                                         onMutationComment={(evt)=>onMutationComment(evt)}/>} />
             <Route path="/user/login" element={<LoginPage {...props} />} />
             <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
