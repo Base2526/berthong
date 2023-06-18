@@ -27,11 +27,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 
 import { getHeaders, handlerErrorApollo } from "./util"
 import { queryAdminDeposits } from "./gqlQuery"
-// import { logout } from "./redux/actions/auth"
 import * as Constants from "./constants"
-// import TableComp from "./components/TableComp"
-
-// import UserComp from "./components/UserComp"
 
 deepdash(_);
 

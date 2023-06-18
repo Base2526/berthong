@@ -12,7 +12,7 @@ import {User, Session} from './model'
 import typeDefs from "./typeDefs";
 import resolvers from "./resolvers";
 import pubsub from './pubsub'
-
+import { error } from "console";
 
 require('./mongo');
 require('./cron-jobs.js');
@@ -22,7 +22,7 @@ const path = require('path');
 const {
     GraphQLUpload,
     graphqlUploadExpress, // A Koa implementation is also exported.
-  } = require('graphql-upload');
+} = require('graphql-upload');
 
 // const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js');
 
@@ -262,6 +262,18 @@ async function startApolloServer(typeDefs, resolvers) {
         //       console.log('disconnect...');
         //     },
         // },
+
+        formatError: (err) => {
+            // This function formats errors returned by your resolvers
+            // You can customize this function to format the error messages
+            // in any way you like.
+            // console.error("formatError :", err, process.env);
+
+            logger.error(err.toString());
+            return formatApolloErrors([err], {
+              debug: process.env.NODE_ENV === 'development',
+            });
+        },
     });
   
     await server.start();
@@ -294,6 +306,10 @@ async function startApolloServer(typeDefs, resolvers) {
     // Requests to `http://localhost:4000/health` now return "Okay!"
     app.get('/health', (req, res) => {
         res.status(200).send('Okay!');
+    });
+
+    httpServer.on('error', (error) => {
+        console.error("httpServer :", error);
     });
 
     // Now that our HTTP server is fully set up, actually listen.

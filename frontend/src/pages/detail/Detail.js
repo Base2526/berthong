@@ -26,7 +26,8 @@ import { getHeaders, showToast, handlerErrorApollo } from "../../util";
 
 import {  querySupplierById, 
           subscriptionSupplierById, 
-          queryUserById} from "../../gqlQuery";
+          queryUserById
+        } from "../../gqlQuery";
 
 let unsubscribeSupplierById = null;
 const Detail = (props) => {
@@ -199,7 +200,7 @@ const Detail = (props) => {
 
   return (
     <div className="row">
-      { isPopupOpenedShoppingBag && <PopupCart opened={isPopupOpenedShoppingBag} data={data} onClose={() => setPopupOpenedShoppingBag(false) } /> }
+      { isPopupOpenedShoppingBag && <PopupCart {...props} opened={isPopupOpenedShoppingBag} data={data} onClose={() => setPopupOpenedShoppingBag(false) } /> }
       { isPopupOpenedWallet  && <PopupWallet opened={isPopupOpenedWallet} onClose={() => setPopupOpenedWallet(false) } /> }
 
       {

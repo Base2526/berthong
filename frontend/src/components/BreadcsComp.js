@@ -222,7 +222,7 @@ const BreadcsComp = (props) => {
         }
       }
 
-      case "/date-lotterys":{
+      case "/admin-date-lotterys":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">วันออกหวยทั้งหมด</Typography>

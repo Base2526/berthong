@@ -38,6 +38,8 @@ import DateLotteryModel from "./DateLotteryModel"
 
 import ContactUsModel from "./ContactUsModel"
 
+import TestModel from "./TestModel"
+
 module.exports =  {
     Bank:BankModel,
     Post:PostModel,
@@ -77,5 +79,7 @@ module.exports =  {
 
     DateLottery: DateLotteryModel,
 
-    ContactUs: ContactUsModel
+    ContactUs: ContactUsModel,
+
+    Test: TestModel
 };

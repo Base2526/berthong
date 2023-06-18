@@ -33,12 +33,7 @@ import { IconButton } from "@material-ui/core";
 import _ from "lodash"
 import { styled } from "@mui/material/styles";
 
-// import { AMDINISTRATOR, AUTHENTICATED } from "./constants";
-// import { queryBanks } from "./gqlQuery";
-// import { checkRole, getHeaders } from "./util";
-// import AutoGenerationContent from "./AutoGenerationContent";
 const Input = styled("input")({ display: "none" });
-
 const MePage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -48,27 +43,9 @@ const MePage = (props) => {
     // const [banks, setBanks] = useState([])
     const [expanded, setExpanded] = useState(localStorage.getItem('expanded') ? localStorage.getItem('expanded') : false)
 
-    // const { loading: loadingBanks, 
-    //         data: dataBanks, 
-    //         error: errorBanks, 
-    //         networkStatus } = useQuery(queryBanks, 
-    //                                     { 
-    //                                         context: { headers: getHeaders(location) }, 
-    //                                         fetchPolicy: 'cache-first', 
-    //                                         nextFetchPolicy: 'network-only',
-    //                                         notifyOnNetworkStatusChange: true
-    //                                     }
-    //                                     );
-    // useEffect(() => {
-    //     if(!loadingBanks){
-    //         if(!_.isEmpty(dataBanks?.banks)){
-    //             let { status, data } = dataBanks?.banks
-    //             if(status){
-    //                 setBanks(data)
-    //             }
-    //         }
-    //     }
-    // }, [dataBanks, loadingBanks])
+
+    console.log("user : ", user)
+
     // const managementView = () =>{
     //     switch(checkRole(user)){
     //         case AMDINISTRATOR:{

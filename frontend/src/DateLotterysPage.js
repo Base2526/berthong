@@ -24,7 +24,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { DeleteForever as DeleteForeverIcon, 
         Edit as EditIcon} from '@mui/icons-material';
 
-import { queryDateLotterys, mutationDatesLottery } from "./gqlQuery"
+import { queryDateLotterys } from "./gqlQuery"
 import { getHeaders } from "./util"
 
 const DateLotterysPage = (props) => {

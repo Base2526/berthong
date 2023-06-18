@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import {
   Stack,
-  CircularProgress,
   DialogTitle,
   DialogContentText,
   DialogContent,
@@ -10,7 +9,8 @@ import {
   Dialog,
   Button,
   Box,
-  Avatar
+  Avatar,
+  LinearProgress
 } from '@mui/material'
 import _ from "lodash"
 import { useQuery } from "@apollo/client";
@@ -22,7 +22,7 @@ import { queryBookBuyTransitions } from "./gqlQuery"
 import UserComp from "./components/UserComp"
 import { getHeaders } from "./util"
 
-const MeBookBuysPage = (props) => {
+const BookBuysPage = (props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const location = useLocation();
@@ -85,13 +85,13 @@ const MeBookBuysPage = (props) => {
     <div className="user-list-container">
       {
         loadingBookBuyTransitions
-        ?  <CircularProgress />
+        ?  <LinearProgress />
         :  datas.length == 0 
             ?   <label>Empty data</label>
             :   <InfiniteScroll
                   dataLength={slice}
                   next={fetchMoreData}
-                  hasMore={hasMore}
+                  hasMore={false}
                   loader={<h4>Loading...</h4>}>
                   { 
                     _.map(datas, (item, index) => {
@@ -172,4 +172,4 @@ const MeBookBuysPage = (props) => {
   );
 };
 
-export default MeBookBuysPage
+export default BookBuysPage
