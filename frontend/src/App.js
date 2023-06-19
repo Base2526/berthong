@@ -29,12 +29,8 @@ import {
   Adjust as AdjustIcon,
   AlternateEmail as AlternateEmailIcon,
   AllOut as AllOutIcon,
-  Assistant as AssistantIcon,
-  // Login as LoginIcon
+  Assistant as AssistantIcon
 } from '@mui/icons-material';
-import {
-  BiWalletAlt as AccountBalanceWalletIcon,
-} from 'react-icons/bi';
 import {
   FiLogOut as LogoutIcon,
 } from 'react-icons/fi';
@@ -59,7 +55,6 @@ import {
 import {
   FiLogIn as LoginIcon
 } from "react-icons/fi"
-
 import {
   VscDebug as VscDebugIcon
 } from "react-icons/vsc"
@@ -116,7 +111,6 @@ import ContactUsPage from "./ContactUsPage";
 import SubscribesPage from "./SubscribesPage";
 import Footer from "./Footer";
 import DblogPage from "./DblogPage";
-
 import AutoGenerationContent from "./AutoGenerationContent"
 
 import { queryNotifications, 
@@ -1301,7 +1295,8 @@ const App =(props) =>{
               </div>
               <Divider />
                 <List>
-                  {_.map(menuList(), (item, index) => {
+                  {
+                  _.map(menuList(), (item, index) => {
                     return  <ListItem
                               // button
                               selected={location?.pathname == item.path ? true : false}
@@ -1333,8 +1328,8 @@ const App =(props) =>{
                               <ListItemText 
                                 primary={item.title} />
                             </ListItem>
-                  }                  
-                  )}
+                  })
+                  }
                 </List>
               <Divider />
               <div className="text-center">
@@ -1368,7 +1363,6 @@ const App =(props) =>{
                                         onLightbox={(evt)=>setLightbox(evt)} 
                                         onMutationFollow={(evt)=>onMutationFollow(evt)}
                                         onMutationBook={(evt)=>onMutationBook(evt)}
-                                        // onMutationBuy={(evt)=>onMutationBuy(evt)}
                                         onMutationComment={(evt)=>onMutationComment(evt)}/>} />
             <Route path="/user/login" element={<LoginPage {...props} />} />
             <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
@@ -1386,16 +1380,8 @@ const App =(props) =>{
                                           onDialogDeleteBank={(id)=>setOpenDialogDeleteBank({open: true, id})} 
                                           onMutationMe={(evt)=>onMutationMe(evt)}
                                           onLightbox={(evt)=>setLightbox(evt)} />} />
-              <Route path="/deposit" element={<DepositPage 
-                                                {...props} 
-                                                onMutationDeposit={(evt)=>{
-                                                  onMutationDeposit(evt)
-                                                }} />} />
-              <Route path="/withdraw" element={<WithdrawPage 
-                                                {...props} 
-                                                onMutationWithdraw={(evt)=>{
-                                                  onMutationWithdraw(evt)
-                                                }} />} />
+              <Route path="/deposit" element={<DepositPage {...props} onMutationDeposit={(evt)=> onMutationDeposit(evt) } />} />
+              <Route path="/withdraw" element={<WithdrawPage {...props} onMutationWithdraw={(evt)=>onMutationWithdraw(evt)} />} />
               <Route path="/history-transitions" {...props} element={<HistoryTransitionsPage {...props} />} />
               <Route path="/bank" element={<BankPage {...props} onMutationMe={(evt)=>onMutationMe(evt)} />} />
               <Route path="/banks" element={<BanksPage {...props} />} />

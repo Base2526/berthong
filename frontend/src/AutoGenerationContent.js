@@ -48,7 +48,6 @@ const AutoGenerationContent = (props) => {
         }
     });
 
-    // 
     const [onRegister, resultRegister] = useMutation(mutationRegister, {
         context: { headers: getHeaders(location) },
         update: (cache, {data: {register}}) => { },
@@ -109,7 +108,6 @@ const AutoGenerationContent = (props) => {
                 <div>Auto-Generation</div>
                 <div>
                     <button onClick={()=>{
-                        // let { data } = dateLotterysValue.data.dateLotterys
                         for ( var i = 0; i < 100; i++ ) {
                             let newInput =  {
                                 mode: "NEW",
@@ -125,11 +123,8 @@ const AutoGenerationContent = (props) => {
                                 ownerId: users[randomNumberInRange(0, users.length - 1)]?._id,
                                 test: true,
                             }
-                            // console.log("newInput : ", newInput)
                             onSupplier({ variables: { input: newInput } });
                         }
-
-                        // console.log("users :", users[randomNumberInRange(0, users.length - 1)]?._id, users.length)
                     }}>Auto สร้าง สินค้า</button>
                 </div>
 

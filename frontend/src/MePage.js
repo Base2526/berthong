@@ -40,12 +40,8 @@ const MePage = (props) => {
     const { t } = useTranslation();
     const params = queryString.parse(location.search)
     const { user, onMutationMe, onDialogDeleteBank, onLightbox } = props
-    // const [banks, setBanks] = useState([])
     const [expanded, setExpanded] = useState(localStorage.getItem('expanded') ? localStorage.getItem('expanded') : false)
-
-
-    console.log("user : ", user)
-
+    
     // const managementView = () =>{
     //     switch(checkRole(user)){
     //         case AMDINISTRATOR:{
