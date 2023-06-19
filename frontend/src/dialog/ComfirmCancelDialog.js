@@ -13,17 +13,17 @@ import { mutationCancelBuyAll } from "../gqlQuery"
 
 const ComfirmCancelDialog = (props) => {
     const location = useLocation();
-    let { open, setOpen } = props
+    let { open, onClose } = props
 
     const [onMutationCancelBuyAll, resultMutationCancelBuyAll] = useMutation(mutationCancelBuyAll,{
         context: { headers: getHeaders(location) },
         update: (cache, {data: {cancelBuyAll}}) => {
           let { status, data } = cancelBuyAll
     
-        //   console.log("update : ", buy)
-        //   setPopupOpenedShoppingBag(false)
-    
-        //   showToast("success", `การส่งซื้อ complete`)
+          //   console.log("update : ", buy)
+          //   setPopupOpenedShoppingBag(false)
+      
+          //   showToast("success", `การส่งซื้อ complete`)
         },
         onCompleted(data) {
           console.log("onCompleted :", data)
@@ -31,16 +31,18 @@ const ComfirmCancelDialog = (props) => {
         onError: (err) => {
           console.log("onError :", err)
     
-        //   showToast("error", `เกิดปัญหาในการสั่งซื้อ`)
+          //   showToast("error", `เกิดปัญหาในการสั่งซื้อ`)
         }
     });
   
     const handleOK = () => {
       console.log("handleOK")
+
+      // onMutationCancelBuyAll({ variables: { id: data?._id} })
     };
   
     const handleClose = () => {
-      setOpen(false);
+      onClose(false);
     };
   
     return (

@@ -1269,16 +1269,16 @@ export default {
       // });
       // 
 
-      // await Supplier.updateMany( { "buys.userId":current_user?._id }, { "$pull": { "buys.$[].selected": 1 } } )
-      await Supplier.updateMany( { _id }, { "$pull": { "buys.$[].userId": current_user?._id } } )
+      // // await Supplier.updateMany( { "buys.userId":current_user?._id }, { "$pull": { "buys.$[].selected": 1 } } )
+      // await Supplier.updateMany( { _id }, { "$pull": { "buys.$[].userId": current_user?._id } } )
       
-      await Transition.updateOne( { refId: _id, userId: current_user?._id }, {status: Constants.CANCEL} )
+      // await Transition.updateOne( { refId: _id, userId: current_user?._id }, {status: Constants.CANCEL} )
 
-      let user = await getUser({_id: current_user?._id}) 
-      // user =  { ...user, ...await checkBalance(current_user?._id) }
-      pubsub.publish("ME", {
-        me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
-      });
+      // let user = await getUser({_id: current_user?._id}) 
+      // // user =  { ...user, ...await checkBalance(current_user?._id) }
+      // pubsub.publish("ME", {
+      //   me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
+      // });
 
       return {
         status: true,
