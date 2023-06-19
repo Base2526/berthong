@@ -250,13 +250,13 @@ export default {
 
       let transitions = await Transition.find({ userId: current_user?._id, type: Constants.SUPPLIER });
 
-      // console.log("bookBuyTransitions :", current_user?._id, Constants.SUPPLIER , transitions)
+      // console.log("bookBuyTransitions >>>> :", current_user?._id, Constants.SUPPLIER , transitions)
       transitions = _.filter( await Promise.all(_.map(transitions, async(transition)=>{
                       let supplier = await Supplier.findOne({_id: transition.refId})
 
                       if(supplier){
                         let { buys } = supplier
-                        let book  = _.filter(buys, buy=> _.isEqual(buy.userId, current_user?._id)  && buy.selected == 0)
+                        let book  = _.filter(buys, buy=> _.isEqual(buy.userId, current_user?._id)  && (buy.selected == 0 || buy.selected == 1))
                         // let buy  = _.filter(buys, buy=>_.isEqual(buy.userId, current_user?._id)  && buy.selected == 1)
   
                         // console.log("book :", book, supplier)
@@ -289,7 +289,12 @@ export default {
           switch(transition.type){ 
             case Constants.SUPPLIER:{
                 let supplier = await Supplier.findById(transition?.refId)
+                
                 let buys = _.filter(supplier?.buys, (buy)=> _.isEqual(buy?.userId, userId))
+                
+                if(_.isEmpty(buys)){
+                  return {};
+                }
                 
                 let balance = buys?.length * supplier?.price
                 return {...transition?._doc, 
@@ -311,7 +316,7 @@ export default {
                         dateLottery: "dateLottery"}
             }
           }
-      }))
+      }).filter(i=>!_.isNull(i)))
 
       return {  status: true,
                 data: transitions,
@@ -1226,7 +1231,7 @@ export default {
       // });
       // 
 
-      await Supplier.updateMany( { "buys.userId":current_user?._id }, { "$set": { "buys.$[].selected": 1 } } )
+      await Supplier.updateMany( { _id /* "buys.userId":current_user?._id */ }, { "$set": { "buys.$[].selected": 1 } }, { arrayFilters: [{ 'buys.$[].userId': current_user?._id }], timestamps: true } )
       
       await Transition.updateOne( { refId: _id, userId: current_user?._id }, {status: Constants.APPROVED} )
 
@@ -1235,6 +1240,45 @@ export default {
       pubsub.publish("ME", {
         me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
       });
+
+      return {
+        status: true,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+    },
+
+    async cancelBuyAll(parent, args, context, info) {
+      let start = Date.now()
+      let { _id } = args
+      let { req } = context
+
+      let { status, code, pathname, current_user } =  await checkAuthorization(req);
+      if( !status && code == FORCE_LOGOUT ) throw new AppError(FORCE_LOGOUT, 'Expired!')
+      if( checkRole(current_user) != AUTHENTICATED ) throw new AppError(UNAUTHENTICATED, 'Authenticated only!')
+
+      // let supplier = await Supplier.findById(_id);
+      // if(_.isNull(supplier)) throw new AppError(DATA_NOT_FOUND, 'Data not found.')
+
+      // let buys =  _.map(supplier.buys, (buy)=> buy.userId == current_user?._id.toString() ? {...buy._doc, selected: 1} : buy )
+      // console.log(">>>> buy", buys)
+      // await Supplier.updateOne({ _id }, { buys });
+      // let user = await getUser({_id: current_user?._id}) 
+      // user =  { ...user, ...await checkBalance(current_user?._id) }
+      // pubsub.publish("ME", {
+      //   me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
+      // });
+      // 
+
+      // // await Supplier.updateMany( { "buys.userId":current_user?._id }, { "$pull": { "buys.$[].selected": 1 } } )
+      // await Supplier.updateMany( { _id }, { "$pull": { "buys.$[].userId": current_user?._id } } )
+      
+      // await Transition.updateOne( { refId: _id, userId: current_user?._id }, {status: Constants.CANCEL} )
+
+      // let user = await getUser({_id: current_user?._id}) 
+      // // user =  { ...user, ...await checkBalance(current_user?._id) }
+      // pubsub.publish("ME", {
+      //   me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
+      // });
 
       return {
         status: true,

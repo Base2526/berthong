@@ -126,7 +126,7 @@ const DetailPanelRight = (props) =>{
                                         color="success"
                                         size="sm"
                                         sx={{ pointerEvents: "none" }}>
-                                        <div class="wishlist_count text-center">{ !user?.balance ? numberCurrency(0) : numberCurrency(user?.balance)}</div>
+                                        <div class="wishlist_count text-center">{ !user?.balance ? numberCurrency(0) : numberCurrency( user?.balance - user?.balanceBook )}</div>
                                       </Chip>
                                     </div>
                                     <div className="row pt-1">

@@ -238,7 +238,7 @@ const HistoryTransitionsPage = (props) => {
       case Constants.SUPPLIER:{
         return  <div class="alert alert-danger p-1 m-1" role="alert"><Stack key={index} direction="row" spacing={2}>
                   <Box>Supplier</Box>
-                  <Box>ยอดฝาก : { value.balance }</Box>
+                  <Box>ยอดซื้อ : { value.balance }</Box>
                   <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
                   <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
                 </Stack>

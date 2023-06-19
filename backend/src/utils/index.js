@@ -150,7 +150,7 @@ export const checkBalance = async(userId) =>{
 
                     let balance = buys.length * supplier.price
 
-                    console.log("checkBalance >>>> ",  supplier.price , " , >> ", buys ," = ", balance)
+                    // console.log("checkBalance >>>> ",  supplier.price , " , >> ", buys ," = ", balance)
                     return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
                 }
 
@@ -195,7 +195,7 @@ export const checkBalance = async(userId) =>{
                 case Constants.SUPPLIER:{
                     let supplier = await Supplier.findById(transition.refId)
 
-                    let books = _.filter(supplier.buys, (buy)=> _.isEqual(buy.userId, userId) && buy.selected == 0)
+                    let books = _.filter(supplier.buys, (buy)=> _.isEqual(buy.userId, userId) && (buy.selected == 0 || buy.selected == 1 ))
                     if(!_.isEmpty(books)){
                         // console.log("inTheCarts item :", books, transition?.refId)
                         return transition?.refId
