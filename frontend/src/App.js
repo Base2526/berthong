@@ -1018,7 +1018,8 @@ const App =(props) =>{
           case "BOOK":
           case "BUY":
           case "DEPOSIT":
-          case "WITHDRAW":{
+          case "WITHDRAW":
+          case "CANCEL":{
             updateProfile(data?.data)
             break;
           }
