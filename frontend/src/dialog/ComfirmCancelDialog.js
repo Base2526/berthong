@@ -8,12 +8,13 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { useLocation } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 
-import { getHeaders } from "../util";
+import { getHeaders, showToast, handlerErrorApollo} from "../util";
+// import { checkRole, getHeaders, handlerErrorApollo, showToast} from "./util";
 import { mutationCancelBuyAll } from "../gqlQuery"
 
 const ComfirmCancelDialog = (props) => {
     const location = useLocation();
-    let { open, onClose } = props
+    let { id, open, onClose } = props
 
     const [onMutationCancelBuyAll, resultMutationCancelBuyAll] = useMutation(mutationCancelBuyAll,{
         context: { headers: getHeaders(location) },
@@ -22,23 +23,22 @@ const ComfirmCancelDialog = (props) => {
     
           //   console.log("update : ", buy)
           //   setPopupOpenedShoppingBag(false)
-      
           //   showToast("success", `การส่งซื้อ complete`)
         },
         onCompleted(data) {
           console.log("onCompleted :", data)
+          showToast("success", "ดำเนินการเรียบร้อย")
+
+          handleClose();
         },
-        onError: (err) => {
-          console.log("onError :", err)
-    
-          //   showToast("error", `เกิดปัญหาในการสั่งซื้อ`)
+        onError: (error) => {
+          console.log("onError :", error)
+          return handlerErrorApollo( props, error )
         }
     });
   
     const handleOK = () => {
-      console.log("handleOK")
-
-      // onMutationCancelBuyAll({ variables: { id: data?._id} })
+      onMutationCancelBuyAll({ variables: { id } })
     };
   
     const handleClose = () => {

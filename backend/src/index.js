@@ -79,71 +79,70 @@ async function startApolloServer(typeDefs, resolvers) {
     };
 
     const serverCleanup = useServer({ 
-            schema,
-            context: (ctx, msg, args) => {
-                // Returning an object will add that information to our
-                // GraphQL context, which all of our resolvers have access to.
+        schema,
+        context: (ctx, msg, args) => {
+            // Returning an object will add that information to our
+            // GraphQL context, which all of our resolvers have access to.
 
-                // console.log("serverCleanup :", ctx, msg, args)
+            // console.log("serverCleanup :", ctx, msg, args)
 
-                return getDynamicContext(ctx, msg, args);
-            },
-            onConnect: async (ctx) => {
-                console.log("onConnect :", ctx.connectionParams)
-            //     // Check authentication every time a client connects.
-            //     // if (tokenIsNotValid(ctx.connectionParams)) {
-            //     //   // You can return false to close the connection  or throw an explicit error
-            //     //   throw new Error('Auth token missing!');
-            //     // }
-            //     // 
-            //     // console.log("onConnect : ", ctx.connectionParams.authToken)
-            //     // console.log("onConnect textHeaders : ", ctx.connectionParams.textHeaders)
-            //     // logger.info(ctx.connectionParams);
+            return getDynamicContext(ctx, msg, args);
+        },
+        onConnect: async (ctx) => {
+            console.log("onConnect :", ctx.connectionParams)
+        //     // Check authentication every time a client connects.
+        //     // if (tokenIsNotValid(ctx.connectionParams)) {
+        //     //   // You can return false to close the connection  or throw an explicit error
+        //     //   throw new Error('Auth token missing!');
+        //     // }
+        //     // 
+        //     // console.log("onConnect : ", ctx.connectionParams.authToken)
+        //     // console.log("onConnect textHeaders : ", ctx.connectionParams.textHeaders)
+        //     // logger.info(ctx.connectionParams);
 
-            //     if (ctx.connectionParams.authToken) {
-            //         try {
-            //             let userId  = jwt.verify(ctx.connectionParams.authToken, process.env.JWT_SECRET);
-        
-            //             let result = await User.updateOne({ _id: userId }, { $set: { isOnline: true }})
+        //     if (ctx.connectionParams.authToken) {
+        //         try {
+        //             let userId  = jwt.verify(ctx.connectionParams.authToken, process.env.JWT_SECRET);
+    
+        //             let result = await User.updateOne({ _id: userId }, { $set: { isOnline: true }})
 
-            //             if(result.ok){
-            //                 pubsub.publish("CONVERSATION", {
-            //                     conversation:{
-            //                       mutation: 'CONNECTED',
-            //                       data: userId
-            //                     }
-            //                 });
-            //             }
-                        
-            //         } catch(err) {
-            //             logger.error(err.toString());
-            //         } 
-            //     }
-            },
-            onDisconnect: async (ctx, code, reason) =>{
-                // logger.info(ctx.connectionParams);
-                // console.log("onDisconnect :", ctx, code, reason)
-            //     if (ctx.connectionParams.authToken) {
-            //         try {
-            //             let userId  = jwt.verify(ctx.connectionParams.authToken, process.env.JWT_SECRET);
-        
-            //             let result =  await User.updateOne({ _id: userId }, { $set: { isOnline: false } })
+        //             if(result.ok){
+        //                 pubsub.publish("CONVERSATION", {
+        //                     conversation:{
+        //                       mutation: 'CONNECTED',
+        //                       data: userId
+        //                     }
+        //                 });
+        //             }
+                    
+        //         } catch(err) {
+        //             logger.error(err.toString());
+        //         } 
+        //     }
+        },
+        onDisconnect: async (ctx, code, reason) =>{
+            // logger.info(ctx.connectionParams);
+            // console.log("onDisconnect :", ctx, code, reason)
+        //     if (ctx.connectionParams.authToken) {
+        //         try {
+        //             let userId  = jwt.verify(ctx.connectionParams.authToken, process.env.JWT_SECRET);
+    
+        //             let result =  await User.updateOne({ _id: userId }, { $set: { isOnline: false } })
 
-            //             if(result.ok){
-            //                 pubsub.publish("CONVERSATION", {
-            //                     conversation:{
-            //                     mutation: 'DISCONNECTED',
-            //                     data: ""
-            //                     }
-            //                 });
-            //             }
-            //         } catch(err) {
-            //             logger.error(err.toString());
-            //         }
-            //     }
-            }
-        }, 
-        wsServer);
+        //             if(result.ok){
+        //                 pubsub.publish("CONVERSATION", {
+        //                     conversation:{
+        //                     mutation: 'DISCONNECTED',
+        //                     data: ""
+        //                     }
+        //                 });
+        //             }
+        //         } catch(err) {
+        //             logger.error(err.toString());
+        //         }
+        //     }
+        }
+    }, wsServer);
 
     // Set up ApolloServer.
     const server = new ApolloServer({
@@ -173,7 +172,6 @@ async function startApolloServer(typeDefs, resolvers) {
                         let { operation, operationName } = context
                         const operationType = operation.operation;
                         console.log(`${operationType} recieved: ${operationName}`)
-
                        
                         if (context?.context?.req?.headers && context?.context?.req?.headers?.authorization) {
                             var auth    = context?.context?.req?.headers.authorization;
@@ -181,7 +179,6 @@ async function startApolloServer(typeDefs, resolvers) {
                             var bearer  = parts[0];
                             var sessionId   = parts[1];
                             console.log("requestDidStart > header :", auth, sessionId )
-
                         }
                       },
                       willSendResponse(context) {

@@ -456,6 +456,7 @@ export default gql`
 
   type Query {
     ping: JSON
+    checkUser: JSON 
     users(input: PagingInput): JSON
     userById(_id: ID): JSON
     # roles: JSON
@@ -476,10 +477,8 @@ export default gql`
     bookmarks: JSON
     subscribes: JSON
     dblog: JSON
-    
     dateLotterys: JSON
     dateLotteryById(_id: ID!): JSON
-
     adminHome: JSON
     adminDeposits: JSON
     adminWithdraws: JSON
@@ -752,26 +751,22 @@ export default gql`
     bank(input: BankInput): JSON 
     follow(_id: ID!): JSON 
     datesLottery(input: [Date]): JSON 
-
     notification(_id: ID!): JSON 
-
     comment(input: JSON): JSON
-
     contactUs(input: ContactUsInput): JSON
-
     subscribe(_id: ID!): JSON 
-
     adminDeposit(input: JSON): JSON 
     adminWithdraw(input: JSON): JSON 
+    testNodeCacheSave(id: String): JSON
+    testNodeCacheGet(id: String): JSON
+    testNodeCacheDelete(id: String): JSON
   }
 
   type Subscription {
     subscriptionMe(sessionId: ID!): JSON
     subscriptionSupplierById(_id: ID!): JSON
     subscriptionSuppliers(supplierIds: String!): JSON
-
     subscriptionAdmin(supplierIds: String!): JSON
-
     subscriptionCommentById(_id: ID!): JSON
   }
 
