@@ -51,10 +51,7 @@ Backup
 https://davejansen.com/how-to-dump-restore-a-mongodb-database-from-a-docker-container/
 
 docker exec -i a67d48abfccf /usr/bin/mongodump --username xxxx --password xxxx --authenticationDatabase admin --db bl --port 29101 --out /dump
-docker exec -i mongo /usr/bin/mongodump --username xxxx --password xxxx --db bl --port 29101 --out /dump
-
-
-
+docker exec -i mongo /usr/bin/mongodump --username xxxx --password xxxx --db bl --port xxxx --out /dump
 
 CHOKIDAR_USEPOLLING=true
 WATCHPACK_POLLING=true
@@ -74,20 +71,20 @@ REACT_APP_GOOGLE_CLIENT_ID=xxxx
 REACT_APP_FACEBOOK_APPID=xxxx
 
 # HOST_GRAPHAL
-# REACT_APP_HOST_GRAPHAL=banlist.info
+# REACT_APP_HOST_GRAPHAL=xxxx
 
-#   - ELASTIC_URL=http://elasticsearch:9200
+#   - ELASTIC_URL=xxxx
 #   - ELASTIC_USERNAME=xxxx
 #   - ELASTIC_PASSWORD=xxxx
 #   - ELASTIC_INDEX=xxxx
 
 # frontend
 REACT_APP_NODE_ENV=development
-REACT_APP_HOST_GRAPHAL=localhost:4001
-FRONTEND_PORT=3000
+REACT_APP_HOST_GRAPHAL=xxxx
+FRONTEND_PORT=xxxx
 
 # graphql
-RA_HOST=http://localhost:4001/
+RA_HOST=http://xxxx/
 GRAPHQL_PORT=4001
 JWT_SECRET=xxxx
 
@@ -104,5 +101,3 @@ REACT_APP_GOOGLE_ANALYTICS4=xxxx
 
 Login with LINE
 https://por-porkaew15.medium.com/implement-line-login-with-angular-project-e2e598d3c618
-
-
