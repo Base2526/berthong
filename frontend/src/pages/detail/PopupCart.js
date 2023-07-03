@@ -6,17 +6,19 @@ import {
   DialogActions,
   Button
 } from "@material-ui/core";
+import _ from "lodash"
+import {  minTwoDigits } from "../../util"
 
 const PopupCart = (props) => {
 
-  let { data, opened, onClose } = props
-  
+  let { data, opened, onMutationBuy, onClose } = props
+    
   const cancelForm = () => {
     onClose();
   };
 
-  const saveForm = (e) => {
-    onClose();
+  const saveConfirm = (e) => {
+    onMutationBuy({ variables: { id: data?._id} })
   };
 
   return (
@@ -33,23 +35,17 @@ const PopupCart = (props) => {
               overflow: "scroll"
             }}
           >
-            จำนวน {data?.length} เบอร์
+            จำนวน {data?.buys?.length} เบอร์
             <br />
-            {data?.length !== 0
-              ? String(data)
-              : "ยังไม่ได้เลือก"}
+            { _.map(data?.buys, (buy, i) => { return minTwoDigits(buy?.itemId) }).join(', ') }
             <br />
-            รวมราคา {data?.length * 100} บาท
+            รวมราคา {data?.buys?.length * data?.price} บาท
           </div>
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={saveForm} variant="contained" className="btn-confirm">
-          ยืนยันการซื้อ
-        </Button>
-        <Button onClick={saveForm} variant="contained" color="warning">
-          ปิด
-        </Button>
+        <Button disabled={ _.find(data?.buys, (v, k)=>v.selected === 0) === undefined ? true : false } onClick={saveConfirm} variant="contained" className="btn-confirm">ยืนยันการซื้อ</Button>
+        <Button onClick={cancelForm} variant="contained" color="warning">ปิด</Button>
       </DialogActions>
     </Dialog>
   );

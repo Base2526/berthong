@@ -12,7 +12,7 @@ import {User, Session} from './model'
 import typeDefs from "./typeDefs";
 import resolvers from "./resolvers";
 import pubsub from './pubsub'
-
+import { error } from "console";
 
 require('./mongo');
 require('./cron-jobs.js');
@@ -22,7 +22,7 @@ const path = require('path');
 const {
     GraphQLUpload,
     graphqlUploadExpress, // A Koa implementation is also exported.
-  } = require('graphql-upload');
+} = require('graphql-upload');
 
 // const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js');
 
@@ -79,71 +79,70 @@ async function startApolloServer(typeDefs, resolvers) {
     };
 
     const serverCleanup = useServer({ 
-            schema,
-            context: (ctx, msg, args) => {
-                // Returning an object will add that information to our
-                // GraphQL context, which all of our resolvers have access to.
+        schema,
+        context: (ctx, msg, args) => {
+            // Returning an object will add that information to our
+            // GraphQL context, which all of our resolvers have access to.
 
-                // console.log("serverCleanup :", ctx, msg, args)
+            // console.log("serverCleanup :", ctx, msg, args)
 
-                return getDynamicContext(ctx, msg, args);
-            },
-            onConnect: async (ctx) => {
-                console.log("onConnect :", ctx.connectionParams)
-            //     // Check authentication every time a client connects.
-            //     // if (tokenIsNotValid(ctx.connectionParams)) {
-            //     //   // You can return false to close the connection  or throw an explicit error
-            //     //   throw new Error('Auth token missing!');
-            //     // }
-            //     // 
-            //     // console.log("onConnect : ", ctx.connectionParams.authToken)
-            //     // console.log("onConnect textHeaders : ", ctx.connectionParams.textHeaders)
-            //     // logger.info(ctx.connectionParams);
+            return getDynamicContext(ctx, msg, args);
+        },
+        onConnect: async (ctx) => {
+            console.log("onConnect :", ctx.connectionParams)
+        //     // Check authentication every time a client connects.
+        //     // if (tokenIsNotValid(ctx.connectionParams)) {
+        //     //   // You can return false to close the connection  or throw an explicit error
+        //     //   throw new Error('Auth token missing!');
+        //     // }
+        //     // 
+        //     // console.log("onConnect : ", ctx.connectionParams.authToken)
+        //     // console.log("onConnect textHeaders : ", ctx.connectionParams.textHeaders)
+        //     // logger.info(ctx.connectionParams);
 
-            //     if (ctx.connectionParams.authToken) {
-            //         try {
-            //             let userId  = jwt.verify(ctx.connectionParams.authToken, process.env.JWT_SECRET);
-        
-            //             let result = await User.updateOne({ _id: userId }, { $set: { isOnline: true }})
+        //     if (ctx.connectionParams.authToken) {
+        //         try {
+        //             let userId  = jwt.verify(ctx.connectionParams.authToken, process.env.JWT_SECRET);
+    
+        //             let result = await User.updateOne({ _id: userId }, { $set: { isOnline: true }})
 
-            //             if(result.ok){
-            //                 pubsub.publish("CONVERSATION", {
-            //                     conversation:{
-            //                       mutation: 'CONNECTED',
-            //                       data: userId
-            //                     }
-            //                 });
-            //             }
-                        
-            //         } catch(err) {
-            //             logger.error(err.toString());
-            //         } 
-            //     }
-            },
-            onDisconnect: async (ctx, code, reason) =>{
-                // logger.info(ctx.connectionParams);
-                // console.log("onDisconnect :", ctx, code, reason)
-            //     if (ctx.connectionParams.authToken) {
-            //         try {
-            //             let userId  = jwt.verify(ctx.connectionParams.authToken, process.env.JWT_SECRET);
-        
-            //             let result =  await User.updateOne({ _id: userId }, { $set: { isOnline: false } })
+        //             if(result.ok){
+        //                 pubsub.publish("CONVERSATION", {
+        //                     conversation:{
+        //                       mutation: 'CONNECTED',
+        //                       data: userId
+        //                     }
+        //                 });
+        //             }
+                    
+        //         } catch(err) {
+        //             logger.error(err.toString());
+        //         } 
+        //     }
+        },
+        onDisconnect: async (ctx, code, reason) =>{
+            // logger.info(ctx.connectionParams);
+            // console.log("onDisconnect :", ctx, code, reason)
+        //     if (ctx.connectionParams.authToken) {
+        //         try {
+        //             let userId  = jwt.verify(ctx.connectionParams.authToken, process.env.JWT_SECRET);
+    
+        //             let result =  await User.updateOne({ _id: userId }, { $set: { isOnline: false } })
 
-            //             if(result.ok){
-            //                 pubsub.publish("CONVERSATION", {
-            //                     conversation:{
-            //                     mutation: 'DISCONNECTED',
-            //                     data: ""
-            //                     }
-            //                 });
-            //             }
-            //         } catch(err) {
-            //             logger.error(err.toString());
-            //         }
-            //     }
-            }
-        }, 
-        wsServer);
+        //             if(result.ok){
+        //                 pubsub.publish("CONVERSATION", {
+        //                     conversation:{
+        //                     mutation: 'DISCONNECTED',
+        //                     data: ""
+        //                     }
+        //                 });
+        //             }
+        //         } catch(err) {
+        //             logger.error(err.toString());
+        //         }
+        //     }
+        }
+    }, wsServer);
 
     // Set up ApolloServer.
     const server = new ApolloServer({
@@ -173,7 +172,6 @@ async function startApolloServer(typeDefs, resolvers) {
                         let { operation, operationName } = context
                         const operationType = operation.operation;
                         console.log(`${operationType} recieved: ${operationName}`)
-
                        
                         if (context?.context?.req?.headers && context?.context?.req?.headers?.authorization) {
                             var auth    = context?.context?.req?.headers.authorization;
@@ -181,7 +179,6 @@ async function startApolloServer(typeDefs, resolvers) {
                             var bearer  = parts[0];
                             var sessionId   = parts[1];
                             console.log("requestDidStart > header :", auth, sessionId )
-
                         }
                       },
                       willSendResponse(context) {
@@ -262,6 +259,18 @@ async function startApolloServer(typeDefs, resolvers) {
         //       console.log('disconnect...');
         //     },
         // },
+
+        formatError: (err) => {
+            // This function formats errors returned by your resolvers
+            // You can customize this function to format the error messages
+            // in any way you like.
+            // console.error("formatError :", err, process.env);
+
+            logger.error(err.toString());
+            return formatApolloErrors([err], {
+              debug: process.env.NODE_ENV === 'development',
+            });
+        },
     });
   
     await server.start();
@@ -294,6 +303,10 @@ async function startApolloServer(typeDefs, resolvers) {
     // Requests to `http://localhost:4000/health` now return "Okay!"
     app.get('/health', (req, res) => {
         res.status(200).send('Okay!');
+    });
+
+    httpServer.on('error', (error) => {
+        console.error("httpServer :", error);
     });
 
     // Now that our HTTP server is fully set up, actually listen.

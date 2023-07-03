@@ -26,7 +26,9 @@ import {Bank,
         Transition,
 
         DateLottery,
-        ContactUs
+        ContactUs,
+
+        Test
       } from '../model'
 
 let logger = require("../utils/logger");
@@ -61,7 +63,7 @@ const modelExists =()=>{
       // console.log('Found Role');
     } else {
       // console.log('Not found Role, creating');
-      let newRole = new Role({});
+      let newRole = new Role({name: "test"});
       newRole.save();
 
       await Role.deleteMany({})
@@ -331,13 +333,22 @@ const modelExists =()=>{
       await ContactUs.deleteMany({})
     }
   });
+
+  Test.find({}, async(err, result)=> {
+    if (result.length > 0) {
+    } else {
+      let newTest = new Test({  message: 0 });
+      await newTest.save();
+      await Test.deleteMany({})
+    }
+  });
 }
 
 // TODO: initial and connect to MongoDB
 mongoose.Promise = global.Promise;
 // mongoose.connect("YOUR_MONGODB_URI", { useNewUrlParser: true });
 
-// console.log("process.env.MONGO_URI :", process.env)
+// console.log(">>>>> process.env.MONGO_URI :", process.env)
 // uri
 mongoose.connect(
   // "mongodb://mongo1:27017,mongo2:27017,mongo3:27017/bl?replicaSet=rs",
@@ -359,7 +370,7 @@ connection.on("error", (err)=>{
 });
 connection.once("open", async function () {
   // we're connected!
-  console.log("Successfully : Connected to database!");
+  // console.log("Successfully : Connected to database!");
 
   logger.info("Successfully : Connected to database!")
 

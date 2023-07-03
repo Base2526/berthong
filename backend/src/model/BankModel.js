@@ -4,8 +4,7 @@ const Schema = mongoose.Schema
 
 const bankSchema = new Schema({
   name: { type: String, required:[true, "Name is a required field"] },
-  description: { type: String },
-  isPublish: { type: Number}
+  description: { type: String }
 },
 {
     timestamps: true

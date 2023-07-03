@@ -12,9 +12,6 @@ import {
   TextField
 } from "@mui/material";
 
-import { queryBanks } from "./gqlQuery";
-import { getHeaders } from "./util";
-
 let initValues = { bankId: "",  balance: "" }
 
 const WithdrawPage = (props) => {
@@ -26,23 +23,6 @@ const WithdrawPage = (props) => {
   const [banks, setBanks]       = useState([]);
 
   const { user, onMutationWithdraw } = props
-
-  // const { loading: loadingBanks, 
-  //         data: dataBanks, 
-  //         error: errorBanks} = useQuery(queryBanks, { context: { headers: getHeaders(location) },
-  //                                                     notifyOnNetworkStatusChange: true, 
-  //                                                     fetchPolicy: 'cache-first', 
-  //                                                     nextFetchPolicy:  'network-only', 
-  //                                                   });
-
-  // useEffect(()=>{
-  //   if(!loadingBanks){
-  //     if(!_.isEmpty(dataBanks?.banks)){
-  //       let { status, data } = dataBanks.banks
-  //       if(status) setBanks(data)
-  //     }
-  //   }
-  // }, [dataBanks, loadingBanks])
 
   useEffect(()=>{
     console.log( "input :", input, initValues, _.isEqual(input, initValues) )
