@@ -26,10 +26,13 @@ export default {
       session.startTransaction()
 
       try {
-        await Model.Test.create({ message: "ACCC" });
-        await session.commitTransaction();
+        // await Model.Test.create({ message: "ACCC" });
+        // await session.commitTransaction();
 
-        console.log("ping #1")
+        // console.log("ping #1")
+
+        console.log("process.env ", process.env )
+
       }catch(error){
         await session.abortTransaction();
         console.log(`ping #2 ${err}`)
@@ -39,6 +42,7 @@ export default {
         console.log("ping #3")
       }
 
+      
       // let user  = await Utils.getUser({_id: mongoose.Types.ObjectId("62a2f633cf7946010d3c74fa")})
 
       // console.log("user doc :", user)
@@ -984,8 +988,8 @@ export default {
         console.log("loginWithGithub :", args)
 
         const data = new FormData();
-        data.append("client_id", "04e44718d32d5ddbec4c");
-        data.append("client_secret", "dd1252dea6ec4d05083dc2c2cd53def7be4a9033");
+        data.append("client_id", process.env.GITHUB_CLIENT_ID);
+        data.append("client_secret", process.env.GITHUB_CLIENT_SECRET);
         data.append("code", code);
         // data.append("redirect_uri", "https://banlist.info");
 
