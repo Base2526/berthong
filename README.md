@@ -56,6 +56,8 @@ mongoimport --host "127.0.0.1" --port "29101" --db berthong --collection role --
         - use xxx 
         - db.getUsers()
 
+5. run mongo mode auth set docker-compose  >>> command: mongod >>> --auth <<< --port 29101
+
 Backup
 https://davejansen.com/how-to-dump-restore-a-mongodb-database-from-a-docker-container/
 

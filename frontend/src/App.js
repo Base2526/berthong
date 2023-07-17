@@ -1239,7 +1239,9 @@ const App =(props) =>{
                               </IconButton>
                               <IconButton 
                                 size={'small'}
-                                onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
+                                onClick={(evt)=>{
+                                  setOpenMenuProfile(evt.currentTarget)
+                                }  }>
                                 <Avatar 
                                   src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
                                   alt="profile"
@@ -1422,7 +1424,7 @@ const App =(props) =>{
       <Footer />
     </div>
     </div>
-  );
+  )
 }
 
 const mapStateToProps = (state, ownProps) => {

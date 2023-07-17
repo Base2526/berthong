@@ -13,30 +13,57 @@ import {
   LinearProgress
 } from '@mui/material'
 import _ from "lodash"
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
+import deepdash from "deepdash";
 
-import { queryBookBuyTransitions } from "./gqlQuery"
+import { queryBookBuyTransitions, mutationCancelTransition } from "./gqlQuery"
 import UserComp from "./components/UserComp"
-import { getHeaders } from "./util"
-
+import { getHeaders, showToast, handlerErrorApollo } from "./util"
 import ComfirmCancelDialog from "./dialog/ComfirmCancelDialog"
+
+deepdash(_);
+
+let initOpenComfirmCancelDialog = { isOpen: false, id: "" }
 
 const BookBuysPage = (props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const location = useLocation();
-  let { user, onLightbox } = props
+  let { onLightbox } = props
 
   let [datas, setDatas] = useState([]);
   let [total, setTotal] = useState(0)
   let [slice, setSlice] = useState(20);
   let [hasMore, setHasMore] = useState(true)
-  let [openComfirmCancelDialog, setOpenComfirmCancelDialog] = useState({ isOpen: false, id: "" })
+  let [openComfirmCancelDialog, setOpenComfirmCancelDialog] = useState(initOpenComfirmCancelDialog)
 
   let [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
+
+  const [onMutationCancelTransition, resultMutationCancelTransition] = useMutation(mutationCancelTransition,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {cancelTransition}}) => {
+      let { status, data: newData } = cancelTransition
+
+      let queryBookBuyTransitionsValue = cache.readQuery({ query: queryBookBuyTransitions });
+      if(status && queryBookBuyTransitionsValue){       
+        cache.writeQuery({
+          query: queryBookBuyTransitions,
+          data: { bookBuyTransitions: { ...queryBookBuyTransitionsValue.bookBuyTransitions, 
+                                        data: _.filter(queryBookBuyTransitionsValue.bookBuyTransitions.data, (item)=> item._id.toString() !== newData._id.toString() )  } },
+        });
+      }      
+    },
+    onCompleted(data) {
+      setOpenComfirmCancelDialog(initOpenComfirmCancelDialog)
+      showToast("success", "ดำเนินการเรียบร้อย")
+    },
+    onError: (error) => {
+      return handlerErrorApollo( props, error )
+    }
+  });
 
   const { loading: loadingBookBuyTransitions, 
           data: dataBookBuyTransitions, 
@@ -44,17 +71,19 @@ const BookBuysPage = (props) => {
           subscribeToMore, 
           networkStatus } = useQuery(queryBookBuyTransitions, { 
                                                                 context: { headers: getHeaders(location) }, 
-                                                                fetchPolicy: 'network-only',
-                                                                nextFetchPolicy: 'cache-first', 
+                                                                fetchPolicy: 'cache-first',
+                                                                nextFetchPolicy: 'network-only', 
                                                                 notifyOnNetworkStatusChange: true
                                                               });
 
   useEffect(() => {
     if (!loadingBookBuyTransitions) {
       if(dataBookBuyTransitions?.bookBuyTransitions){
-        let { status, data } = dataBookBuyTransitions?.bookBuyTransitions
+        let { status, data: newData } = dataBookBuyTransitions?.bookBuyTransitions
         if(status){
-          setDatas(data)
+          if(!_.isEqual(newData, datas)) {
+            setDatas(newData)
+          }
         }
       }
     }
@@ -89,7 +118,7 @@ const BookBuysPage = (props) => {
 
   return (
     <div className="user-list-container">
-    {openComfirmCancelDialog.isOpen && <ComfirmCancelDialog id={openComfirmCancelDialog.id} open={openComfirmCancelDialog.isOpen} onClose={()=>setOpenComfirmCancelDialog({...openComfirmCancelDialog, isOpen: false})}  />}
+    {openComfirmCancelDialog.isOpen && <ComfirmCancelDialog id={openComfirmCancelDialog.id} open={openComfirmCancelDialog.isOpen} onMutationCancelTransition={onMutationCancelTransition} onClose={()=>setOpenComfirmCancelDialog({...openComfirmCancelDialog, isOpen: false})}  />}
       {
         loadingBookBuyTransitions
         ?  <LinearProgress />
@@ -112,7 +141,7 @@ const BookBuysPage = (props) => {
                     let files   = item?.files
                     let createdAt = new Date(item.createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
           
-                    return  <div className="content-bottom">
+                    return  <div className="content-bottom" key={index}>
                               <div className="content-page border">   
                               <div className="row">
                                 <Stack direction="row" spacing={2} >

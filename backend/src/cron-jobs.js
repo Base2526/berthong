@@ -53,15 +53,13 @@ cron.schedule('*/60 * * * *', async() => {
 
                                 console.log("ping :AUTO_CLEAR_BOOK AUTO_CLEAR_BOOK ", newSupplier)
 
-                                if(!_.isEmpty(users)){
-                                  _.map(_.uniqWith(users, _.isEqual), async(userId)=>{
-                                    pubsub.publish("ME", {
-                                      me: { mutation: "BOOK", data: {userId, data: { /* balance: (await checkBalance(userId)).balance*/ ...await checkBalance(userId) , balanceBook: await checkBalanceBook(userId) } } },
-                                    });
-                                  })
-                                }
-
-
+                                // if(!_.isEmpty(users)){
+                                //   _.map(_.uniqWith(users, _.isEqual), async(userId)=>{
+                                //     pubsub.publish("ME", {
+                                //       me: { mutation: "BOOK", data: {userId, data: { /* balance: (await checkBalance(userId)).balance*/ ...await checkBalance(userId) , balanceBook: await checkBalanceBook(userId) } } },
+                                //     });
+                                //   })
+                                // }
                               }catch(error){}
                             }
     }))

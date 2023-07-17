@@ -236,41 +236,38 @@ const HistoryTransitionsPage = (props) => {
   const ItemView = (value, index) =>{
     switch(value?.type){
       case Constants.SUPPLIER:{
-        return  <div class="alert alert-danger p-1 m-1" role="alert"><Stack key={index} direction="row" spacing={2}>
-                  <Box>Supplier</Box>
-                  <Box>ยอดซื้อ : { value.balance }</Box>
-                  <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
-                  <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
-                </Stack>
+        return  <div class="alert alert-danger p-1 m-1" role="alert">
+                  <Stack key={index} direction="row" spacing={2}>
+                    <Box>Supplier</Box>
+                    <Box>ยอดซื้อ : { value.balance }</Box>
+                    <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
+                    <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
+                  </Stack>
                 </div>
       }
 
       case Constants.DEPOSIT:{
-        return  <div class="alert alert-warning p-1 m-1" role="alert"><Stack key={index} direction="row" spacing={2}>
-                  <Box>Deposit</Box>
-                  <Box>ยอดฝาก : { value?.balance }</Box>
-                  <Box>{ _.find(Constants.BANKS, (bank)=>_.isEqual(value?.bankId, bank.id))?.label }</Box>
-                  <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
-                  <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
-                  {/* {
-                    value.status == Constants.WAIT
-                    ? <Button 
-                        variant="outlined" 
-                        onClick={(evt)=>{
-                          onMutationDeposit({ variables: { input: {_id: value?._id, type: Constants.CANCEL } } });
-                        }}>ยกเลิก</Button>
-                    :""
-                  } */}
-                </Stack></div>
+        console.log("Constants.DEPOSIT :", value)
+        return  <div class="alert alert-warning p-1 m-1" role="alert">
+                  <Stack key={index} direction="row" spacing={2}>
+                    <Box>Deposit</Box>
+                    <Box>ยอดฝาก : { value?.deposit?.balance }</Box>
+                    <Box>{ _.find(Constants.BANKS, (bank)=>_.isEqual(value?.deposit?.bankId, bank.id))?.label }</Box>
+                    <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
+                    <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
+                  </Stack>
+                </div>
       }
 
       case Constants.WITHDRAW:{
-        return  <div class="alert alert-success p-1 m-1" role="alert"><Stack key={index} direction="row" spacing={2}>
-                  <Box>Withdraw</Box>
-                  <Box>ยอดฝาก : { value.balance }</Box>
-                  <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
-                  <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
-                </Stack></div>
+        return  <div class="alert alert-success p-1 m-1" role="alert">
+                  <Stack key={index} direction="row" spacing={2}>
+                    <Box>Withdraw</Box>
+                    <Box>ยอดฝาก : { value?.withdraw?.balance }</Box>
+                    <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
+                    <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
+                  </Stack>
+                </div>
       }
     }
   }

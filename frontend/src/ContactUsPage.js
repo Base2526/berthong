@@ -65,7 +65,7 @@ const ContactUsPage = (props) => {
                                     <AttackFileField
                                         label={t("attack_file")}
                                         values={input.files}
-                                        multiple={true}
+                                        multiple={false}
                                         required={true}
                                         onChange={(values) => {
                                             setInput({...input, files: values})

@@ -82,7 +82,7 @@ services:
   #     - nodejs
   mongo:
     image: mongo:6.0.1
-    command: mongod --port 29101
+    command: mongod --auth --port 29101
     # expose:
     #   - 27017       # port intenal
     ports:

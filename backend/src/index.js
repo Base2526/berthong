@@ -24,8 +24,6 @@ const {
     graphqlUploadExpress, // A Koa implementation is also exported.
 } = require('graphql-upload');
 
-// const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js');
-
 let logger = require("./utils/logger");
 let PORT = process.env.GRAPHQL_PORT || 4000;
 
