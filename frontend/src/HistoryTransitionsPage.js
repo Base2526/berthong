@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -19,7 +19,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
 
 import { getHeaders } from "./util"
-import { queryHistoryTransitions } from "./gqlQuery"
+import { queryHistoryTransitions, queryAdminBanks } from "./gqlQuery"
 import * as Constants from "./constants"
 deepdash(_);
 
@@ -28,6 +28,7 @@ const HistoryTransitionsPage = (props) => {
   const { t } = useTranslation();
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
+  let [banks, setBanks] = useState([]);
   let [datas, setDatas] = useState([]);
   let [total, setTotal] = useState(0)
   let [slice, setSlice] = useState(20);
@@ -39,10 +40,22 @@ const HistoryTransitionsPage = (props) => {
           subscribeToMore: subscribeToMoreHistoryTransitions, 
           networkStatus: networkStatusHistoryTransitions } = useQuery(queryHistoryTransitions, { 
                                                                                                   context: { headers: getHeaders(location) }, 
-                                                                                                  fetchPolicy: 'network-only',
-                                                                                                  nextFetchPolicy: 'cache-first',
+                                                                                                  fetchPolicy: 'cache-first',
+                                                                                                  nextFetchPolicy: 'network-only',
                                                                                                   notifyOnNetworkStatusChange: true 
                                                                                                 });
+
+  const { loading: loadingAdminBanks, 
+          data: dataAdminBanks, 
+          error: errorAdminBanks, 
+          networkStatus: networkStatusAdminBanks } =  useQuery(queryAdminBanks, 
+                                                        { 
+                                                          context: { headers: getHeaders(location) }, 
+                                                          fetchPolicy: 'cache-first', 
+                                                          nextFetchPolicy: 'network-only', 
+                                                          notifyOnNetworkStatusChange: true
+                                                        }
+                                                      );
 
   /*
   ฝาก
@@ -68,154 +81,20 @@ const HistoryTransitionsPage = (props) => {
     }
   }, [dataHistoryTransitions, loadingHistoryTransitions])
 
+  useEffect(() => {
+    if(!loadingAdminBanks){
+      if(!_.isEmpty(dataAdminBanks?.adminBanks)){
+        let { status, data } = dataAdminBanks?.adminBanks
+        if(status){
+          setBanks(data)
+        }
+      }
+    }
+  }, [dataAdminBanks, loadingAdminBanks])
+
   const handleClose = () => {
     setOpenDialogDelete({ ...openDialogDelete, isOpen: false, description: "" });
-  };
-
-  ///////////////////////
-  ///////////////
-  // const fetchData = useCallback(({ pageSize, pageIndex }) => {
-  //   setPageSize(pageSize)
-  //   setPageIndex(pageIndex)
-  // })
-  ///////////////
-  // const columns = useMemo(
-  //     () =>{
-
-  //       console.log("props.row.original : ", user)
-
-  //       switch(checkRole(user)){
-  //         case AMDINISTRATOR:{
-  //           return [
-  //             {
-  //               Header: 'Type',
-  //               accessor: 'type',
-  //               Cell: props =>{
-  //                   let {type} = props.row.values
-  //                   return ( <div style={{ position: "relative" }}>{type}</div> );
-  //               }
-  //             },
-  //             {
-  //               Header: 'Balance',
-  //               accessor: 'balance',
-  //               Cell: props => {
-  //                 let {balance} = props.row.values
-  //                 return ( <div style={{ position: "relative" }}>{balance}</div> );
-  //               }
-  //             },
-  //             {
-  //               Header: 'Bank',
-  //               accessor: 'bank',
-  //               Cell: props => {
-  //                 let {bank} = props.row.values
-  //                 return <div>{bank[0].bankName} {bank[0].bankNumber}</div>
-  //               }
-  //             },
-  //             // 
-  //             {
-  //               Header: 'User Approve',
-  //               accessor: 'userNameApprove',
-  //               Cell: props => {
-  //                 let {userNameApprove} = props.row.values
-  //                 return <div>{userNameApprove} {userNameApprove}</div>
-  //               }
-  //             },
-  //             {
-  //               Header: 'Created at',
-  //               accessor: 'createdAt',
-  //               Cell: props => {
-  //                   let {createdAt} = props.row.values
-  //                   return <div>{createdAt}</div>
-  //               }
-  //             }
-  //           ]
-  //         }
-  //         case AUTHENTICATED:{
-  //           return [
-  //             {
-  //               Header: 'Type',
-  //               accessor: 'type',
-  //               Cell: props =>{
-  //                   let {type} = props.row.values
-  //                   return ( <div style={{ position: "relative" }}>{type}</div> );
-  //               }
-  //             },
-  //             {
-  //               Header: 'Title',
-  //               accessor: 'title',
-  //               Cell: props =>{
-  //                   let {title} = props.row.values
-  //                   return ( <div style={{ position: "relative" }}>{title}</div> );
-  //               }
-  //             },
-  //             {
-  //               Header: 'Balance',
-  //               accessor: 'balance',
-  //               Cell: props => {
-  //                 let {balance} = props.row.values
-  //                 return ( <div style={{ position: "relative" }}>{balance}</div> );
-  //               }
-  //             },
-  //             {
-  //               Header: 'Description',
-  //               accessor: 'description',
-  //               Cell: props => {
-  //                 let {description} = props.row.values
-  //                 return ( <div style={{ position: "relative" }}>{description}</div> );
-  //               }
-  //             },
-  //             {
-  //               Header: 'Created at',
-  //               accessor: 'createdAt',
-  //               Cell: props => {
-  //                 let {createdAt} = props.row.values
-  //                 createdAt = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-  //                 return <div>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
-  //               }
-  //             }, 
-  //             {
-  //               Header: 'updated at',
-  //               accessor: 'updatedAt',
-  //               Cell: props => {
-  //                   let {updatedAt} = props.row.values
-  //                   updatedAt = new Date(updatedAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-  //                   return <div>{ (moment(updatedAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</div>
-  //               }
-  //             },
-  //           ]
-  //         }
-  //       }
-  //     } ,
-  //     []
-  // )
-  
-  // const [data, setData] = useState(() => makeData(10000))
-  // const [originalData] = useState(data)
-
-  // We need to keep the table from resetting the pageIndex when we
-  // Update data. So we can keep track of that flag with a ref.
-  // const skipResetRef = useRef(false)
-
-  // When our cell renderer calls updateMyData, we'll use
-  // the rowIndex, columnId and new value to update the
-  // original data
-  // const updateMyData = (rowIndex, columnId, value) => {
-  //   console.log("updateMyData")
-  //   // We also turn on the flag to not reset the page
-  //   skipResetRef.current = true
-  //   // setData(old =>
-  //   //   old.map((row, index) => {
-  //   //     if (index === rowIndex) {
-  //   //       return {
-  //   //         ...row,
-  //   //         [columnId]: value,
-  //   //       }
-  //   //     }
-  //   //     return row
-  //   //   })
-  //   // )
-  // }
-  //////////////////////
+  }
 
   const fetchMoreData = async() =>{
     // let mores =  await fetchMoreNotifications({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
@@ -252,7 +131,11 @@ const HistoryTransitionsPage = (props) => {
                   <Stack key={index} direction="row" spacing={2}>
                     <Box>Deposit</Box>
                     <Box>ยอดฝาก : { value?.deposit?.balance }</Box>
-                    <Box>{ _.find(Constants.BANKS, (bank)=>_.isEqual(value?.deposit?.bankId, bank.id))?.label }</Box>
+                    {
+                      loadingAdminBanks 
+                      ? <LinearProgress />
+                      : <Box>{ _.find(banks, (bank)=>_.isEqual(value?.deposit?.bankId, bank.id))?.label }</Box>
+                    }
                     <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
                     <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
                   </Stack>
@@ -263,7 +146,7 @@ const HistoryTransitionsPage = (props) => {
         return  <div class="alert alert-success p-1 m-1" role="alert">
                   <Stack key={index} direction="row" spacing={2}>
                     <Box>Withdraw</Box>
-                    <Box>ยอดฝาก : { value?.withdraw?.balance }</Box>
+                    <Box>ยอดถอน : { value?.withdraw?.balance }</Box>
                     <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
                     <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
                   </Stack>
@@ -286,20 +169,7 @@ const HistoryTransitionsPage = (props) => {
                           next={fetchMoreData}
                           hasMore={false}
                           loader={<h4>Loading...</h4>}>
-                          { 
-                          _.map(datas, (item, index) => {
-                            console.log("item :", item)
-                            return ItemView(item, index)
-                            // console.log("datas :", datas)
-                            // 0: 'supplier', 1: 'deposit',  2: 'withdraw'
-                            // return  <Stack key={index} direction="row" spacing={2}>
-                            //           <Box>{ item.type == 0 ? "Supplier" : item.type == 1 ? "Deposit" : "Withdraw" }</Box>
-                            //           <Box>ยอดฝาก : { item.balance }</Box>
-                            //           <Box>{ item.status == Constants.WAIT ? "รอดำเนินการ" : item.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
-                            //           <Box>{ moment(item.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
-                            //         </Stack>
-                          })
-                        }
+                          { _.map(datas, (item, index) => ItemView(item, index)) }
                       </InfiniteScroll>
             }
 

@@ -9,8 +9,13 @@ import {
     LinearProgress,
     Avatar,
     Box,
-    Button
+    IconButton
 } from '@mui/material';
+
+import {
+    MdOutlineBookmarkAdd as MdOutlineBookmarkAddIcon,
+    MdOutlineBookmarkAdded as MdOutlineBookmarkAddedIcon
+} from "react-icons/md"
 
 import { getHeaders } from "./util"
 import { queryBookmarks } from "./gqlQuery"
@@ -63,59 +68,59 @@ const BookMarksPage = (props) => {
     }
 
     return (<div className="content-bottom">
-    <div className="content-page border">   
-    <div className="row">
-                {
-                loadingBookmarks 
-                ?   <LinearProgress />
-                :   input.data.length == 0 
-                    ?   <div>Empty data</div>
-                    :   <InfiniteScroll
-                            dataLength={input.slice}
-                            next={fetchMoreData}
-                            hasMore={input.hasMore}
-                            loader={<h4>Loading...</h4>}>
-                            { 
-                                _.map(input.data, (item, index) => {
-                                    return  <div className="row p-2"><Stack direction="row" spacing={2}>
-                                                <Box className="pointer">
-                                                    <Avatar
-                                                        className={"image"}
-                                                        sx={{ height: 40, width: 40 }}
-                                                        variant="rounded"
-                                                        overlap="circular"
-                                                        alt="Example Alt"
-                                                        onClick={()=>{
+            <div className="content-page border">   
+                <div className="row">
+                    {
+                    loadingBookmarks 
+                    ?   <LinearProgress />
+                    :   input.data.length == 0 
+                        ?   <div>Empty data</div>
+                        :   <InfiniteScroll
+                                dataLength={input.slice}
+                                next={fetchMoreData}
+                                hasMore={input.hasMore}
+                                loader={<h4>Loading...</h4>}>
+                                { 
+                                    _.map(input.data, (item, index) => {
+                                        return  <div className="row p-2"><Stack direction="row" spacing={2}>
+                                                    <Box className="pointer">
+                                                        <Avatar
+                                                            className={"image"}
+                                                            sx={{ height: 40, width: 40 }}
+                                                            variant="rounded"
+                                                            overlap="circular"
+                                                            alt="Example Alt"
+                                                            onClick={()=>{
+                                                                navigate({
+                                                                pathname: "/d",
+                                                                search: `?${createSearchParams({ id: item?._id})}`,
+                                                                state: { id: item?._id }
+                                                            })}}
+                                                            src={ !_.isEmpty(item?.files) ? item?.files[0].url : "" }/>
+                                                    </Box>
+                                                    <Box className="pointer">
+                                                        <div onClick={()=>{
                                                             navigate({
                                                             pathname: "/d",
                                                             search: `?${createSearchParams({ id: item?._id})}`,
                                                             state: { id: item?._id }
-                                                        })}}
-                                                        src={ !_.isEmpty(item?.files) ? item?.files[0].url : "" }/>
-                                                </Box>
-                                                <Box className="pointer">
-                                                    <div onClick={()=>{
-                                                        navigate({
-                                                        pathname: "/d",
-                                                        search: `?${createSearchParams({ id: item?._id})}`,
-                                                        state: { id: item?._id }
-                                                    })}} key={index}>{item?.title}</div>
-                                                </Box>
-                                                <Box>
-                                                    <Button 
-                                                        variant="outlined"
-                                                        size="small"
-                                                        onClick={(evt)=> onMutationFollow({ variables: { id: item?._id } }) }>
-                                                        { _.find(item?.follows, (f)=> _.isEqual(f?.userId, user?._id) ) ? "Unbookmark" : "Bookmark" }
-                                                    </Button>
-                                                </Box>
-                                            </Stack>
-                                        </div>
-                                }) 
-                            }
-                        </InfiniteScroll>
-                }
-            </div></div></div>);
+                                                        })}} key={index}>{item?.title}</div>
+                                                    </Box>
+                                                    <Box>
+                                                        <IconButton 
+                                                            onClick={(evt)=> onMutationFollow({ variables: { id: item?._id } }) }>
+                                                            <MdOutlineBookmarkAddedIcon size={25} style={{ color: "blue" }} />
+                                                        </IconButton>
+                                                    </Box>
+                                                </Stack>
+                                            </div>
+                                    }) 
+                                }
+                            </InfiniteScroll>
+                    }
+                </div>
+            </div>
+            </div>);
 }
 
 export default BookMarksPage

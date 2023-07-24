@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef, useLayoutEffect } from "react";
 import { useApolloClient, useQuery, useMutation, useSubscription } from "@apollo/client";
 import { connect } from "react-redux";
 import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
@@ -74,6 +74,7 @@ import {
   SlUserFollowing
 } from "react-icons/sl"
 import _ from "lodash"
+import LoadingOverlay from 'react-loading-overlay';
 
 import TaxonomyBankPage from "./TaxonomyBankPage";
 import TaxonomyBanksPage from "./TaxonomyBanksPage";
@@ -392,21 +393,6 @@ const App =(props) =>{
     context: { headers: getHeaders(location) },
     update: (cache, {data: {comment}}) => {
       let { status, commentId, data } = comment
-
-      console.log("comment > update :", comment)
-
-      // let {mode, itemId} = action
-      // switch(mode?.toUpperCase()){
-      //   case "BOOK":{
-      //     showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
-      //     break
-      //   }
-
-      //   case "UNBOOK":{
-      //     showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
-      //     break
-      //   }
-      // }
       
       let resultCommentById = cache.readQuery({ query: queryCommentById, variables: {id: commentId}});
       if(status && resultCommentById){
@@ -493,14 +479,11 @@ const App =(props) =>{
         localStorage.setItem('token', sessionId)
 
         updateProfile(data)
-        // onComplete()
 
         setDialogLogin(false);
       }
     },
     onCompleted(data) {
-      console.log("onCompleted :", data)
-
       window.location.reload();
     },
     onError(error){
@@ -977,6 +960,17 @@ const App =(props) =>{
       }
   );
 
+  // useLayoutEffect(() => {
+  //   // if (isLoading) {
+  //     document.body.style.overflow = "hidden";
+  //     document.body.style.height = "100%";
+  //   // }
+  //   // if (!isLoading) {
+  //   //   document.body.style.overflow = "auto";
+  //   //   document.body.style.height = "auto";
+  //   // }
+  // }, []);
+
   useEffect(()=>{
     console.log("+++++++++++++++++++APP+++++++++++++++++++")
   }, [])
@@ -1094,11 +1088,12 @@ const App =(props) =>{
                 {id: 1, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/admin-withdraws"},
                 {id: 2, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/admin-deposits"},
                 {id: 3, title:"รายการสินค้าทั้งหมด", icon: <AdjustIcon />, path: "/suppliers"},
-                {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
+                {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/admin-users"},
                 {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
                 {id: 6, title:"วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/admin-date-lotterys"},
                 {id: 7, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
-                {id: 8, title:"Logout", icon: <LogoutIcon size="1.5em"/>, path: "/logout"}]
+                // {id: 8, title:"Logout", icon: <LogoutIcon size="1.5em"/>, path: "/logout"}
+              ]
       }
       case Constants.AUTHENTICATED:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
@@ -1108,7 +1103,8 @@ const App =(props) =>{
                 {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"},
                 // {id: 5, title:"บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/bank"},
                 // {id: 6, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
-                {id: 7, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}]
+                // {id: 7, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}
+              ]
       }
       default:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
@@ -1151,6 +1147,10 @@ const App =(props) =>{
 
   return (
     <div className="App page-container">
+      {/* <LoadingOverlay
+        active={true}
+        spinner
+        text='Loading your content...'> */}
       <div className="content-wrap">
       {lightbox.isOpen  && <LightboxComp datas={lightbox} onLightbox={(v)=>setLightbox(v)}/> }
       <ToastContainer />
@@ -1400,11 +1400,7 @@ const App =(props) =>{
                                                       onMutationAdminDeposit={(evt)=>onMutationAdminDeposit(evt)} />} />
               <Route path="/admin-withdraws" element={<AdminWithdrawsPage 
                                                       {...props} 
-                                                      onMutationAdminWithdraw={(evt)=>{
-
-                                                        console.log("onMutationAdminWithdraw : ", evt)
-                                                        // onMutationAdminWithdraw(evt)
-                                                      }} 
+                                                      onMutationAdminWithdraw={(evt)=>onMutationAdminWithdraw(evt)} 
                                                       onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/admin-date-lotterys" element={<DateLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
               <Route path="/admin-date-lottery" element={<DateLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
@@ -1422,7 +1418,8 @@ const App =(props) =>{
       </div>
       {/* Footer */}
       <Footer />
-    </div>
+      </div>
+      {/* </LoadingOverlay> */}
     </div>
   )
 }

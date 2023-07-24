@@ -71,8 +71,8 @@ const BookBuysPage = (props) => {
           subscribeToMore, 
           networkStatus } = useQuery(queryBookBuyTransitions, { 
                                                                 context: { headers: getHeaders(location) }, 
-                                                                fetchPolicy: 'cache-first',
-                                                                nextFetchPolicy: 'network-only', 
+                                                                fetchPolicy: 'network-only',
+                                                                nextFetchPolicy: 'cache-first', 
                                                                 notifyOnNetworkStatusChange: true
                                                               });
 
@@ -82,7 +82,7 @@ const BookBuysPage = (props) => {
         let { status, data: newData } = dataBookBuyTransitions?.bookBuyTransitions
         if(status){
           if(!_.isEqual(newData, datas)) {
-            setDatas(newData)
+            setDatas(_.orderBy(newData, i => i.createdAt, 'desc'))
           }
         }
       }
@@ -131,18 +131,20 @@ const BookBuysPage = (props) => {
                 loader={<h4>Loading...</h4>}>
                 { 
                   _.map(datas, (item, index) => {
-                    let title = item.title;
-                    let description = item.description;
-                    let type   = item.type;
-                    let category  = item.category;
-                    let condition = item.condition;
-                    let buys    = item.buys;
-                    let follows = item.follows;
-                    let files   = item?.files
-                    let createdAt = new Date(item.createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+
+                    let { supplier } = item
+                    let title = supplier.title;
+                    let description = supplier.description;
+                    let type   = supplier.type;
+                    let category  = supplier.category;
+                    let condition = supplier.condition;
+                    let buys    = supplier.buys;
+                    let follows = supplier.follows;
+                    let files   = supplier?.files
+                    let createdAt = new Date(supplier.createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
           
                     return  <div className="content-bottom" key={index}>
-                              <div className="content-page border">   
+                              {/* <div className="content-page border">    */}
                               <div className="row">
                                 <Stack direction="row" spacing={2} >
                                   <Box sx={{ width: '10%' }}>
@@ -161,22 +163,22 @@ const BookBuysPage = (props) => {
                                     onClick={()=>{
                                       navigate({
                                       pathname: "/d",
-                                      search: `?${createSearchParams({ id: item._id})}`,
-                                      state: { id: item._id }
+                                      search: `?${createSearchParams({ id: supplier._id})}`,
+                                      state: { id: supplier._id }
                                     })}}
                                   >{title}</Box>
                                   <Box sx={{ width: '20%' }}>{description}</Box>
-                                  <Box sx={{ width: '20%' }}><UserComp userId={item?.ownerId} /></Box>
+                                  <Box sx={{ width: '20%' }}><UserComp userId={supplier?.ownerId} /></Box>
                                   <Box sx={{ width: '5%' }}>{type}</Box>
                                   <Box sx={{ width: '5%' }}>{category}</Box>
                                   <Box sx={{ width: '5%' }}>{condition}</Box>
                                   <Box sx={{ width: '5%' }}>{buys.length}</Box>
                                   <Box sx={{ width: '5%' }}>{follows.length}</Box>
                                   <Box sx={{ width: '10%' }}>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A') }</Box>
-                                  <Box sx={{ width: '10%' }}><Button onClick={(evt)=>onCancelOrder(item?._id)}>Cancel Order</Button></Box>
+                                  <Box sx={{ width: '10%' }}><Button onClick={(evt)=>onCancelOrder(supplier?._id)}>Cancel Order</Button></Box>
                                 </Stack>
                               </div>
-                              </div>
+                              {/* </div> */}
                             </div>
                   })
                 }

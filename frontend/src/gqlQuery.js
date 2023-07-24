@@ -27,6 +27,7 @@ export const queryDateLotterys    = gql`query dateLotterys { dateLotterys }`;
 export const queryDateLotteryById = gql`query dateLotteryById($id: ID!) { dateLotteryById(_id: $id) }`;
 
 export const queryAdminHome       = gql`query adminHome { adminHome }`;
+export const queryAdminBanks      = gql`query adminBanks { adminBanks }`;
 export const queryAdminDeposits   = gql`query adminDeposits{ adminDeposits }`;
 export const queryAdminWithdraws  = gql`query adminWithdraws{ adminWithdraws }`;
 

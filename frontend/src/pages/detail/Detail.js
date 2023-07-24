@@ -168,13 +168,13 @@ const Detail = (props) => {
     let selected = 0;
     if(fn) selected = fn.selected == -1 ? 0 : -1
     
-    if(selected == 0){
-      let check = user?.balance - (user?.balanceBook + data.price)
-      if(check < 0){
-        showToast("error", `ยอดเงินคงเหลือไม่สามารถจองได้`, 2500)
-        return;
-      }
-    }
+    // if(selected == 0){
+    //   let check = user?.balance - (user?.balanceBook + data.price)
+    //   if(check < 0){
+    //     showToast("error", `ยอดเงินคงเหลือไม่สามารถจองได้`, 2500)
+    //     return;
+    //   }
+    // }
     onMutationBook({ variables: { input: { supplierId: id, itemId, selected } } });
   }
 
@@ -230,7 +230,7 @@ const Detail = (props) => {
   return (
     <div className="row">
       { isPopupOpenedShoppingBag && <PopupCart {...props} onMutationBuy={(evt)=>onMutationBuy(evt)} opened={isPopupOpenedShoppingBag} data={data} onClose={() => setPopupOpenedShoppingBag(false) } /> }
-      { isPopupOpenedWallet  && <PopupWallet opened={isPopupOpenedWallet} onClose={() => setPopupOpenedWallet(false) } /> }
+      { isPopupOpenedWallet  && <PopupWallet {...props} data={data} opened={isPopupOpenedWallet} onClose={() => setPopupOpenedWallet(false) } /> }
 
       {
         loadingSupplierById || _.isEmpty(data)

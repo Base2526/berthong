@@ -7,9 +7,6 @@ import {
   IconButton,
 } from "@mui/material";
 import {
-  ContentCopy as ContentCopyIcon,
-  BugReport as BugReportIcon,
-  Bookmark as BookmarkIcon,
   Share as ShareIcon,
   CurrencyExchangeOutlined as CurrencyExchangeOutlinedIcon,
   AddShoppingCartOutlined as AddShoppingCartOutlinedIcon
@@ -94,11 +91,11 @@ const DetailPanelRight = (props) =>{
             <div className="row" style={{textAlign:"right"}}>
               <h4 className="card-title" style={{ float: "right" }}>
                 <IconButton onClick={(e) => onFollow({ variables: { id: data?._id } }) }> 
-                  {/* <BookmarkIcon style={{ color : !_.isEmpty(_.find(data?.follows, (f)=>f?.userId == user?._id)) ? "blue" : "" }} /> */}
-
-                  { _.isEmpty(_.find(data?.follows, (f)=>f?.userId == user?._id)) 
+                  { 
+                    _.isEmpty(_.find(data?.follows, (f)=>f?.userId == user?._id)) 
                     ? <MdOutlineBookmarkAddIcon /> 
-                    : <MdOutlineBookmarkAddedIcon style={{ color: "blue" }} /> }
+                    : <MdOutlineBookmarkAddedIcon style={{ color: "blue" }} /> 
+                  }
                 </IconButton>
                 <IconButton onClick={(e) =>onMenu(e.currentTarget)}><ShareIcon /></IconButton>
               </h4>

@@ -482,6 +482,7 @@ export default gql`
     dateLotterys: JSON
     dateLotteryById(_id: ID!): JSON
     adminHome: JSON
+    adminBanks: JSON
     adminDeposits: JSON
     adminWithdraws: JSON
   }  

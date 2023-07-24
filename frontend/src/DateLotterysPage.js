@@ -61,7 +61,7 @@ const DateLotterysPage = (props) => {
         let { status, data } = dataDateLotterys.dateLotterys
 
         if(status){
-          if(!_.isEqual(dateLotterys, data)) setDateLotterys(data)
+          if(!_.isEqual(dateLotterys, data)) setDateLotterys(_.orderBy(data, i => i.date, 'asc')) 
           
           let newDates = _.map(data, (i)=>i.date)
           if(!_.isEqual(newDates, dates)) setDates( newDates )
@@ -223,7 +223,7 @@ const DateLotterysPage = (props) => {
                         // let roles       = item.roles;
                         // let lastAccess  = item.lastAccess;
 
-                        console.log("item :", item)
+                        // console.log("item :", item)
 
                         return <Stack direction="row" spacing={2} >
                                   <Box sx={{ width: '20%' }}> { (moment(date, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')} </Box>
