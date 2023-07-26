@@ -1,17 +1,12 @@
 import React, { useState, useMemo } from "react";
 import { createSearchParams, useNavigate } from "react-router-dom";
 import {
-  MoreVert as MoreVertIcon,
-} from "@material-ui/icons";
-import {
   IconButton,
   Menu,
   MenuItem
 } from "@mui/material";
 import {
   ContentCopy as ContentCopyIcon,
-  BugReport as BugReportIcon,
-  Bookmark as BookmarkIcon,
   Share as ShareIcon
 } from "@mui/icons-material"
 import _ from "lodash"

@@ -1,345 +1,286 @@
 import mongoose from "mongoose";
-
-import {Bank, 
-        Post, 
-        Role, 
-        User, 
-        Socket, 
-        Comment, 
-        Mail, 
-        Bookmark, 
-        Report,
-        tReport,
-        Share,
-        Dblog,
-        Conversation,
-        Message,
-        Follow,
-        Session,
-        Notification,
-        Phone,
-        BasicContent,
-        Supplier,
-      
-        Deposit,
-        Withdraw,
-        Transition,
-
-        DateLottery,
-        ContactUs,
-
-        Test
-      } from '../model'
-
+import * as Model from "../model"
 let logger = require("../utils/logger");
 
 const modelExists =()=>{
-  Bank.find({}, async(err, result) => {
+  Model.Bank.find({}, async(err, result) => {
     if (result.length > 0) {
-      // console.log('Found Bank');
+      // console.log('Found Model.Bank');
     } else {
-      // console.log('Not found Bank, creating');
-      let newBank = new Bank({name: "test"});
+      // console.log('Not found Model.Bank, creating');
+      let newBank = new Model.Bank({name: "test"});
       await newBank.save();
 
-      await Bank.deleteMany({})
+      await Model.Bank.deleteMany({})
     }
   });
 
-  Post.find({}, async(err, result) => {
+  Model.Post.find({}, async(err, result) => {
     if (result.length > 0) {
-      // console.log('Found Post');
+      // console.log('Found Model.Post');
     } else {
-      // console.log('Not found Post, creating');
-      let newPost = new Post({});
+      // console.log('Not found Model.Post, creating');
+      let newPost = new Model.Post({});
       await newPost.save();
 
-      await Post.deleteMany({})
+      await Model.Post.deleteMany({})
     }
   });
 
-  Role.find({},async(err, result) =>{
+  Model.Role.find({},async(err, result) =>{
     if (result.length > 0) {
-      // console.log('Found Role');
+      // console.log('Found Model.Role');
     } else {
-      // console.log('Not found Role, creating');
-      let newRole = new Role({name: "test"});
-      newRole.save();
+      // console.log('Not found Model.Role, creating');
+      let newRole = new Model.Role({name: "test"});
+      await newRole.save();
 
-      await Role.deleteMany({})
+      await Model.Role.deleteMany({})
     }
   });
 
-  Socket.find({}, async(err, result)=> {
+  Model.Socket.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Socket');
+      // console.log('Found Model.Socket');
     } else {
-      // console.log('Not found Socket, creating');
-      let newSocket = new Socket({});
+      // console.log('Not found Model.Socket, creating');
+      let newSocket = new Model.Socket({});
       await newSocket.save();
 
-      await Socket.deleteMany({})
+      await Model.Socket.deleteMany({})
     }
   });
 
-  User.find({}, async(err, result)=> {
+  Model.User.find({}, async(err, result)=> {
     if (result.length > 0) {
     } else {
-      let newUser = new User({
+      let newUser = new Model.User({
                               username: "username",
                               password: "password",
                               email: "email@banlist.info",
                               displayName: "displayName",
                             });
       await newUser.save();
-      await User.deleteMany({})
+      await Model.User.deleteMany({})
     }
   });
 
-  Comment.find({}, async(err, result)=> {
+  Model.Comment.find({}, async(err, result)=> {
     if (result.length > 0) {
     } else {
-      let newComment = new Comment({_id: mongoose.Types.ObjectId()});
+      let newComment = new Model.Comment({_id: mongoose.Types.ObjectId()});
       await newComment.save();
-
-      await Comment.deleteMany({})
+      await Model.Comment.deleteMany({})
     }
   });
 
-  Mail.find({}, async(err, result)=> {
+  Model.Mail.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Mail');
+      // console.log('Found Model.Mail');
     } else {
-      // console.log('Not found Mail, creating');
-      let newMails = new Mail({});
+      let newMails = new Model.Mail({});
       await newMails.save();
-
-      await Mail.deleteMany({})
+      await Model.Mail.deleteMany({})
     }
   });
 
-  Bookmark.find({}, async(err, result)=> {
+  Model.Bookmark.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Bookmark');
+      // console.log('Found Model.Bookmark');
     } else {
-      // console.log('Not found Bookmark, creating');
-      let newBookmarks = new Bookmark({});
+      let newBookmarks = new Model.Bookmark({});
       await newBookmarks.save();
-
-      await Bookmark.deleteMany({})
+      await Model.Bookmark.deleteMany({})
     }
   });
 
-  Report.find({}, async(err, result)=> {
+  Model.Report.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Report');
+      // console.log('Found Model.Report');
     } else {
-      // console.log('Not found Report, creating');
-      let newReport = new Report({});
+      let newReport = new Model.Report({});
       await newReport.save();
-
-      await Report.deleteMany({})
+      await Model.Report.deleteMany({})
     }
   });
 
-  tReport.find({}, async(err, result)=> {
+  Model.tReport.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found tReport');
+      // console.log('Found Model.tReport');
     } else {
-      // console.log('Not found tReport, creating');
-      let newTReport = new tReport({});
+      let newTReport = new Model.tReport({});
       await newTReport.save();
-
-      await tReport.deleteMany({})
+      await Model.tReport.deleteMany({})
     }
   });
 
-  Share.find({}, async(err, result)=> {
+  Model.Share.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Share');
+      // console.log('Found Model.Share');
     } else {
-      // console.log('Not found Share, creating');
-      let newShare = new Share({});
+      let newShare = new Model.Share({});
       await newShare.save();
-
-      await Share.deleteMany({})
+      await Model.Share.deleteMany({})
     }
   });
 
-  Dblog.find({}, async(err, result)=> {
+  Model.Dblog.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Dblog');
+      // console.log('Found Model.Dblog');
     } else {
-      // console.log('Not found Dblog, creating');
-      let newDblog = new Dblog({});
+      let newDblog = new Model.Dblog({});
       await newDblog.save();
-
-      await Dblog.deleteMany({})
+      await Model.Dblog.deleteMany({})
     }
   });
 
-  Conversation.find({}, async(err, result)=> {
+  Model.Conversation.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Conversation');
+      // console.log('Found Model.Conversation');
     } else {
-      // console.log('Not found Conversation, creating');
-      let newConversation = new Conversation({});
+      let newConversation = new Model.Conversation({});
       await newConversation.save();
-
-      await Conversation.deleteMany({})
+      await Model.Conversation.deleteMany({})
     }
   });
 
-  Message.find({}, async(err, result)=> {
+  Model.Message.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Message');
+      // console.log('Found Model.Message');
     } else {
-      // console.log('Not found Message, creating');
-      let newMessage = new Message({_id: mongoose.Types.ObjectId()});
+      let newMessage = new Model.Message({_id: mongoose.Types.ObjectId()});
       await newMessage.save();
-
-      await Message.deleteMany({})
+      await Model.Message.deleteMany({})
     }
   });
 
-  Follow.find({}, async(err, result)=> {
+  Model.Follow.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Follow');
+      // console.log('Found Model.Follow');
     } else {
-      // console.log('Not found Follow, creating');
-      let newFollow = new Follow({});
+      let newFollow = new Model.Follow({});
       await newFollow.save();
-
-      await Follow.deleteMany({})
+      await Model.Follow.deleteMany({})
     }
   });
 
-  Session.find({}, async(err, result)=> {
+  Model.Session.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Session');
+      // console.log('Found Model.Session');
     } else {
-      // console.log('Not found Session, creating');
-      let newSession = new Session({ userId: new mongoose.Types.ObjectId(), token: "token", expired:new Date() });
+      let newSession = new Model.Session({ userId: new mongoose.Types.ObjectId(), token: "token", expired:new Date() });
       await newSession.save();
-
-      await Session.deleteMany({})
+      await Model.Session.deleteMany({})
     }
   });
 
-  Notification.find({}, async(err, result)=> {
+  Model.Notification.find({}, async(err, result)=> {
     if (result.length > 0) {
     } else {
-      let newNotification = new Notification({ user_to_notify: new mongoose.Types.ObjectId() });
+      let newNotification = new Model.Notification({ user_to_notify: new mongoose.Types.ObjectId() });
       await newNotification.save();
-      await Notification.deleteMany({})
+      await Model.Notification.deleteMany({})
     }
   });
 
-  Phone.find({}, async(err, result)=> {
+  Model.Phone.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Phone');
+      // console.log('Found Model.Phone');
     } else {
-      // console.log('Not found Phone, creating');
-      let newPhone = new Phone({});
+      let newPhone = new Model.Phone({});
       await newPhone.save();
-
-      await Phone.deleteMany({})
+      await Model.Phone.deleteMany({})
     }
   });
 
-  BasicContent.find({}, async(err, result)=> {
+  Model.BasicContent.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found BasicContent');
+      // console.log('Found Model.BasicContent');
     } else {
-      // console.log('Not found BasicContent, creating');
-      let newBasicContent = new BasicContent({});
+      let newBasicContent = new Model.BasicContent({});
       await newBasicContent.save();
-      await BasicContent.deleteMany({})
+      await Model.BasicContent.deleteMany({})
     }
   });
 
-  Supplier.find({}, async(err, result)=> {
+  Model.Supplier.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found BasicContent');
+      // console.log('Found Model.BasicContent');
     } else {
-      // console.log('Not found BasicContent, creating');
-      let newSupplier = new Supplier({title: "title", 
+      let newSupplier = new Model.Supplier({title: "title", 
                                       price: 0, 
                                       priceUnit: 0, 
                                       condition: 1,
                                       dateLottery: new mongoose.Types.ObjectId(),
                                       ownerId: new mongoose.Types.ObjectId() });
       await newSupplier.save();
-      await Supplier.deleteMany({})
+      await Model.Supplier.deleteMany({})
     }
   });
 
-  Deposit.find({}, async(err, result)=> {
+  Model.Deposit.find({}, async(err, result)=> {
     try{
       if (result.length > 0) {
-        // console.log('Found BasicContent');
+        // console.log('Found Model.BasicContent');
       } else {
-        // console.log('Not found BasicContent, creating');
-        let newDeposit = new Deposit({ accountNumber: "test", 
+        let newDeposit = new Model.Deposit({ accountNumber: "test", 
                                        userIdRequest: new mongoose.Types.ObjectId(), 
                                        userIdApprove: new mongoose.Types.ObjectId(),
                                        bankId: "bankId" });
         await newDeposit.save();
-        await Deposit.deleteMany({})
+        await Model.Deposit.deleteMany({})
       }
     } catch(err) {
-      console.log("Deposit : ", err)
+      console.log("Model.Deposit : ", err)
     }
   });
 
-  Withdraw.find({}, async(err, result)=> {
+  Model.Withdraw.find({}, async(err, result)=> {
     if (result.length > 0) {
     } else {
-      let newWithdraw = new Withdraw({bankId: new mongoose.Types.ObjectId(), userIdRequest: new mongoose.Types.ObjectId() });
+      let newWithdraw = new Model.Withdraw({bankId: new mongoose.Types.ObjectId(), userIdRequest: new mongoose.Types.ObjectId() });
       await newWithdraw.save();
-      await Withdraw.deleteMany({})
+      await Model.Withdraw.deleteMany({})
     }
   });
 
-  Transition.find({}, async(err, result)=> {
+  Model.Transition.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found BasicContent');
+      // console.log('Found Model.BasicContent');
     } else {
-      // console.log('Not found BasicContent, creating');
-      let newTransition = new Transition({  refId: new mongoose.Types.ObjectId(),
+      let newTransition = new Model.Transition({  refId: new mongoose.Types.ObjectId(),
                                             userId: new mongoose.Types.ObjectId() });
       await newTransition.save();
-      await Transition.deleteMany({})
+      await Model.Transition.deleteMany({})
     }
   });
 
-  DateLottery.find({}, async(err, result)=> {
+  Model.DateLottery.find({}, async(err, result)=> {
     if (result.length > 0) {
     } else {
-      let newDateLottery = new DateLottery({  date: new Date(),
+      let newDateLottery = new Model.DateLottery({  date: new Date(),
                                               weight: 1 });
       await newDateLottery.save();
-      await DateLottery.deleteMany({})
+      await Model.DateLottery.deleteMany({})
     }
   });
 
-  // 
-  ContactUs.find({}, async(err, result)=> {
+  Model.ContactUs.find({}, async(err, result)=> {
     if (result.length > 0) {
     } else {
-      let newContactUs = new ContactUs({  title: "title",
+      let newContactUs = new Model.ContactUs({  title: "title",
                                           description: "description" });
       await newContactUs.save();
-      await ContactUs.deleteMany({})
+      await Model.ContactUs.deleteMany({})
     }
   });
 
-  Test.find({}, async(err, result)=> {
+  Model.Test.find({}, async(err, result)=> {
     if (result.length > 0) {
     } else {
-      let newTest = new Test({  message: 0 });
+      let newTest = new Model.Test({  message: 0 });
       await newTest.save();
-      await Test.deleteMany({})
+      await Model.Test.deleteMany({})
     }
   });
 }

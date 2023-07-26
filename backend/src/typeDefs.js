@@ -455,7 +455,9 @@ export default gql`
   }
 
   type Query {
+    check_db: JSON
     ping: JSON
+    checkCacheById(_id: ID): JSON
     checkUser: JSON 
     users(input: PagingInput): JSON
     userById(_id: ID): JSON
@@ -480,6 +482,7 @@ export default gql`
     dateLotterys: JSON
     dateLotteryById(_id: ID!): JSON
     adminHome: JSON
+    adminBanks: JSON
     adminDeposits: JSON
     adminWithdraws: JSON
   }  
@@ -744,7 +747,7 @@ export default gql`
     me(input: JSON): JSON
     book(input: BookInput): JSON
     buy(_id: ID!): JSON
-    cancelBuyAll(_id: ID!): JSON
+    cancelTransition(_id: ID!): JSON
     supplier(input: SupplierInput): JSON    
     deposit(input: DepositInput): JSON
     withdraw(input: WithdrawInput): JSON 

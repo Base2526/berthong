@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@apollo/client";
-import { Box ,LinearProgress} from '@mui/material';
+import { Button ,LinearProgress } from '@mui/material';
 import _ from "lodash";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -39,11 +39,14 @@ const SupplierPage = (props) => {
 
   let { loading: loadingDateLotterys, 
         data: dataDateLotterys, 
-        error: errorDateLotterys } = useQuery(queryDateLotterys, { 
-                                              context: { headers: getHeaders(location) },
-                                              fetchPolicy: 'network-only', 
-                                              nextFetchPolicy: 'cache-first', 
-                                              notifyOnNetworkStatusChange: true });
+        error: errorDateLotterys } = useQuery(queryDateLotterys, 
+                                              { 
+                                                context: { headers: getHeaders(location) },
+                                                fetchPolicy: 'cache-first', 
+                                                nextFetchPolicy: 'network-only', 
+                                                notifyOnNetworkStatusChange: true 
+                                              }
+                                            );
 
   let { loading: loadingSupplierById, 
         data: dataSupplierById, 
@@ -111,8 +114,6 @@ const SupplierPage = (props) => {
     if(mode == "edit"){
       newInput = {...newInput, _id: id}
     }
-
-    // console.log("submitForm", newInput)
     onMutationSupplier({ variables: { input: newInput } });
   }
 
@@ -225,16 +226,12 @@ const SupplierPage = (props) => {
                           : <select 
                               name="dateLottery" 
                               id="dateLottery" 
-                              value={input.dateLottery}
+                              value={ input.dateLottery }
                               onChange={ onInputChange }
                               onBlur={ validateInput } >
                               <option value={""}>ไม่เลือก</option>
                               {_.map(dateLotterysValues, (dateLotterysValue)=>{
-
-                                // let {date} = props.row.original 
                                 let date = new Date(dateLotterysValue.date).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-                                // return <div>งวดวันที่ { (moment(date, 'MM/DD/YYYY')).format('DD MMM, YYYY')}</div>
-
                                 return <option value={dateLotterysValue._id}>งวดวันที่ { (moment(date, 'MM/DD/YYYY')).format('DD MMM, YYYY')}</option>
                               })}
                             </select>
@@ -242,7 +239,7 @@ const SupplierPage = (props) => {
                         <p className="text-red-500"> {_.isEmpty(error.dateLottery) ? "" : error.dateLottery} </p>
                       </div>
                       <div>
-                        <label>ขั้นตอนการขาย * :</label>
+                        <label>ยอดขั้นตํ่า * :</label>
                         <select 
                           name="condition" 
                           id="condition" 
@@ -298,7 +295,13 @@ const SupplierPage = (props) => {
                           onChange={(values) => setInput({...input, files: values})}
                           onSnackbar={(data) => console.log(data) }/>
                       </div>
-                      <button type="submit" variant="contained" color="primary"> { mode == "edit" ? t("update") : t("create")}</button>
+                      {/* <button type="submit" variant="contained" color="primary"> { mode == "edit" ? t("update") : t("create")}</button> */}
+                      <Button 
+                        type="submit" 
+                        variant="contained" 
+                        color="primary"
+                        // onClick={evt=>{ submitForm(evt) }}
+                        >{ mode == "edit" ? t("update") : t("create")}</Button>
                     </form>
           }, [ input ]);
 }

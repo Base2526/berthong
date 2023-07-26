@@ -44,13 +44,24 @@ const AttackFileField = (props) => {
                       onFileChange(e);
                     }}
                   />
-                  <IconButton
-                    color="primary"
-                    aria-label="upload picture"
-                    component="span"
-                  >
-                    <AddBoxIcon />
-                  </IconButton>
+                  {
+                    multiple ? 
+                      <IconButton
+                        color="primary"
+                        aria-label="upload picture"
+                        component="span">
+                        <AddBoxIcon />
+                      </IconButton>
+                    : values?.length == 0
+                      ? <IconButton
+                          color="primary"
+                          aria-label="upload picture"
+                          component="span">
+                          <AddBoxIcon />
+                        </IconButton>
+                      : ""
+                  }
+                  
                 </label>
                 <Stack 
                   direction="row"

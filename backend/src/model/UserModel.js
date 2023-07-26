@@ -10,15 +10,19 @@ const SubscriberInput = new Schema({
   updatedAt : { type : Date, default: Date.now },
 })
 
+const BanksInput = new Schema({
+  bankId: { type: String, required:[true, "Bank-Id Request is a required field"] },
+  bankNumber: { type: String, required:[true, "Bank-Number Request is a required field"] },
+  createdAt : { type : Date, default: Date.now },
+  updatedAt : { type : Date, default: Date.now },
+})
+
 const userSchema = new Schema({
   username: { type: String, required:[true, "Username Request is a required field"] },
   password: { type: String, required:[true, "Password Request is a required field"] },
   email: { type: String, unique: true, required:[true, "Email Request is a required field"] },
   displayName: { type: String, required:[true, "Email Request is a required field"]},
-  banks: [{ 
-            bankId: { type: String, required:[true, "Bank-Id Request is a required field"] },
-            bankNumber: { type: String, required:[true, "Bank-Number Request is a required field"] } 
-          }],
+  banks: [BanksInput],
   roles: [{ type: String,
             enum : [AUTHENTICATED, AMDINISTRATOR],
             default: AUTHENTICATED

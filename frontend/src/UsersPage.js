@@ -26,7 +26,7 @@ import { useLocation, useNavigate, createSearchParams } from "react-router-dom";
 import { queryUsers } from "./gqlQuery";
 import { getHeaders, handlerErrorApollo } from "./util";
 import RolesComp from "./components/RolesComp"
-import * as Constants from "./constants";
+// import * as Constants from "./constants";
 
 const UsersPage = (props) => {
   const navigate = useNavigate();
@@ -48,14 +48,14 @@ const UsersPage = (props) => {
           error: errorUsers, 
           networkStatus: networkStatusUsers,
           fetchMore: fetchMoreUsers } = useQuery(queryUsers, 
-                                      { 
-                                        context: { headers: getHeaders(location) }, 
-                                        variables: {input},
-                                        fetchPolicy: 'cache-first', 
-                                        nextFetchPolicy: 'network-only', 
-                                        notifyOnNetworkStatusChange: true
-                                      }
-                                    );
+                                        { 
+                                          context: { headers: getHeaders(location) }, 
+                                          variables: {input},
+                                          fetchPolicy: 'network-only', 
+                                          nextFetchPolicy: 'cache-first', 
+                                          notifyOnNetworkStatusChange: true
+                                        }
+                                      );
 
   if(!_.isEmpty(errorUsers)) handlerErrorApollo( props, errorUsers )
 

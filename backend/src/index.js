@@ -24,8 +24,6 @@ const {
     graphqlUploadExpress, // A Koa implementation is also exported.
 } = require('graphql-upload');
 
-// const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js');
-
 let logger = require("./utils/logger");
 let PORT = process.env.GRAPHQL_PORT || 4000;
 
@@ -260,17 +258,17 @@ async function startApolloServer(typeDefs, resolvers) {
         //     },
         // },
 
-        formatError: (err) => {
-            // This function formats errors returned by your resolvers
-            // You can customize this function to format the error messages
-            // in any way you like.
-            // console.error("formatError :", err, process.env);
+        // formatError: (err) => {
+        //     // This function formats errors returned by your resolvers
+        //     // You can customize this function to format the error messages
+        //     // in any way you like.
+        //     // console.error("formatError :", err, process.env);
 
-            logger.error(err.toString());
-            return formatApolloErrors([err], {
-              debug: process.env.NODE_ENV === 'development',
-            });
-        },
+        //     logger.error(err.toString());
+        //     return formatApolloErrors([err], {
+        //       debug: process.env.NODE_ENV === 'development',
+        //     });
+        // },
     });
   
     await server.start();

@@ -16,9 +16,35 @@ import * as cache from "./cache"
 import * as Constants from "./constants"
 import * as Model from "./model"
 import * as Utils from "./utils"
+import connection from './mongo'
 
 export default {
   Query: {
+
+    async check_db(parent, args, context, info){
+      let { req } = context
+
+      let { readyState } = connection
+      let mongo_db_state = "Empty"
+      if (readyState === 0) {
+        mongo_db_state = "Disconnected"
+      } else if (readyState === 1) {
+        mongo_db_state = "Connected"
+      } else if (readyState === 2) {
+        mongo_db_state = "Connecting"
+      } else if (readyState === 3) {
+        mongo_db_state = "Disconnecting"
+      }
+
+      let text = "1234"
+      let encrypt = cryptojs.AES.encrypt(text, process.env.JWT_SECRET).toString()
+      encrypt = "U2FsdGVkX18wIs5DOBhZOddShspHwri5Z8KFIXtyHzU="
+      let decrypt = cryptojs.AES.decrypt(encrypt, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8);
+      console.log("encrypt :", encrypt, decrypt)
+  
+      return { status:true, "mongo db state" : mongo_db_state }
+    },
+
     async ping(parent, args, context, info){
       let { req } = context
 
@@ -28,7 +54,6 @@ export default {
       try {
         // await Model.Test.create({ message: "ACCC" });
         // await session.commitTransaction();
-
         // console.log("ping #1")
 
         console.log("process.env ", process.env )
@@ -40,45 +65,50 @@ export default {
         session.endSession();
 
         console.log("ping #3")
-      }
+      }      
 
-      
       // let user  = await Utils.getUser({_id: mongoose.Types.ObjectId("62a2f633cf7946010d3c74fa")})
-
       // console.log("user doc :", user)
-      // let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      // if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      // let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
 
       //  return (await Model.Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
 
       // let user = await Model.User.findById(mongoose.Types.ObjectId("62a2f65dcf7946010d3c7515"))
       // console.log("ping user :", user, _.isNull(user))
-
       // let suppliers = await Model.Supplier.findOne({_id: mongoose.Types.ObjectId("63f5c99fee4cff016c214fa3")})
-
       // console.log("ping suppliers :", suppliers)
-
       // let v = {
       //             "myKeyA": { my: "Special", variable: 123 },
       //             "myKeyB": { the: "Glory", answer: 42 }
       //         }
-
       // cache.ca_save("A", v)
-
       // console.log("AAAAA :", cache.ca_get("A"))
-
       // if(status && code == 1){
       //   console.log("ping ok : ", current_user?._id)
       // }else{
       //   console.log("ping other")
       // }
 
+      let ca_keys = cache.ca_keys();
+
+      console.log("ping ca_keys :", ca_keys)
+      return { status:true }
+    },
+
+    async checkCacheById(parent, args, context, info){
+      let { req } = context
+      let { _id } = args
+
+      let ca_get = cache.ca_get(_id)
+      console.log("ca_get :", ca_get)
+      // let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      // console.log("checkUser :", current_user, req?.headers?.authorization)
       return { status:true }
     },
 
     async checkUser(parent, args, context, info){
       let { req } = context
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       console.log("checkUser :", current_user, req?.headers?.authorization)
       return { status:true }
     },
@@ -87,8 +117,7 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Administrator only!')
 
       let { OFF_SET, LIMIT } = args?.input
@@ -99,7 +128,7 @@ export default {
       return { 
               status: true,
               data: users,
-              total: ( await Utils.getUser({roles: {$nin:[Constants.AMDINISTRATOR]}}) )?.length,
+              total: ( await Utils.getUserFull({roles: {$nin:[Constants.AMDINISTRATOR]}}) )?.length,
               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
             }
     },
@@ -109,10 +138,9 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
 
-      let user = await Utils.getUser({_id})
+      let user = await Utils.getUserFull({_id})
       if(_.isNull(user)) throw new AppError(Constants.USER_NOT_FOUND, 'Model.User not found.')
 
       return {  status: true,
@@ -124,8 +152,7 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Admin only!')
 
       let data = await Model.Role.find({_id: {$in: args?.input }})
@@ -139,24 +166,39 @@ export default {
     async suppliers(parent, args, context, info){
       let start = Date.now()
       let { req } = context
-      let { status, code, pathname, current_user } = await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      console.log("suppliers : #0 ", args?.input)
+      await Utils.checkAuth(req);
 
-      let { PAGE, LIMIT } = args
-      let skip = (PAGE - 1) * LIMIT;
+      let { PAGE, LIMIT } = args?.input
+      let SKIP = (PAGE - 1) * LIMIT
 
-      let suppliers = await Model.Supplier.find({}).skip(skip).limit(LIMIT); 
-
-      suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-        let owner = await Utils.getUser({ _id: item.ownerId })
-        if(_.isNull(owner)) return null;
-        return { ...item._doc, owner }
-      }).filter(i=>!_.isNull(i)))
+      console.log("suppliers : #1 ", args?.input)
+      let suppliers = await Model.Supplier.aggregate([
+                      { $skip: SKIP }, 
+                      { $limit: LIMIT }, 
+                      {
+                          $lookup: {
+                              localField: "ownerId",
+                              from: "user",
+                              foreignField: "_id",
+                              pipeline: [
+                                { $project:{ username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }}
+                              ],
+                              as: "owner"
+                          }
+                      },
+                      {
+                          $unwind: {
+                                  "path": "$owner",
+                                  "preserveNullAndEmptyArrays": false
+                          }
+                      }
+                    ])
 
       return {  
         status: true,
         data: suppliers,
-        total: (await Model.Supplier.find({})).length,
+        total: await Utils.getTotalSupplier(),
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
       }
     },
@@ -165,53 +207,19 @@ export default {
       let start = Date.now()
       let { _id } = args
       let { req } = context
-      try{
-        let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-        if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
 
-        let cache_supplier = cache.ca_get( _id )
-        if(_.isEmpty(cache_supplier)){
-          cache_supplier = await Model.Supplier.findById(_id)
-          if(_.isNull(cache_supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
+      await Utils.checkAuth(req);
 
-          cache.ca_save(_id, cache_supplier?._doc)
-        }else{
-          console.log("supplierById : for cache")
-        }
-
-        return {  status: true,
-                  data: cache_supplier,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }catch(err){
-        console.log("supplierById :", err)
-      }
-
+      return {  status: true,
+                data: await Utils.getSupplier({_id}),
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
     async banks(parent, args, context, info){
       let start = Date.now()
       let { req } = context
 
-      // let { is_admin } = args
-
-      // if(!_.isBoolean( isAdmin )) throw new AppError(BAD_USER_INPUT, 'Is-admin true or false only!')
-
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
-
-      // if(is_admin){
-      //   let user  = await Utils.getUser({_id: mongoose.Types.ObjectId(_ID_AMDINISTRATOR)})
-      //   if(_.isNull(user)) throw new AppError(Constants.DATA_NOT_FOUND, 'Model.User not found.')
-  
-      //   let banks =_.filter(await Promise.all(_.map(user?.banks, async(item)=>{
-      //                     let bank = await Model.Bank.findById(item.bankId)
-      //                     return _.isNull(bank) ? null : {...item._doc, name:bank?.name}
-      //                   })), e=>!_.isNull(e) ) 
-
-      //   return {  status: true,
-      //             data: banks,
-      //             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      // }
+      await Utils.checkAuth(req);
 
       let banks = await Model.Bank.find({})
       if(_.isNull(banks)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
@@ -225,8 +233,7 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      await Utils.checkAuth(req);
 
       let bank = await Model.Bank.findById(_id)
       if(_.isNull(bank)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
@@ -240,26 +247,44 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
 
-      let transitions = await Model.Transition.find({ userId: current_user?._id, type: Constants.SUPPLIER });
+      // let transitions = await Model.Transition.find({ userId: current_user?._id, type: Constants.SUPPLIER });
 
-      // console.log("bookBuyTransitions >>>> :", current_user?._id, Constants.SUPPLIER , transitions)
-      transitions = _.filter( await Promise.all(_.map(transitions, async(transition)=>{
-                      let supplier = await Model.Supplier.findOne({_id: transition.refId})
+      // transitions = _.filter( await Promise.all(_.map(transitions, async(transition)=>{
+      //                 let supplier = await Model.Supplier.findOne( {_id: transition.refId} );//await Utils.getSupplier({_id: transition.refId}) 
 
-                      if(supplier){
-                        let { buys } = supplier
-                        let book  = _.filter(buys, buy=> _.isEqual(buy.userId, current_user?._id)  && (buy.selected == 0 || buy.selected == 1))
-                        // let buy  = _.filter(buys, buy=>_.isEqual(buy.userId, current_user?._id)  && buy.selected == 1)
+      //                 if(supplier){
+      //                   let { buys } = supplier
+      //                   let book  = _.filter(buys, buy=> _.isEqual(buy.userId, current_user?._id)  && (buy.selected == 0 || buy.selected == 1))
   
-                        // console.log("book :", book, supplier)
-  
-                        return book?.length > 0 /*|| buy.length > 0*/  ? {...transition._doc, ...supplier._doc } : null
-                      }
-                      return null                
-                    })), item=>!_.isNull(item) ) 
+      //                   return book?.length > 0 /*|| buy.length > 0*/  ? {...transition._doc, ...supplier._doc } : null
+      //                 }
+      //                 return null                
+      //               })), item=>!_.isNull(item) ) 
+
+      let userId = current_user?._id;
+
+      let transitions = await Model.Transition.aggregate([
+        { 
+            $match: { userId, type: Constants.SUPPLIER  } 
+        },
+        {
+          $lookup: {
+              localField: "refId",
+              from: "supplier",
+              foreignField: "_id",
+              pipeline: [{ $match: { buys: { $elemMatch : { userId }} }}],
+              as: "supplier"
+          }                 
+        },
+        {
+          $unwind: {
+              "path": "$supplier",
+              "preserveNullAndEmptyArrays": false
+          }
+        }
+      ])
 
       return {  status: true,
                 data: transitions,
@@ -271,50 +296,87 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
 
       let userId = current_user?._id
-      let transitions = await Model.Transition.find({ userId });
+      // let transitions = await Model.Transition.find({ userId });
+      // transitions = await Promise.all(_.map(transitions, async(transition)=>{
+      //     // export const SUPPLIER       = 10;
+      //     // export const DEPOSIT        = 11;
+      //     // export const WITHDRAW       = 12;
+      //     switch(transition.type){ 
+      //       case Constants.SUPPLIER:{
+      //           let supplier = await Utils.getSupplier({_id: transition?.refId}) 
+      //           let buys = _.filter(supplier?.buys, (buy)=> _.isEqual(buy?.userId, userId))
+                
+      //           if(_.isEmpty(buys)){
+      //             return {};
+      //           }
+                
+      //           let balance = buys?.length * supplier?.price
+      //           return {...transition?._doc, 
+      //                   title: supplier?.title, 
+      //                   balance, 
+      //                   description: supplier?.description, 
+      //                   dateLottery: supplier?.dateLottery}
+      //       }
+      //       case Constants.DEPOSIT:{
+      //           let deposit = await Model.Deposit.findById(transition.refId)
+      //           return {...transition?._doc, ...deposit?._doc}
+      //       }
+      //       case Constants.WITHDRAW:{
+      //           let withdraw = await Model.Withdraw.findById(transition.refId)
+      //           return {...transition?._doc, 
+      //                   title: "title", 
+      //                   balance: withdraw.balance, 
+      //                   description: "description", 
+      //                   dateLottery: "dateLottery"}
+      //       }
+      //     }
+      // }).filter(i=>!_.isNull(i)))
 
-      transitions = await Promise.all(_.map(transitions, async(transition)=>{
-          // export const SUPPLIER       = 10;
-          // export const DEPOSIT        = 11;
-          // export const WITHDRAW       = 12;
-          switch(transition.type){ 
-            case Constants.SUPPLIER:{
-                let supplier = await Model.Supplier.findById(transition?.refId)
-                
-                let buys = _.filter(supplier?.buys, (buy)=> _.isEqual(buy?.userId, userId))
-                
-                if(_.isEmpty(buys)){
-                  return {};
-                }
-                
-                let balance = buys?.length * supplier?.price
-                return {...transition?._doc, 
-                        title: supplier?.title, 
-                        balance, 
-                        description: supplier?.description, 
-                        dateLottery: supplier?.dateLottery}
-            }
-            case Constants.DEPOSIT:{
-                let deposit = await Model.Deposit.findById(transition.refId)
-                return {...transition?._doc, ...deposit?._doc}
-            }
-            case Constants.WITHDRAW:{
-                let withdraw = await Model.Withdraw.findById(transition.refId)
-                return {...transition?._doc, 
-                        title: "title", 
-                        balance: withdraw.balance, 
-                        description: "description", 
-                        dateLottery: "dateLottery"}
-            }
-          }
-      }).filter(i=>!_.isNull(i)))
+      let deposit = await Model.Transition.aggregate([
+                      { 
+                          $match: {userId, status: { $in: [ 13, 14 /*, 0 Constants.WAIT, Constants.APPROVED*/ ] }, type: 11 /* Constants.DEPOSIT = 11 */ } 
+                      },
+                      {
+                          $lookup: {
+                              localField: "refId",
+                              from: "deposit",
+                              foreignField: "_id",
+                              as: "deposit"
+                          }
+                      },
+                      {
+                        $unwind: {
+                          "path": "$deposit",
+                          "preserveNullAndEmptyArrays": false
+                        }
+                      }
+                    ])
+
+      let withdraw =  await Model.Transition.aggregate([
+                        { 
+                            $match: {userId, status: { $in: [ 13, 14 /*, 0 Constants.WAIT, Constants.APPROVED*/ ] }, type: 12 /* Constants.WITHDRAW = 12 */ } 
+                        },
+                        {
+                            $lookup: {
+                                localField: "refId",
+                                from: "withdraw",
+                                foreignField: "_id",
+                                as: "withdraw"
+                            }
+                        },
+                        {
+                          $unwind: {
+                            "path": "$withdraw",
+                            "preserveNullAndEmptyArrays": false
+                            }
+                        }
+                      ])
 
       return {  status: true,
-                data: transitions,
+                data: [...deposit, ...withdraw],
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
@@ -323,10 +385,9 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
 
-      let user = await Utils.getUser({_id})
+      let user = await Utils.getUserFull({_id})
       if(_.isNull(user)) throw new AppError(Constants.USER_NOT_FOUND, 'Model.User not found.')
 
       let suppliers = await Model.Supplier.find({ownerId: _id});
@@ -342,8 +403,7 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if( !status && code == Constants.FORCE_LOGOUT ) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       // if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
       let transitions = await Model.Transition.find({userId: current_user?._id, type: Constants.SUPPLIER, status: Constants.OK });
@@ -351,14 +411,13 @@ export default {
                           switch(transition.type){ // 'supplier', 'deposit', 'withdraw'
                             case Constants.SUPPLIER:{
 
-                              let supplier = await Model.Supplier.findById(transition.refId)
-
-                              let buys = _.filter(supplier.buys, (buy)=>buy.userId == current_user?._id.toString())
+                              let supplier = await Utils.getSupplier({_id: transition?.refId}) 
+                              let buys     = _.filter(supplier.buys, (buy)=>buy.userId == current_user?._id.toString())
                               // price, buys
 
                               let balance = buys.length * supplier.price
 
-                              console.log("transitions > supplier :", supplier)
+                              // console.log("transitions > supplier :", supplier)
 
                               return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
                             }
@@ -376,8 +435,7 @@ export default {
 
       console.log("notifications: ")
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if( !status && code == Constants.FORCE_LOGOUT ) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       // if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
       let data = [{ user_to_notify: '63ff3c0c6637e303283bc40f', 
@@ -408,8 +466,7 @@ export default {
         let { _id } = args
         let { req } = context
 
-        let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-        if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+        let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
 
         let comm = await Model.Comment.findOne({_id});
         return {  status: true,
@@ -424,31 +481,34 @@ export default {
     },
 
     async bookmarks(parent, args, context, info){
-      try{
-        let start = Date.now()
-        let { req } = context
+      let start = Date.now()
+      let { req } = context
+      let { current_user } =  await Utils.checkAuth(req);
 
-        let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-        if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let suppliers = await Model.Supplier.aggregate([
+        { 
+            $match: { follows: {$elemMatch: {userId: current_user?._id} }  } 
+        },
+        {
+          $lookup: {
+              localField: "ownerId",
+              from: "user",
+              foreignField: "_id",
+              as: "owner"
+          }                 
+        },
+        {
+          $unwind: {
+              "path": "$owner",
+              "preserveNullAndEmptyArrays": false
+          }
+        }
+      ])
 
-        let suppliers = await Model.Supplier.find({follows: {$elemMatch: {userId: current_user?._id} }})
-
-        suppliers = await Promise.all(_.map(suppliers, async(item)=>{
-                      let owner = await Utils.getUser({_id: item.ownerId})
-                      if(_.isNull(owner)) return null;
-                      return { ...item._doc,  owner }
-                    }).filter(i=>!_.isNull(i)))
-
-        return {  status: true,
-                  data: suppliers,
-                  total: suppliers.length,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }catch(error){
-        console.log("commentById error :", error)
-        return {  status: false,
-                  error: error?.message,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }
+      return {  status: true,
+                data: suppliers,
+                total: suppliers.length,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
     async subscribes(parent, args, context, info){
@@ -456,8 +516,7 @@ export default {
         let start = Date.now()
         let { req } = context
 
-        let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-        if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+        let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
 
         let users = await Utils.getUsers({subscriber: { $elemMatch : {userId: current_user?._id }}})
         
@@ -477,8 +536,7 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
 
       let dblogs = await Model.Dblog.find({})
@@ -493,17 +551,33 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      // if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
 
       let dateLotterys = await Model.DateLottery.find({})
-      if(_.isNull(dateLotterys)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
 
-      dateLotterys = await Promise.all( _.map(dateLotterys, async(lo)=>{
-        let suppliers = await Model.Supplier.find({ dateLottery: lo?._id });
-        return  {...lo._doc, suppliers }
-      }) )
+      // if(_.isNull(dateLotterys)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
+      // dateLotterys = await Promise.all( _.map(dateLotterys, async(lo)=>{
+      //   let suppliers = await Model.Supplier.find({ dateLottery: lo?._id });
+      //   return  {...lo._doc, suppliers }
+      // }) )
+      // let dateLotterys = await Model.DateLottery.aggregate([
+      //   {
+      //       $lookup: {
+      //           localField: "_id",
+      //           from: "supplier",
+      //           foreignField: "dateLottery",
+      //           as: "suppliers"
+      //       }
+      //   },
+      //   {
+      //       $unwind: {
+      //               "path": "$suppliers",
+      //               "preserveNullAndEmptyArrays": false
+      //       }
+      //   }
+      // ])
+      // console.log("dateLotterys :", dateLotterys)
       
       return {  status: true,
                 data: dateLotterys,
@@ -516,8 +590,7 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
 
       let dateLottery = await Model.DateLottery.findById(_id)
@@ -533,7 +606,7 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
 
       /*
       try{
@@ -542,7 +615,6 @@ export default {
         console
       }
       console.log("adminHome: ", current_user)
-      if( !status && code == Constants.FORCE_LOGOUT ) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Administrator only!')
 
       // 0: 'wait', 1: 'approved',  2: 'approved'
@@ -581,8 +653,19 @@ export default {
                     { title: "รายการ สินค้าทั้งหมด", data: [] },
                     { title: "รายชื่อบุคคลทั้งหมด", data: [] } 
                   ]
-      
+      return {  status: true,
+                data,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
+    },
+
+    async adminBanks(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+      await Utils.checkAuth(req);
+
+      let data =  [ {label: '(xxx-x-xxxxx-01)ธนาคารไทยพาณิชย์', id: "bank-01" },
+                    { label: '(xxx-x-xxxxx-02)ธนาคารกสิกรไทย', id: "bank-02" }]
       return {  status: true,
                 data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
@@ -593,17 +676,36 @@ export default {
       let start = Date.now()
         
       let { req } = context
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
 
-      let transitions = await Model.Transition.find({ type: Constants.DEPOSIT, status: Constants.WAIT });
+      // let transitions = await Model.Transition.find({ type: Constants.DEPOSIT, status: Constants.WAIT });
 
-      transitions = await Promise.all(_.map(transitions, async(transition)=>{
-                            let deposit = await Model.Deposit.findOne({_id: transition?.refId})
-                            let user    = await Utils.getUser({_id: transition?.userId}) 
-                            return {...deposit?._doc, ...transition?._doc, user}
-                          }))
+      // transitions = await Promise.all(_.map(transitions, async(transition)=>{
+      //                       let deposit = await Model.Deposit.findOne({_id: transition?.refId})
+      //                       let user    = await Utils.getUser({_id: transition?.userId}) 
+      //                       return {...deposit?._doc, ...transition?._doc, user}
+      //                     }))
+
+      let transitions = await Model.Transition.aggregate([
+        { 
+            $match: { status: Constants.WAIT /* 13 */, type: Constants.DEPOSIT /* 11 */ } 
+        },
+        {
+            $lookup: {
+                localField: "refId",
+                from: "deposit",
+                foreignField: "_id",
+                as: "deposit"
+            }
+        },
+        {
+          $unwind: {
+            "path": "$deposit",
+            "preserveNullAndEmptyArrays": false
+          }
+        }
+      ])
 
       return {  status:true,
                 data: transitions,
@@ -614,17 +716,36 @@ export default {
       let start = Date.now()
         
       let { req } = context
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
 
-      let transitions = await Model.Transition.find({ type: Constants.WITHDRAW, status: Constants.WAIT });
+      // let transitions = await Model.Transition.find({ type: Constants.WITHDRAW, status: Constants.WAIT });
 
-      transitions = await Promise.all(_.map(transitions, async(transition)=>{
-                            let withdraw = await Model.Withdraw.findOne({_id: transition?.refId})
-                            let user    = await Utils.getUser({_id: transition?.userId}) 
-                            return {...withdraw?._doc, ...transition?._doc, user}
-                          }))
+      // transitions = await Promise.all(_.map(transitions, async(transition)=>{
+      //                       let withdraw = await Model.Withdraw.findOne({_id: transition?.refId})
+      //                       let user    = await Utils.getUser({_id: transition?.userId}) 
+      //                       return {...withdraw?._doc, ...transition?._doc, user}
+      //                     }))
+
+      let transitions = await Model.Transition.aggregate([
+        { 
+            $match: { status: Constants.WAIT /* 13 */, type: Constants.WITHDRAW /* 11 */ } 
+        },
+        {
+            $lookup: {
+                localField: "refId",
+                from: "withdraw",
+                foreignField: "_id",
+                as: "withdraw"
+            }
+        },
+        {
+          $unwind: {
+            "path": "$withdraw",
+            "preserveNullAndEmptyArrays": false
+          }
+        }
+      ])
 
       return {  status:true,
                 data: transitions,
@@ -633,31 +754,38 @@ export default {
   },
   Upload: GraphQLUpload,
   Mutation: {
+
     async login(parent, args, context, info) {
       let start = Date.now()
       let {input} = args
 
-      try{
-        let user = Utils.emailValidate().test(input.username) ? await Utils.getUser({email: input.username}) : await Utils.getUser({username: input.username})
-        
-        if(_.isNull(user)) throw new AppError(Constants.USER_NOT_FOUND, 'Model.User not found.')
-
-        await Model.User.updateOne({ _id: user?._id }, { lastAccess : Date.now() });
-        user = await Utils.getUser({_id: user?._id}) 
-        // user = {  ...user, ...await checkBalance(user?._id) }
-
-        return {
-          status: true,
-          data: user,
-          sessionId: await Utils.getSessionId(user?._id, input),
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      let user = Utils.emailValidate().test(input.username) 
+      if(Utils.emailValidate().test(input.username)){
+        user = await Utils.getUser({email: input.username}, false)
+        if( _.isNull(user) ){
+          throw new AppError(Constants.USER_NOT_FOUND, 'USER NOT FOUND')
         }
-      }catch(error){
-        return {
-          status: false,
-          error: error.message,
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        if(!_.isEqual(cryptojs.AES.decrypt(user?.password, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8), input.password)){
+          throw new AppError(Constants.PASSWORD_WRONG, 'PASSWORD WRONG')
         }
+        user = await Utils.getUserFull({email: input.username})
+      }else{
+        user = await Utils.getUser({username: input.username}, false)
+        if( _.isNull(user) ){
+          throw new AppError(Constants.USER_NOT_FOUND, 'USER NOT FOUND')
+        }
+        if(!_.isEqual(cryptojs.AES.decrypt(user?.password, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8), input.password)){
+          throw new AppError(Constants.PASSWORD_WRONG, 'PASSWORD WRONG')
+        }
+        user = await Utils.getUserFull({username: input.username})
+      }
+
+      await Model.User.updateOne({ _id: user?._id }, { lastAccess : Date.now() });
+      return {
+        status: true,
+        data: user,
+        sessionId: await Utils.getSessionId(user?._id, input),
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
 
@@ -716,7 +844,7 @@ export default {
 
           let { data } = input
 
-          let user = await Utils.getUser({socialId: data.profileObj.googleId, socialType: 'google'});
+          let user = await Utils.getUserFull({socialId: data.profileObj.googleId, socialType: 'google'});
           if(_.isEmpty(user)){
 
             /*
@@ -762,7 +890,7 @@ export default {
         case "github":{
           let { data } = input
 
-          let user = await Utils.getUser({socialId: data.code, socialType: 'github'});
+          let user = await Utils.getUserFull({socialId: data.code, socialType: 'github'});
 
           let github_user = null;
           if(_.isEmpty(user)){
@@ -917,7 +1045,7 @@ export default {
 
           let { data } = input
 
-          let user = await Utils.getUser({socialId: data.id, socialType: 'facebook'});
+          let user = await Utils.getUserFull({socialId: data.id, socialType: 'facebook'});
 
           if(_.isEmpty(user)){
             let newInput = {
@@ -1027,8 +1155,8 @@ export default {
       let start = Date.now()
       let {input} = args
 
-      let user = await Utils.getUser({ email: input.email } )
-      if(!_.isNull(user)) throw new AppError(Constants.ERROR, 'Exiting email.')
+      let user = await Utils.getUser({ email: input.email } ) 
+      if(!_.isNull(user)) throw new AppError(Constants.ERROR, "EXITING EMAIL")
 
       let newInput =  {...input,  password: cryptojs.AES.encrypt( input.password, process.env.JWT_SECRET).toString(),
                                   displayName: _.isEmpty(input.displayName) ? input.username : input.displayName ,
@@ -1049,8 +1177,7 @@ export default {
       let { input } = args
       let { req } = context
       
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { current_user } =  await Utils.checkAuth(req);
 
       let { type, mode, data } = input
       switch(type){
@@ -1065,8 +1192,8 @@ export default {
             case "delete":{
               let { banks } = await Utils.getUser({_id: current_user?._id}) 
               let newBanks = _.filter(banks, (bank)=>!_.isEqual(bank?._id.toString(), data))
-              console.log("me_bank: ", input, banks, newBanks)
               await Model.User.updateOne({ _id: current_user?._id }, { banks: newBanks } );
+              
               break;
             }
           }
@@ -1103,12 +1230,10 @@ export default {
         }
       }
 
-      let user = await Utils.getUser({_id: current_user?._id}) 
-      // user =  { ...user, ...await checkBalance(user?._id) }
-      
-      pubsub.publish("ME", {
-        me: { mutation: "UPDATE", data: user },
-      });
+      cache.ca_delete(current_user?._id.toString())
+
+      let user = await Utils.getUserFull({_id: current_user?._id}) 
+      pubsub.publish("ME", { me: { mutation: "UPDATE", data: user } });
 
       return {
         status: true,
@@ -1124,93 +1249,106 @@ export default {
       let { input } = args        
       let { req } = context
       
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
       let { supplierId, itemId, selected } = input
 
-      cache.ca_delete(supplierId)
-
-      let supplier = await Model.Supplier.findOne({_id: supplierId })//await Model.Supplier.findById(supplierId);
-
+      let supplier = await Utils.getSupplier({ _id: supplierId })
       if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
 
-      if(_.isNull(await Model.Transition.findOne({ refId: supplier?._id, userId: current_user?._id}))){
-        await Model.Transition.create( { refId: supplier?._id, userId: current_user?._id } )
+      let price       = supplier?.price
+      let balance     = await Utils.getBalance(current_user?._id)
+      let balanceBook = await Utils.getBalanceBook(current_user?._id)
+      if(price > (balance - balanceBook)){
+        console.log("book #[NOT_ENOUGH_BALANCE] : ", price, balance, balanceBook)
+        throw new AppError(Constants.NOT_ENOUGH_BALANCE, 'NOT ENOUGH BALANCE')
       }
 
-      let { buys } = supplier
-      if(selected == 0){
-        let check =  _.find(buys, (buy)=> buy.itemId == itemId )
-        if(check == undefined){
+      cache.ca_delete(current_user?._id.toString())
+      
+      const session = await mongoose.startSession();
+      // Start the transaction
+      session.startTransaction()
+      try {
+        if(_.isNull(await Model.Transition.findOne({ refId: supplier?._id, userId: current_user?._id}))){
+          await Model.Transition.create( { refId: supplier?._id, userId: current_user?._id } )
+        }
 
-          cache.ca_delete(current_user?._id.toString())
+        let { buys } = supplier
+        if(selected == 0){
+          let check =  _.find(buys, (buy)=> buy.itemId == itemId )
+          if(check == undefined){
+
+            await Utils.updateSupplier({ _id: supplierId }, {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, selected}] })
+              
+            let newSupplier = await Utils.getSupplier({ _id: supplierId }) 
+
+            // Case current open multi browser
+            pubsub.publish("SUPPLIER_BY_ID", {
+              supplierById: { mutation: "BOOK", data: newSupplier },
+            });
+
+            // Case other people open home page
+            pubsub.publish("SUPPLIERS", {
+              suppliers: { mutation: "BOOK", data: newSupplier },
+            });
+
+            let user = await Utils.getUserFull({_id: current_user?._id}) 
+
+            pubsub.publish("ME", {
+              me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } },
+            });
+
+            // Commit the transaction
+            await session.commitTransaction();
+
+            return {
+              status: true,
+              action: {mode: "BOOK", itemId},
+              data: newSupplier,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            }
+          }
+          throw new Error('ALREADY BOOK')
+        }else{
+          await Utils.updateSupplier({ _id: supplierId }, {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id ) })
+
+          let newSupplier = await Utils.getSupplier({ _id: supplierId })
           
-          await Model.Supplier.updateOne(
-                                { _id: supplierId }, 
-                                {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, selected}] } );
-            
-          let newSupplier = await Model.Supplier.findOne({_id: supplierId })
-          newSupplier = {...newSupplier._doc, owner: current_user?._doc}
-
           pubsub.publish("SUPPLIER_BY_ID", {
-            supplierById: { mutation: "BOOK", data: newSupplier },
+            supplierById: { mutation: "UNBOOK", data: newSupplier },
           });
 
           pubsub.publish("SUPPLIERS", {
-            suppliers: { mutation: "BOOK", data: newSupplier },
+            suppliers: { mutation: "UNBOOK", data: newSupplier },
           });
 
-          let user = await Utils.getUser({_id: current_user?._id}) 
-          // user =  { ...user, ...await checkBalance(current_user?._id) }
-
+          let user = await Utils.getUserFull({_id: current_user?._id }) 
           pubsub.publish("ME", {
-            me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } },
+              me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } 
+            },
           });
+
+          // Commit the transaction
+          await session.commitTransaction();
 
           return {
             status: true,
-            action: {mode: "BOOK", itemId},
+            action: {mode: "UNBOOK", itemId},
             data: newSupplier,
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
-        }
-        throw new AppError(Constants.ERROR, 'Already book!')
-      }else{
-
-        cache.ca_delete(current_user?._id.toString())
-
-        await Model.Supplier.updateOne(
-        { _id: supplierId }, 
-        {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id ) },  );
-
-        let newSupplier = await Model.Supplier.findOne({_id: supplierId })
-        newSupplier = {...newSupplier._doc, owner: current_user?._doc}
+        }  
+      }catch(error){
+        await session.abortTransaction();
+        console.log(`book #error : ${error}`)
         
-        pubsub.publish("SUPPLIER_BY_ID", {
-          supplierById: { mutation: "UNBOOK", data: newSupplier },
-        });
-
-        pubsub.publish("SUPPLIERS", {
-          suppliers: { mutation: "UNBOOK", data: newSupplier },
-        });
-
-        let user = await Utils.getUser({_id: current_user?._id }) 
-        // user =  { ...user, ...await checkBalance(current_user?._id) }
-
-        pubsub.publish("ME", {
-            me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } 
-          },
-        });
-
-        return {
-          status: true,
-          action: {mode: "UNBOOK", itemId},
-          data: newSupplier,
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-        }
-      }          
+        throw new AppError(Constants.ERROR, error)
+      } finally {
+        session.endSession();
+        console.log("book #finally")
+      }
     },
 
     async buy(parent, args, context, info) {
@@ -1218,8 +1356,7 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if( !status && code == Constants.FORCE_LOGOUT ) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
       // let supplier = await Model.Supplier.findById(_id);
@@ -1235,90 +1372,101 @@ export default {
       // });
       // 
 
-      cache.ca_delete(_id)
+      // let price       = supplier?.price
+      // let balance     = await Utils.getBalance(current_user?._id)
+      // let balanceBook = await Utils.getBalanceBook(current_user?._id)
+      // if(price > (balance - balanceBook)){
+      //   console.log("book #[NOT_ENOUGH_BALANCE] : ", price, balance, balanceBook)
+      //   throw new AppError(Constants.NOT_ENOUGH_BALANCE, 'NOT ENOUGH BALANCE')
+      // }
 
-      await Model.Supplier.updateMany( { _id /* "buys.userId":current_user?._id */ }, { "$set": { "buys.$[].selected": 1 } }, { arrayFilters: [{ 'buys.$[].userId': current_user?._id }], timestamps: true } )
-      
-      await Model.Transition.updateOne( { refId: _id, userId: current_user?._id }, {status: Constants.APPROVED} )
+      const session = await mongoose.startSession();
+      // Start the transaction
+      session.startTransaction()
+      try {
+        await Utils.updateSupplier({ _id }, { "$set": { "buys.$[].selected": 1 } }, { arrayFilters: [{ 'buys.$[].userId': current_user?._id }], timestamps: true })
+        await Model.Transition.updateOne( { refId: _id, userId: current_user?._id }, { status: Constants.APPROVED } )
+  
+        // Commit the transaction
+        await session.commitTransaction();
 
-      let user = await Utils.getUser({_id: current_user?._id}) 
-      // user =  { ...user, ...await checkBalance(current_user?._id) }
-      pubsub.publish("ME", {
-        me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
-      });
+        let supplier = await Utils.getSupplier({ _id })
+  
+        // Case current open multi browser
+        pubsub.publish("SUPPLIER_BY_ID", {
+          supplierById: { mutation: "BOOK", data: supplier },
+        });
+  
+        // Case other people open home page
+        pubsub.publish("SUPPLIERS", {
+          suppliers: { mutation: "BOOK", data: supplier },
+        });
+  
+        let user = await Utils.getUserFull( {_id: current_user?._id} ) 
+        pubsub.publish("ME", {
+          me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
+        });
+  
+        return {
+          status: true,
+          data: supplier,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
 
-      return {
-        status: true,
-        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }catch(error){
+        await session.abortTransaction();
+        console.log(`buy #error : ${error}`)
+        
+        throw new AppError(Constants.SYSTEM_ERROR, error)
+      } finally {
+        session.endSession();
+        console.log("buy #finally")
       }
     },
 
-    async cancelBuyAll(parent, args, context, info) {
+    async cancelTransition(parent, args, context, info) {
       let start = Date.now()
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if( !status && code == Constants.FORCE_LOGOUT ) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
-      // cache.ca_delete(_id)
-      // console.log("cancelBuyAll current_user : ", current_user)
-      // let supplier = await Model.Supplier.findById(_id);
-      // if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
-      // let buys =  _.map(supplier.buys, (buy)=> buy.userId == current_user?._id.toString() ? {...buy._doc, selected: 1} : buy )
-      // console.log(">>>> buy", buys)
-      // await Model.Supplier.updateOne({ _id }, { buys });
-      // let user = await Utils.getUser({_id: current_user?._id}) 
-      // user =  { ...user, ...await checkBalance(current_user?._id) }
-      // pubsub.publish("ME", {
-      //   me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
-      // });
-      // 
+      const session = await mongoose.startSession();
+      // Start the transaction
+      session.startTransaction()
+      try {
+        let { n , nModified, ok } = await Utils.updateSuppliers({ _id }, { $pull: {buys: { userId: current_user?._id }} })
+        if(ok){
+          console.log("n , nModified, ok ::", n , nModified, ok)
+          await Model.Transition.updateOne( { refId: _id }, {status: Constants.CANCEL} )
 
-      /*
-      // await Model.Supplier.updateMany( { "buys.userId":current_user?._id }, { "$pull": { "buys.$[].selected": 1 } } )
-      await Model.Supplier.updateMany( { _id }, { "$pull": { "buys.$[].userId": current_user?._id } } )
-      await Model.Transition.updateOne( { refId: _id, userId: current_user?._id }, {status: Constants.CANCEL} )
-      let user = await Utils.getUser({_id: current_user?._id}) 
-      // user =  { ...user, ...await checkBalance(current_user?._id) }
-      pubsub.publish("ME", {
-        me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
-      });
-      */    
-      // try{
-      //   // await Model.Supplier.updateMany( { _id : "648d1e78949cc7004b2da412" }, { "$pull": { "buys.$[].userId": mongoose.Types.ObjectId("648d15a5252c83003166d514") } } )
-      
-      //   await Model.Supplier.updateMany( { _id : "648d1e78949cc7004b2da412" }, { $pull: {buys: { userId: current_user?._id }} } )
-      //   // 
-      // }catch(error){
-      //   console.log("error :", error)
-      // }
+          cache.ca_delete(current_user?._id.toString())
 
-      let { n , nModified, ok } = await Model.Supplier.updateMany( { _id }, { $pull: {buys: { userId: current_user?._id }} } )
-      if(ok){
-        console.log("n , nModified, ok ::", n , nModified, ok)
+          let user = await Utils.getUserFull({_id: current_user?._id}) 
+          pubsub.publish("ME", { me: { mutation: "CANCEL", data: { userId: current_user?._id, data: user } } });
 
-        await Model.Transition.updateOne( { refId: _id }, {status: Constants.CANCEL} )
+          let newSupplier = await Utils.getSupplier({ _id })
 
-        cache.ca_delete(current_user?._id.toString())
+          pubsub.publish("SUPPLIERS", { suppliers: { mutation: "AUTO_CLEAR_BOOK", data: newSupplier } });
 
-        let user = await Utils.getUser({_id: current_user?._id}) 
-        pubsub.publish("ME", { 
-          me: { mutation: "CANCEL", data: { userId: current_user?._id, data: user } },
-        });
-
-        let newSupplier = await Model.Supplier.findOne({ _id })
-        // newSupplier = {...newSupplier._doc, owner: current_user?._doc}
-        // Utils.getSupplier
-        pubsub.publish("SUPPLIERS", {
-          suppliers: { mutation: "AUTO_CLEAR_BOOK", data: newSupplier },
-        });
-
-        return {
-          status: true,
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          return {
+            status: true,
+            data: newSupplier, 
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }
         }
+
+        // Commit the transaction
+        await session.commitTransaction();
+      }catch(error){
+        await session.abortTransaction();
+        console.log(`cancelTransition #error : ${error}`)
+        
+        throw new AppError(Constants.SYSTEM_ERROR, error)
+      } finally {
+        session.endSession();
+        console.log("cancelTransition #finally")
       }
 
       return {
@@ -1334,14 +1482,11 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated and Authenticated only!')
 
-      console.log("supplier :", input)
       if(input.test){
         let supplier = await Model.Supplier.create(input);
-        
         return {
           status: true,
           mode: input.mode.toLowerCase(),
@@ -1352,6 +1497,9 @@ export default {
 
       switch(input.mode.toLowerCase()){
         case "new":{
+
+          cache.ca_delete("length")
+
           let newFiles = [];
           if(!_.isEmpty(input.files)){
         
@@ -1449,12 +1597,13 @@ export default {
           }
   
           let newInput = {...input, files:newFiles}
-          let supplier = await Model.Supplier.findOneAndUpdate({ _id: input._id }, newInput, { new: true });
+
+          await Utils.updateSupplier({ _id: input._id }, newInput )
 
           return {
             status: true,
             mode: input.mode.toLowerCase(),
-            data: supplier,
+            data: await Utils.getSupplier({ _id: input._id }),
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }
@@ -1470,9 +1619,8 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
-      if(Utils.checkRole(current_user) != Constants.AUTHENTICATED) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
       const { createReadStream, filename, encoding, mimetype } = (await input.file).file
 
@@ -1495,24 +1643,40 @@ export default {
         });
       });
 
-      let deposit = await Model.Deposit.create({balance: input?.balance, 
+      const session = await mongoose.startSession();
+      // Start the transaction
+      session.startTransaction()
+      try {
+        let deposit = await Model.Deposit.create({balance: input?.balance, 
                                           date: input?.date, 
                                           bankId: input?.bankId, 
                                           file: { url: `${process.env.RA_HOST}${assetUniqName}`, filename, encoding, mimetype }, 
                                           userIdRequest: current_user?._id })
 
-      if(deposit?._id){
-        await Model.Transition.create({
-                                  type: Constants.DEPOSIT, 
-                                  refId: deposit?._id, 
-                                  userId: current_user?._id
-                                })
-      }
-      
-      return {
-        status: true,
-        data: deposit,
-        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        if(deposit?._id){
+          await Model.Transition.create({
+                                    type: Constants.DEPOSIT, 
+                                    refId: deposit?._id, 
+                                    userId: current_user?._id
+                                  })
+        }
+    
+        // Commit the transaction
+        await session.commitTransaction();
+
+        return {
+          status: true,
+          data: deposit,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }catch(error){
+        await session.abortTransaction();
+        console.log(`deposit #error : ${error}`)
+        
+        throw new AppError(Constants.SYSTEM_ERROR, error)
+      } finally {
+        session.endSession();
+        console.log("deposit #finally")
       }
     },
 
@@ -1521,16 +1685,37 @@ export default {
       let { input } = args
       let { req } = context
 
-      console.log("++++++++++++++ withdraw +++++++++++++++")
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      const session = await mongoose.startSession();
+      // Start the transaction
+      session.startTransaction()
+      try {
+        let withdraw = await Model.Withdraw.create({ ...input,  userIdRequest: current_user?._id });
 
-      let withdraw = await Model.Withdraw.create({ ...input,  userIdRequest: current_user?._id });
-      return {
-        status: true,
-        data: withdraw,
-        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        if(withdraw?._id){
+          await Model.Transition.create({
+                                    type: Constants.WITHDRAW, 
+                                    refId: withdraw?._id, 
+                                    userId: current_user?._id
+                                  })
+        }
+    
+        // Commit the transaction
+        await session.commitTransaction();
+        return {
+          status: true,
+          data: withdraw,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }catch(error){
+        await session.abortTransaction();
+        console.log(`deposit #error : ${error}`)
+        
+        throw new AppError(Constants.SYSTEM_ERROR, error)
+      } finally {
+        session.endSession();
+        console.log("deposit #finally")
       }
     },
 
@@ -1539,8 +1724,7 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
 
       switch(input.mode.toLowerCase()){
         case "new":{
@@ -1581,13 +1765,12 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
       cache.ca_delete(_id)
 
-      let supplier = await Model.Supplier.findOne({_id})
+      let supplier = await Utils.getSupplier({_id})
       if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
 
       let mode = "follow";
@@ -1606,13 +1789,12 @@ export default {
         follows = [{userId: current_user?._id}]
       }
 
-      await Model.Supplier.updateOne( { _id }, { follows } );
-      supplier = await Model.Supplier.findOne({_id})
+      await Utils.updateSupplier({ _id }, { follows });
       
       return {
         status: true,
         mode,
-        data: {...supplier._doc, owner: await Utils.getUser({_id: supplier.ownerId}) },
+        data: await Utils.getSupplier({_id}),
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
@@ -1622,8 +1804,7 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
 
       if( !_.isEqual(Utils.checkRole(current_user), Constants.AMDINISTRATOR) ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
 
@@ -1634,7 +1815,7 @@ export default {
 
       let dateLottery = await Model.DateLottery.find({})
       dateLottery = _.filter( await Promise.all( _.map(dateLottery, async(i)=>{
-        let suppliers = await Model.Supplier.findOne({ dateLottery: i?._id });
+        let suppliers = await Utils.getSupplier({ dateLottery: i?._id }) 
         return _.isEmpty(suppliers) ?  null : {...i?._doc, suppliers }
       })), i => !_.isNull(i))
 
@@ -1689,8 +1870,7 @@ export default {
 
       console.log("notification :", _id)
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
       // let supplier = await Model.Supplier.findOne({_id})
@@ -1723,8 +1903,7 @@ export default {
       let { req } = context
       let { input } = args
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
       let comment = await Model.Comment.findOne({ _id: input?._id })
@@ -1763,8 +1942,7 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       // if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
       let newFiles = [];
@@ -1810,11 +1988,10 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
-      let { subscriber } = await Utils.getUser({ _id })
+      let { subscriber } = await Utils.getUserFull({ _id })
       if( _.find(subscriber, (item)=> _.isEqual(item.userId, current_user?._id)) ) {
         await Model.User.updateOne({ _id }, { subscriber: _.filter(subscriber, (item)=> !_.isEqual(item.userId, current_user?._id)) })
       }else{
@@ -1822,7 +1999,7 @@ export default {
       }
       return {
         status: true,
-        data: await Utils.getUser({ _id }),
+        data: await Utils.getUserFull({ _id }),
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }      
     },
@@ -1832,21 +2009,32 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR only!')
 
       let transition = await Model.Transition.findOne({ _id: input?._id })
-      await Model.Transition.updateOne({ _id: input?._id }, { status : input?.status });
-      await Model.Deposit.updateOne({ _id: transition?.refId }, { status : input?.status })
 
+      const session = await mongoose.startSession();
+      // Start the transaction
+      session.startTransaction()
+      try {
+        await Model.Transition.updateOne({ _id: input?._id }, { status : input?.status });
+
+        // Commit the transaction
+        await session.commitTransaction();
+      }catch(error){
+        await session.abortTransaction();
+        
+        throw new AppError(Constants.SYSTEM_ERROR, error);
+      } finally {
+        session.endSession();
+      }
+
+      cache.ca_delete( transition?.userId.toString() )
       if(_.isEqual(input?.status, Constants.APPROVED)){
-        let user = await Utils.getUser({_id: transition?.userId}) 
-        // user =  { ...user, ...await checkBalance(transition?.userId) }
+        let user = await Utils.getUserFull({_id: transition?.userId}) 
 
-        pubsub.publish("ME", {
-          me: { mutation: "DEPOSIT", data: {userId: transition?.userId , data: user } },
-        });
+        pubsub.publish("ME", { me: { mutation: "DEPOSIT", data: {userId: transition?.userId , data: user } } });
       }
 
       return {
@@ -1861,21 +2049,30 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuthorization(req);
-      if(!status && code == Constants.FORCE_LOGOUT) throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
 
       let transition = await Model.Transition.findOne({ _id: input?._id })
-      await Model.Transition.updateOne({ _id: input?._id }, { status : input?.status });
-      await Model.Deposit.updateOne({ _id: transition?.refId }, { status : input?.status })
+      
+      const session = await mongoose.startSession();
+      // Start the transaction
+      session.startTransaction()
+      try {
+        await Model.Transition.updateOne({ _id: input?._id }, { status : input?.status });
+
+        // Commit the transaction
+        await session.commitTransaction();
+      }catch(error){
+        await session.abortTransaction();
+        
+        throw new AppError(Constants.SYSTEM_ERROR, error);
+      } finally {
+        session.endSession();
+      }
 
       if(_.isEqual(input?.status, Constants.APPROVED)){
-        let user = await Utils.getUser({_id: transition?.userId}) 
-        // user =  { ...user, ...await checkBalance(transition?.userId) }
-
-        pubsub.publish("ME", {
-          me: { mutation: "DEPOSIT", data: {userId: transition?.userId , data: user } },
-        });
+        let user = await Utils.getUserFull({_id: transition?.userId}) 
+        pubsub.publish("ME", { me: { mutation: "DEPOSIT", data: {userId: transition?.userId , data: user } } });
       }
 
       return {
@@ -2106,5 +2303,5 @@ export default {
         }
       )
     },
-  }
-};
+  },
+}

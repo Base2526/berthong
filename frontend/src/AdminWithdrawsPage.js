@@ -29,6 +29,8 @@ import { getHeaders, handlerErrorApollo } from "./util"
 import { queryAdminWithdraws } from "./gqlQuery"
 import * as Constants from "./constants"
 
+import AdminWithdrawsItem from "./item/AdminWithdrawsItem"
+
 deepdash(_);
 
 const AdminWithdrawsPage = (props) => {
@@ -98,9 +100,9 @@ const AdminWithdrawsPage = (props) => {
                           { 
                           _.map(datas, (item, index) => {
 
-                            // console.log("item :", item)
+                            console.log("item :", item)
 
-                            let { _id, user, type } = item
+                            let { _id, userId, type } = item
                             // return  <Stack direction="row" spacing={2}>{index} : {i.title}</Stack>
 
                             // let userId  = item?.userIdRequest;
@@ -155,8 +157,14 @@ const AdminWithdrawsPage = (props) => {
                             //   }
                             // }
 
+                            return  <AdminWithdrawsItem 
+                                      _id={_id}
+                                      userId={userId} 
+                                      // balance={item?.deposit?.balance} 
+                                      onMutationAdminWithdraw={(v)=>onMutationAdminWithdraw(v)}
+                                      />
+
                             return  <Stack direction="row" spacing={2} >
-                                      <Box>xxxxx</Box>
                                       {/* <Box sx={{ width: '10%' }}><UserComp userId={userId} /></Box>
                                       <Box sx={{ width: '7%' }}>
                                       <Avatar

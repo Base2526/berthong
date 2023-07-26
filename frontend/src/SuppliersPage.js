@@ -36,6 +36,8 @@ const SuppliersPage = (props) => {
   const { t } = useTranslation();
   let { user, onLightbox } = props
 
+  let [search, setSearch] = useState(Constants.INIT_SEARCH)
+
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
   let [datas, setDatas] = useState([]);
@@ -47,11 +49,14 @@ const SuppliersPage = (props) => {
           data: dataSuppliers, 
           error: errorSuppliers, 
           subscribeToMore: subscribeToMoreSuppliers, 
+          fetchMore: fetchMoreSuppliers,
           networkStatus: networkStatusSuppliers } = useQuery( querySuppliers, { 
                                                                 context: { headers: getHeaders(location) }, 
+                                                                variables: { input: search },
                                                                 fetchPolicy: 'network-only', // Used for first execution
                                                                 nextFetchPolicy: 'cache-first', // Used for subsequent executions
-                                                                notifyOnNetworkStatusChange: true});
+                                                                notifyOnNetworkStatusChange: true
+                                                              });
 
   useEffect(() => {
     if(!loadingSuppliers){
@@ -73,20 +78,25 @@ const SuppliersPage = (props) => {
     // onDeletePhone({ variables: { id } });
   };
 
-  const fetchMoreData = async() =>{
-    // let mores =  await fetchMoreNotifications({ variables: { input: {...search, OFF_SET:search.OFF_SET + 1} } })
-    // let {status, data} =  mores.data.suppliers
-    // console.log("status, data :", status, data)
-   
-    if(slice === total){
-        setHasMore(false);
-    }else{
-        setTimeout(() => {
-            // let newDatas = [...datas, ...data]
-            // setDatas(newDatas)
-            // setSlice(newDatas.length);
-        }, 1000); 
-    }
+ 
+  const handleLoadMore = () => {
+    fetchMoreSuppliers({
+      variables: {
+        input: {...search, PAGE: search.PAGE + 1}
+      },
+      updateQuery: (prev, {fetchMoreResult}) => {
+        if (!fetchMoreResult?.suppliers?.data?.length) {
+          return prev;
+        }
+
+        let suppliers = {...prev.suppliers, data: _.unionBy( fetchMoreResult?.suppliers?.data, prev?.suppliers?.data, '_id') }
+        return Object.assign({}, prev, {suppliers} );
+      },
+    });
+  }
+
+  const handleRefresh = async() => {
+    // onSearchChange({...search, PAGE: 1})
   }
 
   return (<div className="pl-2 pr-2">
@@ -98,9 +108,21 @@ const SuppliersPage = (props) => {
                     ?   <label>Empty data</label>
                     :   <InfiniteScroll
                             dataLength={slice}
-                            next={fetchMoreData}
+                            next={handleLoadMore}
                             hasMore={hasMore}
-                            loader={<h4>Loading...</h4>}>
+                            loader={<h4>Loading...</h4>}
+                            scrollThreshold={0.5}
+                            
+                            // below props only if you need pull down functionality
+                            refreshFunction={handleRefresh}
+                            pullDownToRefresh
+                            pullDownToRefreshThreshold={50}
+                            pullDownToRefreshContent={
+                              <h3 style={{ textAlign: 'center' }}>&#8595; Pull down to refresh</h3>
+                            }
+                            releaseToRefreshContent={
+                              <h3 style={{ textAlign: 'center' }}>&#8593; Release to refresh</h3>
+                            }>
                             { 
                             _.map(datas, (item, index) => {
 

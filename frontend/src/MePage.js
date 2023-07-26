@@ -42,6 +42,10 @@ const MePage = (props) => {
     const { user, onMutationMe, onDialogDeleteBank, onLightbox } = props
     const [expanded, setExpanded] = useState(localStorage.getItem('expanded') ? localStorage.getItem('expanded') : false)
     
+    console.log("user :", user, _.sortBy(user?.banks, "createdAt").reverse())
+
+    
+
     // const managementView = () =>{
     //     switch(checkRole(user)){
     //         case AMDINISTRATOR:{
@@ -188,7 +192,7 @@ const MePage = (props) => {
                                         <AccordionDetails>
                                             <List>
                                                 {
-                                                    _.map(user?.banks, (value, index)=>{
+                                                    _.map( /*user?.banks*/ _.sortBy(user?.banks, "createdAt").reverse(), (value, index)=>{
                                                         return  <ListItem
                                                                     key={index}
                                                                     secondaryAction={

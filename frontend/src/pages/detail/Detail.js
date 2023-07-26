@@ -17,6 +17,7 @@ import {
     Bookmark as BookmarkIcon
   } from "@mui/icons-material"
 import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
+import deepdash from "deepdash";
 
 import DetailPanelRight from "./DetailPanelRight"
 import DetailPanelLeft from "./DetailPanelLeft"
@@ -29,6 +30,8 @@ import {  querySupplierById,
           queryUserById,
           mutationBuy
         } from "../../gqlQuery";
+
+deepdash(_);
 
 let unsubscribeSupplierById = null;
 const Detail = (props) => {
@@ -49,20 +52,27 @@ const Detail = (props) => {
   const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
     context: { headers: getHeaders(location) },
     update: (cache, {data: {buy}}) => {
-      let { status, data } = buy
+      let { status, data:newData } = buy
 
-      console.log("update : ", buy)
-      setPopupOpenedShoppingBag(false)
-
-      showToast("success", `การส่งซื้อ complete`)
+      let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id} });
+      if(status && querySupplierByIdValue){
+        cache.writeQuery({
+          query: querySupplierById,
+          data: { supplierById: {...querySupplierByIdValue.supplierById, data: newData} },
+          variables: { id }
+        });
+      }      
     },
     onCompleted(data) {
-      console.log("onCompleted :", data)
+      setPopupOpenedShoppingBag(false)
+      showToast("success", `การส่งซื้อ complete`)
     },
-    onError: (err) => {
-      console.log("onError :", err)
+    onError: (error) => {
+      console.log("onError :", error)
 
       showToast("error", `เกิดปัญหาในการสั่งซื้อ`)
+
+      return handlerErrorApollo( props, error )
     }
   });
 
@@ -89,8 +99,6 @@ const Detail = (props) => {
 
   if(!_.isEmpty(errorUserById)) handlerErrorApollo( props, errorUserById )
 
-  
-
   useEffect(() => {
     if(!loadingUserById){
       if(!_.isEmpty(dataUserById?.userById)){
@@ -105,10 +113,8 @@ const Detail = (props) => {
   useEffect(() => {
     if(!loadingUserById){
       if(!_.isEmpty(dataSupplierById?.supplierById)){
-        let { status, data } = dataSupplierById?.supplierById
-        if(status){
-          setData(data)
-        }
+        let { status, data: newData } = dataSupplierById?.supplierById
+        if(status && !_.isEqual(newData, data)) setData(newData)
       }
     }
   }, [dataSupplierById, loadingUserById])
@@ -162,13 +168,13 @@ const Detail = (props) => {
     let selected = 0;
     if(fn) selected = fn.selected == -1 ? 0 : -1
     
-    if(selected == 0){
-      let check = user?.balance - (user?.balanceBook + data.price)
-      if(check < 0){
-        showToast("error", `ยอดเงินคงเหลือไม่สามารถจองได้`, 2500)
-        return;
-      }
-    }
+    // if(selected == 0){
+    //   let check = user?.balance - (user?.balanceBook + data.price)
+    //   if(check < 0){
+    //     showToast("error", `ยอดเงินคงเหลือไม่สามารถจองได้`, 2500)
+    //     return;
+    //   }
+    // }
     onMutationBook({ variables: { input: { supplierId: id, itemId, selected } } });
   }
 
@@ -224,7 +230,7 @@ const Detail = (props) => {
   return (
     <div className="row">
       { isPopupOpenedShoppingBag && <PopupCart {...props} onMutationBuy={(evt)=>onMutationBuy(evt)} opened={isPopupOpenedShoppingBag} data={data} onClose={() => setPopupOpenedShoppingBag(false) } /> }
-      { isPopupOpenedWallet  && <PopupWallet opened={isPopupOpenedWallet} onClose={() => setPopupOpenedWallet(false) } /> }
+      { isPopupOpenedWallet  && <PopupWallet {...props} data={data} opened={isPopupOpenedWallet} onClose={() => setPopupOpenedWallet(false) } /> }
 
       {
         loadingSupplierById || _.isEmpty(data)

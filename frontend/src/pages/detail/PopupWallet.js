@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogTitle,
@@ -6,15 +7,19 @@ import {
   DialogActions,
   Button
 } from "@material-ui/core";
+import _ from "lodash"
 
 const PopupWallet = (props) => {
+  const navigate = useNavigate();
+  let { user, data } = props
+
+  let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
+
   const cancelForm = () => {
-    console.log("Form is canceled.");
     props.onClose();
   };
 
   const saveForm = (e) => {
-    console.log("Saving form...");
     props.onClose();
   };
 
@@ -32,19 +37,19 @@ const PopupWallet = (props) => {
               overflow: "scroll"
             }}
           >
-            จำนวนเงินคงเหลือ 2,000 บาท <br />
-            มีการจอง จำนวน 1 เบอร์ ราคา 200 บาท
+            จำนวนเงินคงเหลือ { user?.balance - user?.balanceBook } บาท <br />
+            มีการจอง จำนวน { selecteds.length } เบอร์ ราคา { selecteds.length * data?.price } บาท
           </div>
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={saveForm} variant="contained" className="btn-confirm">
+        <Button onClick={()=>{ navigate({ pathname: "/deposit" }) }} variant="contained" className="btn-confirm">
           เติมเงิน
         </Button>
-        <Button onClick={saveForm} variant="contained" color="secondary">
+        <Button onClick={()=>{ navigate({ pathname: "/withdraw" }) }} variant="contained" color="secondary">
           ถอนเงิน
         </Button>
-        <Button onClick={saveForm} variant="contained" color="primary">
+        <Button onClick={()=>{ navigate({ pathname: "/history-transitions" }) }} variant="contained" color="primary">
           ประวัติ
         </Button>
         <Button onClick={saveForm} variant="contained" color="info">
