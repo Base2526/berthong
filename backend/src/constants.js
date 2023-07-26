@@ -4,11 +4,14 @@ export const ANONYMOUS     = "62a2ccfbcf7946010d3c74a4";
 
 export const SUCCESS        = "SUCCESS";
 export const ERROR          = "ERROR";
+export const SYSTEM_ERROR   = "SYSTEM_ERROR";
 export const FORCE_LOGOUT   = "FORCE_LOGOUT";
 export const DATA_NOT_FOUND = "DATA_NOT_FOUND";
 export const USER_NOT_FOUND = "USER_NOT_FOUND";
+export const PASSWORD_WRONG = "PASSWORD_WRONG";
 export const UNAUTHENTICATED= "UNAUTHENTICATED";
 export const BAD_USER_INPUT = "BAD_USER_INPUT";
+export const NOT_ENOUGH_BALANCE = "NOT_ENOUGH_BALANCE";
 
 export const _ID_AMDINISTRATOR = "62a2f633cf7946010d3c74fc";
 

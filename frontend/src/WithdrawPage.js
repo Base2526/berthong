@@ -29,8 +29,6 @@ const WithdrawPage = (props) => {
   }, [input])
 
   const submitForm = async(event) => {
-    console.log("submitForm")
-
     onMutationWithdraw({ variables: { input } });
     /*
     event.preventDefault();
@@ -94,50 +92,62 @@ const WithdrawPage = (props) => {
   }
 
   return  <div className="content-bottom">
-        <div className="content-page border">
-        <div className="row">
-        <Stack
-            direction="column"
-            justifyContent="center"
-            alignItems="flex-start"
-            spacing={2}>
-            {/* {
-              loadingBanks
-              ? <LinearProgress /> 
-              :  */}
-                <Box> 
-                  <Autocomplete
-                    label={"เลือกบัญชี *"}
-                    disablePortal
-                    id="bank"
-                    sx={{ width: 300 }}
-                    options={ user?.banks }
-                    getOptionLabel={(option)=>`${option.bankNumber} (${option.name})`}
-                    renderInput={(params) =><TextField {...params} label={t("bank_account_name")} /> }
-                    onChange={(event, val) => setInput({...input, bankId: val?._id}) }/>
-                </Box>
-            {/* } */}
-            <Box> 
-              <TextField 
-                type="number" 
-                name="balance"
-                label={"ยอดเงิน *"}
-                value={ input.balance }
-                sx={{ width: 300 }}
-                onChange={(e)=>{
-                   setInput({...input, balance: parseInt( e.target?.value ) })
-                } }
-                onBlur={ validateInput } /> 
-            </Box>
-            <Box>
-              <div>ยอดที่สามารถถอดได้ { isWithdraw() } บาท</div>
-            </Box>
-            <Button 
-              variant="contained" 
-              color="primary"
-              disabled={ input.bankId != "" && input.balance != "" && isWithdraw() > 0 ? false : true }
-              onClick={(evt)=>submitForm(evt)}>{t("withdraw")}</Button>
-          </Stack></div></div></div>
+            <div className="content-page border">
+              <div className="row">
+              {
+                _.isEmpty(user?.banks)
+                ? <Stack
+                    direction="column"
+                    justifyContent="center"
+                    alignItems="flex-start"
+                    spacing={2}>
+                    <Button 
+                      variant="contained" 
+                      color="primary"
+                      onClick={(evt)=>navigate("/bank")}>เพิ่ม บัญชีธนาคาร</Button>
+                  </Stack>
+                : <Stack
+                    direction="column"
+                    justifyContent="center"
+                    alignItems="flex-start"
+                    spacing={2}>
+                    <Box> 
+                      <Autocomplete
+                        label={"เลือกบัญชี *"}
+                        disablePortal
+                        id="bank"
+                        sx={{ width: 300 }}
+                        options={ user?.banks }
+                        getOptionLabel={(option)=>`${option.bankNumber} (${option.name})`}
+                        renderInput={(params) =><TextField {...params} label={t("bank_account_name")} /> }
+                        onChange={(event, val) => setInput({...input, bankId: val?._id}) }/>
+                    </Box>
+                    <Box> 
+                      <TextField 
+                        type="number" 
+                        name="balance"
+                        label={"ยอดเงิน *"}
+                        value={ input.balance }
+                        sx={{ width: 300 }}
+                        onChange={(e)=>{
+                            setInput({...input, balance: parseInt( e.target?.value ) })
+                        } }
+                        onBlur={ validateInput } /> 
+                    </Box>
+                    <Box>
+                      <div>ยอดที่สามารถถอดได้ { isWithdraw() } บาท</div>
+                    </Box>
+                    <Button 
+                      variant="contained" 
+                      color="primary"
+                      disabled={ input.bankId != "" && input.balance != "" && isWithdraw() > 0 ? false : true }
+                      onClick={(evt)=>submitForm(evt)}>{t("withdraw")}</Button>
+                  </Stack>
+              }
+             
+              </div>
+            </div>
+          </div>
 }
 
 export default WithdrawPage

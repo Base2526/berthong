@@ -119,13 +119,14 @@ export const showToast = (type, text, autoClose=1000) =>{
           position:"bottom-right",
           autoClose,
           hideProgressBar: true,
-          newestOnTop: false,
+          newestOnTop: true,
           closeOnClick: true,
           rtl: false,
           pauseOnFocusLoss: true,
           draggable: true,
           pauseOnHover: false,
-          type /* "success", error*/ 
+          type /* "success", error*/ ,
+        //   toastId: 'my-toast-id'
         }); 
 }
 
@@ -147,7 +148,22 @@ export const handlerErrorApollo = (props, error) =>{
             break;
           }
 
+          case Constants.USER_NOT_FOUND:{
+            showToast("error", e?.message)
+            break;
+          }
+
+          case Constants.PASSWORD_WRONG:{
+            showToast("error", e?.message)
+            break;
+          }
+
           case Constants.INTERNAL_SERVER_ERROR: {
+            showToast("error", e?.message)
+            break;
+          }
+
+          case Constants.NOT_ENOUGH_BALANCE:{
             showToast("error", e?.message)
             break;
           }

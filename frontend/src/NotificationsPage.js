@@ -52,7 +52,7 @@ const NotificationsPage = (props) => {
             if(dataNotifications?.notifications){
                 let { status, data, total} = dataNotifications?.notifications
                 if(status){
-                    setInput({...input, data, total})
+                    // setInput({...input, data, total})
                 }
             }
         }
@@ -77,64 +77,66 @@ const NotificationsPage = (props) => {
     }
 
     return (<div className="content-bottom">
-    <div className="content-page border">   
-    <div className="row">
-                {
-                loadingNotifications || input.data.length == 0 
-                ?   <LinearProgress />
-                :   <InfiniteScroll
-                        dataLength={input.slice}
-                        next={fetchMoreData}
-                        hasMore={input.hasMore}
-                        loader={<h4>Loading...</h4>}>
-                        { 
-                            _.map(input.data, (i, index) => {
-                                switch(i?.type){
-                                    case "system":{
-                                        return  <div class="alert alert-secondary p-1 m-1" role="alert"><Stack direction="row" spacing={2}>
-                                                    <SystemIcon />
-                                                    <div 
-                                                        onClick={(evt)=>{
-                                                            console.log("system")
+                <div className="content-page border">   
+                <div className="row">
+                            {
+                            loadingNotifications || input.data.length == 0 
+                            ?   <LinearProgress />
+                            :   <InfiniteScroll
+                                    dataLength={input.slice}
+                                    next={fetchMoreData}
+                                    hasMore={input.hasMore}
+                                    loader={<h4>Loading...</h4>}>
+                                    { 
+                                        _.map(input.data, (i, index) => {
+                                            switch(i?.type){
+                                                case "system":{
+                                                    return  <div class="alert alert-secondary p-1 m-1" role="alert"><Stack direction="row" spacing={2}>
+                                                                <SystemIcon />
+                                                                <div 
+                                                                    onClick={(evt)=>{
+                                                                        console.log("system")
 
-                                                            onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
-                                                        }
-                                                    } key={index}>05-APR-2023 00:00:01 {i?.data} {i?.status} </div>
-                                                </Stack>
-                                                </div>
-                                    }
-                                    case "withdraw":{
-                                        return  <div class="alert alert-success p-1 m-1" role="alert"><Stack direction="row" spacing={2}>
-                                                    <WithdrawIcon />
-                                                    <div 
-                                                        onClick={(evt)=>{
-                                                            console.log("withdraw")
+                                                                        onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
+                                                                    }
+                                                                } key={index}>05-APR-2023 00:00:01 {i?.data} {i?.status} </div>
+                                                            </Stack>
+                                                            </div>
+                                                }
+                                                case "withdraw":{
+                                                    return  <div class="alert alert-success p-1 m-1" role="alert"><Stack direction="row" spacing={2}>
+                                                                <WithdrawIcon />
+                                                                <div 
+                                                                    onClick={(evt)=>{
+                                                                        console.log("withdraw")
 
-                                                            onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
-                                                        }
-                                                    } key={index}>05-APR-2023 00:00:01 {i?.data} {i?.status} </div>
-                                                </Stack>
-                                                </div>
-                                    }
-                                    case "deposit":{
-                                        return  <div class="alert alert-warning p-1 m-1" role="alert"><Stack direction="row" spacing={2}>
-                                                    <DepositIcon />
-                                                    <div 
-                                                        onClick={(evt)=>{
-                                                            console.log("deposit")
+                                                                        onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
+                                                                    }
+                                                                } key={index}>05-APR-2023 00:00:01 {i?.data} {i?.status} </div>
+                                                            </Stack>
+                                                            </div>
+                                                }
+                                                case "deposit":{
+                                                    return  <div class="alert alert-warning p-1 m-1" role="alert"><Stack direction="row" spacing={2}>
+                                                                <DepositIcon />
+                                                                <div 
+                                                                    onClick={(evt)=>{
+                                                                        console.log("deposit")
 
-                                                            onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
-                                                        }
-                                                    } key={index}>05-APR-2023 00:00:01 {i?.data} {i?.status} </div>
-                                                </Stack>
-                                                </div>
+                                                                        onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
+                                                                    }
+                                                                } key={index}>05-APR-2023 00:00:01 {i?.data} {i?.status} </div>
+                                                            </Stack>
+                                                            </div>
+                                                }
+                                            }
+                                        }) 
                                     }
-                                }
-                            }) 
-                        }
-                    </InfiniteScroll>
-                }
-            </div></div></div>);
+                                </InfiniteScroll>
+                            }
+                        
+                </div>
+                </div>
+            </div>);
 }
-
 export default NotificationsPage

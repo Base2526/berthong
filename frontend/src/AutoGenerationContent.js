@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useHistory, useLocation } from "react-router-dom";
-import { connect } from "react-redux";
-import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
 import { getHeaders, handlerErrorApollo } from "./util"
@@ -40,18 +38,18 @@ const AutoGenerationContent = (props) => {
     const [onSupplier, resultSupplier] = useMutation(mutationSupplier, {
         context: { headers: getHeaders(location) },
         update: (cache, {data: {supplier}}) => { },
-        onCompleted({ data }) {
-        //   history.goBack()
+        onCompleted(data) {
+            console.log("onCompleted :", data)
         },
         onError(error){
-          console.log("onError :", error)
+            console.log("onError :", error)
         }
     });
 
     const [onRegister, resultRegister] = useMutation(mutationRegister, {
         context: { headers: getHeaders(location) },
         update: (cache, {data: {register}}) => { },
-        onCompleted({ data }) {
+        onCompleted( data ) {
         //   history.goBack()
         },
         onError(error){
@@ -108,7 +106,7 @@ const AutoGenerationContent = (props) => {
                 <div>Auto-Generation</div>
                 <div>
                     <button onClick={()=>{
-                        for ( var i = 0; i < 100; i++ ) {
+                        for ( var i = 0; i <200; i++ ) {
                             let newInput =  {
                                 mode: "NEW",
                                 title: faker.lorem.lines(1),
@@ -144,7 +142,7 @@ const AutoGenerationContent = (props) => {
                                 }
                             }
 
-                            console.log("newInput :", newInput)
+                            // console.log("newInput :", newInput)
                             onRegister({ variables: { input: newInput } });
                         }
                     }}>Auto สร้าง USER</button>

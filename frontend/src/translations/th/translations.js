@@ -80,5 +80,9 @@ export const TRANSLATIONS_TH = {
     editable_placeholder: "กรอกรายละเอียด คอมเม้นต์?",
     bookmark: "บุ๊กมาร์ก",
     send: "ส่ง",
-    withdraw: "ถอดเงิน"
+    withdraw: "ถอดเงิน",
+
+    notifications: "การแจ้งเตือน"
 };
+
+// 

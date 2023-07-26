@@ -29,6 +29,8 @@ import { getHeaders, handlerErrorApollo } from "./util"
 import { queryAdminDeposits } from "./gqlQuery"
 import * as Constants from "./constants"
 
+import AdminDepositItem from "./item/AdminDepositItem"
+
 deepdash(_);
 
 const AdminDepositsPage = (props) => {
@@ -294,9 +296,9 @@ const AdminDepositsPage = (props) => {
                             { 
                             _.map(datas, (item, index) => {
 
-                              // console.log("item :", item)
+                              console.log("item :", item)
 
-                              let { _id, user, type } = item
+                              let { _id, userId, type } = item
                               // return  <Stack direction="row" spacing={2}>{index} : {i.title}</Stack>
 
                               // let userId  = item?.userIdRequest;
@@ -318,6 +320,11 @@ const AdminDepositsPage = (props) => {
                                 }
 
                                 case Constants.DEPOSIT:{
+                                  return <AdminDepositItem 
+                                            _id={_id}
+                                            userId={userId} 
+                                            balance={item?.deposit?.balance} 
+                                            onMutationAdminDeposit={(v)=>onMutationAdminDeposit(v)}/>
                                   return  <Stack direction="row" spacing={2} >
                                             <Box>Deposit</Box>
                                             <Box>
@@ -327,7 +334,7 @@ const AdminDepositsPage = (props) => {
                                                 variant="rounded" />
                                             </Box>
                                             <Box>{user?.displayName}</Box>
-                                            <Box>{item?.balance}</Box>
+                                            <Box>{item?.deposit?.balance}</Box>
                                             <Button 
                                               size="small" 
                                               variant="contained"

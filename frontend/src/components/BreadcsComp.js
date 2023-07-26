@@ -98,7 +98,7 @@ const BreadcsComp = (props) => {
         }
       }
 
-      case "/users":{
+      case "/admin-users":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายชื่อบุคคลทั้งหมด</Typography>
@@ -232,7 +232,7 @@ const BreadcsComp = (props) => {
       case "/notifications":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-          <Typography key="1" color="text.primary">{t("Notifications")}</Typography>
+          <Typography key="1" color="text.primary">{t("notifications")}</Typography>
         ]
       }
 
