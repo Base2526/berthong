@@ -61,4 +61,6 @@ export const TRANSLATIONS_EN = {
     gold: "Gold",
     things: "Things",
     etc: "Etc",
+
+    all_result: "All result"
 };

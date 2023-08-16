@@ -1527,6 +1527,8 @@ export default {
       let { input } = args
       let { req } = context
 
+      console.log("supplier :", input)
+
       let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated and Authenticated only!')
 

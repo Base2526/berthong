@@ -130,7 +130,7 @@ const SupplierPage = (props) => {
   }, [id])
 
   useEffect(()=>{
-    console.log("input :", input)
+    // console.log("input :", input)
   }, [input])
 
   useEffect(()=>{
@@ -350,7 +350,7 @@ const SupplierPage = (props) => {
                           values={input.files}
                           multiple={true}
                           onChange={(values) =>{
-                            console.log("{...input, files: values} :", input, {...input, files: values})
+                            // console.log("{...input, files: values} :", input, {...input, files: values})
                             setInput({...input, files: values})
                           } }
                           onSnackbar={(data) => console.log(data) }/>

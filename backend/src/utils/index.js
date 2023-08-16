@@ -476,13 +476,14 @@ export const getSupplier = async(query) =>{
 }
 
 export const getTotalSupplier = async() =>{
-    let key = "length"
-    let length = cache.ca_get(key)
-    if(!_.isEmpty(length)){
-        return length;
-    }
-    length = (await Model.Supplier.find({})).length
-    cache.ca_save(key, length)
+    // let key = "length"
+    // let length = cache.ca_get(key)
+    // if(!_.isEmpty(length)){
+    //     return length;
+    // }
+    // length = (await Model.Supplier.find({})).length
+    // cache.ca_save(key, length)
+    let length = (await Model.Supplier.find({})).length
     return length
 }
 
