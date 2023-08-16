@@ -100,9 +100,9 @@ const AdminHomePage = (props) => {
           subscribeToMore: subscribeToMoreAdminHome, 
           networkStatus: networkStatusAdminHome } = useQuery(queryAdminHome, 
                                       { 
-                                        // context: { headers: getHeaders(location) }, 
-                                        fetchPolicy: 'cache-first', // Used for first execution
-                                        nextFetchPolicy: 'network-only', // Used for subsequent executions
+                                        context: { headers: getHeaders(location) }, 
+                                        fetchPolicy: 'network-only', // Used for first execution
+                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
                                         notifyOnNetworkStatusChange: true
                                       }
                                     );
@@ -112,9 +112,9 @@ const AdminHomePage = (props) => {
   useEffect(() => {
     if(!loadingAdminHome){
       if(!_.isEmpty(dataAdminHome?.adminHome)){
-        let { status, data } = dataAdminHome?.adminHome
+        let { status, data: newData } = dataAdminHome?.adminHome
         if(status){
-          setDatas(data)
+          setDatas( newData )
         }
       }
     }

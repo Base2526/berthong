@@ -4,6 +4,8 @@ services:
   #   Setup React-admin container
   ################################
   frontend:
+    env_file:
+      - ./env/.env.prod
     build: 
       context: ./frontend
       dockerfile: Dockerfile.prod
@@ -17,8 +19,6 @@ services:
     ports:
       - "8011:80"
       - "443:443"
-    env_file:
-      - ./env/.env.prod
     volumes:
       - ./frontend/src:/app/src
       - ./uploads:/var/storage
@@ -59,7 +59,7 @@ services:
   ################################
   mongo:
     image: mongo:6.0.1
-    command: mongod --port 29102
+    command: mongod --auth --port 29102
     expose:
       - 29102
     ports:

@@ -22,13 +22,13 @@ import Store from "./Store";
 let { REACT_APP_NODE_ENV, REACT_APP_GOOGLE_ANALYTICS4 } = process.env
  
 // replace console.* for disable log on production
-if (REACT_APP_NODE_ENV === 'production') {
-  console.log = () => {}
-  console.error = () => {}
-  console.debug = () => {}
-}
+// if (REACT_APP_NODE_ENV === 'production') {
+//   console.log = () => {}
+//   console.error = () => {}
+//   console.debug = () => {}
+// }
 
-// console.log("process.env :", process.env)
+console.log("process.env :", process.env)
 
 // const styleLink = document.createElement("link");
 // styleLink.rel = "stylesheet";

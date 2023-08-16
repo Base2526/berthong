@@ -268,9 +268,7 @@ const DetailPanelRight = (props) =>{
             }
            
             <div style={{paddingLeft: "1rem",paddingRight:"1rem"}}>
-              <div style={{ textAlign: "left", color: "#aaa", fontSize: "12px" }}>
-                    หมายเหตุ : กรุณาชำระเงินภายใน 2 นาที เพราะการจองจะถูกยกเลิก
-              </div>
+              <div style={{ textAlign: "left", color: "#aaa", fontSize: "12px" }}>หมายเหตุ : กรุณาชำระเงินภายใน 2 นาที เพราะการจองจะถูกยกเลิก</div>
               <Typography id="discrete-slider-always" gutterBottom>ซื้อไปแล้ว { sellView(data) } เบอร์ , จอง { bookView(data) } เบอร์ </Typography>
               <div className="pt-4">     
                 <Slider
@@ -349,7 +347,6 @@ const DetailPanelRight = (props) =>{
                   <div className="col-lg-6 col-md-6 col-sm-12 col-12 p-2"></div>
                 </div>
               </div>
-
               <CommentComp 
                 {...props} 
                 id={data?._id} 

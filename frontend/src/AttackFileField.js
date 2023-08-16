@@ -29,7 +29,7 @@ const AttackFileField = (props) => {
     onChange(newInputList);
   };
 
-  return  useMemo(() => {
+  // return  useMemo(() => {
             return (
               <Stack>
                 <Typography variant="overline" display="block" gutterBottom>{label}</Typography>
@@ -168,7 +168,7 @@ const AttackFileField = (props) => {
                 </Stack>
               </Stack>
             )
-          }, [values]);
+          // }, [values]);
 };
 
 export default AttackFileField;

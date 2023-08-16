@@ -647,11 +647,56 @@ export default {
               })), i => !_.isEmpty(i))
               */
 
+      let deposits = await Model.Transition.aggregate([
+        { 
+            $match: { status: Constants.WAIT /* 13 */, type: Constants.DEPOSIT /* 11 */ } 
+        },
+        {
+            $lookup: {
+                localField: "refId",
+                from: "deposit",
+                foreignField: "_id",
+                as: "deposit"
+            }
+        },
+        {
+          $unwind: {
+            "path": "$deposit",
+            "preserveNullAndEmptyArrays": false
+          }
+        }
+      ])
+
+      let withdraws = await Model.Transition.aggregate([
+        { 
+            $match: { status: Constants.WAIT /* 13 */, type: Constants.WITHDRAW /* 11 */ } 
+        },
+        {
+            $lookup: {
+                localField: "refId",
+                from: "withdraw",
+                foreignField: "_id",
+                as: "withdraw"
+            }
+        },
+        {
+          $unwind: {
+            "path": "$withdraw",
+            "preserveNullAndEmptyArrays": false
+          }
+        }
+      ])
+
+      let suppliers = Array.from({ length: await Utils.getTotalSupplier() }, (_, i) => i);
+
+      let users = await Model.User.find({roles: {$nin:[Constants.AMDINISTRATOR]}}, 
+                  { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 }); 
+
       let data =  [ 
-                    { title: "รายการ ฝากเงินรออนุมัติ", data: [] },
-                    { title: "รายการ ถอดเงินรออนุมัติ", data: [] }, 
-                    { title: "รายการ สินค้าทั้งหมด", data: [] },
-                    { title: "รายชื่อบุคคลทั้งหมด", data: [] } 
+                    { title: "รายการ ฝากเงินรออนุมัติ", data: deposits },
+                    { title: "รายการ ถอดเงินรออนุมัติ", data: withdraws }, 
+                    { title: "รายการ สินค้าทั้งหมด", data: suppliers },
+                    { title: "รายชื่อบุคคลทั้งหมด", data: users } 
                   ]
       return {  status: true,
                 data,
@@ -1481,6 +1526,8 @@ export default {
       let start = Date.now()
       let { input } = args
       let { req } = context
+
+      console.log("supplier :", input)
 
       let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated and Authenticated only!')

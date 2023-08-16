@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { Button ,LinearProgress } from '@mui/material';
 import _ from "lodash";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import moment from "moment";
 
-import { queryDateLotterys, querySupplierById } from "./gqlQuery";
-import { getHeaders } from "./util";
+import { mutationSupplier, queryDateLotterys, querySupplierById } from "./gqlQuery";
+import { getHeaders, handlerErrorApollo } from "./util";
 import AttackFileField from "./AttackFileField";
 
 let initValues = {
@@ -27,7 +27,7 @@ const SupplierPage = (props) => {
   const location = useLocation();
   const { t } = useTranslation();
 
-  let [input, setInput]       = useState(initValues);
+  const [input, setInput]       = useState(initValues);
   let [error, setError]       = useState(initValues);
   let [dateLotterysValues, setDateLotterysValues] = useState([]);
   let [types, setTypes] = useState([{id: 0, name: "bon"}, {id: 1, name: "lang"}]);
@@ -35,7 +35,50 @@ const SupplierPage = (props) => {
                                             {id: 2, name: "things"}, {id: 3, name: "etc"}]);
 
   let { mode, id } = location.state
-  const { onMutationSupplier, logout } = props
+  // const { onMutationSupplier } = props
+
+  const [onMutationSupplier, resultSupplier] = useMutation(mutationSupplier, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {supplier}}) => {
+      let { data, mode, status } = supplier
+
+      // if(status){
+      //   switch(mode){
+      //     case "new":{
+      //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+
+      //       if(!_.isNull(querySuppliersValue)){
+      //         let newData = [...querySuppliersValue.suppliers.data, data];
+
+      //         cache.writeQuery({
+      //           query: querySuppliers,
+      //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+      //         });
+      //       }
+      //       break;
+      //     }
+      //     case "edit":{
+      //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+      //       if(!_.isNull(querySuppliersValue)){
+      //         let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
+
+      //         cache.writeQuery({
+      //           query: querySuppliers,
+      //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+      //         });
+      //       }
+      //       break;
+      //     }
+      //   }
+      // }
+    },
+    onCompleted(data) {
+      navigate(-1)
+    },
+    onError(error){
+      return handlerErrorApollo( props, error )
+    }
+  });
 
   let { loading: loadingDateLotterys, 
         data: dataDateLotterys, 
@@ -54,8 +97,8 @@ const SupplierPage = (props) => {
         refetch: refetchSupplierById } =  useQuery(querySupplierById, {
                                                   context: { headers: getHeaders(location) },
                                                   variables: {id},
-                                                  fetchPolicy: 'network-only', // Used for first execution
-                                                  nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                                  fetchPolicy: 'cache-first', 
+                                                  nextFetchPolicy: 'network-only', 
                                                   notifyOnNetworkStatusChange: true,
                                                 })
 
@@ -87,10 +130,18 @@ const SupplierPage = (props) => {
   }, [id])
 
   useEffect(()=>{
+    // console.log("input :", input)
+  }, [input])
+
+  useEffect(()=>{
     if(!loadingDateLotterys){
       if(!_.isEmpty(dataDateLotterys?.dateLotterys)){
-        let { status, data } = dataDateLotterys.dateLotterys
-        if(status) setDateLotterysValues(data)
+        let { status, data:newData } = dataDateLotterys.dateLotterys
+        if(status){
+          if(!_.isEqual( dateLotterysValues, newData )){
+            setDateLotterysValues(newData)
+          }
+        } 
       }
     }
   }, [dataDateLotterys, loadingDateLotterys])
@@ -111,6 +162,8 @@ const SupplierPage = (props) => {
         type: parseInt(input.type)               // bon, lang
     }
 
+    console.log("newInput :", newInput)
+
     if(mode == "edit"){
       newInput = {...newInput, _id: id}
     }
@@ -129,25 +182,25 @@ const SupplierPage = (props) => {
   const validateInput = (e) => {
     let { name, value } = e.target;
     setError((prev) => {
-      const stateObj = { ...prev, [name]: "" };
+      const objs = { ...prev, [name]: "" };
       switch (name) {
         case "title": {
           if (!value) {
-            stateObj[name] = "Please enter title.";
+            objs[name] = "Please enter title.";
           }
           break;
         }
 
         case "price": {
           if (!value) {
-            stateObj[name] = "Please enter price.";
+            objs[name] = "Please enter price.";
           }
           break;
         }
 
         case "priceUnit": {
           if (!value) {
-            stateObj[name] = "Please enter price unit.";
+            objs[name] = "Please enter price unit.";
           } 
 
           break;
@@ -155,25 +208,28 @@ const SupplierPage = (props) => {
 
         case "dateLottery":{
           if (!value) {
-            stateObj[name] = "Please enter date-lottery.";
+            objs[name] = "Please enter date-lottery.";
           } 
           break;
         }
+
         case "condition":{
           if (!value) {
-            stateObj[name] = "Please enter condition.";
+            objs[name] = "Please enter condition.";
           } 
           break;
         }
+
         case "type":{
           if (!value) {
-            stateObj[name] = "Please enter type.";
+            objs[name] = "Please enter type.";
           } 
           break;
         }
+
         case "category":{
           if (!value) {
-            stateObj[name] = "Please enter category.";
+            objs[name] = "Please enter category.";
           } 
           break;
         }
@@ -182,11 +238,11 @@ const SupplierPage = (props) => {
           break;
       }
 
-      return stateObj;
+      return objs;
     });
   };
 
-  return  useMemo(() => {
+  // return  useMemo(() => {
             return  <form onSubmit={submitForm}>
                       <div>
                         <label>ชื่อ * :</label>
@@ -260,7 +316,7 @@ const SupplierPage = (props) => {
                           onChange={ onInputChange }
                           onBlur={ validateInput } >
                         <option value={""}>ไม่เลือก</option>
-                        {_.map(types, (val)=><option key={val.id} value={val.id}>{val.name}</option> )}
+                        {_.map(types, (val)=><option key={val.id} value={val.id}>{t(val.name)}</option> )}
                         </select>    
                         <p className="text-red-500"> {_.isEmpty(error.type) ? "" : error.type} </p>  
                       </div> 
@@ -273,7 +329,7 @@ const SupplierPage = (props) => {
                           onChange={ onInputChange }
                           onBlur={ validateInput }>
                         <option value={""}>ไม่เลือก</option>
-                          { _.map(categorys, (val)=><option key={val.id} value={val.id}>{val.name}</option>) }
+                          { _.map(categorys, (val)=><option key={val.id} value={val.id}>{t(val.name)} </option>) }
                         </select> 
                         <p className="text-red-500"> {_.isEmpty(error.category) ? "" : error.category} </p>  
                       </div>   
@@ -288,11 +344,15 @@ const SupplierPage = (props) => {
                           }
                         } />
                       </div>
-                      <div >
+                      <div>
                         <AttackFileField
                           label={t("attack_file") + " (อย่างน้อย  1 ไฟล์)"}
                           values={input.files}
-                          onChange={(values) => setInput({...input, files: values})}
+                          multiple={true}
+                          onChange={(values) =>{
+                            // console.log("{...input, files: values} :", input, {...input, files: values})
+                            setInput({...input, files: values})
+                          } }
                           onSnackbar={(data) => console.log(data) }/>
                       </div>
                       {/* <button type="submit" variant="contained" color="primary"> { mode == "edit" ? t("update") : t("create")}</button> */}
@@ -303,7 +363,7 @@ const SupplierPage = (props) => {
                         // onClick={evt=>{ submitForm(evt) }}
                         >{ mode == "edit" ? t("update") : t("create")}</Button>
                     </form>
-          }, [ input ]);
+          // }, [ input, dateLotterysValues ]);
 }
 
 export default SupplierPage;
