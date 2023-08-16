@@ -91,4 +91,6 @@ export const TRANSLATIONS_TH = {
     gold: "ทอง",
     things: "สิ่งของ",
     etc: "อื่นๆ",
+
+    all_result: "ผลลัพธ์ทั้งหมด"
 };

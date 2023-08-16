@@ -7,7 +7,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { makeStyles } from "@material-ui/core/styles";
 import { ErrorOutline as ErrorOutlineIcon } from "@material-ui/icons";
 import { lightGreen, blueGrey } from "@material-ui/core/colors";
-
+import { useTranslation } from "react-i18next";
 import { FaAngleUp } from 'react-icons/fa';
 
 import { querySuppliers, subscriptionSuppliers} from "./gqlQuery";
@@ -81,6 +81,8 @@ const HomePage = (props) => {
   const location = useLocation();
   const toastIdRef = useRef(null)
   const classes = useStyles();
+  const { t } = useTranslation();
+
   let [datas, setDatas] = useState([]);
   let [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -110,7 +112,7 @@ const HomePage = (props) => {
   if(!_.isEmpty(errorSuppliers)) handlerErrorApollo( props, errorSuppliers )
 
   const handleScroll = () => {
-    setScrollPosition(window.pageYOffset);
+    setScrollPosition(window.scrollY);
   };
 
   useEffect(()=>{
@@ -274,6 +276,7 @@ const HomePage = (props) => {
                   onReset={()=>setReset(true)}
                   onSearch={(search)=>onSearchChange(search)} />
               </div>
+              <div> {t("all_result")} : {total} </div>
               {loading 
               ? <SkeletonComp />
               : <div className="row">

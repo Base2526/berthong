@@ -100,7 +100,7 @@ const AdminHomePage = (props) => {
           subscribeToMore: subscribeToMoreAdminHome, 
           networkStatus: networkStatusAdminHome } = useQuery(queryAdminHome, 
                                       { 
-                                        // context: { headers: getHeaders(location) }, 
+                                        context: { headers: getHeaders(location) }, 
                                         fetchPolicy: 'network-only', // Used for first execution
                                         nextFetchPolicy: 'cache-first', // Used for subsequent executions
                                         notifyOnNetworkStatusChange: true
