@@ -59,7 +59,7 @@ services:
   ################################
   mongo:
     image: mongo:6.0.1
-    command: mongod --port 29102
+    command: mongod --auth --port 29102
     expose:
       - 29102
     ports:

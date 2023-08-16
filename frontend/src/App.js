@@ -1368,8 +1368,6 @@ const App =(props) =>{
                                         onMutationBook={(evt)=>onMutationBook(evt)}
                                         onMutationComment={(evt)=>onMutationComment(evt)}/>} />
             <Route path="/user/login" element={<LoginPage {...props} />} />
-            <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
-            <Route path="/supplier" element={<SupplierPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
             <Route path="/p" element={<FriendPage 
                                         {...props} 
                                         onLogin={()=>setDialogLogin(true)}
@@ -1394,6 +1392,10 @@ const App =(props) =>{
               <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
+
+              <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/supplier" element={<SupplierPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
+
               <Route path="/admin-deposits" element={<AdminDepositsPage 
                                                       {...props} 
                                                       onLightbox={(value)=>setLightbox(value)} 

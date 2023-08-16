@@ -52,5 +52,13 @@ export const TRANSLATIONS_EN = {
     send: "่Send",
     withdraw: "Withdraw",
 
-    notifications: "Notifications"
+    notifications: "Notifications",
+
+    bon: "BON", 
+    lang: "LANG",
+
+    money: "Money",
+    gold: "Gold",
+    things: "Things",
+    etc: "Etc",
 };
