@@ -100,7 +100,13 @@ const SuppliersPage = (props) => {
   }
 
   return (<div className="pl-2 pr-2">
+            <SpeedDial
+              ariaLabel="SpeedDial basic example"
+              sx={{ position: 'absolute' /*, bottom: 16, right: 16*/  }}
+              icon={<SpeedDialIcon />}
+              onClick={(e)=> navigate("/supplier", {state: {from: "/", mode: "new"} }) } />
             <Box style={{ flex: 4 }} className="table-responsive">
+              
               {
                 loadingSuppliers
                 ?  <CircularProgress />
@@ -209,19 +215,7 @@ const SuppliersPage = (props) => {
                   </DialogActions>
                 </Dialog>
               )}
-
-              {
-                !_.isEqual(checkRole(user), Constants.AMDINISTRATOR)
-                ? <SpeedDial
-                    ariaLabel="SpeedDial basic example"
-                    sx={{ position: 'absolute', bottom: 16, right: 16 }}
-                    icon={<SpeedDialIcon />}
-                    onClick={(e)=>{ 
-                      navigate("/supplier", {state: {from: "/", mode: "new"} })
-                    }}>
-                  </SpeedDial>
-                : ""
-              }
+             
             </Box>
           </div>);
 };

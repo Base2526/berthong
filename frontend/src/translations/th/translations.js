@@ -82,7 +82,13 @@ export const TRANSLATIONS_TH = {
     send: "ส่ง",
     withdraw: "ถอดเงิน",
 
-    notifications: "การแจ้งเตือน"
-};
+    notifications: "การแจ้งเตือน",
 
-// 
+    bon: "บน", 
+    lang: "ล่าง",
+
+    money: "เงิน",
+    gold: "ทอง",
+    things: "สิ่งของ",
+    etc: "อื่นๆ",
+};
