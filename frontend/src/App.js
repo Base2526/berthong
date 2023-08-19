@@ -477,13 +477,12 @@ const App =(props) =>{
       let {status, data, sessionId} = login
       if(status){
         localStorage.setItem('token', sessionId)
-
         updateProfile(data)
-
         setDialogLogin(false);
       }
     },
     onCompleted(data) {
+      showToast("success", "Welcome to BERTHONG.")
       window.location.reload();
     },
     onError(error){
@@ -494,31 +493,15 @@ const App =(props) =>{
   const [onMutationLoginWithSocial, resultMutationLoginWithSocial] = useMutation(mutationLoginWithSocial, 
     {
       update: (cache, {data: {loginWithSocial}}) => {
-
-        // console.log("loginWithSocial :", loginWithSocial)
-        // const data1 = cache.readQuery({ query: gqlBanks });
-
         let {status, data, sessionId} = loginWithSocial
-
         if(status){
           localStorage.setItem('token', sessionId)
-
-          // onComplete(data)
-
+          updateProfile(data)
           setDialogLogin(false);
         }
-
-        // let newBanks = {...data1.banks}
-        // let newData  = _.map(newBanks.data, bank=>bank._id == updateBank._id ? updateBank : bank)
-
-        // newBanks = {...newBanks, data: newData}
-        // cache.writeQuery({
-        //   query: gqlBanks,
-        //   data: { banks: newBanks },
-        // });
       },
       onCompleted(data) {
-        // history.push("/");
+        showToast("success", "Welcome to BERTHONG.")
         navigate("/")
       },
       onError(error){

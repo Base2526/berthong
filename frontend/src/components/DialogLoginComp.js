@@ -50,14 +50,20 @@ const DialogLoginComp = (props) => {
   }, [])
 
   const callbackFacebook = (response) => {
-    if(!_.has(response, "status")){
-      onMutationLoginWithSocial({ variables: { input: { authType: "FACEBOOK",  data: response, deviceAgent: JSON.stringify(deviceData)  }} })
-    }
+
+    console.log("callbackFacebook :", response)
+    // if(!_.has(response, "status")){
+    //   onMutationLoginWithSocial({ variables: { input: { authType: "FACEBOOK",  data: response, deviceAgent: JSON.stringify(deviceData)  }} })
+    // }
   }
 
   // https://github.com/Sivanesh-S/react-google-authentication/blob/master/src/utils/refreshToken.js
   const onGoogleSuccess = async(response) => {
-    onMutationLoginWithSocial({ variables: { input: { authType: "GOOGLE",  data: {...response, ...await response.reloadAuthResponse()}, deviceAgent: JSON.stringify(deviceData)  }} })
+    let authResponse = await response.reloadAuthResponse()
+    let data = {...response, ...authResponse}
+
+    console.log("onGoogleSuccess :", response, authResponse);
+    onMutationLoginWithSocial({ variables: { input: { authType: "GOOGLE",  data, deviceAgent: JSON.stringify(deviceData)  }} })
   };
 
   const onGoogleFailure = (response) =>{
@@ -134,41 +140,63 @@ const DialogLoginComp = (props) => {
                             <div className="col-12 pb-2 text-center">
                               <div className="row">
                               <div className="col-6 text-center">
-                                <Button variant="contained" className="btn-confirm" type="submit" style={{width:"100%"}}>
-                                {t("login")}
-                                </Button>
+                                <Button variant="contained" className="btn-confirm" type="submit" style={{width:"100%"}}>{t("login")}</Button>
                               </div>
                               <div className="col-6 text-center">
-                                <Button disabled variant="contained" className="btn-dis" style={{width:"100%"}}>
-                                    สมัครสมาชิก
-                                </Button>
+                                <Button disabled variant="contained" className="btn-dis" style={{width:"100%"}}>สมัครสมาชิก</Button>
                               </div>
                               </div>
                             </div>
                           </div>
                           <div className="row">
                             <div className="col-lg-12 col-12 pb-2 text-center" style={{justifyContent:"center"}}>
-                              <a class="d-flex btn btn-social btn-facebook" >
-                              <FacebookIcon/>
-                              <span className="font14" style={{marginLeft:"20px"}}>Sign in with Facebook</span>
-                              </a>
+                              {/* 
+                                <a class="d-flex btn btn-social btn-facebook" >
+                                  <FacebookIcon/>
+                                  <span className="font14" style={{marginLeft:"20px"}}>Sign in with Facebook</span>
+                                </a> 
+                              */}
+
+                              <FacebookLogin
+                                appId={facebookAppId}
+                                autoLoad={false}
+                                callback={callbackFacebook}
+                                render={renderProps => (
+                                  // <button onClick={renderProps.onClick}>This is my custom FB button</button>
+                                  <a onClick={renderProps.onClick} class="d-flex btn btn-social btn-facebook" >
+                                    <FacebookIcon/>
+                                    <span className="font14" style={{marginLeft:"20px"}}>Sign in with Facebook</span>
+                                  </a>
+                                )}
+                              />
                             </div>
                             <div className="col-lg-12 col-12 pb-2 text-center" style={{justifyContent:"center"}}>
-                              <a class="d-flex btn btn-social btn-google" >
+                              {/* <a class="d-flex btn btn-social btn-google" >
                               <GoogleIcon/>
                               <span className="font14" style={{marginLeft:"20px"}}>Sign in with Google</span>
-                              </a>
+                              </a> */}
+
+                              <GoogleLogin
+                                clientId={googleClientId}
+                                render={renderProps => (
+                                  // <button onClick={renderProps.onClick} /*style={customStyle}*/ >This is my custom Google button</button>
+                                  <a class="d-flex btn btn-social btn-google" onClick={renderProps.onClick} >
+                                    <GoogleIcon/>
+                                    <span className="font14" style={{marginLeft:"20px"}}>Sign in with Google</span>
+                                  </a>
+                                )}
+                                buttonText="Login"
+                                onSuccess={onGoogleSuccess}
+                                onFailure={onGoogleFailure}
+                              />
                             </div>
-                            <div className="col-lg-12 col-12pb-2 text-center" style={{justifyContent:"center"}}>
+                            {/* <div className="col-lg-12 col-12pb-2 text-center" style={{justifyContent:"center"}}>
                               <a class="d-flex btn btn-social btn-line" >
                               <img style={{width:"24px"}} src={line} />
                               <span className="font14" style={{marginLeft:"20px"}}>Sign in with Line</span>
                               </a>
-                            </div>
+                            </div> */}
                           </div>
-
-
-
 
                           {/* <div className="d-flex form-input">
                             <label>{t("username")}</label>

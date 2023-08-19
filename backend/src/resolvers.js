@@ -38,9 +38,9 @@ export default {
 
       let text = "1234"
       let encrypt = cryptojs.AES.encrypt(text, process.env.JWT_SECRET).toString()
-      encrypt = "U2FsdGVkX18wIs5DOBhZOddShspHwri5Z8KFIXtyHzU="
+      // encrypt = "U2FsdGVkX18wIs5DOBhZOddShspHwri5Z8KFIXtyHzU="
       let decrypt = cryptojs.AES.decrypt(encrypt, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8);
-      console.log("encrypt :", encrypt, decrypt)
+      console.log("encrypt ++ :", encrypt, decrypt)
   
       return { status:true, "mongo db state" : mongo_db_state }
     },
@@ -889,7 +889,7 @@ export default {
 
           let { data } = input
 
-          let user = await Utils.getUserFull({socialId: data.profileObj.googleId, socialType: 'google'});
+          let user = await Utils.getUser({socialId: data.profileObj.googleId, socialType: 'google'});
           if(_.isEmpty(user)){
 
             /*
@@ -906,8 +906,9 @@ export default {
               password: cryptojs.AES.encrypt( data.profileObj.googleId, process.env.JWT_SECRET).toString(),
               email: data.profileObj.email,
               displayName: data.profileObj.givenName +" " + data.profileObj.familyName ,
-              roles: ['62a2ccfbcf7946010d3c74a4', '62a2ccfbcf7946010d3c74a6'], // anonymous, authenticated
+              roles: [/*'62a2ccfbcf7946010d3c74a4', '62a2ccfbcf7946010d3c74a6'*/ Constants.AUTHENTICATED ], // anonymous, authenticated
               isActive: 'active',
+              banks: [],
               image :[{
                 url: data.profileObj.imageUrl,
                 filename: data.profileObj.googleId +".jpeg",
@@ -920,12 +921,16 @@ export default {
               socialId: data.profileObj.googleId,
               socialObject: JSON.stringify(data)
             }
+
+            console.log("Presave GOOGLE :", newInput)
+            
             user = await Model.User.create(newInput);
           }
-          console.log("GOOGLE :", user)
 
+          user = await Utils.getUserFull({_id: user?._id})
+          console.log("getUserFull #GOOGLE :", user)
           return {
-            status:true,
+            status: true,
             data: user,
             sessionId: await Utils.getSessionId(user?._id, input),
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`

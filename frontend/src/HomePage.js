@@ -115,9 +115,9 @@ const HomePage = (props) => {
     setScrollPosition(window.scrollY);
   };
 
-  useEffect(()=>{
-    console.log("scrollPosition :", scrollPosition)
-  }, [scrollPosition])
+  // useEffect(()=>{
+  //   console.log("scrollPosition :", scrollPosition)
+  // }, [scrollPosition])
 
   useEffect(()=>{
     onSearchChange({...search, PAGE: 1 })

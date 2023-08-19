@@ -63,9 +63,10 @@ const HomeItem = (props) => {
                   <TwitterIcon size={32} round /> Twitter
                 </TwitterShareButton>
               </MenuItem>
+              {/* /d?id= */}
               <MenuItem 
                 onClick={async(e)=>{
-                  let text = window.location.href + "p/?id=" + item._id
+                  let text = window.location.href + "d?id=" + item._id
                   if ('clipboard' in navigator) {
                     await navigator.clipboard.writeText(text);
                   } else {

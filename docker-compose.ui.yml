@@ -8,6 +8,6 @@ services:
     env_file:
       - ./env/.env.ui
     ports:
-      - "3500:3000"
+      - "3000:3000"
     volumes:
       - ./frontend/src:/app/src

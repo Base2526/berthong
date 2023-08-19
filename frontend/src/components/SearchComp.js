@@ -55,11 +55,13 @@ const SearchComp = (props) => {
                                     id="standard-basic"
                                     label="ตัวเลขต้องการซื้อ"
                                     variant="filled"
+                                    placeholder=""
                                     name={"number"}
                                     value={data.NUMBER}
                                     onChange={(evt) => setData({...data, NUMBER: evt.target.value}) }
                                   />
                                 </div>
+                                {/* 
                                 <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
                                   <TextField
                                     id="standard-basic"
@@ -105,7 +107,8 @@ const SearchComp = (props) => {
                                     />
                                     บาท
                                   </div>
-                                </div>
+                                </div> 
+                                */}
                                 <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1 m-1">
                                   <Box sx={{ display: "flex", gap: 2 }}>
                                     <Checkbox

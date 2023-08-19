@@ -66,7 +66,7 @@ const DetailPanelRight = (props) =>{
         onMenu,
         onMutationComment } = props
 
-  console.log("data :", data)
+  // console.log("data :", data)
 
   let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
   let buys      =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 1) )
@@ -282,7 +282,7 @@ const DetailPanelRight = (props) =>{
                   valueLabelFormat={value => <div>{value}</div>}
                   disabled
                   ThumbComponent={(props) => {
-                    console.log("props.style :", props.style)
+                    // console.log("props.style :", props.style)
                     if (props["data-index"] == 0) {
                       props.style.backgroundColor = "gray";
                     } else if (props["data-index"] == 1) {
