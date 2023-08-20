@@ -96,91 +96,92 @@ const FriendPage = (props) => {
     }
 
     return (<div className="content-bottom">
-    <div className="content-page border">   
-    <div className="row">
-            <div className="row" style={{paddingBottom:"1rem"}}>
-                <Stack 
-                    direction="row" 
-                    spacing={2}>
-                    <>
-                        <Avatar
-                            style={{ cursor: 'pointer' }}
-                            className={"user-profile"}
-                            sx={{ height: 80, width: 80 }}
-                            variant="rounded"
-                            alt="Example Alt"
-                            src={_.isEmpty(data?.avatar) ? "" : data?.avatar?.url }/>
-                        <div className="row">
-                            Name : {data?.displayName}
-                            <Box>
-                                <IconButton onClick={(evt)=> _.isEmpty(user) ? onLogin(true) : onMutationSubscribe({ variables: { id: params.id } }) }>
-                                    {   
-                                        _.find( data?.subscriber, (i)=> _.isEqual( i?.userId,  user?._id) ) 
-                                        ? <SlUserFollowing size={"20px"} color="blue" />  
-                                        : <SlUserFollow size={"20px"} /> 
-                                    } 
-                                </IconButton> 
-                            </Box>
-                        </div>   
-                    </>
-                </Stack>
-                </div>
-                <div className="blog-footer p-2" style={{padding:"1rem"}}></div>
-                {
-                    data?.suppliers?.length == 0 
-                    ?   <label>Empty data</label>
-                    :   <div>
-                            <div className="header-c">สินค้าทั้งหมด</div>
-                            <InfiniteScroll
-                                dataLength={slice}
-                                next={fetchMoreData}
-                                hasMore={false}
-                                loader={<h4>Loading...</h4>}>
-                                { 
-                                _.map(data?.suppliers, (item, index) => {
-                                    let title         = item?.title;
-                                    let description   = item?.description;
-                                    let files         = item?.files;
-                                    let price         = item?.price;
-                                    let priceUnit     = item?.priceUnit;
-                                    let buys          = item?.buys;
-                                    
-                                    let updatedAt = new Date(item.updatedAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-                            
-                                    return  <div className="row border-c p-2 m-2" style={{borderRadius:"5px",borderColor:"#5551A3 !important"}}>
-                                            <Stack direction="row" spacing={2} >
-                                                <Box sx={{ width: '10%' }}>
-                                                    <Avatar
-                                                        style={{ cursor: 'pointer' }}
-                                                        alt=""
-                                                        variant="rounded"
-                                                        src={files[0]?.url}
-                                                        onClick={(e) => {
-                                                            onLightbox({ isOpen: true, photoIndex: 0, images:files })
-                                                        }}
-                                                        sx={{ width: 56, height: 56 }} />
-                                                </Box>
-                                                <Box 
-                                                    sx={{ width: '10%' }}
-                                                    onClick={()=>{
-                                                        navigate({
-                                                            pathname: "/d",
-                                                            search: `?${createSearchParams({ id: item._id})}`,
-                                                            state: { id: item._id }
-                                                        })
-                                                    }}
-                                                >{title}</Box>
-                                                <Box sx={{ width: '20%' }}>{description}</Box>
-                                                <Box sx={{ width: '5%' }}>{priceUnit}/{price}</Box>
-                                                <Box sx={{ width: '15%' }}>ยอดจอง { _.filter(buys, (buy)=> buy.selected == 0 )?.length }, ขายไปแล้ว { _.filter(buys, (buy)=> buy.selected == 1 )?.length }</Box>
-                                                <Box sx={{ width: '10%' }}>{(moment(updatedAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A')}</Box>
-                                            </Stack></div>
-                                })
-                            }
-                            </InfiniteScroll>
+            <div className="content-page border">   
+            <div className="row">
+                    <div className="row" style={{paddingBottom:"1rem"}}>
+                        <Stack 
+                            direction="row" 
+                            spacing={2}>
+                            <>
+                                <Avatar
+                                    style={{ cursor: 'pointer' }}
+                                    // className={"user-profile"}
+                                    sx={{ height: 80, width: 80 }}
+                                    variant="rounded"
+                                    alt="Avatar Alt"
+                                    src={_.isEmpty(data?.avatar) ? "" : data?.avatar?.url }/>
+                                <div className="row">{t("name")} : {data?.displayName}
+                                    <Box>
+                                        <IconButton onClick={(evt)=> _.isEmpty(user) ? onLogin(true) : onMutationSubscribe({ variables: { id: params.id } }) }>
+                                            {   
+                                                _.find( data?.subscriber, (i)=> _.isEqual( i?.userId,  user?._id) ) 
+                                                ? <SlUserFollowing size={"20px"} color="blue" />  
+                                                : <SlUserFollow size={"20px"} /> 
+                                            } 
+                                        </IconButton> 
+                                    </Box>
+                                </div>   
+                            </>
+                        </Stack>
                         </div>
-                }
-            </div></div></div>);
+                        <div className="blog-footer p-2" style={{padding:"1rem"}}></div>
+                        {
+                            data?.suppliers?.length == 0 
+                            ?   <label>Empty data</label>
+                            :   <div>
+                                    <div className="header-c">{t("all_products")}</div>
+                                    <InfiniteScroll
+                                        dataLength={slice}
+                                        next={fetchMoreData}
+                                        hasMore={false}
+                                        loader={<h4>Loading...</h4>}>
+                                        { 
+                                        _.map(data?.suppliers, (item, index) => {
+                                            let title         = item?.title;
+                                            let description   = item?.description;
+                                            let files         = item?.files;
+                                            let price         = item?.price;
+                                            let priceUnit     = item?.priceUnit;
+                                            let buys          = item?.buys;
+                                            
+                                            let updatedAt = new Date(item.updatedAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+                                    
+                                            return  <div className="row border-c p-2 m-2" style={{borderRadius:"5px",borderColor:"#5551A3 !important"}}>
+                                                    <Stack direction="row" spacing={2} >
+                                                        <Box sx={{ width: '10%' }}>
+                                                            <Avatar
+                                                                style={{ cursor: 'pointer' }}
+                                                                alt=""
+                                                                variant="rounded"
+                                                                src={files[0]?.url}
+                                                                onClick={(e) => {
+                                                                    onLightbox({ isOpen: true, photoIndex: 0, images:files })
+                                                                }}
+                                                                sx={{ width: 56, height: 56 }} />
+                                                        </Box>
+                                                        <Box 
+                                                            sx={{ width: '10%' }}
+                                                            onClick={()=>{
+                                                                navigate({
+                                                                    pathname: "/d",
+                                                                    search: `?${createSearchParams({ id: item._id})}`,
+                                                                    state: { id: item._id }
+                                                                })
+                                                            }}
+                                                        >{title}</Box>
+                                                        <Box sx={{ width: '20%' }}>{description}</Box>
+                                                        <Box sx={{ width: '5%' }}>{priceUnit}/{price}</Box>
+                                                        <Box sx={{ width: '15%' }}>ยอดจอง { _.filter(buys, (buy)=> buy.selected == 0 )?.length }, ขายไปแล้ว { _.filter(buys, (buy)=> buy.selected == 1 )?.length }</Box>
+                                                        <Box sx={{ width: '10%' }}>{(moment(updatedAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY')}</Box>
+                                                    </Stack></div>
+                                        })
+                                    }
+                                    </InfiniteScroll>
+                                </div>
+                        }
+            </div>
+            </div>
+            </div>);
 }
 
 export default FriendPage

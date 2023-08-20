@@ -62,5 +62,11 @@ export const TRANSLATIONS_EN = {
     things: "Things",
     etc: "Etc",
 
-    all_result: "All result"
+    all_result: "All result",
+
+    advance_search: "Advance search",
+
+    all_products: "All products",
+
+    balance: "Balance",
 };

@@ -164,9 +164,9 @@ const MePage = (props) => {
                                     </>
                                     </div>
                                     <div className="col-lg-12 col-12">
-                                        <div className="text-center"><span className="header-c">Display name</span> : {user?.displayName} </div>
-                                        <div className="text-center"><span className="header-c text-center"> Email :</span> {user?.email} </div>
-                                        <div className="text-center"><span className="header-c text-center"> Balance :</span> {user?.balance} [จอง -{user?.balanceBook}] </div>
+                                        <div className="text-center"><span className="header-c">{t("name")} </span> : {user?.displayName} </div>
+                                        <div className="text-center"><span className="header-c text-center"> {t("email")} :</span> {user?.email} </div>
+                                        <div className="text-center"><span className="header-c text-center"> {t("balance")} :</span> {user?.balance} [จอง -{user?.balanceBook}] </div>
                                     </div>
                                 </div>
                             </div>

@@ -27,7 +27,6 @@ import { getHeaders, showToast, handlerErrorApollo } from "../../util";
 
 import {  querySupplierById, 
           subscriptionSupplierById, 
-          queryUserById,
           mutationBuy
         } from "../../gqlQuery";
 
@@ -37,7 +36,6 @@ let unsubscribeSupplierById = null;
 const Detail = (props) => {
   const location = useLocation();
   const [data, setData] = useState([]);
-  const [dataUser, setDataUser] = useState([]);
   const [openMenu, setOpenMenu] = useState(null);
    
   const [isPopupOpenedWallet, setPopupOpenedWallet] = useState(false);
@@ -87,43 +85,14 @@ const Detail = (props) => {
                                       nextFetchPolicy: 'network-only', 
                                       notifyOnNetworkStatusChange: true});
 
-  const { loading: loadingUserById, 
-          data: dataUserById, 
-          refetch: refetchUserById,
-          error: errorUserById} = useQuery(queryUserById, { 
-                                                        context: { headers: getHeaders(location) },
-                                                        fetchPolicy: 'cache-first', 
-                                                        nextFetchPolicy: 'network-only', 
-                                                        notifyOnNetworkStatusChange: true 
-                                                    });
-
-  if(!_.isEmpty(errorUserById)) handlerErrorApollo( props, errorUserById )
-
   useEffect(() => {
-    if(!loadingUserById){
-      if(!_.isEmpty(dataUserById?.userById)){
-        let { status, data } = dataUserById?.userById
-        if(status){
-          setDataUser(data)
-        }
-      }
-    }
-  }, [dataUserById, loadingUserById])
-
-  useEffect(() => {
-    if(!loadingUserById){
+    if(!loadingSupplierById){
       if(!_.isEmpty(dataSupplierById?.supplierById)){
         let { status, data: newData } = dataSupplierById?.supplierById
         if(status && !_.isEqual(newData, data)) setData(newData)
       }
     }
-  }, [dataSupplierById, loadingUserById])
-
-  useEffect(()=>{
-    if(!_.isEmpty(data) && _.isEmpty(dataUser)){
-      refetchUserById({id: data?.ownerId});
-    }
-  }, [data])
+  }, [dataSupplierById, loadingSupplierById])
 
   useEffect(()=>{
     if(_.isEmpty(data)) refetchSupplierById({id}) 
@@ -240,7 +209,7 @@ const Detail = (props) => {
             <DetailPanelRight 
               {...props}
               data={data}
-              owner={dataUser}
+              // owner={dataUser}
               onSelected={(evt, itemId)=>onSelected(evt, itemId)}
               onFollow={(evt)=> _.isEmpty(user) ? onLogin(true) : onMutationFollow(evt)}
 

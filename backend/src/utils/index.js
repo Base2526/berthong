@@ -464,8 +464,23 @@ export const getSupplier = async(query) =>{
             }
         },
         {
+            $lookup: {
+                localField: "dateLottery",
+                from: "dateLottery",
+                foreignField: "_id",
+                pipeline: [ { $project:{ date: 1 }} ],
+                as: "dateLottery"
+            }
+        },
+        {
             $unwind: {
                     "path": "$owner",
+                    "preserveNullAndEmptyArrays": false
+            }
+        },
+        {
+            $unwind: {
+                    "path": "$dateLottery",
                     "preserveNullAndEmptyArrays": false
             }
         }

@@ -52,6 +52,8 @@ export const mutationComment      = gql`mutation comment($input: JSON) { comment
 export const mutationContactUs    = gql`mutation contactUs($input: ContactUsInput) { contactUs(input: $input) }`;
 export const mutationSubscribe    = gql`mutation subscribe($id: ID!) { subscribe(_id: $id) }`;
 
+export const mutationSearch       = gql`mutation search($input: SearchInput) { search(input: $input) }`;
+
 export const mutationAdminDeposit   = gql`mutation adminDeposit($input: JSON){ adminDeposit(input: $input) }`;
 export const mutationAdminWithdraw  = gql`mutation adminWithdraw($input: JSON){ adminWithdraw(input: $input) }`;
 

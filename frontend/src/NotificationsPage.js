@@ -1,28 +1,16 @@
-import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import _ from "lodash"
 import { useQuery } from "@apollo/client";
 import InfiniteScroll from "react-infinite-scroll-component";
-
-import {
-    Box,
-    Stack,
-    Avatar,
-    CircularProgress,
-    IconButton,
-    LinearProgress
-} from '@mui/material';
-
-import {
-    SlUserFollow
-} from "react-icons/sl"
-
+import {Stack, LinearProgress } from '@mui/material';
 import {
     MdSystemSecurityUpdateWarning as SystemIcon,
     MdOutlineAttachMoney as DepositIcon,
     MdOutlineMoneyOffCsred as WithdrawIcon
 } from "react-icons/md"
+import moment from "moment";
 
 import { getHeaders } from "./util"
 import { queryNotifications } from "./gqlQuery"
@@ -52,7 +40,7 @@ const NotificationsPage = (props) => {
             if(dataNotifications?.notifications){
                 let { status, data, total} = dataNotifications?.notifications
                 if(status){
-                    // setInput({...input, data, total})
+                    setInput({...input, data, total})
                 }
             }
         }
@@ -99,7 +87,7 @@ const NotificationsPage = (props) => {
 
                                                                         onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
                                                                     }
-                                                                } key={index}>05-APR-2023 00:00:01 {i?.data} {i?.status} </div>
+                                                                } key={index}>{(moment(i?.createdAt, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY')} {i?.data} </div>
                                                             </Stack>
                                                             </div>
                                                 }
@@ -112,7 +100,7 @@ const NotificationsPage = (props) => {
 
                                                                         onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
                                                                     }
-                                                                } key={index}>05-APR-2023 00:00:01 {i?.data} {i?.status} </div>
+                                                                } key={index}>{(moment(i?.createdAt, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY')} {i?.data} </div>
                                                             </Stack>
                                                             </div>
                                                 }
@@ -125,7 +113,7 @@ const NotificationsPage = (props) => {
 
                                                                         onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
                                                                     }
-                                                                } key={index}>05-APR-2023 00:00:01 {i?.data} {i?.status} </div>
+                                                                } key={index}>{(moment(i?.createdAt, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY')} {i?.data}  </div>
                                                             </Stack>
                                                             </div>
                                                 }

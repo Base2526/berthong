@@ -166,17 +166,18 @@ export default {
     async suppliers(parent, args, context, info){
       let start = Date.now()
       let { req } = context
-      console.log("suppliers : #0 ", args?.input)
+      // console.log("suppliers : #0 ", args?.input)
       await Utils.checkAuth(req);
 
-      let { PAGE, LIMIT } = args?.input
+      let { NUMBER, PAGE, LIMIT } = args?.input
       let SKIP = (PAGE - 1) * LIMIT
 
-      console.log("suppliers : #1 ", args?.input)
-      let suppliers = await Model.Supplier.aggregate([
-                      { $skip: SKIP }, 
-                      { $limit: LIMIT }, 
-                      {
+      // console.log("suppliers : #1 ", args?.input)
+
+      let aggregate = [
+                        { $skip: SKIP }, 
+                        { $limit: LIMIT }, 
+                        {
                           $lookup: {
                               localField: "ownerId",
                               from: "user",
@@ -186,19 +187,59 @@ export default {
                               ],
                               as: "owner"
                           }
-                      },
-                      {
+                        },
+                        {
+                          $lookup: {
+                              localField: "dateLottery",
+                              from: "dateLottery",
+                              foreignField: "_id",
+                              pipeline: [
+                                { $project:{ date: 1 }}
+                              ],
+                              as: "dateLottery"
+                          }
+                        },
+                        {
                           $unwind: {
                                   "path": "$owner",
                                   "preserveNullAndEmptyArrays": false
                           }
-                      }
-                    ])
+                        },
+                        {
+                          $unwind: {
+                                  "path": "$dateLottery",
+                                  "preserveNullAndEmptyArrays": false
+                          }
+                        }
+                      ]
 
+      if(!_.isEmpty(NUMBER)){
+        let q = _.map(NUMBER.split(","), (v, i)=>{
+          return {
+                    "buys":{
+                      $not:{ $elemMatch : {itemId: parseInt(v)} } 
+                    }
+                  }
+        })
+
+        aggregate = [...aggregate, { $match: { "$and" : q  } }]
+
+        let suppliers = await Model.Supplier.aggregate(aggregate)
+        let total     = await Model.Supplier.aggregate([ { $match: { "$and" : q  } } ])
+        return {  
+          status: true,
+          data: suppliers,
+          total: total.length,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+        }
+      }
+
+      let suppliers = await Model.Supplier.aggregate(aggregate)
+      let total     = await Model.Supplier.find({})
       return {  
         status: true,
         data: suppliers,
-        total: await Utils.getTotalSupplier(),
+        total: total.length,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
       }
     },
@@ -433,26 +474,30 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      console.log("notifications: ")
+      console.log("notifications: #1 ", args)
 
       let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      // console.log("notifications: #2 ", current_user)
       // if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
-      let data = [{ user_to_notify: '63ff3c0c6637e303283bc40f', 
-                    type: "system",
-                    data: "test [system]",
-                    status: "unread"
-                  },
-                  { user_to_notify: '63ff3c0c6637e303283bc40f', 
-                    type: "withdraw",
-                    data: "test [withdraw]",
-                    status: "unread"
-                  },
-                  { user_to_notify: '63ff3c0c6637e303283bc40f', 
-                    type: "deposit",
-                    data: "test [deposit]",
-                    status: "unread"
-                  }]
+      let data =  await Model.Notification.find({ user_to_notify: current_user?._id });
+
+      // let data = [{ user_to_notify: '63ff3c0c6637e303283bc40f', 
+      //               type: "system",
+      //               data: "test [system]",
+      //               status: "unread"
+      //             },
+      //             { user_to_notify: '63ff3c0c6637e303283bc40f', 
+      //               type: "withdraw",
+      //               data: "test [withdraw]",
+      //               status: "unread"
+      //             },
+      //             { user_to_notify: '63ff3c0c6637e303283bc40f', 
+      //               type: "deposit",
+      //               data: "test [deposit]",
+      //               status: "unread"
+      //             }]
+
       return {  status: true,
                 data,
                 total: data.length,
@@ -2061,6 +2106,8 @@ export default {
       let { input } = args
       let { req } = context
 
+      console.log("adminDeposit #1 :", input)
+
       let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR only!')
 
@@ -2072,6 +2119,19 @@ export default {
       try {
         await Model.Transition.updateOne({ _id: input?._id }, { status : input?.status });
 
+        switch(input?.status){
+          case Constants.APPROVED:
+          case Constants.REJECT:{
+
+            let newInput = {
+              user_to_notify: transition.userId,
+              type: "deposit",
+              data: input?.status === Constants.APPROVED ? "Admin approved" : "Admin reject"
+            }
+            await Model.Notification.create(newInput);
+          }
+        }
+        
         // Commit the transaction
         await session.commitTransaction();
       }catch(error){
@@ -2214,7 +2274,55 @@ export default {
         status: true,
         executionTime: `seconds`
       }   
-    }
+    },
+
+    // search(input: SearchInput): JSON
+    async search(parent, args, context, info) {
+      let start = Date.now()
+
+      let { input } = args
+      let { req } = context
+
+      let { TITLE, NUMBER } = input
+
+      let q = _.map(NUMBER.split(","), (v, i)=>{
+                return {
+                          "buys":{
+                            $not:{ $elemMatch : {itemId: parseInt(v)} } 
+                          }
+                        }
+              })
+
+      let suppliers  = await Model.Supplier.aggregate([
+                        { 
+                            $match: { "$and" : q }
+                        },
+                        {
+                          $lookup: {
+                              localField: "ownerId",
+                              from: "user",
+                              foreignField: "_id",
+                              pipeline: [
+                                { $project:{ username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }}
+                              ],
+                              as: "owner"
+                          }
+                      },
+                      {
+                          $unwind: {
+                                  "path": "$owner",
+                                  "preserveNullAndEmptyArrays": false
+                          }
+                      }
+                      ])
+
+      return {
+        status: true,
+        data: suppliers,
+        total: suppliers?.length,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }   
+    },
   },
   Subscription:{
     subscriptionMe: {

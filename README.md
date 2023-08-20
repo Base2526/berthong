@@ -117,3 +117,33 @@ REACT_APP_GOOGLE_ANALYTICS4=
 
 Login with LINE
 https://por-porkaew15.medium.com/implement-line-login-with-angular-project-e2e598d3c618
+
+
+
+
+db.getCollection("supplier").find({})
+
+db.getCollection("supplier").aggregate([
+        { 
+            $match: { 
+//                "type": 1,
+//                "category": 3,
+                "$and" : [
+                    {
+                        "buys":{
+                           $not:{
+                               $elemMatch : {itemId: 6}  
+                           } 
+                        }
+                    },
+                    {
+                        "buys":{
+                           $not:{
+                               $elemMatch : {itemId: 6}  
+                           } 
+                        }
+                    }
+                ]
+            }
+        }
+])

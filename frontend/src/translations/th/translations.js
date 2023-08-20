@@ -92,5 +92,11 @@ export const TRANSLATIONS_TH = {
     things: "สิ่งของ",
     etc: "อื่นๆ",
 
-    all_result: "ผลลัพธ์ทั้งหมด"
+    all_result: "ผลลัพธ์ทั้งหมด",
+
+    advance_search: "ค้นหา",
+
+    all_products: "สินค้าทั้งหมด",
+
+    balance: "ยอดเงิน",
 };
