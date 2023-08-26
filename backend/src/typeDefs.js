@@ -470,6 +470,7 @@ export default gql`
     # withdrawById(_id: ID!): JSON
     banks: JSON
     bankById(_id: ID!): JSON
+    bankByIds(input: [ID]!): JSON
     bookBuyTransitions: JSON
     historyTransitions: JSON
     friendProfile(_id: ID): JSON
@@ -481,6 +482,9 @@ export default gql`
     dblog: JSON
     dateLotterys: JSON
     dateLotteryById(_id: ID!): JSON
+
+    producers: JSON
+    
     adminHome: JSON
     adminBanks: JSON
     adminDeposits: JSON
@@ -649,9 +653,9 @@ export default gql`
   }
 
   input BookInput{
-    supplierId: ID!
+    id: ID!
     itemId: Long!
-    selected: Int!
+    # selected: Int!
   }
 
   enum SupplierModeType {

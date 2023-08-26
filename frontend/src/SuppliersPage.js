@@ -75,8 +75,8 @@ const SuppliersPage = (props) => {
           networkStatus: networkStatusSuppliers } = useQuery( querySuppliers, { 
                                                                 context: { headers: getHeaders(location) }, 
                                                                 variables: { input: search },
-                                                                fetchPolicy: 'cache-first' , // Used for first execution
-                                                                nextFetchPolicy: 'network-only' , // Used for subsequent executions
+                                                                fetchPolicy: 'cache-first' , 
+                                                                nextFetchPolicy: 'network-only' , 
                                                                 notifyOnNetworkStatusChange: true
                                                               });
 
@@ -242,10 +242,6 @@ const SuppliersPage = (props) => {
             </Box>
           </div>);
   */
-
-          
-  
-
 
   /*
   <Box sx={{ width: '20%' }}>{title}</Box>

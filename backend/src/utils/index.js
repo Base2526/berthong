@@ -195,13 +195,9 @@ export const getBalance = async(userId) =>{
                     ])
     
     let balance     = 0;
-    let balanceBook = 0;
     _.map(supplier, (sup)=>{
         let buys = _.filter(sup.supplier.buys, (buy)=> _.isEqual(buy.userId, userId))
         balance -= buys.length * sup.supplier.price
-
-        let filters = _.filter(sup.supplier.buys, (buy)=> _.isEqual(buy.userId, userId) && buy.selected == 0 )
-        balanceBook += filters.length * sup.supplier.price
     })
 
     _.map(deposit, (dep)=>{
@@ -239,12 +235,10 @@ export const getBalanceBook = async(userId) =>{
     
     let balanceBook = 0;
     _.map(supplier, (sup)=>{
-        // let buys = _.filter(sup.supplier.buys, (buy)=> _.isEqual(buy.userId, userId))
-        // balance -= buys.length * sup.supplier.price
-
         let filters = _.filter(sup.supplier.buys, (buy)=> _.isEqual(buy.userId, userId) && buy.selected == 0 )
         balanceBook += filters.length * sup.supplier.price
     })
+    
     return balanceBook
 }
 
@@ -381,9 +375,9 @@ export const checkRole = (user) =>{
 }
 
 export const getUser = async(query, without_password = true) =>{
-    let fields = { username: 1, password: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }
+    let fields = { username: 1, password: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, producer: 1, lastAccess: 1 }
     if(without_password){
-        fields = { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }
+        fields = { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, producer: 1, lastAccess: 1 }
     }
 
     // if(query?._id){
@@ -401,7 +395,7 @@ export const getUser = async(query, without_password = true) =>{
 }
 
 export const getUserFull = async(query) =>{
-    let user =  await Model.User.findOne(query, { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 } )
+    let user =  await Model.User.findOne(query, { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, producer: 1, lastAccess: 1 } )
 
     // if(user) {
     //     let cache_user = cache.ca_get(user?._doc?._id.toString())
@@ -409,20 +403,20 @@ export const getUserFull = async(query) =>{
     //     if(!_.isEmpty(cache_user)){
     //         return cache_user
     //     }else{
-            let { banks } = user
-            banks = _.filter(await Promise.all(_.map(banks, async(value)=>{
-                        let bank = await Model.Bank.findOne({_id: value.bankId})
-                        return _.isNull(bank) ? null : {...value._doc, name:bank?.name}
-                    })), e=>!_.isNull(e) ) 
+            // let { banks } = user
+            // banks = _.filter(await Promise.all(_.map(banks, async(value)=>{
+            //             let bank = await Model.Bank.findOne({_id: value.bankId})
+            //             return _.isNull(bank) ? null : {...value._doc, name:bank?.name}
+            //         })), e=>!_.isNull(e) ) 
 
             let cache_user = {  ...user?._doc, 
-                            banks, 
+                            // banks, 
                             balance: await getBalance(user?._id), 
                             balanceBook: await getBalanceBook(user?._id),
                             transitions: [], 
                             inTheCarts: await getInTheCarts(user?._id)
                         }
-            cache.ca_save(user?._doc?._id.toString(), cache_user)
+            // cache.ca_save(user?._doc?._id.toString(), cache_user)
 
             return cache_user
         // }        
@@ -439,14 +433,15 @@ export const getUsers = async(query) =>{
                                             roles: 1, 
                                             avatar: 1, 
                                             subscriber: 1, 
+                                            producer: 1,
                                             lastAccess: 1 })
 }
 
 export const getSupplier = async(query) =>{
     let cache_supplier = cache.ca_get(query?._id)
-    if(!_.isEmpty(cache_supplier)){
-        return cache_supplier;
-    }
+    // if(!_.isEmpty(cache_supplier)){
+    //     return cache_supplier;
+    // }
 
     cache_supplier = await Model.Supplier.aggregate([
         { 

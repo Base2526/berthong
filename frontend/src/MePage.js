@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
+import { useQuery } from "@apollo/client";
 import queryString from 'query-string';
 import { useTranslation } from "react-i18next";
 import { createSearchParams, useLocation, useNavigate, useSearchParams } from "react-router-dom";
@@ -11,7 +12,8 @@ import {
     ListItemText,
     Accordion,
     AccordionSummary,
-    AccordionDetails
+    AccordionDetails,
+    LinearProgress
 } from '@mui/material';
 import {
     AiFillCamera as CameraIcon,
@@ -33,6 +35,9 @@ import { IconButton } from "@material-ui/core";
 import _ from "lodash"
 import { styled } from "@mui/material/styles";
 
+import { queryBankByIds } from "./gqlQuery"
+import { checkRole, getHeaders, handlerErrorApollo, showToast} from "./util";
+
 const Input = styled("input")({ display: "none" });
 const MePage = (props) => {
     const navigate = useNavigate();
@@ -41,10 +46,34 @@ const MePage = (props) => {
     const params = queryString.parse(location.search)
     const { user, onMutationMe, onDialogDeleteBank, onLightbox } = props
     const [expanded, setExpanded] = useState(localStorage.getItem('expanded') ? localStorage.getItem('expanded') : false)
-    
-    console.log("user :", user, _.sortBy(user?.banks, "createdAt").reverse())
+    let [banks, setBanks] = useState([]);
 
-    
+    const { loading: loadingBankByIds, 
+            data: dataBankByIds, 
+            error: errorBankByIds,
+            refetch: refetchBankByIds, } =  useQuery( queryBankByIds, { 
+                                                context: { headers: getHeaders(location) }, 
+                                                fetchPolicy: 'cache-first', 
+                                                nextFetchPolicy: 'network-only', 
+                                                notifyOnNetworkStatusChange: true});
+
+    useEffect(() => {
+        let bankIds = _.map(user?.banks, (bank)=>bank.bankId)
+        if(!_.isEmpty(bankIds)){
+            refetchBankByIds({input: bankIds});
+        }
+    }, [])
+
+    useEffect(() => {
+        if (!loadingBankByIds) {
+            if(dataBankByIds?.bankByIds){
+                let { status, data } = dataBankByIds?.bankByIds
+                if(status && !_.isEqual(banks, data)){
+                    setBanks(data)
+                }
+            }
+        }
+    }, [dataBankByIds, loadingBankByIds])
 
     // const managementView = () =>{
     //     switch(checkRole(user)){
@@ -67,7 +96,6 @@ const MePage = (props) => {
     //                                     navigate("/suppliers");
     //                                 }}>จัดการ Suppliers ทั้งหมด</button>
     //                             </div>
-
     //                             <div>
     //                                 <button onClick={()=>{ 
     //                                     navigate("/users");
@@ -83,7 +111,6 @@ const MePage = (props) => {
     //                                     navigate("/date-lotterys");
     //                                 }}>จัดการ วันออกหวยทั้งหมด</button>
     //                             </div>
-
     //                             <div>
     //                                 <button onClick={()=>{ 
     //                                     navigate("/bank");
@@ -120,7 +147,6 @@ const MePage = (props) => {
     //                                 navigate("/suppliers"); 
     //                             }}>Supplier list</button>
     //                         </div>
-
     //                         <div>
     //                             <button onClick={()=>{
     //                                 navigate("/history-transitions"); 
@@ -192,7 +218,10 @@ const MePage = (props) => {
                                         <AccordionDetails>
                                             <List>
                                                 {
-                                                    _.map( /*user?.banks*/ _.sortBy(user?.banks, "createdAt").reverse(), (value, index)=>{
+                                                    loadingBankByIds 
+                                                    ?  <LinearProgress />
+                                                    :  _.map( _.sortBy(user?.banks, "createdAt").reverse(), (value, index)=>{
+                                                        let bank = _.find(banks, (item)=>item._id == value.bankId)
                                                         return  <ListItem
                                                                     key={index}
                                                                     secondaryAction={
@@ -205,8 +234,8 @@ const MePage = (props) => {
                                                                         <Avatar><FolderIcon /></Avatar>
                                                                     </ListItemAvatar>
                                                                     <ListItemText
-                                                                        primary={value?.bankNumber}
-                                                                        secondary={ value?.name }
+                                                                        primary={ value?.bankNumber }
+                                                                        secondary={ bank?.name }
                                                                     />
                                                                 </ListItem>
                                                     })
@@ -220,6 +249,6 @@ const MePage = (props) => {
                         </div>
                         </div>
                     </div>)
-            }, [ user, expanded ]);
+            }, [ user, expanded, banks]);
 }
 export default MePage

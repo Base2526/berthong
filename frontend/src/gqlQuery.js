@@ -12,6 +12,7 @@ export const queryUserById      = gql`query userById($id: ID!) { userById(_id: $
 export const queryRoleByIds     = gql`query roleByIds($input: [String]) { roleByIds(input: $input) }`;
 export const queryBanks         = gql`query banks{ banks }`;
 export const queryBankById      = gql`query bankById($id: ID!) { bankById(_id: $id) }`;
+export const queryBankByIds      = gql`query bankByIds($input: [ID]!) { bankByIds(input: $input) }`;
 export const queryBookBuyTransitions = gql`query bookBuyTransitions { bookBuyTransitions }`;
 export const queryHistoryTransitions = gql`query historyTransitions { historyTransitions }`;
 export const queryFriendProfile      = gql`query friendProfile($id: ID!) { friendProfile(_id: $id) }`;
@@ -21,6 +22,7 @@ export const queryCommentById     = gql`query commentById($id: ID!) { commentByI
 export const queryBookmarks       = gql`query bookmarks{ bookmarks }`;
 export const querySubscribes      = gql`query subscribes{ subscribes }`;
 export const queryDblog           = gql`query dblog{ dblog }`;
+export const queryProducers       = gql`query producers{ producers }`;
 
 // ADMIN
 export const queryDateLotterys    = gql`query dateLotterys { dateLotterys }`;

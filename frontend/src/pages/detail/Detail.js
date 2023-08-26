@@ -26,6 +26,7 @@ import PopupWallet from "./PopupWallet";
 import { getHeaders, showToast, handlerErrorApollo } from "../../util";
 
 import {  querySupplierById, 
+          querySuppliers,
           subscriptionSupplierById, 
           mutationBuy
         } from "../../gqlQuery";
@@ -45,21 +46,36 @@ const Detail = (props) => {
 
   let { id } = params; 
 
-  let { user, onLogin, onMutationFollow, onMutationBook } = props
+  let { user, onLogin, onMutationFollow, onMutationBook, updateProfile } = props
 
   const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
     context: { headers: getHeaders(location) },
     update: (cache, {data: {buy}}) => {
-      let { status, data:newData } = buy
+      let { status, data:newData, user } = buy
+      if(status){
+        updateProfile(user)
 
-      let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id} });
-      if(status && querySupplierByIdValue){
-        cache.writeQuery({
-          query: querySupplierById,
-          data: { supplierById: {...querySupplierByIdValue.supplierById, data: newData} },
-          variables: { id }
-        });
-      }      
+        let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id} });
+        if(status && querySupplierByIdValue){
+          cache.writeQuery({
+            query: querySupplierById,
+            data: { supplierById: {...querySupplierByIdValue.supplierById, data: newData} },
+            variables: { id }
+          })
+        }  
+
+        ////////// update cache querySuppliers ///////////
+        let suppliersValue = cache.readQuery({ query: querySuppliers });
+        if(!_.isNull(suppliersValue)){
+          let { suppliers } = suppliersValue
+          let newData = _.map(suppliers.data, (supplier) => supplier._id == newData._id ? newData : supplier)
+          cache.writeQuery({
+            query: querySuppliers,
+            data: { suppliers: { ...suppliersValue.suppliers, data: newData } }
+          });
+        }
+        ////////// update cache querySuppliers ///////////
+      }          
     },
     onCompleted(data) {
       setPopupOpenedShoppingBag(false)
@@ -133,9 +149,9 @@ const Detail = (props) => {
       return;
     } 
 
-    let fn = _.find(data.buys, (buy)=>buy.itemId == itemId)
-    let selected = 0;
-    if(fn) selected = fn.selected == -1 ? 0 : -1
+    // let fn = _.find(data.buys, (buy)=>buy.itemId == itemId)
+    // let selected = 0;
+    // if(fn) selected = fn.selected == -1 ? 0 : -1
     
     // if(selected == 0){
     //   let check = user?.balance - (user?.balanceBook + data.price)
@@ -144,7 +160,9 @@ const Detail = (props) => {
     //     return;
     //   }
     // }
-    onMutationBook({ variables: { input: { supplierId: id, itemId, selected } } });
+
+    // console.log("onSelected :", )
+    onMutationBook({ variables: { input: { id, itemId } } });
   }
 
   const menuView = (item) =>{

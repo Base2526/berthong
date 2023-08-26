@@ -17,7 +17,7 @@ mongoimport --host "hostname" --port "port" --db "databasename" --collection "co
 mongoimport --host "127.0.0.1" --port "29101" --db berthong --collection role --file role
 
 <!--  
-mongoimport --port "29102" --username xxx --password xxx --db berthong --collection role --file role 
+mongoimport --port "29102" --username banlistinfo --password 6c09093474284f6bfc3749a5bd24cbb6 --db berthong --collection bank --file bank 
 -->
 
 การ manage user role

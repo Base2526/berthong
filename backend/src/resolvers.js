@@ -284,11 +284,26 @@ export default {
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
+    async bankByIds(parent, args, context, info){
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      await Utils.checkAuth(req);
+
+      let banks = await Model.Bank.find({ _id : { $in : input } });
+      if(_.isNull(banks)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
+
+      return {  status:true,
+                data: banks,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    },
+
     async bookBuyTransitions(parent, args, context, info){
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
 
       // let transitions = await Model.Transition.find({ userId: current_user?._id, type: Constants.SUPPLIER });
 
@@ -643,6 +658,18 @@ export default {
 
       return {  status: true,
                 data: dateLottery,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
+    async producers(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let producers = await Model.Supplier.find({ ownerId: current_user?._id })
+      return {  status: true,
+                data: producers,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
     },
@@ -1343,20 +1370,20 @@ export default {
       let start = Date.now()
       let { input } = args        
       let { req } = context
+      let { id, itemId } = input
       
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      let { current_user } =  await Utils.checkAuth(req);
 
-      let { supplierId, itemId, selected } = input
-
-      let supplier = await Utils.getSupplier({ _id: supplierId })
+      let supplier = await Model.Supplier.findById(id);
       if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
 
+      /*
+      Check balance before book?
+      */ 
       let price       = supplier?.price
       let balance     = await Utils.getBalance(current_user?._id)
       let balanceBook = await Utils.getBalanceBook(current_user?._id)
       if(price > (balance - balanceBook)){
-        console.log("book #[NOT_ENOUGH_BALANCE] : ", price, balance, balanceBook)
         throw new AppError(Constants.NOT_ENOUGH_BALANCE, 'NOT ENOUGH BALANCE')
       }
 
@@ -1370,14 +1397,56 @@ export default {
           await Model.Transition.create( { refId: supplier?._id, userId: current_user?._id } )
         }
 
+        let mode = "BOOK";
+        let { buys } = supplier
+        let check =  _.find(buys, (buy)=> buy.itemId == itemId && buy.userId.toString() == current_user?._id.toString() )
+
+        if(check == undefined){
+          await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, selected: 0 }] })   
+        }else{
+          mode = "UNBOOK";
+          buys = _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id )
+          await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys })   
+        }
+     
+        let newSupplier = await Utils.getSupplier({ _id: id })
+
+        // Case current open multi browser
+        pubsub.publish("SUPPLIER_BY_ID", {
+          supplierById: { mutation: "BOOK", data: newSupplier },
+        });
+
+        // Case other people open home page
+        pubsub.publish("SUPPLIERS", {
+          suppliers: { mutation: "BOOK", data: newSupplier },
+        });
+
+        let user = await Utils.getUserFull({_id: current_user?._id}) 
+
+        // pubsub.publish("ME", {
+        //   me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } },
+        // });
+
+        // Commit the transaction
+        await session.commitTransaction();
+
+        return {
+          status: true,
+          action: {mode, itemId},
+          user,
+          data: newSupplier,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+
+        /*
         let { buys } = supplier
         if(selected == 0){
           let check =  _.find(buys, (buy)=> buy.itemId == itemId )
           if(check == undefined){
 
-            await Utils.updateSupplier({ _id: supplierId }, {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, selected}] })
+            await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, selected}] })
               
-            let newSupplier = await Utils.getSupplier({ _id: supplierId }) 
+            let newSupplier = await Utils.getSupplier({ _id: id }) 
 
             // Case current open multi browser
             pubsub.publish("SUPPLIER_BY_ID", {
@@ -1407,9 +1476,9 @@ export default {
           }
           throw new Error('ALREADY BOOK')
         }else{
-          await Utils.updateSupplier({ _id: supplierId }, {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id ) })
+          await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id ) })
 
-          let newSupplier = await Utils.getSupplier({ _id: supplierId })
+          let newSupplier = await Utils.getSupplier({ _id: id })
           
           pubsub.publish("SUPPLIER_BY_ID", {
             supplierById: { mutation: "UNBOOK", data: newSupplier },
@@ -1435,6 +1504,8 @@ export default {
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }  
+        */
+
       }catch(error){
         await session.abortTransaction();
         console.log(`book #error : ${error}`)
@@ -1451,8 +1522,8 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      // if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
       // let supplier = await Model.Supplier.findById(_id);
       // if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
@@ -1498,13 +1569,14 @@ export default {
         });
   
         let user = await Utils.getUserFull( {_id: current_user?._id} ) 
-        pubsub.publish("ME", {
-          me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
-        });
+        // pubsub.publish("ME", {
+        //   me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
+        // });
   
         return {
           status: true,
           data: supplier,
+          user,
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
 
@@ -1862,7 +1934,7 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
       cache.ca_delete(_id)
@@ -1888,10 +1960,12 @@ export default {
 
       await Utils.updateSupplier({ _id }, { follows });
       
+      let data  = await Utils.getSupplier({_id});
+      
       return {
         status: true,
         mode,
-        data: await Utils.getSupplier({_id}),
+        data,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },

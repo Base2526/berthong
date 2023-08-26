@@ -68,9 +68,11 @@ const NotificationsPage = (props) => {
                 <div className="content-page border">   
                 <div className="row">
                             {
-                            loadingNotifications || input.data.length == 0 
+                            loadingNotifications
                             ?   <LinearProgress />
-                            :   <InfiniteScroll
+                            :   input?.data?.length == 0
+                                ? <div>Empty data</div>
+                                : <InfiniteScroll
                                     dataLength={input.slice}
                                     next={fetchMoreData}
                                     hasMore={input.hasMore}

@@ -40,6 +40,7 @@ export const TRANSLATIONS_EN = {
     email: "Email",
     name: "Name",
     username: "Username",
+    username_or_email: "Username OR Email",
     password: "Password",
     confirm_delete: "Confirm delete",
     close: "Close",

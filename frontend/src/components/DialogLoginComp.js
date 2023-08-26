@@ -29,6 +29,8 @@ import {
 } from "@material-ui/core";
 import line from '../line.svg';
 
+import logo from "../images/logo-search-grid-1x.png";
+
 const DialogLoginComp = (props) => {
   const { t } = useTranslation();
   const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
@@ -101,8 +103,8 @@ const DialogLoginComp = (props) => {
               <Dialog open={open}>
                 <DialogTitle className="text-center">
                   <img
-                    style={{width:"160px",height:"130px",borderRadius:"50%"}}
-                    src={"https://dynamic.brandcrowd.com/asset/logo/a673c079-5c9d-45b2-bd75-e739acca30aa/logo-search-grid-1x?logoTemplateVersion=1&v=637637394778200000&text=Berthong"}
+                    style={{width:"130px",height:"130px",borderRadius:"50%"}}
+                    src={logo}
                     alt="Avatar"
                   />
                   {/* <div className="fnt text-center">{t("welcome_to_berthong")}</div>   */}
@@ -116,14 +118,14 @@ const DialogLoginComp = (props) => {
                       <div className="row">
                         <div className="col-12">
                           <div className="row">
-                              <div className="col-12 pl-2 pr-2 pb-2">
-                                <TextField
-                                  id="standard-basic"
-                                  label={t("username")}
-                                  variant="filled"
-                                  name="username" value={input.username} onChange={onInputChange} required
-                                />
-                              </div>
+                            <div className="col-12 pl-2 pr-2 pb-2">
+                              <TextField
+                                id="standard-basic"
+                                label={t("username_or_email")}
+                                variant="filled"
+                                name="username" value={input.username} onChange={onInputChange} required
+                              />
+                            </div>
                           </div>
                           <div className="row">
                               <div className="col-12 pl-2 pr-2 pb-2">

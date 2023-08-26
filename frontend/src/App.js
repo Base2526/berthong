@@ -113,6 +113,7 @@ import SubscribesPage from "./SubscribesPage";
 import Footer from "./Footer";
 import DblogPage from "./DblogPage";
 import AutoGenerationContent from "./AutoGenerationContent"
+import ProducersPage from "./ProducersPage"
 
 import { queryNotifications, 
           mutationFollow, 
@@ -145,6 +146,8 @@ import { queryNotifications,
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
+
+import logo from "./images/logo-search-grid-1x.png";
 
 let { REACT_APP_SITE_TITLE } = process.env
 
@@ -265,18 +268,17 @@ const App =(props) =>{
 
       let { data, mode, status } = follow
       if(status){
-
-        switch(mode?.toUpperCase()){
-          case "FOLLOW":{
-            showToast("info", `Bookmark`)
-            break
-          }
+        // switch(mode?.toUpperCase()){
+        //   case "FOLLOW":{
+        //     showToast("info", `Bookmark`)
+        //     break
+        //   }
   
-          case "UNFOLLOW":{
-            showToast("info", `Un-Bookmark`)
-            break
-          }
-        }
+        //   case "UNFOLLOW":{
+        //     showToast("info", `Un-Bookmark`)
+        //     break
+        //   }
+        // }
 
         let querySuppliersValue = cache.readQuery({ query: querySuppliers, variables: { input: search } });
         if(!_.isEmpty(querySuppliersValue)){
@@ -298,7 +300,20 @@ const App =(props) =>{
       }
     },
     onCompleted(data) {
-      console.log("onCompleted")
+      let { mode, status } = data?.follow
+      if(status){
+        switch(mode?.toUpperCase()){
+          case "FOLLOW":{
+            showToast("info", `Bookmark`)
+            break
+          }
+  
+          case "UNFOLLOW":{
+            showToast("info", `Un-Bookmark`)
+            break
+          }
+        }
+      }
     },
     onError: (error) => {
       return handlerErrorApollo( props, error )
@@ -308,8 +323,34 @@ const App =(props) =>{
   const [onMutationBook, resultMutationBook] = useMutation(mutationBook,{
     context: { headers: getHeaders(location) },
     update: (cache, {data: {book}}) => {
-      let { status, action, data } = book
+      let { status, action, data, user } = book
+      if(status){
+        updateProfile(user)
 
+        let supplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
+        if(status && supplierByIdValue){
+          cache.writeQuery({ 
+            query: querySupplierById, 
+            variables: { id: data._id },
+            data: { supplierById: { ...supplierByIdValue.supplierById, data } }, 
+          }); 
+        }
+  
+        ////////// update cache querySuppliers ///////////
+        let suppliersValue = cache.readQuery({ query: querySuppliers });
+        if(!_.isNull(suppliersValue)){
+          let { suppliers } = suppliersValue
+          let newData = _.map(suppliers.data, (supplier) => supplier._id == data._id ? data : supplier)
+          cache.writeQuery({
+            query: querySuppliers,
+            data: { suppliers: { ...suppliersValue.suppliers, data: newData } }
+          });
+        }
+        ////////// update cache querySuppliers ///////////
+      }
+    },
+    onCompleted(data) {
+      let { status, action } = data?.book
       let {mode, itemId} = action
       switch(mode?.toUpperCase()){
         case "BOOK":{
@@ -322,72 +363,48 @@ const App =(props) =>{
           break
         }
       }
-      
-      let supplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
-      if(status && supplierByIdValue){
-        cache.writeQuery({ 
-          query: querySupplierById, 
-          variables: { id: data._id },
-          data: { supplierById: { ...supplierByIdValue.supplierById, data } }, 
-        }); 
-      }
-
-      ////////// update cache querySuppliers ///////////
-      let suppliersValue = cache.readQuery({ query: querySuppliers });
-      if(!_.isNull(suppliersValue)){
-        let { suppliers } = suppliersValue
-        let newData = _.map(suppliers.data, (supplier) => supplier._id == data._id ? data : supplier)
-        cache.writeQuery({
-          query: querySuppliers,
-          data: { suppliers: { ...suppliersValue.suppliers, data: newData } }
-        });
-      }
-      ////////// update cache querySuppliers ///////////
-    },
-    onCompleted(data) {
-      console.log("onCompleted")
     },
     onError: (error) => {
       return handlerErrorApollo( props, error )
     }
   });
 
-  const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {buy}}) => {
-      let { status, data } = buy
+  // const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
+  //   context: { headers: getHeaders(location) },
+  //   update: (cache, {data: {buy}}) => {
+  //     let { status, data } = buy
 
-      console.log("update : ", buy)
+  //     console.log("update : ", buy)
 
-      showToast("success", `การส่งซื้อ complete`)
+  //     showToast("success", `การส่งซื้อ complete`)
          
-      // ////////// update cache queryUserById ///////////
-      // let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
-      // if(querySupplierByIdValue){
-      //   cache.writeQuery({
-      //     query: querySupplierById,
-      //     data: { supplierById: {...querySupplierByIdValue.supplierById, data} },
-      //     variables: {id: data._id}
-      //   });
-      // }
-      // ////////// update cache queryUserById ///////////    
+  //     // ////////// update cache queryUserById ///////////
+  //     // let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
+  //     // if(querySupplierByIdValue){
+  //     //   cache.writeQuery({
+  //     //     query: querySupplierById,
+  //     //     data: { supplierById: {...querySupplierByIdValue.supplierById, data} },
+  //     //     variables: {id: data._id}
+  //     //   });
+  //     // }
+  //     // ////////// update cache queryUserById ///////////    
 
-      // ////////// update cache querySuppliers ///////////
-      // let suppliersValue = cache.readQuery({ query: querySuppliers });
-      // if(!_.isNull(suppliersValue)){
-      //   console.log("suppliersValue :", suppliersValue)
-      // }
-      // ////////// update cache querySuppliers ///////////
-    },
-    onCompleted(data) {
-      console.log("onCompleted :", data)
-    },
-    onError: (err) => {
-      console.log("onError :", err)
+  //     // ////////// update cache querySuppliers ///////////
+  //     // let suppliersValue = cache.readQuery({ query: querySuppliers });
+  //     // if(!_.isNull(suppliersValue)){
+  //     //   console.log("suppliersValue :", suppliersValue)
+  //     // }
+  //     // ////////// update cache querySuppliers ///////////
+  //   },
+  //   onCompleted(data) {
+  //     console.log("onCompleted :", data)
+  //   },
+  //   onError: (err) => {
+  //     console.log("onError :", err)
 
-      showToast("error", `เกิดปัญหาในการสั่งซื้อ`)
-    }
-  });
+  //     showToast("error", `เกิดปัญหาในการสั่งซื้อ`)
+  //   }
+  // });
 
   const [onMutationComment, resultMutationComment] = useMutation(mutationComment,{
     context: { headers: getHeaders(location) },
@@ -1070,7 +1087,7 @@ const App =(props) =>{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em"/>, path: "/"},
                 {id: 1, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/admin-withdraws"},
                 {id: 2, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/admin-deposits"},
-                {id: 3, title:"รายการสินค้าทั้งหมด", icon: <AdjustIcon />, path: "/suppliers"},
+                {id: 3, title:"รายการ หวยทั้งหมด", icon: <AdjustIcon />, path: "/suppliers"},
                 {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/admin-users"},
                 {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
                 {id: 6, title:"วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/admin-date-lotterys"},
@@ -1080,7 +1097,7 @@ const App =(props) =>{
       }
       case Constants.AUTHENTICATED:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
-                // {id: 1, title:"รายการ จอง-ซื้อ", icon: <AssistantIcon />, path: "/book-buy"},
+                // {id: 1, title:"รายการ หวยทั้งหมด", icon: <AssistantIcon />, path: "/producers"},
                 {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
                 {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"},
@@ -1319,11 +1336,11 @@ const App =(props) =>{
                 </List>
               <Divider />
               <div className="text-center">
-              <img
-                    style={{width:"160px",height:"130px",borderRadius:"50%"}}
-                    src={"https://dynamic.brandcrowd.com/asset/logo/a673c079-5c9d-45b2-bd75-e739acca30aa/logo-search-grid-1x?logoTemplateVersion=1&v=637637394778200000&text=Berthong"}
-                    alt="Avatar"
-                  />
+                <img
+                  style={{width:"130px",height:"130px",borderRadius:"50%"}}
+                  src={logo}
+                  alt="Avatar"
+                />
               </div>
               <Typography variant="caption" display="block" gutterBottom><div className="text-center p-1">© 2023 BERTHONG LLC</div></Typography>
             </Drawer>
@@ -1373,12 +1390,12 @@ const App =(props) =>{
               <Route path="/notifications" element={<NotificationsPage {...props} onMutationNotification={(evt)=>onMutationNotification(evt)} />} />
               <Route path="/bookmarks" element={<BookMarksPage {...props} onMutationFollow={(evt)=>onMutationFollow(evt) } />} />
               <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />} />
+              <Route path="/producers" element={<ProducersPage {...props}  onLightbox={(evt)=>setLightbox(evt)}  />} />
+              <Route path="/supplier" element={<SupplierPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
-
               <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/supplier" element={<SupplierPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
-
               <Route path="/admin-deposits" element={<AdminDepositsPage 
                                                       {...props} 
                                                       onLightbox={(value)=>setLightbox(value)} 
@@ -1394,7 +1411,6 @@ const App =(props) =>{
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
               <Route path="/taxonomy-bank" element={<TaxonomyBankPage  {...props} onMutationBank={(evt)=>onMutationBank(evt)}/>} />
               <Route path="/dblog" element={<DblogPage  {...props} />} />
-              {/*  */}
               <Route path="/auto-generation-content" element={<AutoGenerationContent  {...props} />} />
             </Route>
             <Route path="*" element={<p>There's nothing here: 404!</p>} />

@@ -67,15 +67,8 @@ const DetailPanelRight = (props) =>{
         onMenu,
         onMutationComment } = props
 
-  console.log("data :", data)
-
   let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
   let buys      =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 1) )
-
-//   export const sellView = (val) =>{
-//     let fn = _.filter(val.buys, (buy)=> buy.selected == 1 );
-//     return fn.length;
-// }
 
   const marks = [
     {
@@ -312,7 +305,7 @@ const DetailPanelRight = (props) =>{
                     src={data?.owner?.avatar?.url != null ? data?.owner?.avatar?.url :"https://img.myloview.com/stickers/default-avatar-profile-icon-vector-social-media-user-image-700-205124837.jpg"}
                     alt="Avatar"
                   />
-                  <span className="name-ava f-color-0">{data?.owner.displayName}</span>
+                  <span className="name-ava f-color-0">{data?.owner?.displayName}</span>
                   <span className="rate">
                     <Rating name="half-rating" value={3.5} precision={0.5} />
                   </span>

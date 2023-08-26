@@ -32,7 +32,7 @@ const BookBuysPage = (props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const location = useLocation();
-  let { onLightbox } = props
+  let { user, onLightbox } = props
 
   let [datas, setDatas] = useState([]);
   let [total, setTotal] = useState(0)
@@ -138,11 +138,19 @@ const BookBuysPage = (props) => {
                     let type   = supplier.type;
                     let category  = supplier.category;
                     let condition = supplier.condition;
-                    let buys    = supplier.buys;
+
+                    // userId
+                    
+                    let buy = _.filter(supplier.buys, (item)=>item.userId == user._id && item.selected == 1)
+                    let book = _.filter(supplier.buys, (item)=>item.userId == user._id && item.selected == 0)
+
+                    // let buys    = supplier.buys;
                     let follows = supplier.follows;
                     let files   = supplier?.files
                     let createdAt = new Date(supplier.createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
           
+                    console.log("buys :", buy, user, supplier)
+
                     return  <div className="content-bottom" key={index}>
                               {/* <div className="content-page border">    */}
                               <div className="row">
@@ -172,8 +180,10 @@ const BookBuysPage = (props) => {
                                   <Box sx={{ width: '5%' }}>{type}</Box>
                                   <Box sx={{ width: '5%' }}>{category}</Box>
                                   <Box sx={{ width: '5%' }}>{condition}</Box>
-                                  <Box sx={{ width: '5%' }}>{buys.length}</Box>
-                                  <Box sx={{ width: '5%' }}>{follows.length}</Box>
+                                  
+                                  <Box sx={{ width: '5%' }}> Book : { book.length * supplier.price }({book.length})</Box>
+                                  <Box sx={{ width: '5%' }}> Buy : { buy.length * supplier.price }({buy.length})</Box>
+                                  {/* <Box sx={{ width: '5%' }}> Follows : {follows.length}</Box> */}
                                   <Box sx={{ width: '10%' }}>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A') }</Box>
                                   <Box sx={{ width: '10%' }}><Button onClick={(evt)=>onCancelOrder(supplier?._id)}>Cancel Order</Button></Box>
                                 </Stack>
