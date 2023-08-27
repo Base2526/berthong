@@ -40,7 +40,7 @@ const DialogLoginComp = (props) => {
 
   let { onComplete, onClose, open, updateProfile, onMutationLogin, onMutationLoginWithSocial } = props;
   let [input, setInput]   = useState({ username: "",  password: ""});
-
+  
   useEffect(()=>{
     const initClient = () =>{
       gapi.client.init({
@@ -107,7 +107,6 @@ const DialogLoginComp = (props) => {
                     src={logo}
                     alt="Avatar"
                   />
-                  {/* <div className="fnt text-center">{t("welcome_to_berthong")}</div>   */}
                   <IconButton className="login-button-close" onClick={(e)=>onClose(false)}>
                     <AiOutlineCloseCircle />
                   </IconButton> 
@@ -152,13 +151,7 @@ const DialogLoginComp = (props) => {
                           </div>
                           <div className="row">
                             <div className="col-lg-12 col-12 pb-2 text-center" style={{justifyContent:"center"}}>
-                              {/* 
-                                <a class="d-flex btn btn-social btn-facebook" >
-                                  <FacebookIcon/>
-                                  <span className="font14" style={{marginLeft:"20px"}}>Sign in with Facebook</span>
-                                </a> 
-                              */}
-
+                            
                               <FacebookLogin
                                 appId={facebookAppId}
                                 autoLoad={false}
@@ -173,15 +166,9 @@ const DialogLoginComp = (props) => {
                               />
                             </div>
                             <div className="col-lg-12 col-12 pb-2 text-center" style={{justifyContent:"center"}}>
-                              {/* <a class="d-flex btn btn-social btn-google" >
-                              <GoogleIcon/>
-                              <span className="font14" style={{marginLeft:"20px"}}>Sign in with Google</span>
-                              </a> */}
-
                               <GoogleLogin
                                 clientId={googleClientId}
                                 render={renderProps => (
-                                  // <button onClick={renderProps.onClick} /*style={customStyle}*/ >This is my custom Google button</button>
                                   <a class="d-flex btn btn-social btn-google" onClick={renderProps.onClick} >
                                     <GoogleIcon/>
                                     <span className="font14" style={{marginLeft:"20px"}}>Sign in with Google</span>
@@ -192,30 +179,16 @@ const DialogLoginComp = (props) => {
                                 onFailure={onGoogleFailure}
                               />
                             </div>
-                            {/* <div className="col-lg-12 col-12pb-2 text-center" style={{justifyContent:"center"}}>
+                            
+                            {/* 
+                            <div className="col-lg-12 col-12pb-2 text-center" style={{justifyContent:"center"}}>
                               <a class="d-flex btn btn-social btn-line" >
                               <img style={{width:"24px"}} src={line} />
                               <span className="font14" style={{marginLeft:"20px"}}>Sign in with Line</span>
                               </a>
-                            </div> */}
+                            </div>  
+                            */}
                           </div>
-
-                          {/* <div className="d-flex form-input">
-                            <label>{t("username")}</label>
-                            <div className="position-relative wrapper-form">
-                              <input type="text" className="input-bl-form" name="username" value={input.username} onChange={onInputChange} required/>
-                              <AccountCircle />
-                            </div>
-                          
-                          </div>
-                          <div className="d-flex form-input">
-                            <label>{t("password")}</label>
-                            <div className="position-relative wrapper-form">
-                              <input type="password" className="input-bl-form" name="password" value={input.password} onChange={onInputChange} required />
-                              <LockIcon />
-                            </div>
-                          </div>
-                          <button type="submit">{t("login")}</button> */}
                         </div>
                       </div>
                     </form>

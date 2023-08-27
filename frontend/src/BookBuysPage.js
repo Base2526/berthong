@@ -19,12 +19,16 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
 import deepdash from "deepdash";
 
-import { queryBookBuyTransitions, mutationCancelTransition } from "./gqlQuery"
+import { queryBookBuyTransitions, mutationCancelTransition, mutationBuy, querySupplierById, querySuppliers } from "./gqlQuery"
 import UserComp from "./components/UserComp"
-import { getHeaders, showToast, handlerErrorApollo } from "./util"
+import { getHeaders, showToast, handlerErrorApollo, minTwoDigits } from "./util"
 import ComfirmCancelDialog from "./dialog/ComfirmCancelDialog"
+import * as Constants from "./constants"
+import PopupCart from "./pages/detail/PopupCart";
 
 deepdash(_);
+
+
 
 let initOpenComfirmCancelDialog = { isOpen: false, id: "" }
 
@@ -32,7 +36,7 @@ const BookBuysPage = (props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const location = useLocation();
-  let { user, onLightbox } = props
+  let { user, onLightbox, updateProfile } = props
 
   let [datas, setDatas] = useState([]);
   let [total, setTotal] = useState(0)
@@ -41,6 +45,50 @@ const BookBuysPage = (props) => {
   let [openComfirmCancelDialog, setOpenComfirmCancelDialog] = useState(initOpenComfirmCancelDialog)
 
   let [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
+  let [isPopupOpenedShoppingBag, setPopupOpenedShoppingBag] = useState({ isOpen: false, data: null });
+
+  const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
+    refetchQueries: [queryBookBuyTransitions],
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {buy}}) => {
+      let { status, data:newData, user } = buy
+      if(status){
+        updateProfile(user)
+
+        let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: newData._id} });
+        if(status && querySupplierByIdValue){
+          cache.writeQuery({
+            query: querySupplierById,
+            data: { supplierById: {...querySupplierByIdValue.supplierById, data: newData} },
+            variables: { id: newData._id }
+          })
+        }  
+
+        ////////// update cache querySuppliers ///////////
+        let suppliersValue = cache.readQuery({ query: querySuppliers });
+        if(!_.isNull(suppliersValue)){
+          let { suppliers } = suppliersValue
+          let newData = _.map(suppliers.data, (supplier) => supplier._id == newData._id ? newData : supplier)
+          cache.writeQuery({
+            query: querySuppliers,
+            data: { suppliers: { ...suppliersValue.suppliers, data: newData } }
+          });
+        }
+        ////////// update cache querySuppliers ///////////
+      }          
+    },
+    onCompleted(data) {
+      setPopupOpenedShoppingBag({...isPopupOpenedShoppingBag, isOpen:false})
+      showToast("success", `การส่งซื้อ complete`)
+    },
+    onError: (error) => {
+      console.log("onError :", error)
+
+      showToast("error", `เกิดปัญหาในการสั่งซื้อ`)
+
+      return handlerErrorApollo( props, error )
+    }
+  });
 
   const [onMutationCancelTransition, resultMutationCancelTransition] = useMutation(mutationCancelTransition,{
     context: { headers: getHeaders(location) },
@@ -71,8 +119,8 @@ const BookBuysPage = (props) => {
           subscribeToMore, 
           networkStatus } = useQuery(queryBookBuyTransitions, { 
                                                                 context: { headers: getHeaders(location) }, 
-                                                                fetchPolicy: 'network-only',
-                                                                nextFetchPolicy: 'cache-first', 
+                                                                fetchPolicy: 'cache-first' ,
+                                                                nextFetchPolicy: 'network-only', 
                                                                 notifyOnNetworkStatusChange: true
                                                               });
 
@@ -118,7 +166,8 @@ const BookBuysPage = (props) => {
 
   return (
     <div className="user-list-container">
-    {openComfirmCancelDialog.isOpen && <ComfirmCancelDialog id={openComfirmCancelDialog.id} open={openComfirmCancelDialog.isOpen} onMutationCancelTransition={onMutationCancelTransition} onClose={()=>setOpenComfirmCancelDialog({...openComfirmCancelDialog, isOpen: false})}  />}
+      { isPopupOpenedShoppingBag.isOpen && <PopupCart {...props} onMutationBuy={(evt)=>onMutationBuy(evt)} opened={isPopupOpenedShoppingBag.isOpen} data={isPopupOpenedShoppingBag.data} onClose={() => setPopupOpenedShoppingBag({...isPopupOpenedShoppingBag, isOpen:false}) } /> }
+      { openComfirmCancelDialog.isOpen && <ComfirmCancelDialog id={openComfirmCancelDialog.id} open={openComfirmCancelDialog.isOpen} onMutationCancelTransition={onMutationCancelTransition} onClose={()=>setOpenComfirmCancelDialog({...openComfirmCancelDialog, isOpen: false})}  />}
       {
         loadingBookBuyTransitions
         ?  <LinearProgress />
@@ -132,29 +181,28 @@ const BookBuysPage = (props) => {
                 { 
                   _.map(datas, (item, index) => {
 
-                    let { supplier } = item
-                    let title = supplier.title;
+                    let { supplier }= item
+                    let ref         = item._id;
+                    let title       = supplier.title;
                     let description = supplier.description;
-                    let type   = supplier.type;
-                    let category  = supplier.category;
-                    let condition = supplier.condition;
+                    let type        = supplier.type;
+                    let category    = supplier.category;
+                    let condition   = supplier.condition;                    
+                    let buy         = _.filter(supplier.buys, (it)=>it.userId == user._id && it.selected == 1 &&  it.transitionId == item._id)
+                    let book        = _.filter(supplier.buys, (it)=>it.userId == user._id && it.selected == 0 &&  it.transitionId == item._id)
 
-                    // userId
-                    
-                    let buy = _.filter(supplier.buys, (item)=>item.userId == user._id && item.selected == 1)
-                    let book = _.filter(supplier.buys, (item)=>item.userId == user._id && item.selected == 0)
+                    // let buys     = supplier.buys;
+                    let follows     = supplier.follows;
+                    let files       = supplier?.files
+                    let createdAt   = new Date(supplier.createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+                    let status      = item?.status
 
-                    // let buys    = supplier.buys;
-                    let follows = supplier.follows;
-                    let files   = supplier?.files
-                    let createdAt = new Date(supplier.createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-          
-                    console.log("buys :", buy, user, supplier)
+                    console.log("buys :", item, supplier, buy, book)
 
                     return  <div className="content-bottom" key={index}>
-                              {/* <div className="content-page border">    */}
                               <div className="row">
                                 <Stack direction="row" spacing={2} >
+                                  {/* <Box>{ref.toString()}</Box> */}
                                   <Box sx={{ width: '10%' }}>
                                     <Avatar
                                       alt="Example avatar"
@@ -163,11 +211,10 @@ const BookBuysPage = (props) => {
                                       onClick={(e) => {
                                         onLightbox({ isOpen: true, photoIndex: 0, images:files })
                                       }}
-                                      sx={{ width: 56, height: 56 }}
-                                    />
+                                      sx={{ width: 56, height: 56 }}/>
                                   </Box>
                                   <Box 
-                                    sx={{ width: '10%' }}
+                                    sx={{ width: '15%' }}
                                     onClick={()=>{
                                       navigate({
                                       pathname: "/d",
@@ -175,17 +222,18 @@ const BookBuysPage = (props) => {
                                       state: { id: supplier._id }
                                     })}}
                                   >{title}</Box>
-                                  <Box sx={{ width: '20%' }}>{description}</Box>
-                                  <Box sx={{ width: '20%' }}><UserComp userId={supplier?.ownerId} /></Box>
-                                  <Box sx={{ width: '5%' }}>{type}</Box>
-                                  <Box sx={{ width: '5%' }}>{category}</Box>
-                                  <Box sx={{ width: '5%' }}>{condition}</Box>
-                                  
-                                  <Box sx={{ width: '5%' }}> Book : { book.length * supplier.price }({book.length})</Box>
-                                  <Box sx={{ width: '5%' }}> Buy : { buy.length * supplier.price }({buy.length})</Box>
-                                  {/* <Box sx={{ width: '5%' }}> Follows : {follows.length}</Box> */}
-                                  <Box sx={{ width: '10%' }}>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A') }</Box>
-                                  <Box sx={{ width: '10%' }}><Button onClick={(evt)=>onCancelOrder(supplier?._id)}>Cancel Order</Button></Box>
+                                  {/* <Box sx={{ width: '20%' }}>{description}</Box> */}
+                                  {/* <Box sx={{ width: '20%' }}><UserComp userId={supplier?.ownerId} /></Box> */}
+                                  {/* 
+                                      <Box sx={{ width: '5%' }}>{type}</Box>
+                                      <Box sx={{ width: '5%' }}>{category}</Box> 
+                                  */}
+                                  <Box sx={{ width: '5%' }}>Condition : {condition}</Box>
+                                  <Box sx={{ width: '10%' }}>Book : { book.length * supplier.price }({ _.map(book, (vl) => `${ minTwoDigits(vl.itemId) }`).join(",") })</Box>
+                                  <Box sx={{ width: '10%' }}>Buy : { buy.length * supplier.price }({ _.map(buy, (vl) => `${ minTwoDigits(vl.itemId) }`).join(",") })</Box>
+                                  <Box sx={{ width: '20%' }}>{status == Constants.WAIT ? <Button onClick={(evt)=>{ setPopupOpenedShoppingBag({ isOpen:true, data:supplier }) }} variant="contained" color="warning">คลิกเพือสั่งซื้อ</Button> : status == Constants.APPROVED ? "รายการสั่งซื้อสมบูรณ์" : "รายการสั่งซื้อถูกยกเลิก"}</Box>
+                                  {/* <Box sx={{ width: '10%' }}>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A') }</Box> */}
+                                  {/* <Box sx={{ width: '10%' }}><Button onClick={(evt)=>onCancelOrder(supplier?._id)}>Cancel Order</Button></Box> */}
                                 </Stack>
                               </div>
                               {/* </div> */}
@@ -194,6 +242,8 @@ const BookBuysPage = (props) => {
                 }
               </InfiniteScroll>
       }
+
+      {/*   */}
 
       {openDialogDelete.isOpen && (
         <Dialog

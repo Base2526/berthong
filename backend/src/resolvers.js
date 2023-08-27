@@ -1393,16 +1393,23 @@ export default {
       // Start the transaction
       session.startTransaction()
       try {
-        if(_.isNull(await Model.Transition.findOne({ refId: supplier?._id, userId: current_user?._id}))){
-          await Model.Transition.create( { refId: supplier?._id, userId: current_user?._id } )
+        /*
+        ใช้ในกรณี user ต้องการซื้อ ร้านเดิน แต่ต้องการ ซื้อหลายครั้ง
+        เช่น ร้าน A ขายหวย ชุด A1 แล้ว user z ซื้อหวย ชุด A1 ไปแล้วต้องการซื้อ หวยเพิ่มเราจะมองว่าเป็นคนละ Transition เพือให้ง่ายต้องการ manage
+        */
+        let tran = await Model.Transition.findOne({ refId: supplier?._id, userId: current_user?._id, status: Constants.WAIT });
+        if(_.isNull( tran )){
+          tran =  await Model.Transition.create( { refId: supplier?._id, userId: current_user?._id } )
         }
+
+        // console.log("book :", tran)
 
         let mode = "BOOK";
         let { buys } = supplier
         let check =  _.find(buys, (buy)=> buy.itemId == itemId && buy.userId.toString() == current_user?._id.toString() )
 
         if(check == undefined){
-          await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, selected: 0 }] })   
+          await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, transitionId: tran?._id, selected: 0 }] })   
         }else{
           mode = "UNBOOK";
           buys = _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id )
@@ -1550,8 +1557,10 @@ export default {
       // Start the transaction
       session.startTransaction()
       try {
-        await Utils.updateSupplier({ _id }, { "$set": { "buys.$[].selected": 1 } }, { arrayFilters: [{ 'buys.$[].userId': current_user?._id }], timestamps: true })
-        await Model.Transition.updateOne( { refId: _id, userId: current_user?._id }, { status: Constants.APPROVED } )
+        let tran = await Model.Transition.findOne({ refId: _id, userId: current_user?._id, status: Constants.WAIT });
+
+        await Utils.updateSupplier({ _id }, { "$set": { "buys.$[].selected": 1 } }, { arrayFilters: [{ $and: [{'buys.$[].transitionId': tran._id}, { 'buys.$[].userId': current_user?._id }] }], timestamps: true })
+        await Model.Transition.updateOne( { refId: _id, userId: current_user?._id, status: Constants.WAIT }, { status: Constants.APPROVED } )
   
         // Commit the transaction
         await session.commitTransaction();

@@ -38,30 +38,32 @@ cron.schedule('*/60 * * * *', async() => {
                               []
                             );
 
-                            if(!_.isEqual(newBuys, buys)){
-                              try{
-                                await Supplier.updateOne({ _id: supplier?._id }, { ...supplier._doc, buys: newBuys });
+                            console.log("cron.schedule :", newBuys)
+
+                            // if(!_.isEqual(newBuys, buys)){
+                            //   try{
+                            //     await Supplier.updateOne({ _id: supplier?._id }, { ...supplier._doc, buys: newBuys });
                               
-                                let newSupplier = await Supplier.findById(supplier?._id)
-                                pubsub.publish("SUPPLIER_BY_ID", {
-                                  supplierById: { mutation: "AUTO_CLEAR_BOOK", data: newSupplier },
-                                });
+                            //     let newSupplier = await Supplier.findById(supplier?._id)
+                            //     pubsub.publish("SUPPLIER_BY_ID", {
+                            //       supplierById: { mutation: "AUTO_CLEAR_BOOK", data: newSupplier },
+                            //     });
 
-                                pubsub.publish("SUPPLIERS", {
-                                  suppliers: { mutation: "AUTO_CLEAR_BOOK", data: newSupplier },
-                                });
+                            //     pubsub.publish("SUPPLIERS", {
+                            //       suppliers: { mutation: "AUTO_CLEAR_BOOK", data: newSupplier },
+                            //     });
 
-                                console.log("ping :AUTO_CLEAR_BOOK AUTO_CLEAR_BOOK ", newSupplier)
+                            //     console.log("ping :AUTO_CLEAR_BOOK AUTO_CLEAR_BOOK ", newSupplier)
 
-                                // if(!_.isEmpty(users)){
-                                //   _.map(_.uniqWith(users, _.isEqual), async(userId)=>{
-                                //     pubsub.publish("ME", {
-                                //       me: { mutation: "BOOK", data: {userId, data: { /* balance: (await checkBalance(userId)).balance*/ ...await checkBalance(userId) , balanceBook: await checkBalanceBook(userId) } } },
-                                //     });
-                                //   })
-                                // }
-                              }catch(error){}
-                            }
+                            //     // if(!_.isEmpty(users)){
+                            //     //   _.map(_.uniqWith(users, _.isEqual), async(userId)=>{
+                            //     //     pubsub.publish("ME", {
+                            //     //       me: { mutation: "BOOK", data: {userId, data: { /* balance: (await checkBalance(userId)).balance*/ ...await checkBalance(userId) , balanceBook: await checkBalanceBook(userId) } } },
+                            //     //     });
+                            //     //   })
+                            //     // }
+                            //   }catch(error){}
+                            // }
     }))
     //////////////// clear book ////////////////
 

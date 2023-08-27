@@ -28,7 +28,8 @@ import { getHeaders, showToast, handlerErrorApollo } from "../../util";
 import {  querySupplierById, 
           querySuppliers,
           subscriptionSupplierById, 
-          mutationBuy
+          mutationBuy,
+          queryBookBuyTransitions
         } from "../../gqlQuery";
 
 deepdash(_);
@@ -49,18 +50,19 @@ const Detail = (props) => {
   let { user, onLogin, onMutationFollow, onMutationBook, updateProfile } = props
 
   const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
+    refetchQueries: [queryBookBuyTransitions],
     context: { headers: getHeaders(location) },
     update: (cache, {data: {buy}}) => {
       let { status, data:newData, user } = buy
       if(status){
         updateProfile(user)
 
-        let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id} });
+        let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: { id: newData._id } });
         if(status && querySupplierByIdValue){
           cache.writeQuery({
             query: querySupplierById,
             data: { supplierById: {...querySupplierByIdValue.supplierById, data: newData} },
-            variables: { id }
+            variables: { id: newData._id }
           })
         }  
 

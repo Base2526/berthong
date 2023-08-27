@@ -141,7 +141,8 @@ import { queryNotifications,
           queryDateLotterys, 
           queryDateLotteryById,
           mutationAdminDeposit,
-          mutationAdminWithdraw
+          mutationAdminWithdraw,
+          queryBookBuyTransitions
         } from "./gqlQuery"
           
 import * as Constants from "./constants"
@@ -321,6 +322,7 @@ const App =(props) =>{
   });
 
   const [onMutationBook, resultMutationBook] = useMutation(mutationBook,{
+    refetchQueries: [queryBookBuyTransitions],
     context: { headers: getHeaders(location) },
     update: (cache, {data: {book}}) => {
       let { status, action, data, user } = book
@@ -776,44 +778,6 @@ const App =(props) =>{
       return handlerErrorApollo( props, error )
     }
   });
-
-  // const [onMutationMe_bank, resultonMutationMe_bank] = useMutation(mutationMe_bank, {
-  //   context: { headers: getHeaders(location) },
-  //   update: (cache, {data: {me_bank}}) => {
-  //     let { status, data } = me_bank
-  //     if(status){
-  //       updateProfile(data)
-  //     }
-  //   },
-  //   onCompleted(data) {
-  //     if(data?.me_bank?.mode === "new"){
-  //       showToast("success", `Add bank success`)
-  //       navigate(-1)
-  //     }else{
-  //       showToast("success", `Delete bank success`)
-  //       setOpenDialogDeleteBank({ open: false, id: ""})  
-  //     } 
-  //   },
-  //   onError(error){
-  //     return handlerErrorApollo( props, error )
-  //   }
-  // });
-
-  // const [onMutationMe_profile, resultonMutationMe_profile] = useMutation(mutationMe_profile, {
-  //   context: { headers: getHeaders(location) },
-  //   update: (cache, {data: {me_profile}}) => {
-  //     let { status, data } = me_profile
-  //     if(status){
-  //       updateProfile(data)
-  //     }
-  //   },
-  //   onCompleted(data) {
-  //     showToast("success", `Update profile success`)
-  //   },
-  //   onError(error){
-  //     return handlerErrorApollo( props, error )
-  //   }
-  // });
 
   const [onMutationDateLottery, resultMutationDateLotteryValues] = useMutation(mutationDatesLottery
     , {
