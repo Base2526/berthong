@@ -252,5 +252,8 @@ export const client = new ApolloClient({
       console.log("graphQLErrors", graphQLErrors)
       console.log("networkError", networkError)
     },
+    fetchOptions: {
+        timeout: 10000, // Set the timeout value in milliseconds
+    },
     debug: true
 })

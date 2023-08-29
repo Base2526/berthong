@@ -43,11 +43,14 @@ export const checkAuth = async(req) => {
         let customLocation = JSON.parse(req.headers["custom-location"])
         pathname = customLocation?.pathname
     }
+    console.log("checkAuth #1 :", req.headers)
     if (req.headers && req.headers.authorization) {
         var auth    = req.headers.authorization;
         var parts   = auth.split(" ");
         var bearer  = parts[0];
         var sessionId   = parts[1];
+
+        console.log("checkAuth #3 :", bearer, sessionId)
         if (bearer == "Bearer") {
             // let decode = jwt.verify(token, process.env.JWT_SECRET);
             // console.log("sessionId > ", sessionId)
@@ -74,10 +77,18 @@ export const checkAuth = async(req) => {
                 }
             }
             await Model.Session.deleteOne( {"_id": sessionId} )
+        }else if(bearer == "Basic"){
+            return {
+                status: false,
+                code: Constants.USER_NOT_FOUND,
+                message: "without user - anonymous user"
+            }
         }
         // force logout
         throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
     }
+
+    console.log("checkAuth #2")
     // without user (anonymous)
     return {
         status: false,
@@ -514,6 +525,21 @@ export const getLineNumber = () => {
     const lineNumber = stackTrace.match(/:(\d+):\d+/)[1];
     
     return parseInt(lineNumber);
+}
+
+export const dumpError = (err) => {
+    if (typeof err === 'object') {
+      if (err.message) {
+        console.log('\nMessage: ' + err.message)
+      }
+      if (err.stack) {
+        console.log('\nStacktrace:')
+        console.log('====================')
+        console.log(err.stack);
+      }
+    } else {
+      console.log('dumpError :: argument is not an object');
+    }
 }
 
 export const divide = (a, b) => {

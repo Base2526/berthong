@@ -1557,11 +1557,13 @@ export default {
       // Start the transaction
       session.startTransaction()
       try {
-        let tran = await Model.Transition.findOne({ refId: _id, userId: current_user?._id, status: Constants.WAIT });
+        let tran = await Model.Transition.findOne({ refId: _id, userId: current_user?._id, status:  Constants.WAIT});
 
         await Utils.updateSupplier({ _id }, { "$set": { "buys.$[].selected": 1 } }, { arrayFilters: [{ $and: [{'buys.$[].transitionId': tran._id}, { 'buys.$[].userId': current_user?._id }] }], timestamps: true })
-        await Model.Transition.updateOne( { refId: _id, userId: current_user?._id, status: Constants.WAIT }, { status: Constants.APPROVED } )
+        await Model.Transition.updateOne( { _id: tran._id }, { status: Constants.APPROVED } )
   
+        console.log("buy #process ", tran, _id)
+
         // Commit the transaction
         await session.commitTransaction();
 
@@ -1584,6 +1586,7 @@ export default {
   
         return {
           status: true,
+          transitionId: tran._id,
           data: supplier,
           user,
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
@@ -1591,7 +1594,7 @@ export default {
 
       }catch(error){
         await session.abortTransaction();
-        console.log(`buy #error : ${error}`)
+        console.log(`buy #error : ${error} - ${ Utils.dumpError(error) }`)
         
         throw new AppError(Constants.SYSTEM_ERROR, error)
       } finally {

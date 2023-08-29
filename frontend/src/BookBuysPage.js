@@ -48,10 +48,10 @@ const BookBuysPage = (props) => {
   let [isPopupOpenedShoppingBag, setPopupOpenedShoppingBag] = useState({ isOpen: false, data: null });
 
   const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
-    refetchQueries: [queryBookBuyTransitions],
+    // refetchQueries: [queryBookBuyTransitions],
     context: { headers: getHeaders(location) },
     update: (cache, {data: {buy}}) => {
-      let { status, data:newData, user } = buy
+      let { status, transitionId, data:newData, user } = buy
       if(status){
         updateProfile(user)
 
@@ -68,13 +68,30 @@ const BookBuysPage = (props) => {
         let suppliersValue = cache.readQuery({ query: querySuppliers });
         if(!_.isNull(suppliersValue)){
           let { suppliers } = suppliersValue
-          let newData = _.map(suppliers.data, (supplier) => supplier._id == newData._id ? newData : supplier)
+          let suppliersData = _.map(suppliers.data, (supplier) => supplier._id == newData._id ? newData : supplier)
           cache.writeQuery({
             query: querySuppliers,
-            data: { suppliers: { ...suppliersValue.suppliers, data: newData } }
+            data: { suppliers: { ...suppliersValue.suppliers, data: suppliersData } }
           });
         }
         ////////// update cache querySuppliers ///////////
+
+        ////////// update cache BookBuyTransitions /////////////
+        let queryBookBuyTransitionsValue = cache.readQuery({ query: queryBookBuyTransitions });
+        if(status && queryBookBuyTransitionsValue){       
+          let newTransitions =  _.map(queryBookBuyTransitionsValue.bookBuyTransitions.data, (item)=>{
+                                  if(item._id == transitionId){
+                                    return  {...item, status: Constants.APPROVED, supplier: newData}
+                                  }
+                                  return item
+                                })
+
+          cache.writeQuery({
+            query: queryBookBuyTransitions,
+            data: { bookBuyTransitions: { ...queryBookBuyTransitionsValue.bookBuyTransitions, data: newTransitions } },
+          });
+        }  
+        ////////// update cache BookBuyTransitions /////////////
       }          
     },
     onCompleted(data) {
