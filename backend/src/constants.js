@@ -1,6 +1,6 @@
 export const AMDINISTRATOR = "62a2ccfbcf7946010d3c74a2";
 export const AUTHENTICATED = "62a2ccfbcf7946010d3c74a6";
-export const ANONYMOUS     = "62a2ccfbcf7946010d3c74a4";
+// export const ANONYMOUS     = "62a2ccfbcf7946010d3c74a4";
 
 export const SUCCESS        = "SUCCESS";
 export const ERROR          = "ERROR";

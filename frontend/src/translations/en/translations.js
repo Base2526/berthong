@@ -40,6 +40,7 @@ export const TRANSLATIONS_EN = {
     email: "Email",
     name: "Name",
     username: "Username",
+    username_or_email: "Username OR Email",
     password: "Password",
     confirm_delete: "Confirm delete",
     close: "Close",
@@ -62,5 +63,11 @@ export const TRANSLATIONS_EN = {
     things: "Things",
     etc: "Etc",
 
-    all_result: "All result"
+    all_result: "All result",
+
+    advance_search: "Advance search",
+
+    all_products: "All products",
+
+    balance: "Balance",
 };

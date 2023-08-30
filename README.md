@@ -3,6 +3,8 @@ docker-compose -f docker-compose.ui.yml build
 docker-compose -f docker-compose.dev.yml build
 docker-compose -f docker-compose.prod.yml build
 
+docker-compose -f docker-compose.prod.yml down &&  docker-compose -f docker-compose.prod.yml build &&  docker-compose -f docker-compose.prod.yml up -d
+
 mongoimport --uri mongodb://root:b9be11166d72e9e3ae7fd407165e4bd2@mongo:29101/berthong --collection role --file role
 
 mongoimport --db dbName --collection collectionName --file fileName.json
@@ -13,6 +15,10 @@ mongoimport --host "127.0.0.1" --port "27099" --db berthong --collection bank --
 mongoimport --host "hostname" --port "port" --db "databasename" --collection "collectionName" --file "filePath"
 
 mongoimport --host "127.0.0.1" --port "29101" --db berthong --collection role --file role
+
+<!--  
+mongoimport --port "29102" --username banlistinfo --password 6c09093474284f6bfc3749a5bd24cbb6 --db berthong --collection bank --file bank 
+-->
 
 การ manage user role
 1. เราต้อง edit mongod.conf
@@ -111,3 +117,33 @@ REACT_APP_GOOGLE_ANALYTICS4=
 
 Login with LINE
 https://por-porkaew15.medium.com/implement-line-login-with-angular-project-e2e598d3c618
+
+
+
+
+db.getCollection("supplier").find({})
+
+db.getCollection("supplier").aggregate([
+        { 
+            $match: { 
+//                "type": 1,
+//                "category": 3,
+                "$and" : [
+                    {
+                        "buys":{
+                           $not:{
+                               $elemMatch : {itemId: 6}  
+                           } 
+                        }
+                    },
+                    {
+                        "buys":{
+                           $not:{
+                               $elemMatch : {itemId: 6}  
+                           } 
+                        }
+                    }
+                ]
+            }
+        }
+])

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { NetworkStatus, useQuery } from "@apollo/client";
+import { NetworkStatus, useQuery, useMutation } from "@apollo/client";
 import _ from "lodash";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
@@ -10,7 +10,7 @@ import { lightGreen, blueGrey } from "@material-ui/core/colors";
 import { useTranslation } from "react-i18next";
 import { FaAngleUp } from 'react-icons/fa';
 
-import { querySuppliers, subscriptionSuppliers} from "./gqlQuery";
+import { querySuppliers, subscriptionSuppliers, mutationSearch} from "./gqlQuery";
 import { handlerErrorApollo,  getHeaders, showToast } from "./util";
 import HomeItem from "./item/HomeItem"
 import SearchComp from "./components/SearchComp"
@@ -93,6 +93,33 @@ const HomePage = (props) => {
 
   let { user, logout, ws, search, onLogin, onSearchChange, onMutationFollow } = props
 
+  const [onMutationSearch, resultMutationSearch] = useMutation(mutationSearch,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: {search}}) => {
+      // let { status, data:newData } = buy
+
+      // let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id} });
+      // if(status && querySupplierByIdValue){
+      //   cache.writeQuery({
+      //     query: querySupplierById,
+      //     data: { supplierById: {...querySupplierByIdValue.supplierById, data: newData} },
+      //     variables: { id }
+      //   });
+      // }   
+      console.log("search :", search)   
+    },
+    onCompleted(data) {
+      // setPopupOpenedShoppingBag(false)
+      // showToast("success", `การส่งซื้อ complete`)
+    },
+    onError: (error) => {
+      // console.log("onError :", error)
+      // showToast("error", `เกิดปัญหาในการสั่งซื้อ`)
+
+      return handlerErrorApollo( props, error )
+    }
+  });
+
   const { loading: loadingSuppliers, 
           data: dataSuppliers, 
           error: errorSuppliers, 
@@ -109,15 +136,22 @@ const HomePage = (props) => {
                                       }
                                     );
 
-  if(!_.isEmpty(errorSuppliers)) handlerErrorApollo( props, errorSuppliers )
+  if(!_.isEmpty(errorSuppliers)){
+    handlerErrorApollo( props, errorSuppliers )
+  }
 
   const handleScroll = () => {
     setScrollPosition(window.scrollY);
   };
 
-  useEffect(()=>{
-    console.log("scrollPosition :", scrollPosition)
-  }, [scrollPosition])
+  // useEffect(()=>{
+  //   console.log("scrollPosition :", scrollPosition)
+  // }, [scrollPosition])
+
+  /*
+  localStorage.setItem('items', JSON.stringify(items));
+  const items = JSON.parse(localStorage.getItem('items'));
+  */
 
   useEffect(()=>{
     onSearchChange({...search, PAGE: 1 })
@@ -274,7 +308,29 @@ const HomePage = (props) => {
                   classes={classes}
                   search={search}
                   onReset={()=>setReset(true)}
-                  onSearch={(search)=>onSearchChange(search)} />
+                  onSearch={(search)=>
+                  {
+                    // console.log("search :", search)
+
+                    fetchMoreSuppliers({
+                      variables: { input: search },
+                      updateQuery: (prev, {fetchMoreResult}) => {
+                        if (!fetchMoreResult?.suppliers?.data?.length) {
+                          return prev;
+                        }
+                
+                        // let suppliers = {...prev.suppliers, data: _.unionBy( fetchMoreResult?.suppliers?.data, prev?.suppliers?.data, '_id') }
+                        
+                        let { suppliers } = fetchMoreResult
+                        return suppliers //Object.assign({}, prev, {suppliers} );
+                      },
+                    });
+
+                    onSearchChange(search)
+
+                    //  onMutationBook({ variables: { input: { supplierId: id, itemId, selected } } });
+                    // onMutationSearch({ variables: { input: search } })
+                  }} />
               </div>
               <div> {t("all_result")} : {total} </div>
               {loading 

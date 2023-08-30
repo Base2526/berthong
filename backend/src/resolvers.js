@@ -38,9 +38,9 @@ export default {
 
       let text = "1234"
       let encrypt = cryptojs.AES.encrypt(text, process.env.JWT_SECRET).toString()
-      encrypt = "U2FsdGVkX18wIs5DOBhZOddShspHwri5Z8KFIXtyHzU="
+      // encrypt = "U2FsdGVkX18wIs5DOBhZOddShspHwri5Z8KFIXtyHzU="
       let decrypt = cryptojs.AES.decrypt(encrypt, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8);
-      console.log("encrypt :", encrypt, decrypt)
+      console.log("encrypt ++ :", encrypt, decrypt)
   
       return { status:true, "mongo db state" : mongo_db_state }
     },
@@ -166,17 +166,18 @@ export default {
     async suppliers(parent, args, context, info){
       let start = Date.now()
       let { req } = context
-      console.log("suppliers : #0 ", args?.input)
+      // console.log("suppliers : #0 ", args?.input)
       await Utils.checkAuth(req);
 
-      let { PAGE, LIMIT } = args?.input
+      let { NUMBER, PAGE, LIMIT } = args?.input
       let SKIP = (PAGE - 1) * LIMIT
 
-      console.log("suppliers : #1 ", args?.input)
-      let suppliers = await Model.Supplier.aggregate([
-                      { $skip: SKIP }, 
-                      { $limit: LIMIT }, 
-                      {
+      // console.log("suppliers : #1 ", args?.input)
+
+      let aggregate = [
+                        { $skip: SKIP }, 
+                        { $limit: LIMIT }, 
+                        {
                           $lookup: {
                               localField: "ownerId",
                               from: "user",
@@ -186,19 +187,59 @@ export default {
                               ],
                               as: "owner"
                           }
-                      },
-                      {
+                        },
+                        {
+                          $lookup: {
+                              localField: "dateLottery",
+                              from: "dateLottery",
+                              foreignField: "_id",
+                              pipeline: [
+                                { $project:{ date: 1 }}
+                              ],
+                              as: "dateLottery"
+                          }
+                        },
+                        {
                           $unwind: {
                                   "path": "$owner",
                                   "preserveNullAndEmptyArrays": false
                           }
-                      }
-                    ])
+                        },
+                        {
+                          $unwind: {
+                                  "path": "$dateLottery",
+                                  "preserveNullAndEmptyArrays": false
+                          }
+                        }
+                      ]
 
+      if(!_.isEmpty(NUMBER)){
+        let q = _.map(NUMBER.split(","), (v, i)=>{
+          return {
+                    "buys":{
+                      $not:{ $elemMatch : {itemId: parseInt(v)} } 
+                    }
+                  }
+        })
+
+        aggregate = [...aggregate, { $match: { "$and" : q  } }]
+
+        let suppliers = await Model.Supplier.aggregate(aggregate)
+        let total     = await Model.Supplier.aggregate([ { $match: { "$and" : q  } } ])
+        return {  
+          status: true,
+          data: suppliers,
+          total: total.length,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+        }
+      }
+
+      let suppliers = await Model.Supplier.aggregate(aggregate)
+      let total     = await Model.Supplier.find({})
       return {  
         status: true,
         data: suppliers,
-        total: await Utils.getTotalSupplier(),
+        total: total.length,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
       }
     },
@@ -243,11 +284,26 @@ export default {
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
+    async bankByIds(parent, args, context, info){
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      await Utils.checkAuth(req);
+
+      let banks = await Model.Bank.find({ _id : { $in : input } });
+      if(_.isNull(banks)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
+
+      return {  status:true,
+                data: banks,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    },
+
     async bookBuyTransitions(parent, args, context, info){
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
 
       // let transitions = await Model.Transition.find({ userId: current_user?._id, type: Constants.SUPPLIER });
 
@@ -433,26 +489,30 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      console.log("notifications: ")
+      console.log("notifications: #1 ", args)
 
       let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      // console.log("notifications: #2 ", current_user)
       // if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
-      let data = [{ user_to_notify: '63ff3c0c6637e303283bc40f', 
-                    type: "system",
-                    data: "test [system]",
-                    status: "unread"
-                  },
-                  { user_to_notify: '63ff3c0c6637e303283bc40f', 
-                    type: "withdraw",
-                    data: "test [withdraw]",
-                    status: "unread"
-                  },
-                  { user_to_notify: '63ff3c0c6637e303283bc40f', 
-                    type: "deposit",
-                    data: "test [deposit]",
-                    status: "unread"
-                  }]
+      let data =  await Model.Notification.find({ user_to_notify: current_user?._id });
+
+      // let data = [{ user_to_notify: '63ff3c0c6637e303283bc40f', 
+      //               type: "system",
+      //               data: "test [system]",
+      //               status: "unread"
+      //             },
+      //             { user_to_notify: '63ff3c0c6637e303283bc40f', 
+      //               type: "withdraw",
+      //               data: "test [withdraw]",
+      //               status: "unread"
+      //             },
+      //             { user_to_notify: '63ff3c0c6637e303283bc40f', 
+      //               type: "deposit",
+      //               data: "test [deposit]",
+      //               status: "unread"
+      //             }]
+
       return {  status: true,
                 data,
                 total: data.length,
@@ -598,6 +658,18 @@ export default {
 
       return {  status: true,
                 data: dateLottery,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
+    async producers(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+
+      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let producers = await Model.Supplier.find({ ownerId: current_user?._id })
+      return {  status: true,
+                data: producers,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
     },
@@ -889,7 +961,7 @@ export default {
 
           let { data } = input
 
-          let user = await Utils.getUserFull({socialId: data.profileObj.googleId, socialType: 'google'});
+          let user = await Utils.getUser({socialId: data.profileObj.googleId, socialType: 'google'});
           if(_.isEmpty(user)){
 
             /*
@@ -906,8 +978,9 @@ export default {
               password: cryptojs.AES.encrypt( data.profileObj.googleId, process.env.JWT_SECRET).toString(),
               email: data.profileObj.email,
               displayName: data.profileObj.givenName +" " + data.profileObj.familyName ,
-              roles: ['62a2ccfbcf7946010d3c74a4', '62a2ccfbcf7946010d3c74a6'], // anonymous, authenticated
+              roles: [/*'62a2ccfbcf7946010d3c74a4', '62a2ccfbcf7946010d3c74a6'*/ Constants.AUTHENTICATED ], // anonymous, authenticated
               isActive: 'active',
+              banks: [],
               image :[{
                 url: data.profileObj.imageUrl,
                 filename: data.profileObj.googleId +".jpeg",
@@ -920,12 +993,16 @@ export default {
               socialId: data.profileObj.googleId,
               socialObject: JSON.stringify(data)
             }
+
+            console.log("Presave GOOGLE :", newInput)
+            
             user = await Model.User.create(newInput);
           }
-          console.log("GOOGLE :", user)
 
+          user = await Utils.getUserFull({_id: user?._id})
+          console.log("getUserFull #GOOGLE :", user)
           return {
-            status:true,
+            status: true,
             data: user,
             sessionId: await Utils.getSessionId(user?._id, input),
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
@@ -1197,8 +1274,8 @@ export default {
     },
 
     async register(parent, args, context, info) {
-      let start = Date.now()
-      let {input} = args
+      let start     = Date.now()
+      let { input } = args
 
       let user = await Utils.getUser({ email: input.email } ) 
       if(!_.isNull(user)) throw new AppError(Constants.ERROR, "EXITING EMAIL")
@@ -1293,20 +1370,20 @@ export default {
       let start = Date.now()
       let { input } = args        
       let { req } = context
+      let { id, itemId } = input
       
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      let { current_user } =  await Utils.checkAuth(req);
 
-      let { supplierId, itemId, selected } = input
-
-      let supplier = await Utils.getSupplier({ _id: supplierId })
+      let supplier = await Model.Supplier.findById(id);
       if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
 
+      /*
+      Check balance before book?
+      */ 
       let price       = supplier?.price
       let balance     = await Utils.getBalance(current_user?._id)
       let balanceBook = await Utils.getBalanceBook(current_user?._id)
       if(price > (balance - balanceBook)){
-        console.log("book #[NOT_ENOUGH_BALANCE] : ", price, balance, balanceBook)
         throw new AppError(Constants.NOT_ENOUGH_BALANCE, 'NOT ENOUGH BALANCE')
       }
 
@@ -1316,18 +1393,67 @@ export default {
       // Start the transaction
       session.startTransaction()
       try {
-        if(_.isNull(await Model.Transition.findOne({ refId: supplier?._id, userId: current_user?._id}))){
-          await Model.Transition.create( { refId: supplier?._id, userId: current_user?._id } )
+        /*
+        ใช้ในกรณี user ต้องการซื้อ ร้านเดิน แต่ต้องการ ซื้อหลายครั้ง
+        เช่น ร้าน A ขายหวย ชุด A1 แล้ว user z ซื้อหวย ชุด A1 ไปแล้วต้องการซื้อ หวยเพิ่มเราจะมองว่าเป็นคนละ Transition เพือให้ง่ายต้องการ manage
+        */
+        let tran = await Model.Transition.findOne({ refId: supplier?._id, userId: current_user?._id, status: Constants.WAIT });
+        if(_.isNull( tran )){
+          tran =  await Model.Transition.create( { refId: supplier?._id, userId: current_user?._id } )
         }
 
+        // console.log("book :", tran)
+
+        let mode = "BOOK";
+        let { buys } = supplier
+        let check =  _.find(buys, (buy)=> buy.itemId == itemId && buy.userId.toString() == current_user?._id.toString() )
+
+        if(check == undefined){
+          await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, transitionId: tran?._id, selected: 0 }] })   
+        }else{
+          mode = "UNBOOK";
+          buys = _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id )
+          await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys })   
+        }
+     
+        let newSupplier = await Utils.getSupplier({ _id: id })
+
+        // Case current open multi browser
+        pubsub.publish("SUPPLIER_BY_ID", {
+          supplierById: { mutation: "BOOK", data: newSupplier },
+        });
+
+        // Case other people open home page
+        pubsub.publish("SUPPLIERS", {
+          suppliers: { mutation: "BOOK", data: newSupplier },
+        });
+
+        let user = await Utils.getUserFull({_id: current_user?._id}) 
+
+        // pubsub.publish("ME", {
+        //   me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } },
+        // });
+
+        // Commit the transaction
+        await session.commitTransaction();
+
+        return {
+          status: true,
+          action: {mode, itemId},
+          user,
+          data: newSupplier,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+
+        /*
         let { buys } = supplier
         if(selected == 0){
           let check =  _.find(buys, (buy)=> buy.itemId == itemId )
           if(check == undefined){
 
-            await Utils.updateSupplier({ _id: supplierId }, {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, selected}] })
+            await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, selected}] })
               
-            let newSupplier = await Utils.getSupplier({ _id: supplierId }) 
+            let newSupplier = await Utils.getSupplier({ _id: id }) 
 
             // Case current open multi browser
             pubsub.publish("SUPPLIER_BY_ID", {
@@ -1357,9 +1483,9 @@ export default {
           }
           throw new Error('ALREADY BOOK')
         }else{
-          await Utils.updateSupplier({ _id: supplierId }, {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id ) })
+          await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id ) })
 
-          let newSupplier = await Utils.getSupplier({ _id: supplierId })
+          let newSupplier = await Utils.getSupplier({ _id: id })
           
           pubsub.publish("SUPPLIER_BY_ID", {
             supplierById: { mutation: "UNBOOK", data: newSupplier },
@@ -1385,6 +1511,8 @@ export default {
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }  
+        */
+
       }catch(error){
         await session.abortTransaction();
         console.log(`book #error : ${error}`)
@@ -1401,8 +1529,8 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      // if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
       // let supplier = await Model.Supplier.findById(_id);
       // if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
@@ -1429,9 +1557,13 @@ export default {
       // Start the transaction
       session.startTransaction()
       try {
-        await Utils.updateSupplier({ _id }, { "$set": { "buys.$[].selected": 1 } }, { arrayFilters: [{ 'buys.$[].userId': current_user?._id }], timestamps: true })
-        await Model.Transition.updateOne( { refId: _id, userId: current_user?._id }, { status: Constants.APPROVED } )
+        let tran = await Model.Transition.findOne({ refId: _id, userId: current_user?._id, status:  Constants.WAIT});
+
+        await Utils.updateSupplier({ _id }, { "$set": { "buys.$[].selected": 1 } }, { arrayFilters: [{ $and: [{'buys.$[].transitionId': tran._id}, { 'buys.$[].userId': current_user?._id }] }], timestamps: true })
+        await Model.Transition.updateOne( { _id: tran._id }, { status: Constants.APPROVED } )
   
+        console.log("buy #process ", tran, _id)
+
         // Commit the transaction
         await session.commitTransaction();
 
@@ -1448,19 +1580,21 @@ export default {
         });
   
         let user = await Utils.getUserFull( {_id: current_user?._id} ) 
-        pubsub.publish("ME", {
-          me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
-        });
+        // pubsub.publish("ME", {
+        //   me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
+        // });
   
         return {
           status: true,
+          transitionId: tran._id,
           data: supplier,
+          user,
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
 
       }catch(error){
         await session.abortTransaction();
-        console.log(`buy #error : ${error}`)
+        console.log(`buy #error : ${error} - ${ Utils.dumpError(error) }`)
         
         throw new AppError(Constants.SYSTEM_ERROR, error)
       } finally {
@@ -1812,7 +1946,7 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
       cache.ca_delete(_id)
@@ -1838,10 +1972,12 @@ export default {
 
       await Utils.updateSupplier({ _id }, { follows });
       
+      let data  = await Utils.getSupplier({_id});
+      
       return {
         status: true,
         mode,
-        data: await Utils.getSupplier({_id}),
+        data,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
@@ -2056,6 +2192,8 @@ export default {
       let { input } = args
       let { req } = context
 
+      console.log("adminDeposit #1 :", input)
+
       let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR only!')
 
@@ -2067,6 +2205,19 @@ export default {
       try {
         await Model.Transition.updateOne({ _id: input?._id }, { status : input?.status });
 
+        switch(input?.status){
+          case Constants.APPROVED:
+          case Constants.REJECT:{
+
+            let newInput = {
+              user_to_notify: transition.userId,
+              type: "deposit",
+              data: input?.status === Constants.APPROVED ? "Admin approved" : "Admin reject"
+            }
+            await Model.Notification.create(newInput);
+          }
+        }
+        
         // Commit the transaction
         await session.commitTransaction();
       }catch(error){
@@ -2209,7 +2360,55 @@ export default {
         status: true,
         executionTime: `seconds`
       }   
-    }
+    },
+
+    // search(input: SearchInput): JSON
+    async search(parent, args, context, info) {
+      let start = Date.now()
+
+      let { input } = args
+      let { req } = context
+
+      let { TITLE, NUMBER } = input
+
+      let q = _.map(NUMBER.split(","), (v, i)=>{
+                return {
+                          "buys":{
+                            $not:{ $elemMatch : {itemId: parseInt(v)} } 
+                          }
+                        }
+              })
+
+      let suppliers  = await Model.Supplier.aggregate([
+                        { 
+                            $match: { "$and" : q }
+                        },
+                        {
+                          $lookup: {
+                              localField: "ownerId",
+                              from: "user",
+                              foreignField: "_id",
+                              pipeline: [
+                                { $project:{ username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }}
+                              ],
+                              as: "owner"
+                          }
+                      },
+                      {
+                          $unwind: {
+                                  "path": "$owner",
+                                  "preserveNullAndEmptyArrays": false
+                          }
+                      }
+                      ])
+
+      return {
+        status: true,
+        data: suppliers,
+        total: suppliers?.length,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }   
+    },
   },
   Subscription:{
     subscriptionMe: {

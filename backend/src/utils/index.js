@@ -43,11 +43,14 @@ export const checkAuth = async(req) => {
         let customLocation = JSON.parse(req.headers["custom-location"])
         pathname = customLocation?.pathname
     }
+    console.log("checkAuth #1 :", req.headers)
     if (req.headers && req.headers.authorization) {
         var auth    = req.headers.authorization;
         var parts   = auth.split(" ");
         var bearer  = parts[0];
         var sessionId   = parts[1];
+
+        console.log("checkAuth #3 :", bearer, sessionId)
         if (bearer == "Bearer") {
             // let decode = jwt.verify(token, process.env.JWT_SECRET);
             // console.log("sessionId > ", sessionId)
@@ -74,10 +77,18 @@ export const checkAuth = async(req) => {
                 }
             }
             await Model.Session.deleteOne( {"_id": sessionId} )
+        }else if(bearer == "Basic"){
+            return {
+                status: false,
+                code: Constants.USER_NOT_FOUND,
+                message: "without user - anonymous user"
+            }
         }
         // force logout
         throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
     }
+
+    console.log("checkAuth #2")
     // without user (anonymous)
     return {
         status: false,
@@ -195,13 +206,9 @@ export const getBalance = async(userId) =>{
                     ])
     
     let balance     = 0;
-    let balanceBook = 0;
     _.map(supplier, (sup)=>{
         let buys = _.filter(sup.supplier.buys, (buy)=> _.isEqual(buy.userId, userId))
         balance -= buys.length * sup.supplier.price
-
-        let filters = _.filter(sup.supplier.buys, (buy)=> _.isEqual(buy.userId, userId) && buy.selected == 0 )
-        balanceBook += filters.length * sup.supplier.price
     })
 
     _.map(deposit, (dep)=>{
@@ -239,12 +246,10 @@ export const getBalanceBook = async(userId) =>{
     
     let balanceBook = 0;
     _.map(supplier, (sup)=>{
-        // let buys = _.filter(sup.supplier.buys, (buy)=> _.isEqual(buy.userId, userId))
-        // balance -= buys.length * sup.supplier.price
-
         let filters = _.filter(sup.supplier.buys, (buy)=> _.isEqual(buy.userId, userId) && buy.selected == 0 )
         balanceBook += filters.length * sup.supplier.price
     })
+    
     return balanceBook
 }
 
@@ -381,9 +386,9 @@ export const checkRole = (user) =>{
 }
 
 export const getUser = async(query, without_password = true) =>{
-    let fields = { username: 1, password: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }
+    let fields = { username: 1, password: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, producer: 1, lastAccess: 1 }
     if(without_password){
-        fields = { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }
+        fields = { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, producer: 1, lastAccess: 1 }
     }
 
     // if(query?._id){
@@ -401,7 +406,7 @@ export const getUser = async(query, without_password = true) =>{
 }
 
 export const getUserFull = async(query) =>{
-    let user =  await Model.User.findOne(query, { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 } )
+    let user =  await Model.User.findOne(query, { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, producer: 1, lastAccess: 1 } )
 
     // if(user) {
     //     let cache_user = cache.ca_get(user?._doc?._id.toString())
@@ -409,20 +414,20 @@ export const getUserFull = async(query) =>{
     //     if(!_.isEmpty(cache_user)){
     //         return cache_user
     //     }else{
-            let { banks } = user
-            banks = _.filter(await Promise.all(_.map(banks, async(value)=>{
-                        let bank = await Model.Bank.findOne({_id: value.bankId})
-                        return _.isNull(bank) ? null : {...value._doc, name:bank?.name}
-                    })), e=>!_.isNull(e) ) 
+            // let { banks } = user
+            // banks = _.filter(await Promise.all(_.map(banks, async(value)=>{
+            //             let bank = await Model.Bank.findOne({_id: value.bankId})
+            //             return _.isNull(bank) ? null : {...value._doc, name:bank?.name}
+            //         })), e=>!_.isNull(e) ) 
 
             let cache_user = {  ...user?._doc, 
-                            banks, 
+                            // banks, 
                             balance: await getBalance(user?._id), 
                             balanceBook: await getBalanceBook(user?._id),
                             transitions: [], 
                             inTheCarts: await getInTheCarts(user?._id)
                         }
-            cache.ca_save(user?._doc?._id.toString(), cache_user)
+            // cache.ca_save(user?._doc?._id.toString(), cache_user)
 
             return cache_user
         // }        
@@ -439,14 +444,15 @@ export const getUsers = async(query) =>{
                                             roles: 1, 
                                             avatar: 1, 
                                             subscriber: 1, 
+                                            producer: 1,
                                             lastAccess: 1 })
 }
 
 export const getSupplier = async(query) =>{
     let cache_supplier = cache.ca_get(query?._id)
-    if(!_.isEmpty(cache_supplier)){
-        return cache_supplier;
-    }
+    // if(!_.isEmpty(cache_supplier)){
+    //     return cache_supplier;
+    // }
 
     cache_supplier = await Model.Supplier.aggregate([
         { 
@@ -464,8 +470,23 @@ export const getSupplier = async(query) =>{
             }
         },
         {
+            $lookup: {
+                localField: "dateLottery",
+                from: "dateLottery",
+                foreignField: "_id",
+                pipeline: [ { $project:{ date: 1 }} ],
+                as: "dateLottery"
+            }
+        },
+        {
             $unwind: {
                     "path": "$owner",
+                    "preserveNullAndEmptyArrays": false
+            }
+        },
+        {
+            $unwind: {
+                    "path": "$dateLottery",
                     "preserveNullAndEmptyArrays": false
             }
         }
@@ -504,6 +525,21 @@ export const getLineNumber = () => {
     const lineNumber = stackTrace.match(/:(\d+):\d+/)[1];
     
     return parseInt(lineNumber);
+}
+
+export const dumpError = (err) => {
+    if (typeof err === 'object') {
+      if (err.message) {
+        console.log('\nMessage: ' + err.message)
+      }
+      if (err.stack) {
+        console.log('\nStacktrace:')
+        console.log('====================')
+        console.log(err.stack);
+      }
+    } else {
+      console.log('dumpError :: argument is not an object');
+    }
 }
 
 export const divide = (a, b) => {

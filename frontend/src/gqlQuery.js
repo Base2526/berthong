@@ -12,6 +12,7 @@ export const queryUserById      = gql`query userById($id: ID!) { userById(_id: $
 export const queryRoleByIds     = gql`query roleByIds($input: [String]) { roleByIds(input: $input) }`;
 export const queryBanks         = gql`query banks{ banks }`;
 export const queryBankById      = gql`query bankById($id: ID!) { bankById(_id: $id) }`;
+export const queryBankByIds      = gql`query bankByIds($input: [ID]!) { bankByIds(input: $input) }`;
 export const queryBookBuyTransitions = gql`query bookBuyTransitions { bookBuyTransitions }`;
 export const queryHistoryTransitions = gql`query historyTransitions { historyTransitions }`;
 export const queryFriendProfile      = gql`query friendProfile($id: ID!) { friendProfile(_id: $id) }`;
@@ -21,6 +22,7 @@ export const queryCommentById     = gql`query commentById($id: ID!) { commentByI
 export const queryBookmarks       = gql`query bookmarks{ bookmarks }`;
 export const querySubscribes      = gql`query subscribes{ subscribes }`;
 export const queryDblog           = gql`query dblog{ dblog }`;
+export const queryProducers       = gql`query producers{ producers }`;
 
 // ADMIN
 export const queryDateLotterys    = gql`query dateLotterys { dateLotterys }`;
@@ -51,6 +53,8 @@ export const mutationNotification = gql`mutation notification($id: ID!) { notifi
 export const mutationComment      = gql`mutation comment($input: JSON) { comment(input: $input) }`;
 export const mutationContactUs    = gql`mutation contactUs($input: ContactUsInput) { contactUs(input: $input) }`;
 export const mutationSubscribe    = gql`mutation subscribe($id: ID!) { subscribe(_id: $id) }`;
+
+export const mutationSearch       = gql`mutation search($input: SearchInput) { search(input: $input) }`;
 
 export const mutationAdminDeposit   = gql`mutation adminDeposit($input: JSON){ adminDeposit(input: $input) }`;
 export const mutationAdminWithdraw  = gql`mutation adminWithdraw($input: JSON){ adminWithdraw(input: $input) }`;

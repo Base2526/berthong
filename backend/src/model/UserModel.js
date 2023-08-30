@@ -48,6 +48,11 @@ const userSchema = new Schema({
   subscriber: [SubscriberInput],
   socialId: { type: String },
   socialObject: { type: String },
+  producer: {
+    type: Number,
+    enum : [0, 1], // 0: FALSE, 1: TRUE
+    default: 0
+  }
 },
 {
     timestamps: true

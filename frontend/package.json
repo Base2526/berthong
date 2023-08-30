@@ -103,7 +103,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "export NODE_OPTIONS=--max_old_space_size=4096 && react-scripts build",
     "test": "jest",
     "eject": "react-scripts eject"
   },
@@ -133,6 +133,7 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "jest": "^27.5.1"
   }
 }

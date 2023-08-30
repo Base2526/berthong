@@ -13,6 +13,8 @@ const PopupCart = (props) => {
 
   let { data, opened, onMutationBuy, onClose } = props
     
+  let books = _.filter(data?.buys, buy => buy.selected == 0) 
+  console.log("books :", books)
   const cancelForm = () => {
     onClose();
   };
@@ -32,14 +34,14 @@ const PopupCart = (props) => {
               height: "100%",
               width: "100%",
               boxSizing: "content-box",
-              overflow: "scroll"
+              // overflow: "scroll"
             }}
           >
-            จำนวน {data?.buys?.length} เบอร์
+            จำนวน {books?.length} เบอร์
             <br />
-            { _.map(data?.buys, (buy, i) => { return minTwoDigits(buy?.itemId) }).join(', ') }
+            { _.map(books, (buy, i) => { return minTwoDigits(buy?.itemId) }).join(', ') }
             <br />
-            รวมราคา {data?.buys?.length * data?.price} บาท
+            รวมราคา {books.length * data?.price} บาท
           </div>
         </div>
       </DialogContent>

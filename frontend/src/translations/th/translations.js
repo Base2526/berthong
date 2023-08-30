@@ -67,6 +67,7 @@ export const TRANSLATIONS_TH = {
 
     name: "ชื่อ",
     username: "ชื่อผู้ใช้งาน",
+    username_or_email: "ชื่อผู้ใช้งาน หรือ อีเมลล์",
     password: "รหัสผ่าน",
 
     confirm_delete: "ยืนยันการลบ",
@@ -92,5 +93,11 @@ export const TRANSLATIONS_TH = {
     things: "สิ่งของ",
     etc: "อื่นๆ",
 
-    all_result: "ผลลัพธ์ทั้งหมด"
+    all_result: "ผลลัพธ์ทั้งหมด",
+
+    advance_search: "ค้นหา",
+
+    all_products: "สินค้าทั้งหมด",
+
+    balance: "ยอดเงิน",
 };

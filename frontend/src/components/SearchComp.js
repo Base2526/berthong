@@ -6,19 +6,20 @@ import {
   AccordionSummary,
   AccordionDetails,
   Accordion,
-  Input,
   Typography,
-  Slider,
   TextField
 } from "@material-ui/core";
 import Box from "@mui/joy/Box";
 import Checkbox, { checkboxClasses } from "@mui/joy/Checkbox";
 import { Stack } from '@mui/material';
 import _ from "lodash"
+import { useTranslation } from "react-i18next";
 
 import * as Constants from "../constants"
 
 const SearchComp = (props) => {
+  const { t } = useTranslation();
+
   const { classes, search, onSearch, onReset } = props
 
   const [data, setData] = useState(search)
@@ -44,22 +45,24 @@ const SearchComp = (props) => {
                             aria-controls="panel1a-content"
                             id="panel1a-header">
                             <Typography>
-                              <i className="icon icon-search far fas fa-search"></i> Advance search
+                              <i className="icon icon-search far fas fa-search"></i> {t("advance_search")}
                             </Typography>
                           </AccordionSummary>
                           <AccordionDetails>
                             <Typography>
                               <div className="row m-1">
-                                <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
+                                <div className="col-lg-6 col-md-6 col-sm-6 col-12 p-3">
                                   <TextField
                                     id="standard-basic"
                                     label="ตัวเลขต้องการซื้อ"
                                     variant="filled"
+                                    placeholder=""
                                     name={"number"}
                                     value={data.NUMBER}
                                     onChange={(evt) => setData({...data, NUMBER: evt.target.value}) }
                                   />
                                 </div>
+                                {/* 
                                 <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
                                   <TextField
                                     id="standard-basic"
@@ -105,9 +108,22 @@ const SearchComp = (props) => {
                                     />
                                     บาท
                                   </div>
-                                </div>
+                                </div> 
+                                */}
                                 <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1 m-1">
                                   <Box sx={{ display: "flex", gap: 2 }}>
+                                    {/* <FormControl>
+                                      <FormLabel id="demo-controlled-radio-buttons-group">Gender</FormLabel>
+                                      <RadioGroup
+                                        aria-labelledby="demo-controlled-radio-buttons-group"
+                                        name="controlled-radio-buttons-group"
+                                        // value={value}
+                                        // onChange={handleChange}
+                                      >
+                                        <FormControlLabel value="female" control={<Radio />} label="Female" />
+                                        <FormControlLabel value="male" control={<Radio />} label="Male" />
+                                      </RadioGroup>
+                                    </FormControl> */}
                                     <Checkbox
                                       name="CHK_BON"
                                       label="บน"

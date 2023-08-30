@@ -20,6 +20,7 @@ import {
   MdOutlineBookmarkAdd as MdOutlineBookmarkAddIcon,
   MdOutlineBookmarkAdded as MdOutlineBookmarkAddedIcon
 } from "react-icons/md"
+import moment from "moment";
 
 import { numberCurrency, minTwoDigits, sellView, bookView } from "../../util"
 import CommentComp from "../../components/CommentComp"
@@ -58,7 +59,7 @@ const DetailPanel = (props) => {
 const DetailPanelRight = (props) =>{
   let { user, 
         data, 
-        owner, 
+        // owner, 
         onSelected, 
         onFollow, 
         onPopupWallet, 
@@ -66,15 +67,8 @@ const DetailPanelRight = (props) =>{
         onMenu,
         onMutationComment } = props
 
-  console.log("data :", data)
-
   let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
   let buys      =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 1) )
-
-//   export const sellView = (val) =>{
-//     let fn = _.filter(val.buys, (buy)=> buy.selected == 1 );
-//     return fn.length;
-// }
 
   const marks = [
     {
@@ -161,7 +155,8 @@ const DetailPanelRight = (props) =>{
                                 </div>
                               </div>
                           </div>
-                            {/* <div class="wishlist_cart d-flex flex-row align-items-center justify-content-evenly">
+                            {/* 
+                            <div class="wishlist_cart d-flex flex-row align-items-center justify-content-evenly">
                               <div
                                 class="wishlist box d-flex flex-row align-items-center justify-content-center"
                                 style={{ marginRight: "3px" }}
@@ -205,7 +200,8 @@ const DetailPanelRight = (props) =>{
                                   </div>
                                 </div>
                               </div>
-                            </div> */}
+                            </div> 
+                            */}
                             <div class="row">
                               <div class="col-lg-6 col-md-12 col-sm-12 col-12">
                                 <div className="pt-2 selectBer">
@@ -268,7 +264,7 @@ const DetailPanelRight = (props) =>{
             }
            
             <div style={{paddingLeft: "1rem",paddingRight:"1rem"}}>
-              <div style={{ textAlign: "left", color: "#aaa", fontSize: "12px" }}>หมายเหตุ : กรุณาชำระเงินภายใน 2 นาที เพราะการจองจะถูกยกเลิก</div>
+              <div style={{ textAlign: "left", color: "#aaa", fontSize: "12px" }}>หมายเหตุ : กรุณาชำระเงินภายใน 1 วัน เพราะการจองจะถูกยกเลิก</div>
               <Typography id="discrete-slider-always" gutterBottom>ซื้อไปแล้ว { sellView(data) } เบอร์ , จอง { bookView(data) } เบอร์ </Typography>
               <div className="pt-4">     
                 <Slider
@@ -282,7 +278,7 @@ const DetailPanelRight = (props) =>{
                   valueLabelFormat={value => <div>{value}</div>}
                   disabled
                   ThumbComponent={(props) => {
-                    console.log("props.style :", props.style)
+                    // console.log("props.style :", props.style)
                     if (props["data-index"] == 0) {
                       props.style.backgroundColor = "gray";
                     } else if (props["data-index"] == 1) {
@@ -306,10 +302,10 @@ const DetailPanelRight = (props) =>{
               <div className="col-12">
                 <div class="avatar" style={{ textAlign: "left" }}>
                   <img
-                    src={owner?.avatar?.url != null ? owner?.avatar?.url :"https://img.myloview.com/stickers/default-avatar-profile-icon-vector-social-media-user-image-700-205124837.jpg"}
+                    src={data?.owner?.avatar?.url != null ? data?.owner?.avatar?.url :"https://img.myloview.com/stickers/default-avatar-profile-icon-vector-social-media-user-image-700-205124837.jpg"}
                     alt="Avatar"
                   />
-                  <span className="name-ava f-color-0">{owner.displayName}</span>
+                  <span className="name-ava f-color-0">{data?.owner?.displayName}</span>
                   <span className="rate">
                     <Rating name="half-rating" value={3.5} precision={0.5} />
                   </span>
@@ -322,10 +318,10 @@ const DetailPanelRight = (props) =>{
                 <div class="blog-summary" style={{ textAlign: "left" }}>
                   <p style={{ margin: "5px" }}>{data?.description}</p>
                   <div className="p-1" style={{ fontSize: "12px" }}>
-                    <li>งวดประจำวันที่ 01 มีนาคม 2566</li>
-                    <li>รางวัลปลอบใจ เงินสด 200 บาท</li>
-                    <li>เบอร์ละ 100 บาท</li>
-                    <li>ลุ้นรางวัล 2 ตัวล่าง</li>
+                    <li>งวดประจำวันที่ {(moment(data?.dateLottery?.date, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY')}</li>
+                    {/* <li>รางวัลปลอบใจ เงินสด 200 บาท</li> 2023-10-16T13:30:38.282Z */}
+                    <li>เบอร์ละ {data?.price} บาท</li>
+                    {/* <li>ลุ้นรางวัล 2 ตัวล่าง</li> */}
                   </div>
                 </div>
                 <div className="row pt-2">

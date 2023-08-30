@@ -60,6 +60,13 @@ const BreadcsComp = (props) => {
         return [<Typography key="0" color="text.primary"><HomeIcon size={18}/>{t("home")}</Typography>]
       }
 
+      case "/register":{
+        return [  
+                  <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18}/> {t("home")}</MuiLink>,
+                  <Typography key="1" color="text.primary">สมัครสมาชิก</Typography>
+                ]
+      }
+
       case "/d":{
         return [  
                   <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18}/> {t("home")}</MuiLink>,

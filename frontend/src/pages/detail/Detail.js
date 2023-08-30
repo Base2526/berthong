@@ -26,10 +26,13 @@ import PopupWallet from "./PopupWallet";
 import { getHeaders, showToast, handlerErrorApollo } from "../../util";
 
 import {  querySupplierById, 
+          querySuppliers,
           subscriptionSupplierById, 
-          queryUserById,
-          mutationBuy
+          mutationBuy,
+          queryBookBuyTransitions
         } from "../../gqlQuery";
+
+import * as Constants from "../../constants"
 
 deepdash(_);
 
@@ -37,7 +40,6 @@ let unsubscribeSupplierById = null;
 const Detail = (props) => {
   const location = useLocation();
   const [data, setData] = useState([]);
-  const [dataUser, setDataUser] = useState([]);
   const [openMenu, setOpenMenu] = useState(null);
    
   const [isPopupOpenedWallet, setPopupOpenedWallet] = useState(false);
@@ -47,21 +49,54 @@ const Detail = (props) => {
 
   let { id } = params; 
 
-  let { user, onLogin, onMutationFollow, onMutationBook } = props
+  let { user, onLogin, onMutationFollow, onMutationBook, updateProfile } = props
 
   const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
+    refetchQueries: [queryBookBuyTransitions],
     context: { headers: getHeaders(location) },
     update: (cache, {data: {buy}}) => {
-      let { status, data:newData } = buy
+      let { status, transitionId, data:newData, user } = buy
+      if(status){
+        updateProfile(user)
 
-      let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id} });
-      if(status && querySupplierByIdValue){
-        cache.writeQuery({
-          query: querySupplierById,
-          data: { supplierById: {...querySupplierByIdValue.supplierById, data: newData} },
-          variables: { id }
-        });
-      }      
+        let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: { id: newData._id } });
+        if(status && querySupplierByIdValue){
+          cache.writeQuery({
+            query: querySupplierById,
+            data: { supplierById: {...querySupplierByIdValue.supplierById, data: newData} },
+            variables: { id: newData._id }
+          })
+        }  
+
+        ////////// update cache querySuppliers ///////////
+        let suppliersValue = cache.readQuery({ query: querySuppliers });
+        if(!_.isNull(suppliersValue)){
+          let { suppliers } = suppliersValue
+          let suppliersData = _.map(suppliers.data, (supplier) => supplier._id == newData._id ? newData : supplier)
+          cache.writeQuery({
+            query: querySuppliers,
+            data: { suppliers: { ...suppliersValue.suppliers, data: suppliersData } }
+          });
+        }
+        ////////// update cache querySuppliers ///////////
+
+        ////////// update cache BookBuyTransitions /////////////
+        let queryBookBuyTransitionsValue = cache.readQuery({ query: queryBookBuyTransitions });
+        if(status && queryBookBuyTransitionsValue){       
+          let newTransitions =  _.map(queryBookBuyTransitionsValue.bookBuyTransitions.data, (item)=>{
+                                  if(item._id == transitionId){
+                                    return  {...item, status: Constants.APPROVED, supplier: newData}
+                                  }
+                                  return item
+                                })
+
+          cache.writeQuery({
+            query: queryBookBuyTransitions,
+            data: { bookBuyTransitions: { ...queryBookBuyTransitionsValue.bookBuyTransitions, data: newTransitions } },
+          });
+        }  
+        ////////// update cache BookBuyTransitions /////////////
+      }          
     },
     onCompleted(data) {
       setPopupOpenedShoppingBag(false)
@@ -87,43 +122,14 @@ const Detail = (props) => {
                                       nextFetchPolicy: 'network-only', 
                                       notifyOnNetworkStatusChange: true});
 
-  const { loading: loadingUserById, 
-          data: dataUserById, 
-          refetch: refetchUserById,
-          error: errorUserById} = useQuery(queryUserById, { 
-                                                        context: { headers: getHeaders(location) },
-                                                        fetchPolicy: 'cache-first', 
-                                                        nextFetchPolicy: 'network-only', 
-                                                        notifyOnNetworkStatusChange: true 
-                                                    });
-
-  if(!_.isEmpty(errorUserById)) handlerErrorApollo( props, errorUserById )
-
   useEffect(() => {
-    if(!loadingUserById){
-      if(!_.isEmpty(dataUserById?.userById)){
-        let { status, data } = dataUserById?.userById
-        if(status){
-          setDataUser(data)
-        }
-      }
-    }
-  }, [dataUserById, loadingUserById])
-
-  useEffect(() => {
-    if(!loadingUserById){
+    if(!loadingSupplierById){
       if(!_.isEmpty(dataSupplierById?.supplierById)){
         let { status, data: newData } = dataSupplierById?.supplierById
         if(status && !_.isEqual(newData, data)) setData(newData)
       }
     }
-  }, [dataSupplierById, loadingUserById])
-
-  useEffect(()=>{
-    if(!_.isEmpty(data) && _.isEmpty(dataUser)){
-      refetchUserById({id: data?.ownerId});
-    }
-  }, [data])
+  }, [dataSupplierById, loadingSupplierById])
 
   useEffect(()=>{
     if(_.isEmpty(data)) refetchSupplierById({id}) 
@@ -164,9 +170,9 @@ const Detail = (props) => {
       return;
     } 
 
-    let fn = _.find(data.buys, (buy)=>buy.itemId == itemId)
-    let selected = 0;
-    if(fn) selected = fn.selected == -1 ? 0 : -1
+    // let fn = _.find(data.buys, (buy)=>buy.itemId == itemId)
+    // let selected = 0;
+    // if(fn) selected = fn.selected == -1 ? 0 : -1
     
     // if(selected == 0){
     //   let check = user?.balance - (user?.balanceBook + data.price)
@@ -175,7 +181,9 @@ const Detail = (props) => {
     //     return;
     //   }
     // }
-    onMutationBook({ variables: { input: { supplierId: id, itemId, selected } } });
+
+    // console.log("onSelected :", )
+    onMutationBook({ variables: { input: { id, itemId } } });
   }
 
   const menuView = (item) =>{
@@ -240,7 +248,7 @@ const Detail = (props) => {
             <DetailPanelRight 
               {...props}
               data={data}
-              owner={dataUser}
+              // owner={dataUser}
               onSelected={(evt, itemId)=>onSelected(evt, itemId)}
               onFollow={(evt)=> _.isEmpty(user) ? onLogin(true) : onMutationFollow(evt)}
 
