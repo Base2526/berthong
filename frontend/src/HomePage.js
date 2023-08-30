@@ -154,8 +154,6 @@ const HomePage = (props) => {
   */
 
   useEffect(()=>{
-
-    console.log("getHeaders(location) :", getHeaders(location))
     onSearchChange({...search, PAGE: 1 })
 
     window.addEventListener('scroll', handleScroll);

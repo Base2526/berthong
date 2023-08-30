@@ -1274,8 +1274,8 @@ export default {
     },
 
     async register(parent, args, context, info) {
-      let start = Date.now()
-      let {input} = args
+      let start     = Date.now()
+      let { input } = args
 
       let user = await Utils.getUser({ email: input.email } ) 
       if(!_.isNull(user)) throw new AppError(Constants.ERROR, "EXITING EMAIL")

@@ -144,7 +144,11 @@ const DialogLoginComp = (props) => {
                                 <Button variant="contained" className="btn-confirm" type="submit" style={{width:"100%"}}>{t("login")}</Button>
                               </div>
                               <div className="col-6 text-center">
-                                <Button disabled variant="contained" className="btn-dis" style={{width:"100%"}}>สมัครสมาชิก</Button>
+                                <Button disabled={false} variant="contained" className="btn-dis" style={{width:"100%"}} 
+                                  onClick={(evt)=>{
+                                    onClose(false)
+                                    navigate("/register")
+                                  }}>สมัครสมาชิก</Button>
                               </div>
                               </div>
                             </div>

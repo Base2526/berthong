@@ -89,6 +89,7 @@ import HistoryTransitionsPage from "./HistoryTransitionsPage";
 import HomePage from "./HomePage";
 import AdminHomePage from "./AdminHomePage";
 import LoginPage from "./LoginPage";
+import RegisterPage from "./RegisterPage";
 import MePage from "./MePage";
 import BankPage from "./BankPage";
 import BanksPage from "./BanksPage";
@@ -1339,6 +1340,7 @@ const App =(props) =>{
                                         onMutationSubscribe={(evt)=>{ onMutationSubscribe(evt) }} />}/>
             <Route path="/login-with-line" element={<LoginWithLine />}  />
             <Route path="/contact-us" element={<ContactUsPage onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
+            <Route path="/register" element={<RegisterPage />}  />
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
               <Route path="/me" element={<MePage 
                                           {...props} 
