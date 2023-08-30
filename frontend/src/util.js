@@ -1,7 +1,6 @@
 import _ from "lodash"
 import { toast } from 'react-toastify';
 import i18n from './translations/i18n';
-// import { AMDINISTRATOR, AUTHENTICATED, ANONYMOUS } from "./constants"
  
 import * as Constants from "./constants"
 /**
@@ -164,7 +163,7 @@ export const handlerErrorApollo = (props, error) =>{
           }
 
           case Constants.NOT_ENOUGH_BALANCE:{
-            showToast("error", e?.message)
+            showToast("error", i18n.t(e?.extensions?.code))
             break;
           }
 

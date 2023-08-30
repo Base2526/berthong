@@ -100,4 +100,6 @@ export const TRANSLATIONS_TH = {
     all_products: "สินค้าทั้งหมด",
 
     balance: "ยอดเงิน",
+
+    NOT_ENOUGH_BALANCE: "ยอดเงินไม่พอ"
 };

@@ -70,4 +70,6 @@ export const TRANSLATIONS_EN = {
     all_products: "All products",
 
     balance: "Balance",
+
+    NOT_ENOUGH_BALANCE: "Not enough balance"
 };
