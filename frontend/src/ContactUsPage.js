@@ -1,4 +1,5 @@
 import React, { useState,  useEffect, useMemo } from "react";
+import { NetworkStatus, useQuery, useMutation } from "@apollo/client";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import _ from "lodash"
@@ -10,17 +11,29 @@ import {
 import { loadCaptchaEnginge, LoadCanvasTemplate , validateCaptcha} from "react-simple-captcha";
 import AttackFileField from "./AttackFileField";
 
+import { queryBankByIds } from "./gqlQuery"
+import { checkRole, getHeaders, handlerErrorApollo, showToast} from "./util";
+
 const initialValue = { title: "", description: "", files: [], captcha: "", }
 const ContactUsPage = (props) => {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { t } = useTranslation();
+    // const navigate = useNavigate();
+    let location = useLocation();
+    let { t } = useTranslation();
 
     let [snackbar, setSnackbar] = useState({open:false, message:""});
     let [input, setInput] = useState(initialValue)
 
     let { onMutationContactUs } = props
 
+    let {   loading: loadingBankByIds, 
+            data: dataBankByIds, 
+            error: errorBankByIds,
+            refetch: refetchBankByIds, } =  useQuery( queryBankByIds, { 
+                                                context: { headers: getHeaders(location) }, 
+                                                fetchPolicy: 'cache-first', 
+                                                nextFetchPolicy: 'network-only', 
+                                                notifyOnNetworkStatusChange: true});
+    
     useEffect( () => {
         loadCaptchaEnginge(8);
     },[]);
@@ -34,7 +47,7 @@ const ContactUsPage = (props) => {
         setInput(initialValue)
     }
 
-    return  useMemo(() => {
+    // return  useMemo(() => {
                 return (<div className="content-bottom">
                          <div className="content-page border">   
                             <div className="row">
@@ -96,7 +109,7 @@ const ContactUsPage = (props) => {
                             </div>
                         </div>
                         </div>)
-            }, [input]);
+            // }, [input]);
 }
 
 export default ContactUsPage

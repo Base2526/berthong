@@ -69,6 +69,7 @@ export const TRANSLATIONS_TH = {
     username: "ชื่อผู้ใช้งาน",
     username_or_email: "ชื่อผู้ใช้งาน หรือ อีเมลล์",
     password: "รหัสผ่าน",
+    confirm_password: "ยืนยันรหัสผ่าน",
 
     confirm_delete: "ยืนยันการลบ",
     close: "ปิด",

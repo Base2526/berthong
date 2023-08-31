@@ -284,7 +284,7 @@ const HomePage = (props) => {
     
     switch(networkStatus){
       case NetworkStatus.error:{
-        return <div>Network not stable 🤯</div>
+        return <div>Network not stable 🤯🤯🤯🤯🤯</div>
       }
 
       case NetworkStatus.refetch:{

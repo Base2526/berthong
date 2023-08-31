@@ -42,6 +42,8 @@ export const TRANSLATIONS_EN = {
     username: "Username",
     username_or_email: "Username OR Email",
     password: "Password",
+    confirm_password: "Confirm password",
+
     confirm_delete: "Confirm delete",
     close: "Close",
     login_or_sign_up_to_leave_a_comment : "Log in or sign up to leave a comment",

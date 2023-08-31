@@ -43,9 +43,7 @@ ReactDOM.render(
         <ApolloProvider client={client}>
           <Router>
             <Store>
-              {/* <CssVarsProvider> */}
-                <App />
-              {/* </CssVarsProvider> */}
+              <App />
             </Store>
           </Router>
         </ApolloProvider>

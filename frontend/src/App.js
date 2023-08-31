@@ -31,6 +31,7 @@ import {
   AllOut as AllOutIcon,
   Assistant as AssistantIcon
 } from '@mui/icons-material';
+import LinearProgress from '@mui/material/LinearProgress';
 import {
   FiLogOut as LogoutIcon,
 } from 'react-icons/fi';
@@ -74,8 +75,6 @@ import {
   SlUserFollowing
 } from "react-icons/sl"
 import _ from "lodash"
-import LoadingOverlay from 'react-loading-overlay';
-
 import TaxonomyBankPage from "./TaxonomyBankPage";
 import TaxonomyBanksPage from "./TaxonomyBanksPage";
 import BookBuysPage from "./BookBuysPage";
@@ -115,7 +114,6 @@ import Footer from "./Footer";
 import DblogPage from "./DblogPage";
 import AutoGenerationContent from "./AutoGenerationContent"
 import ProducersPage from "./ProducersPage"
-
 import { queryNotifications, 
           mutationFollow, 
           querySuppliers, 
@@ -239,49 +237,35 @@ const ListItem = withStyles({
 })(MuiListItem);
 
 const App =(props) =>{
-  const client = useApolloClient();
-  const location = useLocation();
-  const navigate = useNavigate();
-  let intervalPing = useRef(null);
+  let location = useLocation();
+  let navigate = useNavigate();
   let [openMenuProfile, setOpenMenuProfile] = useState(null);
-  const classes = useStyles();
-  const theme = useTheme();
-  const [open, setOpen] = useState(false);
-  const [openDialogLogout, setOpenDialogLogout] = useState(false);
-  const [openDialogDeleteBank, setOpenDialogDeleteBank] = useState({ open: false, id: 0});
-  const [dialogLogin, setDialogLogin] = useState(false);
-  const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
-  let [notifications, setNotifications] =useState([])
-  let [search, setSearch] = useState(Constants.INIT_SEARCH)
-  let { ws, user, updateProfile, editedUserBalace, editedUserBalaceBook, logout } = props
+  let classes = useStyles();
+  let theme = useTheme();
+  let [open, setOpen] = useState(false);
+  let [openDialogLogout, setOpenDialogLogout] = useState(false);
+  let [openDialogDeleteBank, setOpenDialogDeleteBank] = useState({ open: false, id: 0});
+  let [dialogLogin, setDialogLogin]     = useState(false);
+  let [lightbox, setLightbox]           = useState({ isOpen: false, photoIndex: 0, images: [] });
+  let [notifications, setNotifications] = useState([])
+  let [search, setSearch]               = useState(Constants.INIT_SEARCH)
 
-  const { loading: loadingNotifications, 
+  let { ws, user, updateProfile, logout } = props
+
+  let { loading: loadingNotifications, 
           data: dataNotifications, 
           error: errorNotifications,
           refetch: refetchNotifications, } =  useQuery( queryNotifications, { 
-                                              context: { headers: getHeaders(location) }, 
-                                              fetchPolicy: 'cache-first', 
-                                              nextFetchPolicy: 'network-only', 
-                                              notifyOnNetworkStatusChange: true});
+                                                        context: { headers: getHeaders(location) }, 
+                                                        fetchPolicy: 'cache-first', 
+                                                        nextFetchPolicy: 'network-only', 
+                                                        notifyOnNetworkStatusChange: true});
 
   const [onMutationFollow, resultMutationFollow] = useMutation(mutationFollow,{
     context: { headers: getHeaders(location) },
     update: (cache, {data: {follow}}) => {
-
-      let { data, mode, status } = follow
+      let { data, status } = follow
       if(status){
-        // switch(mode?.toUpperCase()){
-        //   case "FOLLOW":{
-        //     showToast("info", `Bookmark`)
-        //     break
-        //   }
-  
-        //   case "UNFOLLOW":{
-        //     showToast("info", `Un-Bookmark`)
-        //     break
-        //   }
-        // }
-
         let querySuppliersValue = cache.readQuery({ query: querySuppliers, variables: { input: search } });
         if(!_.isEmpty(querySuppliersValue)){
           cache.writeQuery({
@@ -371,43 +355,6 @@ const App =(props) =>{
       return handlerErrorApollo( props, error )
     }
   });
-
-  // const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
-  //   context: { headers: getHeaders(location) },
-  //   update: (cache, {data: {buy}}) => {
-  //     let { status, data } = buy
-
-  //     console.log("update : ", buy)
-
-  //     showToast("success", `การส่งซื้อ complete`)
-         
-  //     // ////////// update cache queryUserById ///////////
-  //     // let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
-  //     // if(querySupplierByIdValue){
-  //     //   cache.writeQuery({
-  //     //     query: querySupplierById,
-  //     //     data: { supplierById: {...querySupplierByIdValue.supplierById, data} },
-  //     //     variables: {id: data._id}
-  //     //   });
-  //     // }
-  //     // ////////// update cache queryUserById ///////////    
-
-  //     // ////////// update cache querySuppliers ///////////
-  //     // let suppliersValue = cache.readQuery({ query: querySuppliers });
-  //     // if(!_.isNull(suppliersValue)){
-  //     //   console.log("suppliersValue :", suppliersValue)
-  //     // }
-  //     // ////////// update cache querySuppliers ///////////
-  //   },
-  //   onCompleted(data) {
-  //     console.log("onCompleted :", data)
-  //   },
-  //   onError: (err) => {
-  //     console.log("onError :", err)
-
-  //     showToast("error", `เกิดปัญหาในการสั่งซื้อ`)
-  //   }
-  // });
 
   const [onMutationComment, resultMutationComment] = useMutation(mutationComment,{
     context: { headers: getHeaders(location) },
@@ -925,21 +872,6 @@ const App =(props) =>{
       }
   );
 
-  // useLayoutEffect(() => {
-  //   // if (isLoading) {
-  //     document.body.style.overflow = "hidden";
-  //     document.body.style.height = "100%";
-  //   // }
-  //   // if (!isLoading) {
-  //   //   document.body.style.overflow = "auto";
-  //   //   document.body.style.height = "auto";
-  //   // }
-  // }, []);
-
-  useEffect(()=>{
-    console.log("+++++++++++++++++++APP+++++++++++++++++++")
-  }, [])
-
   useEffect(()=>{
     console.log("search :", search)
   }, [search])
@@ -1025,12 +957,26 @@ const App =(props) =>{
       // }
       case Constants.WS_CONNECTION :
       case Constants.WS_SHOULD_RETRY: {
-        return <div className="ws">server กำลังทำการเชื่อมต่อ <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
+        // return <div className="ws">server กำลังทำการเชื่อมต่อ <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
+        return  <Stack position="fixed" sx={{ width: '100%', zIndex: 10000 }}>
+                  <LinearProgress 
+                  sx={{
+                    // backgroundColor: 'white',
+                    '& .MuiLinearProgress-bar': { backgroundColor: 'yellow' }
+                  }} />
+                </Stack>
       }
 
-      case Constants.WS_CLOSED:{
-        return <div className="ws">server มีปัญหา <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
-      }
+      // case Constants.WS_CLOSED:{
+      //   // return <div className="ws">server มีปัญหา <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
+      //   return  <Stack position="fixed" sx={{ width: '100%', zIndex: 10000 }}>
+      //             <LinearProgress 
+      //             sx={{
+      //               // backgroundColor: 'white',
+      //               '& .MuiLinearProgress-bar': { backgroundColor: 'red' }
+      //             }} />
+      //           </Stack>
+      // }
 
       default:{
         return <div /> 
@@ -1073,7 +1019,7 @@ const App =(props) =>{
       }
       default:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
-                {id: 1, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
+                // {id: 1, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
                 {id: 2, title:"Login", icon: <LoginIcon size="1.5em"  />, path: "/login"}]
       }
     }
@@ -1112,11 +1058,7 @@ const App =(props) =>{
 
   return (
     <div className="App page-container">
-      {/* <LoadingOverlay
-        active={true}
-        spinner
-        text='Loading your content...'> */}
-      <div className="content-wrap">
+      <div className="content-wrap" >
       {lightbox.isOpen  && <LightboxComp datas={lightbox} onLightbox={(v)=>setLightbox(v)}/> }
       <ToastContainer />
       {
@@ -1154,6 +1096,7 @@ const App =(props) =>{
 
       {statusView()}
       {menuProfile()}
+      
       <div className="container-fluid">
         <div className={classes.root}>
           <CssBaseline />
@@ -1285,6 +1228,10 @@ const App =(props) =>{
                                     break;
                                   }
 
+                                  case "/contact-us":{
+                                    navigate(item.path)
+                                    break;
+                                  }
                                   default:{
                                     navigate(item.path)
                                   }
@@ -1293,8 +1240,7 @@ const App =(props) =>{
                                 handleDrawerClose();
                               }}>
                               <ListItemIcon>{item.icon}</ListItemIcon>
-                              <ListItemText 
-                                primary={item.title} />
+                              <ListItemText primary={item.title} />
                             </ListItem>
                   })
                   }
@@ -1310,9 +1256,7 @@ const App =(props) =>{
               <Typography variant="caption" display="block" gutterBottom><div className="text-center p-1">© 2023 BERTHONG LLC</div></Typography>
             </Drawer>
           </ClickAwayListener>
-          <main className={clsx(classes.content, { [classes.contentShift]: open })} >
-            { <div className={classes.drawerHeader} /> }
-          </main>
+          <main className={clsx(classes.content, { [classes.contentShift]: open })}>{ <div className={classes.drawerHeader} /> } </main>
         </div>
         <div className="container">
           <BreadcsComp {...props}/>
@@ -1339,7 +1283,7 @@ const App =(props) =>{
                                         onLightbox={(value)=>setLightbox(value)} 
                                         onMutationSubscribe={(evt)=>{ onMutationSubscribe(evt) }} />}/>
             <Route path="/login-with-line" element={<LoginWithLine />}  />
-            <Route path="/contact-us" element={<ContactUsPage onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
+            <Route path="/contact-us" element={<ContactUsPage {...props} onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
             <Route path="/register" element={<RegisterPage />}  />
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
               <Route path="/me" element={<MePage 
@@ -1386,7 +1330,6 @@ const App =(props) =>{
       {/* Footer */}
       <Footer />
       </div>
-      {/* </LoadingOverlay> */}
     </div>
   )
 }

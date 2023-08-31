@@ -1,12 +1,8 @@
-import {
-    ApolloClient, ApolloLink, InMemoryCache,
-    split
-} from "@apollo/client";
+import { ApolloClient, ApolloLink, InMemoryCache, split } from "@apollo/client";
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { getMainDefinition } from "@apollo/client/utilities";
 import { createUploadLink } from 'apollo-upload-client'; // v15.0.0
 import { createClient } from 'graphql-ws';
-
 import _ from "lodash"
 
 import { store } from "./Redux";
@@ -31,14 +27,12 @@ let gracefullyRestart = () => {
 
 const wsLink = new GraphQLWsLink(createClient({
     url: (process.env.REACT_APP_NODE_ENV === "development" ? "ws://" + process.env.REACT_APP_HOST_GRAPHAL +"/graphql" :  "wss://" + process.env.REACT_APP_HOST_GRAPHAL +'/subscription' ) ,
-    // reconnect: true,
     disablePong: false,
     connectionAckWaitTimeout: 0,
     retryAttempts: 50,
     keepAlive: 100_000,
     reconnect: true,
     retryWait: async function randomisedExponentialBackoff(retries) {
-
         console.log("wsLink retryWait")
         let retryDelay = 1000; // start with 1s delay
         for (let i = 0; i < retries; i++) {
@@ -174,10 +168,7 @@ const uploadLink =  createUploadLink({
 const splitLink = split(
     ({ query }) => {
         const definition = getMainDefinition(query);
-        return (
-        definition.kind === 'OperationDefinition' &&
-        definition.operation === 'subscription'
-        );
+        return ( definition.kind === 'OperationDefinition' && definition.operation === 'subscription' );
     },
     wsLink,
     // httpLink,
@@ -247,7 +238,7 @@ export const client = new ApolloClient({
             }
           }
         }
-      }),
+    }),
     onError: ({ networkError, graphQLErrors }) => {
       console.log("graphQLErrors", graphQLErrors)
       console.log("networkError", networkError)
@@ -255,5 +246,5 @@ export const client = new ApolloClient({
     fetchOptions: {
         timeout: 10000, // Set the timeout value in milliseconds
     },
-    debug: true
+    debug: false
 })
