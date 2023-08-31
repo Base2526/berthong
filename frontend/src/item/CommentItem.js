@@ -16,7 +16,7 @@ const CommentItem = (props) => {
 
     let [data, setData] = useState([]);
 
-    console.log("item :", item)
+    // console.log("item :", item)
 
     const { loading: loadingCommentById, 
             data: dataCommentById, 
@@ -34,8 +34,6 @@ const CommentItem = (props) => {
                 let { status, data } = dataCommentById?.commentById
                 if(status && !_.isEmpty(data)){
                     setData(data?.data)
-
-                    
                 }
             }
         }

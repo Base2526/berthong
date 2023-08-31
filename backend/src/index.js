@@ -149,7 +149,7 @@ async function startApolloServer(typeDefs, resolvers) {
         cache: "bounded",
         uploads: false, // add this
         // introspection: true,
-        introspection: process.env.NODE_ENV !== 'production',
+        // introspection: process.env.NODE_ENV !== 'production',
         plugins: [
             // Proper shutdown for the HTTP server.
             ApolloServerPluginDrainHttpServer({ httpServer }),

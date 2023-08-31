@@ -6,6 +6,7 @@ import _ from "lodash";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import EmailSharpIcon from '@mui/icons-material/EmailSharp';
 import LockIcon from '@mui/icons-material/Lock';
+import { useTranslation } from "react-i18next";
 import {
     Stack,
     DialogTitle,
@@ -25,9 +26,8 @@ import { mutationRegister } from "./gqlQuery"
 
 let initValues = { username: "", email: "",  password: "", confirm_password: "", captcha: "" }
 const RegisterPage = (props) => {
+    let { t } = useTranslation();
     let navigate = useNavigate();
-    // let deviceData = useDeviceData();
-    // let client = useApolloClient();
 
     let [input, setInput]   = useState(initValues);
     let [error, setError]   = useState({password_not_match: ""});
@@ -114,28 +114,28 @@ const RegisterPage = (props) => {
                 <div className="Mui-usercontainerss">
                     <form >
                         <div className="d-flex form-input">
-                            <label>Username </label>
+                            <label>{t("username")}</label>
                             <div className="position-relative wrapper-form">
                                 <input type="text" name="username" className="input-bl-form" value={input.username} onChange={onInputChange} />
                                 <AccountCircle />
                             </div>         
                         </div>
                         <div className="d-flex form-input">
-                            <label>Email </label>
+                            <label>{t("email")}</label>
                             <div className="position-relative wrapper-form">
                                 <input type="email" name="email" className="input-bl-form" value={input.email} onChange={onInputChange} />
                                 <EmailSharpIcon />
                             </div>
                         </div>
                         <div className="d-flex form-input">
-                            <label>Password </label>
+                            <label>{t("password")}</label>
                             <div className="position-relative wrapper-form">
                                 <input type="password" name="password" className="input-bl-form" value={input.password} onChange={onInputChange} />
                                 <LockIcon/>
                             </div>
                         </div>
                         <div className="d-flex form-input">
-                            <label>Confirm password </label>
+                            <label>{t("confirm_password")}</label>
                             <div className="position-relative wrapper-form">
                                 <input type="password" name="confirm_password" className="input-bl-form" value={input.confirm_password} onChange={onInputChange} />
                                 <LockIcon/>
