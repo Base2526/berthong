@@ -6,6 +6,7 @@ import { ToastContainer } from 'react-toastify';
 import { CDBSidebar } from "cdbreact";
 import clsx from "clsx";
 import { makeStyles, useTheme, withStyles } from "@material-ui/core/styles";
+import { useTranslation } from "react-i18next";
 import {
   ListItemText,
   ListItemIcon,
@@ -237,6 +238,7 @@ const ListItem = withStyles({
 })(MuiListItem);
 
 const App =(props) =>{
+  let { t } = useTranslation();
   let location = useLocation();
   let navigate = useNavigate();
   let [openMenuProfile, setOpenMenuProfile] = useState(null);
@@ -449,7 +451,7 @@ const App =(props) =>{
       }
     },
     onCompleted(data) {
-      showToast("success", "Welcome to BERTHONG.")
+      showToast("success", t("welcome_to_berthong"))
       window.location.reload();
     },
     onError(error){
@@ -468,7 +470,7 @@ const App =(props) =>{
         }
       },
       onCompleted(data) {
-        showToast("success", "Welcome to BERTHONG.")
+        showToast("success", t("welcome_to_berthong"))
         navigate("/")
       },
       onError(error){
@@ -872,9 +874,9 @@ const App =(props) =>{
       }
   );
 
-  useEffect(()=>{
-    console.log("search :", search)
-  }, [search])
+  // useEffect(()=>{
+  //   console.log("search :", search)
+  // }, [search])
 
   useEffect(()=>{
     if(!_.isEmpty(user)){

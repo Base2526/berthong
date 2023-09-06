@@ -43,14 +43,14 @@ export const checkAuth = async(req) => {
         let customLocation = JSON.parse(req.headers["custom-location"])
         pathname = customLocation?.pathname
     }
-    console.log("checkAuth #1 :", req.headers)
+    // console.log("checkAuth #1 :", req.headers)
     if (req.headers && req.headers.authorization) {
         var auth    = req.headers.authorization;
         var parts   = auth.split(" ");
         var bearer  = parts[0];
         var sessionId   = parts[1];
 
-        console.log("checkAuth #3 :", bearer, sessionId)
+        // console.log("checkAuth #3 :", bearer, sessionId)
         if (bearer == "Bearer") {
             // let decode = jwt.verify(token, process.env.JWT_SECRET);
             // console.log("sessionId > ", sessionId)
@@ -88,7 +88,7 @@ export const checkAuth = async(req) => {
         throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
     }
 
-    console.log("checkAuth #2")
+    // console.log("checkAuth #2")
     // without user (anonymous)
     return {
         status: false,

@@ -172,7 +172,7 @@ export default {
       let { NUMBER, PAGE, LIMIT } = args?.input
       let SKIP = (PAGE - 1) * LIMIT
 
-      // console.log("suppliers : #1 ", args?.input)
+      console.log("suppliers : #1 ", args?.input, SKIP)
 
       let aggregate = [
                         { $skip: SKIP }, 
@@ -226,6 +226,8 @@ export default {
 
         let suppliers = await Model.Supplier.aggregate(aggregate)
         let total     = await Model.Supplier.aggregate([ { $match: { "$and" : q  } } ])
+
+        suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
         return {  
           status: true,
           data: suppliers,
@@ -236,6 +238,8 @@ export default {
 
       let suppliers = await Model.Supplier.aggregate(aggregate)
       let total     = await Model.Supplier.find({})
+
+      suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
       return {  
         status: true,
         data: suppliers,

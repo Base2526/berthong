@@ -135,7 +135,7 @@ export const handlerErrorApollo = (props, error) =>{
           case Constants.FORCE_LOGOUT:{
             let { logout } = props
 
-            showToast("error", "Force logout")
+            showToast("error", i18n.t(e?.extensions?.code))
             logout()
             break;
           }
@@ -148,12 +148,12 @@ export const handlerErrorApollo = (props, error) =>{
           }
 
           case Constants.USER_NOT_FOUND:{
-            showToast("error", e?.message)
+            showToast("error", i18n.t(e?.extensions?.code))
             break;
           }
 
           case Constants.PASSWORD_WRONG:{
-            showToast("error", e?.message)
+            showToast("error", i18n.t(e?.extensions?.code))
             break;
           }
 
