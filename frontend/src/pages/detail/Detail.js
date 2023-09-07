@@ -3,7 +3,7 @@ import "./seat.css";
 import "./wallet.css";
 
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import queryString from 'query-string';
 import { useQuery, useMutation } from "@apollo/client";
 import _ from "lodash"
@@ -38,6 +38,7 @@ deepdash(_);
 
 let unsubscribeSupplierById = null;
 const Detail = (props) => {
+  const navigate = useNavigate();
   const location = useLocation();
   const [data, setData] = useState([]);
   const [openMenu, setOpenMenu] = useState(null);
@@ -126,7 +127,12 @@ const Detail = (props) => {
     if(!loadingSupplierById){
       if(!_.isEmpty(dataSupplierById?.supplierById)){
         let { status, data: newData } = dataSupplierById?.supplierById
-        if(status && !_.isEqual(newData, data)) setData(newData)
+        if(status){
+          if(newData === undefined) {
+            // Goto home page, when cannot find data by id.
+            navigate("/")
+          }else if(!_.isEqual(newData, data)) setData(newData)
+        } 
       }
     }
   }, [dataSupplierById, loadingSupplierById])

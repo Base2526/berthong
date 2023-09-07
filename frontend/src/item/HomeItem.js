@@ -3,8 +3,7 @@ import { createSearchParams, useNavigate } from "react-router-dom";
 import {
   IconButton,
   Menu,
-  MenuItem,
-  Badge
+  MenuItem
 } from "@mui/material";
 import _ from "lodash"
 import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
@@ -17,7 +16,7 @@ import { AiOutlineComment, AiOutlineShareAlt, AiOutlineCopy } from "react-icons/
 import CommentItem from "./CommentItem"
 
 const HomeItem = (props) => {
-  const navigate = useNavigate();
+  let navigate = useNavigate();
   let { user, index, item, onMutationFollow } = props;
   let [openMenu, setOpenMenu] = useState(null);
 

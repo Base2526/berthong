@@ -102,5 +102,9 @@ export const TRANSLATIONS_TH = {
 
     balance: "ยอดเงิน",
 
-    NOT_ENOUGH_BALANCE: "ยอดเงินไม่พอ"
+    NOT_ENOUGH_BALANCE: "ยอดเงินไม่พอ",
+
+    USER_NOT_FOUND: "ไม่พบ ชื่อผู้ใช้งาน หรือ อีเมลล์ อยู่ในระบบ",
+    PASSWORD_WRONG: "รหัสผ่านไม่ถูกต้อง",
+    FORCE_LOGOUT: "กรุณาเข้าสู่ระบบใหม่อีกครั้ง",
 };

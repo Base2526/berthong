@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { ExpandMore as ExpandMoreIcon } from "@material-ui/icons";
 import {
   Button,
@@ -18,19 +18,23 @@ import { useTranslation } from "react-i18next";
 import * as Constants from "../constants"
 
 const SearchComp = (props) => {
-  const { t } = useTranslation();
+  let { t } = useTranslation();
 
-  const { classes, search, onSearch, onReset } = props
+  let { classes, search, onSearch, onReset } = props
 
-  const [data, setData] = useState(search)
+  let [expanded, setExpanded] = useState( _.isNull(localStorage.getItem('expanded')) ? false : localStorage.getItem('expanded') === 'true' ? true : false )
+  let [data, setData] = useState(search)
 
-  const handleSliderChange = (event, newValue) => {
-    setData({...data, PRICE: newValue})
-  };
 
-  const handleInputChange = (event) => {
-    setData({...data, PRICE: _.isEmpty(event.target.value) ? "" : Number(event.target.value)})
-  };
+  useEffect(()=>{
+    console.log( "SearchComp expanded :", localStorage.getItem('expanded'), typeof expanded, expanded )
+  }, [expanded])
+  // const handleSliderChange = (event, newValue) => {
+  //   setData({...data, PRICE: newValue})
+  // };
+  // const handleInputChange = (event) => {
+  //   setData({...data, PRICE: _.isEmpty(event.target.value) ? "" : Number(event.target.value)})
+  // };
 
   const handleCheckbox = (event) => {
     setData({...data, [event.target.name]: event.target.checked})
@@ -39,7 +43,10 @@ const SearchComp = (props) => {
   return  useMemo(() => {
             return  <div className={classes.root}>
                       <form >
-                        <Accordion>
+                        <Accordion expanded={expanded}  onChange={()=>{
+                          setExpanded(!expanded)
+                          localStorage.setItem('expanded', !expanded);
+                        }}>
                           <AccordionSummary
                             expandIcon={<ExpandMoreIcon />}
                             aria-controls="panel1a-content"
@@ -59,19 +66,17 @@ const SearchComp = (props) => {
                                     placeholder=""
                                     name={"number"}
                                     value={data.NUMBER}
-                                    onChange={(evt) => setData({...data, NUMBER: evt.target.value}) }
-                                  />
+                                    onChange={(evt) => setData({...data, NUMBER: evt.target.value}) } />
                                 </div>
-                                {/* 
                                 <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
                                   <TextField
                                     id="standard-basic"
                                     label="ชื่อ"
                                     variant="filled"
                                     value={data.TITLE}
-                                    onChange={(evt) => setData({...data, TITLE: evt.target.value}) }
-                                  />
+                                    onChange={(evt) => setData({...data, TITLE: evt.target.value}) } />
                                 </div>
+                                {/* 
                                 <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
                                   <TextField
                                     id="standard-basic"
@@ -229,7 +234,7 @@ const SearchComp = (props) => {
                           </AccordionDetails>
                           
                             {
-                              _.isEqual(data, Constants.INIT_SEARCH)
+                              data.NUMBER === "" && data.TITLE === "" && !data.CHK_BON &&  !data.CHK_LAND && !data.CHK_MONEY && !data.CHK_GOLD
                               ? <div />
                               : <AccordionActions className={classes.details}>
                                   <Stack direction="row" spacing={2} alignItems="flex-end">
@@ -237,9 +242,9 @@ const SearchComp = (props) => {
                                     <Button
                                       className={classes.containedBlueGrey}
                                       size="small"
-                                      onClick={() =>{
+                                      onClick={() =>{ 
                                         setData(Constants.INIT_SEARCH)
-                                        onReset(true)
+                                        onReset()
                                       }}>
                                       RESET
                                     </Button>
@@ -255,8 +260,7 @@ const SearchComp = (props) => {
                         </Accordion>
                       </form>
                     </div>
-          }, [data]);
-
+          }, [data.NUMBER, data.TITLE, data.CHK_BON, data.CHK_LAND, data.CHK_MONEY, data.CHK_GOLD , expanded]);
 }
 
 export default SearchComp;

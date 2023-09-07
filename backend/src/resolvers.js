@@ -172,7 +172,7 @@ export default {
       let { NUMBER, PAGE, LIMIT } = args?.input
       let SKIP = (PAGE - 1) * LIMIT
 
-      // console.log("suppliers : #1 ", args?.input)
+      console.log("suppliers : #1 ", args?.input, SKIP)
 
       let aggregate = [
                         { $skip: SKIP }, 
@@ -226,6 +226,8 @@ export default {
 
         let suppliers = await Model.Supplier.aggregate(aggregate)
         let total     = await Model.Supplier.aggregate([ { $match: { "$and" : q  } } ])
+
+        suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
         return {  
           status: true,
           data: suppliers,
@@ -236,6 +238,8 @@ export default {
 
       let suppliers = await Model.Supplier.aggregate(aggregate)
       let total     = await Model.Supplier.find({})
+
+      suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
       return {  
         status: true,
         data: suppliers,
@@ -521,23 +525,16 @@ export default {
     },
 
     async commentById(parent, args, context, info){
-      try{
-        let start = Date.now()
-        let { _id } = args
-        let { req } = context
+      let start = Date.now()
+      let { _id } = args
+      let { req } = context
 
-        let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      await Utils.checkAuth(req);
 
-        let comm = await Model.Comment.findOne({_id});
-        return {  status: true,
-                  data: _.isNull(comm) ? [] : comm,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }catch(error){
-        console.log("commentById error :", error)
-        return {  status: false,
-                  error: error?.message,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }
+      let comm = await Model.Comment.findOne({_id});
+      return {  status: true,
+                data: _.isNull(comm) ? [] : comm,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
     async bookmarks(parent, args, context, info){

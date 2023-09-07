@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import { NetworkStatus, useQuery, useMutation } from "@apollo/client";
+import React, { useEffect, useRef, useState, useMemo } from "react";
+import { NetworkStatus, useQuery } from "@apollo/client";
 import _ from "lodash";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { toast } from 'react-toastify';
 import InfiniteScroll from "react-infinite-scroll-component";
 import { makeStyles } from "@material-ui/core/styles";
@@ -9,9 +9,10 @@ import { ErrorOutline as ErrorOutlineIcon } from "@material-ui/icons";
 import { lightGreen, blueGrey } from "@material-ui/core/colors";
 import { useTranslation } from "react-i18next";
 import { FaAngleUp } from 'react-icons/fa';
+import { IoReloadCircle } from 'react-icons/io5'
 
-import { querySuppliers, subscriptionSuppliers, mutationSearch} from "./gqlQuery";
-import { handlerErrorApollo,  getHeaders, showToast } from "./util";
+import { querySuppliers, subscriptionSuppliers } from "./gqlQuery";
+import { handlerErrorApollo,  getHeaders } from "./util";
 import HomeItem from "./item/HomeItem"
 import SearchComp from "./components/SearchComp"
 import SkeletonComp from "./components/SkeletonComp"
@@ -77,48 +78,22 @@ const useStyles = makeStyles((theme) => ({
 
 let unsubscribeSuppliers = null;
 const HomePage = (props) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const toastIdRef = useRef(null)
-  const classes = useStyles();
-  const { t } = useTranslation();
+  let location = useLocation();
+  let toastIdRef = useRef(null)
+  let classes = useStyles();
+  let { t } = useTranslation();
 
   let [datas, setDatas] = useState([]);
   let [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  let [reset, setReset] = useState(false)
-  const [slice, setSlice] = useState(12);
-  const [hasMore, setHasMore] = useState(true);
-  const [scrollPosition, setScrollPosition] = useState(0);
+  let [loading, setLoading] = useState(true);
+  // let [reset, setReset] = useState(false)
+  let [slice, setSlice] = useState(12);
+  let [hasMore, setHasMore] = useState(true);
+  let [scrollPosition, setScrollPosition] = useState(0);
 
-  let { user, logout, ws, search, onLogin, onSearchChange, onMutationFollow } = props
+  let [search, setSearch] = useState( _.isNull(localStorage.getItem('SEARCH')) ? Constants.INIT_SEARCH : JSON.parse(localStorage.getItem('SEARCH')) );
 
-  const [onMutationSearch, resultMutationSearch] = useMutation(mutationSearch,{
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {search}}) => {
-      // let { status, data:newData } = buy
-
-      // let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id} });
-      // if(status && querySupplierByIdValue){
-      //   cache.writeQuery({
-      //     query: querySupplierById,
-      //     data: { supplierById: {...querySupplierByIdValue.supplierById, data: newData} },
-      //     variables: { id }
-      //   });
-      // }   
-      console.log("search :", search)   
-    },
-    onCompleted(data) {
-      // setPopupOpenedShoppingBag(false)
-      // showToast("success", `การส่งซื้อ complete`)
-    },
-    onError: (error) => {
-      // console.log("onError :", error)
-      // showToast("error", `เกิดปัญหาในการสั่งซื้อ`)
-
-      return handlerErrorApollo( props, error )
-    }
-  });
+  let { user, ws, onLogin, onMutationFollow } = props
 
   const { loading: loadingSuppliers, 
           data: dataSuppliers, 
@@ -129,7 +104,6 @@ const HomePage = (props) => {
           networkStatus } = useQuery(querySuppliers, 
                                       { 
                                         context: { headers: getHeaders(location) }, 
-                                        variables: { input: search },
                                         fetchPolicy: 'cache-first',
                                         nextFetchPolicy: 'network-only', 
                                         notifyOnNetworkStatusChange: true
@@ -144,17 +118,8 @@ const HomePage = (props) => {
     setScrollPosition(window.scrollY);
   };
 
-  // useEffect(()=>{
-  //   console.log("scrollPosition :", scrollPosition)
-  // }, [scrollPosition])
-
-  /*
-  localStorage.setItem('items', JSON.stringify(items));
-  const items = JSON.parse(localStorage.getItem('items'));
-  */
-
   useEffect(()=>{
-    onSearchChange({...search, PAGE: 1 })
+    refetchSuppliers({ input: search })
 
     window.addEventListener('scroll', handleScroll);
 
@@ -171,10 +136,8 @@ const HomePage = (props) => {
       if(!_.isEmpty(dataSuppliers?.suppliers)){
         let { status, total, data } = dataSuppliers?.suppliers
         if(status){
-          let newDatas = _.unionBy(data, datas, '_id')
-          newDatas = _.orderBy(newDatas, "createdAt", 'asc')
-          setDatas(newDatas)
-          setSlice(newDatas?.length)
+          setDatas(data)
+          setSlice(data?.length)
           setTotal(total)
         }
 
@@ -184,11 +147,6 @@ const HomePage = (props) => {
   }, [dataSuppliers, loadingSuppliers])
 
   useEffect(()=>{
-
-    if( total != 0 && total == datas?.length){
-      setHasMore(false);
-    }
-
     let supplierIds = JSON.stringify(_.map(datas, _.property("_id")));
     unsubscribeSuppliers && unsubscribeSuppliers()
     unsubscribeSuppliers = null;
@@ -204,12 +162,12 @@ const HomePage = (props) => {
           switch(mutation){
             case "BOOK":
             case "UNBOOK":{
-              let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
+              let newData = _.map((prev.suppliers.data), (item)=> item._id === data._id ? data : item )
               let newPrev = {...prev.suppliers, data: newData}
               return {suppliers: newPrev}; 
             }
             case "AUTO_CLEAR_BOOK":{
-              let newData = _.map((prev.suppliers.data), (item)=> item._id == data._id ? data : item )
+              let newData = _.map((prev.suppliers.data), (item)=> item._id === data._id ? data : item )
               let newPrev = {...prev.suppliers, data: newData}
               return {suppliers: newPrev}; 
             }
@@ -224,35 +182,75 @@ const HomePage = (props) => {
   }, [datas, total])
 
   useEffect(()=>{
-    if(reset){
-      setReset(false)
-    }
-  }, [search, reset])
+    console.log("useEffect search :", search)
+  }, [search])
 
   const scrollToTop = () => {
     window?.scrollTo(0, 0);
   }
 
-  const handleRefresh = async() => {
-    onSearchChange({...search, PAGE: 1})
+  const findFirstPage = () =>{
+    return Math.min.apply(Math, _.map(datas, (o) => { return o.PAGE; }))
+  }
+
+  const handlePulldownToLoadMore = async() => {
+    if(search.PAGE > 1){
+      if( _.find(datas, (v)=>v.PAGE === findFirstPage() - 1) === undefined){
+        fetchMoreSuppliers({
+          variables: { input: {...search, PAGE: search.PAGE - 1} },
+          updateQuery: (prev, {fetchMoreResult, variables}) => {
+              if (!fetchMoreResult?.suppliers?.data?.length) {
+                  return prev;
+              }
+              let { input } = variables
+
+              search = { ...search, PAGE: input.PAGE }
+              setSearch(search)
+              localStorage.setItem('SEARCH', JSON.stringify(search));
+
+              let suppliers = {...prev.suppliers, data: [...fetchMoreResult?.suppliers?.data, ...prev?.suppliers?.data] }
+              return Object.assign({}, prev, {suppliers} );
+          },
+        });
+      }
+    }else{
+      search = {...search, PAGE: 1}
+      setSearch(search)
+
+      localStorage.setItem('SEARCH', JSON.stringify(search));
+    }
   }
 
   const handleLoadMore = () => {
-    fetchMoreSuppliers({
-      variables: {
-        input: {...search, PAGE: search.PAGE + 1}
-      },
-      updateQuery: (prev, {fetchMoreResult}) => {
-        if (!fetchMoreResult?.suppliers?.data?.length) {
+    if( _.find(datas, (v)=>v.PAGE === search.PAGE + 1) === undefined){
+      fetchMoreSuppliers({
+        variables: { input: {...search, PAGE: search.PAGE + 1} },
+        updateQuery: (prev, {fetchMoreResult, variables}) => {
+          let { input } = variables
+          let {status, data, total} = fetchMoreResult?.suppliers
+
+          if (!data?.length) {
+            if( input.PAGE * input.LIMIT > total ) setHasMore(false) 
+
+            return prev;
+          }
+  
+          search = { ...search, PAGE: input.PAGE }
+          setSearch(search)
+          localStorage.setItem('SEARCH', JSON.stringify(search));
+
+          if(status){
+            let suppliers = {...prev.suppliers, data: [ ...prev?.suppliers?.data, ...data ] }
+
+            if( input.PAGE * input.LIMIT > total ) setHasMore(false) 
+            return Object.assign({}, prev, {suppliers} );
+          }
           return prev;
-        }
-
-        let suppliers = {...prev.suppliers, data: _.unionBy( fetchMoreResult?.suppliers?.data, prev?.suppliers?.data, '_id') }
-        return Object.assign({}, prev, {suppliers} );
-      },
-    });
-
-    onSearchChange({...search, PAGE: search.PAGE + 1})
+        },
+      });
+    }else{
+      console.log('')
+    }
   };
 
   const mainView = () =>{
@@ -307,32 +305,31 @@ const HomePage = (props) => {
                   {...props}
                   classes={classes}
                   search={search}
-                  onReset={()=>setReset(true)}
+                  onReset={()=>{
+                    setSearch(Constants.INIT_SEARCH)
+                    localStorage.setItem('SEARCH', JSON.stringify(Constants.INIT_SEARCH));
+                  }}
                   onSearch={(search)=>
                   {
-                    // console.log("search :", search)
-
-                    fetchMoreSuppliers({
-                      variables: { input: search },
-                      updateQuery: (prev, {fetchMoreResult}) => {
-                        if (!fetchMoreResult?.suppliers?.data?.length) {
-                          return prev;
-                        }
-                
-                        // let suppliers = {...prev.suppliers, data: _.unionBy( fetchMoreResult?.suppliers?.data, prev?.suppliers?.data, '_id') }
-                        
-                        let { suppliers } = fetchMoreResult
-                        return suppliers //Object.assign({}, prev, {suppliers} );
-                      },
-                    });
-
-                    onSearchChange(search)
-
-                    //  onMutationBook({ variables: { input: { supplierId: id, itemId, selected } } });
-                    // onMutationSearch({ variables: { input: search } })
+                    setSearch(search)
+                    localStorage.setItem('SEARCH', JSON.stringify(search));
                   }} />
               </div>
-              <div> {t("all_result")} : {total} </div>
+              {
+                 useMemo(() => { 
+                    return <div> {t("all_result")} : {total} </div>
+                 }, [ total ])
+              }
+              {
+                search.PAGE > 1
+                ? <div> 
+                    <IconButton onClick={(evt)=>handlePulldownToLoadMore() }>
+                      <IoReloadCircle />
+                    </IconButton>
+                    { `Current page : ${ search.PAGE }/${ datas?.length }` } 
+                  </div>
+                : ""
+              }
               {loading 
               ? <SkeletonComp />
               : <div className="row">
@@ -347,10 +344,10 @@ const HomePage = (props) => {
                         loader={<SkeletonComp />}
                         scrollThreshold={0.5}
                         // scrollableTarget="scrollableDiv"
-                        endMessage={<div className="text-center"></div>}
+                        endMessage={<div className="text-center">End Message</div>}
                         
                         // below props only if you need pull down functionality
-                        refreshFunction={handleRefresh}
+                        refreshFunction={handlePulldownToLoadMore}
                         pullDownToRefresh
                         pullDownToRefreshThreshold={50}
                         pullDownToRefreshContent={
