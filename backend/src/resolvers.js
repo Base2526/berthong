@@ -525,23 +525,16 @@ export default {
     },
 
     async commentById(parent, args, context, info){
-      try{
-        let start = Date.now()
-        let { _id } = args
-        let { req } = context
+      let start = Date.now()
+      let { _id } = args
+      let { req } = context
 
-        let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      await Utils.checkAuth(req);
 
-        let comm = await Model.Comment.findOne({_id});
-        return {  status: true,
-                  data: _.isNull(comm) ? [] : comm,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }catch(error){
-        console.log("commentById error :", error)
-        return {  status: false,
-                  error: error?.message,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }
+      let comm = await Model.Comment.findOne({_id});
+      return {  status: true,
+                data: _.isNull(comm) ? [] : comm,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
     async bookmarks(parent, args, context, info){

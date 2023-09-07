@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { NetworkStatus, useQuery } from "@apollo/client";
 import _ from "lodash";
 import { useLocation } from "react-router-dom";
@@ -78,19 +78,18 @@ const useStyles = makeStyles((theme) => ({
 
 let unsubscribeSuppliers = null;
 const HomePage = (props) => {
-  // const navigate = useNavigate();
-  const location = useLocation();
-  const toastIdRef = useRef(null)
-  const classes = useStyles();
-  const { t } = useTranslation();
+  let location = useLocation();
+  let toastIdRef = useRef(null)
+  let classes = useStyles();
+  let { t } = useTranslation();
 
   let [datas, setDatas] = useState([]);
   let [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  let [reset, setReset] = useState(false)
-  const [slice, setSlice] = useState(12);
-  const [hasMore, setHasMore] = useState(true);
-  const [scrollPosition, setScrollPosition] = useState(0);
+  let [loading, setLoading] = useState(true);
+  // let [reset, setReset] = useState(false)
+  let [slice, setSlice] = useState(12);
+  let [hasMore, setHasMore] = useState(true);
+  let [scrollPosition, setScrollPosition] = useState(0);
 
   let [search, setSearch] = useState( _.isNull(localStorage.getItem('SEARCH')) ? Constants.INIT_SEARCH : JSON.parse(localStorage.getItem('SEARCH')) );
 
@@ -105,7 +104,6 @@ const HomePage = (props) => {
           networkStatus } = useQuery(querySuppliers, 
                                       { 
                                         context: { headers: getHeaders(location) }, 
-                                        // variables: { input: search },
                                         fetchPolicy: 'cache-first',
                                         nextFetchPolicy: 'network-only', 
                                         notifyOnNetworkStatusChange: true
@@ -120,18 +118,7 @@ const HomePage = (props) => {
     setScrollPosition(window.scrollY);
   };
 
-  // useEffect(()=>{
-  //   console.log("scrollPosition :", scrollPosition)
-  // }, [scrollPosition])
-
-  /*
-  localStorage.setItem('SEARCH', JSON.stringify(items));
-  const items = JSON.parse(localStorage.getItem('items'));
-  */
-
   useEffect(()=>{
-    // onSearchChange({...search, PAGE: 1 })
-
     refetchSuppliers({ input: search })
 
     window.addEventListener('scroll', handleScroll);
@@ -149,8 +136,6 @@ const HomePage = (props) => {
       if(!_.isEmpty(dataSuppliers?.suppliers)){
         let { status, total, data } = dataSuppliers?.suppliers
         if(status){
-          // let newDatas = _.unionBy(data, datas, '_id')
-          // newDatas = _.orderBy(newDatas, "createdAt", 'asc')
           setDatas(data)
           setSlice(data?.length)
           setTotal(total)
@@ -162,11 +147,6 @@ const HomePage = (props) => {
   }, [dataSuppliers, loadingSuppliers])
 
   useEffect(()=>{
-
-    // if( total !== 0 && total === datas?.length){
-    //   setHasMore(true);
-    // }
-
     let supplierIds = JSON.stringify(_.map(datas, _.property("_id")));
     unsubscribeSuppliers && unsubscribeSuppliers()
     unsubscribeSuppliers = null;
@@ -202,10 +182,6 @@ const HomePage = (props) => {
   }, [datas, total])
 
   useEffect(()=>{
-    // if(reset){
-    //   setReset(false)
-    // }
-
     console.log("useEffect search :", search)
   }, [search])
 
@@ -218,8 +194,6 @@ const HomePage = (props) => {
   }
 
   const handlePulldownToLoadMore = async() => {
-    // onSearchChange({...search, PAGE: 1})
-
     if(search.PAGE > 1){
       if( _.find(datas, (v)=>v.PAGE === findFirstPage() - 1) === undefined){
         fetchMoreSuppliers({
@@ -331,30 +305,21 @@ const HomePage = (props) => {
                   {...props}
                   classes={classes}
                   search={search}
-                  onReset={()=>setReset(true)}
+                  onReset={()=>{
+                    setSearch(Constants.INIT_SEARCH)
+                    localStorage.setItem('SEARCH', JSON.stringify(Constants.INIT_SEARCH));
+                  }}
                   onSearch={(search)=>
                   {
-                    /*
-                    fetchMoreSuppliers({
-                      variables: { input: search },
-                      updateQuery: (prev, {fetchMoreResult}) => {
-                        if (!fetchMoreResult?.suppliers?.data?.length) {
-                          return prev;
-                        }
-                    
-                        let { suppliers } = fetchMoreResult
-                        return suppliers //Object.assign({}, prev, {suppliers} );
-                      },
-                    });
-
-                    onSearchChange(search)
-                    */
-
                     setSearch(search)
                     localStorage.setItem('SEARCH', JSON.stringify(search));
                   }} />
               </div>
-              <div> {t("all_result")} : {total} </div>
+              {
+                 useMemo(() => { 
+                    return <div> {t("all_result")} : {total} </div>
+                 }, [ total ])
+              }
               {
                 search.PAGE > 1
                 ? <div> 

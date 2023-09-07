@@ -3,6 +3,7 @@ import clsx from "clsx";
 import Chip from "@mui/joy/Chip";
 import { Rating, Autocomplete } from "@material-ui/lab";
 import _ from "lodash"
+import { createSearchParams, useNavigate } from "react-router-dom";
 import {
   IconButton,
 } from "@mui/material";
@@ -22,12 +23,14 @@ import {
 } from "react-icons/md"
 import moment from "moment";
 
+
 import { numberCurrency, minTwoDigits, sellView, bookView } from "../../util"
 import CommentComp from "../../components/CommentComp"
 
 const numberLotterys = Array.from({ length: 10 * 10 }, (_, i) => i);
 
 const DetailPanel = (props) => {
+  
   let { user, data, onSelected} = props
   return  useMemo(() => {
             return  <div className="container-detail">
@@ -66,6 +69,9 @@ const DetailPanelRight = (props) =>{
         onPopupShopping,
         onMenu,
         onMutationComment } = props
+
+  let navigate = useNavigate();
+  console.log('DetailPanelRight :', data)
 
   let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
   let buys      =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 1) )
@@ -305,7 +311,12 @@ const DetailPanelRight = (props) =>{
                     src={data?.owner?.avatar?.url != null ? data?.owner?.avatar?.url :"https://img.myloview.com/stickers/default-avatar-profile-icon-vector-social-media-user-image-700-205124837.jpg"}
                     alt="Avatar"
                   />
-                  <span className="name-ava f-color-0">{data?.owner?.displayName}</span>
+                  <span className="name-ava f-color-0" onClick={()=>{
+                    navigate({
+                      pathname: `/p`,
+                      search: `?${createSearchParams({ id: data.ownerId })}`
+                    })
+                  }}>{data?.owner?.displayName}</span>
                   <span className="rate">
                     <Rating name="half-rating" value={3.5} precision={0.5} />
                   </span>
