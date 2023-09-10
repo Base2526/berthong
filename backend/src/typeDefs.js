@@ -455,6 +455,7 @@ export default gql`
   }
 
   type Query {
+    checkWalletByUserId(_id: ID): JSON
     check_db: JSON
     ping: JSON
     checkCacheById(_id: ID): JSON

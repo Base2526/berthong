@@ -78,4 +78,6 @@ export const TRANSLATIONS_EN = {
     USER_NOT_FOUND: "Not found username or email.",
     PASSWORD_WRONG: "Password wrong.",
     FORCE_LOGOUT: "Login again",
+
+    wallet: "Wallet",
 };
