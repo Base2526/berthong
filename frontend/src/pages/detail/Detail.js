@@ -175,20 +175,6 @@ const Detail = (props) => {
       onLogin(true);
       return;
     } 
-
-    // let fn = _.find(data.buys, (buy)=>buy.itemId == itemId)
-    // let selected = 0;
-    // if(fn) selected = fn.selected == -1 ? 0 : -1
-    
-    // if(selected == 0){
-    //   let check = user?.balance - (user?.balanceBook + data.price)
-    //   if(check < 0){
-    //     showToast("error", `ยอดเงินคงเหลือไม่สามารถจองได้`, 2500)
-    //     return;
-    //   }
-    // }
-
-    // console.log("onSelected :", )
     onMutationBook({ variables: { input: { id, itemId } } });
   }
 
@@ -254,15 +240,11 @@ const Detail = (props) => {
             <DetailPanelRight 
               {...props}
               data={data}
-              // owner={dataUser}
-              onSelected={(evt, itemId)=>onSelected(evt, itemId)}
+              onMutationBook={(evt)=> _.isEmpty(user) ?  onLogin(true) : onMutationBook(evt)}
               onFollow={(evt)=> _.isEmpty(user) ? onLogin(true) : onMutationFollow(evt)}
-
               onPopupWallet={(evt)=> _.isEmpty(user) ? onLogin(true) : setPopupOpenedWallet(evt) }
               onPopupShopping={(evt)=> _.isEmpty(user) ? onLogin(true) : setPopupOpenedShoppingBag(evt) }
-              
               onMenu={(evt)=>setOpenMenu(evt)}/>
-          
             {menuView(data)}
           </>
       }

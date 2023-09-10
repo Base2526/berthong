@@ -144,9 +144,111 @@ export const checkAuthorizationWithSessionId = async(sessionId) => {
 }
 
 export const getBalance = async(userId) =>{    
-    let supplier = await Model.Transition.aggregate([
+    let aggregate = [
                         { 
-                            $match: { userId, status: {$in: [Constants.WAIT, Constants.APPROVED]} , type: Constants.SUPPLIER  } 
+                            $match: { userId: mongoose.Types.ObjectId(userId), 
+                                        status: {$in: [Constants.WAIT, Constants.APPROVED]},
+                                        // status: Constants.APPROVED,
+                                        type: {$in: [Constants.SUPPLIER, Constants.DEPOSIT, Constants.WITHDRAW]}  } 
+                        },
+                        {
+                            $lookup: {
+                                localField: "refId",
+                                from: "supplier",
+                                foreignField: "_id",
+                                pipeline: [{ $match: { buys: { $elemMatch : { userId: mongoose.Types.ObjectId(userId) }} }}],
+                                as: "supplier"
+                            }                 
+                        },
+                        {
+                            $lookup: {
+                                localField: "refId",
+                                from: "deposit",
+                                foreignField: "_id",
+                                as: "deposit"
+                            }
+                        },
+                        {
+                            $lookup: {
+                                localField: "refId",
+                                from: "withdraw",
+                                foreignField: "_id",
+                                as: "withdraw"
+                            }
+                        },
+                        {
+                            $unwind: {
+                                path: "$supplier",
+                                preserveNullAndEmptyArrays: true
+                            }
+                        },
+                        {
+                            $unwind: {
+                                path: "$deposit",
+                                preserveNullAndEmptyArrays: true
+                            }
+                        },
+                        {
+                            $unwind: {
+                                path: "$withdraw",
+                                preserveNullAndEmptyArrays: true
+                            }
+                        }
+                    ];
+
+    let transitions = await Model.Transition.aggregate(aggregate);
+
+    let money_use       = 0; // เงินที่เรากดซื้อหวย สำเร็จแล้ว
+    let money_lock      = 0; // เงินที่เรากดจองหวย สำเร็จแล้ว
+    let money_deposit   = 0; // เงินฝาก สำเร็จแล้ว
+    let money_withdraw  = 0; // เงินถอน สำเร็จแล้ว
+    let in_carts        = [];
+    _.map(transitions, (transition) =>{
+        switch(transition.type){
+            case Constants.SUPPLIER:{
+                let { supplier } = transition
+                if(supplier !== undefined){
+                    let { price, buys } = supplier
+                    if(transition.status === Constants.WAIT){
+                        let filter = _.filter( buys, (buy)=> _.isEqual(buy.transitionId, transition._id) )
+                        money_lock += filter.length * price
+                    }else if(transition.status === Constants.APPROVED){
+                        let filter = _.filter( buys, (buy)=> _.isEqual(buy.transitionId, transition._id) )
+                        money_use += filter.length * price
+                    }
+                    in_carts = [...in_carts, transition]
+                }
+                break
+            } 
+            case Constants.DEPOSIT:{
+                let { status, deposit } = transition
+                if(status === Constants.APPROVED){
+                    let { balance } = deposit
+                    money_deposit += balance;
+                }
+            break
+            } 
+            case Constants.WITHDRAW:{
+                let { status, withdraw } = transition
+                if(status === Constants.APPROVED){
+                    let { balance } = withdraw
+                    money_withdraw += balance;
+                }
+            break
+            }
+        }
+    })  
+
+    let money_balance = money_deposit - ( money_use + money_lock - money_withdraw )
+
+    return { transitions, money_balance, money_use, money_lock, money_deposit, money_withdraw, in_carts }
+}
+
+/*
+export const getBalance = async(userId) =>{    
+    let supplier =  await Model.Transition.aggregate([
+                        { 
+                            $match: { userId, status: {$in: [Constants.WAIT, Constants.APPROVED]}, type: Constants.SUPPLIER  } 
                         },
                         {
                             $lookup: {
@@ -158,10 +260,10 @@ export const getBalance = async(userId) =>{
                             }                 
                         },
                         {
-                        $unwind: {
-                            "path": "$supplier",
-                            "preserveNullAndEmptyArrays": false
-                        }
+                            $unwind: {
+                                path: "$supplier",
+                                preserveNullAndEmptyArrays: false
+                            }
                         }
                     ])
 
@@ -178,9 +280,9 @@ export const getBalance = async(userId) =>{
                             }
                         },
                         {
-                        $unwind: {
-                                "path": "$deposit",
-                                "preserveNullAndEmptyArrays": false
+                            $unwind: {
+                                path: "$deposit",
+                                preserveNullAndEmptyArrays: false
                             }
                         }
                     ])
@@ -198,10 +300,10 @@ export const getBalance = async(userId) =>{
                             }
                         },
                         {
-                        $unwind: {
-                            "path": "$withdraw",
-                            "preserveNullAndEmptyArrays": false
-                        }
+                            $unwind: {
+                                path: "$withdraw",
+                                preserveNullAndEmptyArrays: false
+                            }
                         }
                     ])
     
@@ -276,6 +378,7 @@ export const getInTheCarts = async(userId) =>{
                     ])
     return supplier
 }
+*/
 
 // export const checkBalanceBook = async(userId) =>{
 //     try{
@@ -420,12 +523,14 @@ export const getUserFull = async(query) =>{
             //             return _.isNull(bank) ? null : {...value._doc, name:bank?.name}
             //         })), e=>!_.isNull(e) ) 
 
+            let { money_balance, money_lock, in_carts } = await getBalance(user?._id)
+      
             let cache_user = {  ...user?._doc, 
                             // banks, 
-                            balance: await getBalance(user?._id), 
-                            balanceBook: await getBalanceBook(user?._id),
+                            balance: money_balance,//await getBalance(user?._id), 
+                            balanceBook: money_lock, // await getBalanceBook(user?._id),
                             transitions: [], 
-                            inTheCarts: await getInTheCarts(user?._id)
+                            inTheCarts: in_carts, // await getInTheCarts(user?._id)
                         }
             // cache.ca_save(user?._doc?._id.toString(), cache_user)
 

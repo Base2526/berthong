@@ -22,7 +22,7 @@ import {
   MdOutlineBookmarkAdded as MdOutlineBookmarkAddedIcon
 } from "react-icons/md"
 import moment from "moment";
-
+import { useTranslation } from "react-i18next";
 
 import { numberCurrency, minTwoDigits, sellView, bookView } from "../../util"
 import CommentComp from "../../components/CommentComp"
@@ -31,7 +31,7 @@ const numberLotterys = Array.from({ length: 10 * 10 }, (_, i) => i);
 
 const DetailPanel = (props) => {
   
-  let { user, data, onSelected} = props
+  let { user, data, onMutationBook} = props
   return  useMemo(() => {
             return  <div className="container-detail">
                       {numberLotterys.map((seat) => {
@@ -46,8 +46,8 @@ const DetailPanel = (props) => {
                               tabIndex="0"
                               key={seat}
                               className={clsx("circle", isSelected && "selected", /*isOccupied && "occupied",*/  isFinish && "finish",  isBooking && "booking" )}
-                              onClick={(evt) => /*isOccupied ||*/ isFinish || isBooking ? null : onSelected(evt, seat) }
-                              onKeyDown={(evt) => /*isOccupied ||*/ isFinish || isBooking ? null : (evt.key === "Enter" ?  onSelected(evt, seat) : null) }>
+                              onClick={(evt) => /*isOccupied ||*/ isFinish || isBooking ? null : onMutationBook({ variables: { input: { id: data?._id, itemId: seat } } }) } 
+                              onKeyDown={(evt) => /*isOccupied ||*/ isFinish || isBooking ? null : (evt.key === "Enter" ?  onMutationBook({ variables: { input: { id: data?._id, itemId: seat } } }) : null) }>
                               {" "}
                               {isBooking ? <span className="booking-font">ติดจอง</span> : ""}
                               {seat <= 9 ? "0" + seat : seat}
@@ -60,10 +60,11 @@ const DetailPanel = (props) => {
 };
 
 const DetailPanelRight = (props) =>{
+  let { t } = useTranslation();
+
   let { user, 
         data, 
-        // owner, 
-        onSelected, 
+        onMutationBook, 
         onFollow, 
         onPopupWallet, 
         onPopupShopping,
@@ -71,7 +72,7 @@ const DetailPanelRight = (props) =>{
         onMutationComment } = props
 
   let navigate = useNavigate();
-  console.log('DetailPanelRight :', data)
+  console.log('DetailPanelRight :', data, props)
 
   let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
   let buys      =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 1) )
@@ -113,7 +114,7 @@ const DetailPanelRight = (props) =>{
                               <div className="col-lg-6 col-12 wishlist_cart d-flex flex-row align-items-center justify-content-evenly">
                                 <div className="row box wishlist bg-wallet p-2" onClick={() => onPopupWallet(true)}>
                                   <div className="col-6 bag text-center">
-                                    กระเป๋าเงิน<br />
+                                    {t("wallet")}<br />
                                     <CurrencyExchangeOutlinedIcon size={70}/>
                                   </div>
                                   <div className="col-6 money-p text-center"> 
@@ -123,7 +124,7 @@ const DetailPanelRight = (props) =>{
                                         color="success"
                                         size="sm"
                                         sx={{ pointerEvents: "none" }}>
-                                        <div class="wishlist_count text-center">{ !user?.balance ? numberCurrency(0) : numberCurrency( user?.balance - user?.balanceBook )}</div>
+                                        <div class="wishlist_count text-center">{ !user?.balance ? numberCurrency(0) : numberCurrency( user?.balance )}</div>
                                       </Chip>
                                     </div>
                                     <div className="row pt-1">
@@ -221,7 +222,9 @@ const DetailPanelRight = (props) =>{
                                     getOptionLabel={(option) => option.toString()}
                                     onChange={(e, v) =>{
                                       let itemIds = _.map(selecteds, (selected)=>minTwoDigits(selected.itemId))
-                                      _.map(_.difference(itemIds, v), (itemId)=>onSelected(e, itemId))
+                                      _.map(_.difference(itemIds, v), (itemId)=>{
+                                        onMutationBook({ variables: { input: { id: data?._id, itemId } } })
+                                      })
                                     }}
                                     renderInput={(params) => (
                                       <TextField

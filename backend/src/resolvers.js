@@ -20,9 +20,146 @@ import connection from './mongo'
 
 export default {
   Query: {
+    async checkWalletByUserId(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+      let { _id } = args
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      console.log(`####################### checkWalletByUserId Start ${ _id } ##############################`)
+
+      // let aggregate = [
+      //                   { 
+      //                       $match: { userId: mongoose.Types.ObjectId(_id), 
+      //                                 status: {$in: [Constants.WAIT, Constants.APPROVED]},
+      //                                 // status: Constants.APPROVED,
+      //                                 type: {$in: [Constants.SUPPLIER, Constants.DEPOSIT, Constants.WITHDRAW]}  } 
+      //                   },
+      //                   {
+      //                       $lookup: {
+      //                           localField: "refId",
+      //                           from: "supplier",
+      //                           foreignField: "_id",
+      //                           pipeline: [{ $match: { buys: { $elemMatch : { userId: mongoose.Types.ObjectId(_id) }} }}],
+      //                           as: "supplier"
+      //                       }                 
+      //                   },
+      //                   {
+      //                       $lookup: {
+      //                           localField: "refId",
+      //                           from: "deposit",
+      //                           foreignField: "_id",
+      //                           as: "deposit"
+      //                       }
+      //                   },
+      //                   {
+      //                       $lookup: {
+      //                           localField: "refId",
+      //                           from: "withdraw",
+      //                           foreignField: "_id",
+      //                           as: "withdraw"
+      //                       }
+      //                   },
+      //                   {
+      //                       $unwind: {
+      //                           path: "$supplier",
+      //                           preserveNullAndEmptyArrays: true
+      //                       }
+      //                   },
+      //                   {
+      //                       $unwind: {
+      //                           path: "$deposit",
+      //                           preserveNullAndEmptyArrays: true
+      //                       }
+      //                   },
+      //                   {
+      //                       $unwind: {
+      //                           path: "$withdraw",
+      //                           preserveNullAndEmptyArrays: true
+      //                       }
+      //                   }
+      //                 ];
+
+      // let transitions = await Model.Transition.aggregate(aggregate);
+
+      // let money_use       = 0;
+      // let money_lock      = 0;
+      // let money_deposit   = 0;
+      // let money_withdraw  = 0;
+      // let in_carts        = [];
+      // _.map(transitions, (transition) =>{
+      //   switch(transition.type){
+      //     case Constants.SUPPLIER:{
+      //       let { supplier } = transition
+      //       if(transition.status === Constants.WAIT){
+      //         let { price, buys } = supplier
+
+      //         let filter = _.filter(buys, (buy)=> _.isEqual(buy.transitionId, transition._id) )
+
+      //         let itemIds = _.map(filter, (f)=>f.itemId)
+
+      //         console.log("SUPPLIER #WAIT :", transition._id, supplier._id, supplier.title, price, itemIds)
+
+      //         money_lock += filter.length * price
+      //       }else if(transition.status === Constants.APPROVED){
+      //         let { price, buys } = supplier
+
+      //         let filter = _.filter(buys, (buy)=> _.isEqual(buy.transitionId, transition._id) )
+
+      //         let itemIds = _.map(filter, (f)=>f.itemId)
+
+      //         console.log("SUPPLIER #APPROVED :", transition._id, supplier._id, supplier.title, price, itemIds)
+
+      //         money_use += filter.length * price
+      //       }
+
+      //       in_carts = [...in_carts, transition]
+      //       break
+      //     } 
+      //     case Constants.DEPOSIT:{
+      //       let { status, deposit } = transition
+      //       if(status === Constants.APPROVED){
+      //         let { balance } = deposit
+      //         money_deposit += balance;
+      //       }
+      //       break
+      //     } 
+      //     case Constants.WITHDRAW:{
+      //       let { status, withdraw } = transition
+      //       if(status === Constants.APPROVED){
+      //         let { balance } = withdraw
+      //         money_withdraw += balance;
+      //       }
+      //       break
+      //     }
+      //   }
+      // })  
+
+
+      let { transitions, money_balance, money_use, money_lock, money_deposit, money_withdraw, in_carts } = await Utils.getBalance(_id)
+      
+      console.log(`####################### checkWalletByUserId End ${ _id } ##############################`)
+      return {  status:true, 
+                userId: _id,  
+
+                transitions, 
+                money_balance,
+                money_use, 
+                money_lock,
+                money_deposit, 
+                money_withdraw,
+                in_carts,
+
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    },
 
     async check_db(parent, args, context, info){
       let { req } = context
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let { readyState } = connection
       let mongo_db_state = "Empty"
@@ -169,49 +306,63 @@ export default {
       // console.log("suppliers : #0 ", args?.input)
       await Utils.checkAuth(req);
 
-      let { NUMBER, PAGE, LIMIT } = args?.input
+      let { TITLE, NUMBER, PAGE, LIMIT } = args?.input
       let SKIP = (PAGE - 1) * LIMIT
 
       console.log("suppliers : #1 ", args?.input, SKIP)
 
-      let aggregate = [
-                        { $skip: SKIP }, 
-                        { $limit: LIMIT }, 
-                        {
-                          $lookup: {
-                              localField: "ownerId",
-                              from: "user",
-                              foreignField: "_id",
-                              pipeline: [
-                                { $project:{ username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }}
-                              ],
-                              as: "owner"
-                          }
-                        },
-                        {
-                          $lookup: {
-                              localField: "dateLottery",
-                              from: "dateLottery",
-                              foreignField: "_id",
-                              pipeline: [
-                                { $project:{ date: 1 }}
-                              ],
-                              as: "dateLottery"
-                          }
-                        },
-                        {
-                          $unwind: {
-                                  "path": "$owner",
-                                  "preserveNullAndEmptyArrays": false
-                          }
-                        },
-                        {
-                          $unwind: {
-                                  "path": "$dateLottery",
-                                  "preserveNullAndEmptyArrays": false
+      let aggregate = []
+      if(!_.isEmpty(TITLE)){
+        aggregate = [
+                      {
+                        $match: {
+                          title: {
+                            $regex: TITLE,
+                            $options: "i"
                           }
                         }
-                      ]
+                      }
+                    ]
+      }
+
+      aggregate = [ ...aggregate,
+                    { $skip: SKIP }, 
+                    { $limit: LIMIT }, 
+                    {
+                      $lookup: {
+                          localField: "ownerId",
+                          from: "user",
+                          foreignField: "_id",
+                          pipeline: [
+                            { $project:{ username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }}
+                          ],
+                          as: "owner"
+                      }
+                    },
+                    {
+                      $lookup: {
+                          localField: "dateLottery",
+                          from: "dateLottery",
+                          foreignField: "_id",
+                          pipeline: [
+                            { $project:{ date: 1 }}
+                          ],
+                          as: "dateLottery"
+                      }
+                    },
+                    {
+                      $unwind: {
+                              "path": "$owner",
+                              "preserveNullAndEmptyArrays": false
+                      }
+                    },
+                    {
+                      $unwind: {
+                              "path": "$dateLottery",
+                              "preserveNullAndEmptyArrays": false
+                      }
+                    }
+                  ]
 
       if(!_.isEmpty(NUMBER)){
         let q = _.map(NUMBER.split(","), (v, i)=>{
@@ -224,10 +375,16 @@ export default {
 
         aggregate = [...aggregate, { $match: { "$and" : q  } }]
 
+        
+
         let suppliers = await Model.Supplier.aggregate(aggregate)
-        let total     = await Model.Supplier.aggregate([ { $match: { "$and" : q  } } ])
+
+        aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
+        let total     = await Model.Supplier.aggregate(aggregate)
 
         suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
+
+        console.log( "suppliers : #2 q >> :", JSON.stringify(q), JSON.stringify(aggregate), suppliers.length )
         return {  
           status: true,
           data: suppliers,
@@ -236,9 +393,15 @@ export default {
         }
       }
 
-      let suppliers = await Model.Supplier.aggregate(aggregate)
-      let total     = await Model.Supplier.find({})
+      console.log( "suppliers : #2 aggregate 1 :", JSON.stringify(aggregate) )
 
+      let suppliers = await Model.Supplier.aggregate(aggregate)
+
+      aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
+
+      console.log( "suppliers : #2 aggregate 2 :", JSON.stringify(aggregate) )
+
+      let total     = await Model.Supplier.aggregate(aggregate)
       suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
       return {  
         status: true,
@@ -1374,16 +1537,6 @@ export default {
       let supplier = await Model.Supplier.findById(id);
       if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
 
-      /*
-      Check balance before book?
-      */ 
-      let price       = supplier?.price
-      let balance     = await Utils.getBalance(current_user?._id)
-      let balanceBook = await Utils.getBalanceBook(current_user?._id)
-      if(price > (balance - balanceBook)){
-        throw new AppError(Constants.NOT_ENOUGH_BALANCE, 'NOT ENOUGH BALANCE')
-      }
-
       cache.ca_delete(current_user?._id.toString())
       
       const session = await mongoose.startSession();
@@ -1399,17 +1552,20 @@ export default {
           tran =  await Model.Transition.create( { refId: supplier?._id, userId: current_user?._id } )
         }
 
-        // console.log("book :", tran)
-
         let mode = "BOOK";
-        let { buys } = supplier
-        let check =  _.find(buys, (buy)=> buy.itemId == itemId && buy.userId.toString() == current_user?._id.toString() )
+        // let { price, buys } = supplier
+        let check =  _.find(supplier?.buys, (buy)=> buy.itemId == itemId && buy.userId.toString() === current_user?._id.toString() )
+        if(check === undefined){
+          let { money_balance } = await Utils.getBalance(current_user?._id)
 
-        if(check == undefined){
-          await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, transitionId: tran?._id, selected: 0 }] })   
+          if(supplier?.price > money_balance){
+            throw new AppError(Constants.NOT_ENOUGH_BALANCE, 'NOT ENOUGH BALANCE')
+          }
+
+          await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: [...supplier?.buys, {userId: current_user?._id, itemId, transitionId: tran?._id, selected: 0 }] })   
         }else{
           mode = "UNBOOK";
-          buys = _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id )
+          let buys = _.filter(supplier?.buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id )
           await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys })   
         }
      

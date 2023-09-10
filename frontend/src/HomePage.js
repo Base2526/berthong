@@ -83,14 +83,13 @@ const HomePage = (props) => {
   let classes = useStyles();
   let { t } = useTranslation();
 
-  let [datas, setDatas] = useState([]);
-  let [total, setTotal] = useState(0);
-  let [loading, setLoading] = useState(true);
-  // let [reset, setReset] = useState(false)
-  let [slice, setSlice] = useState(12);
-  let [hasMore, setHasMore] = useState(true);
+  let [datas, setDatas]       = useState([]);
+  let [total, setTotal]       = useState(0);
+  let [loading, setLoading]   = useState(true);
+  let [slice, setSlice]       = useState(12);
+  let [hasMore, setHasMore]   = useState(true);
   let [scrollPosition, setScrollPosition] = useState(0);
-
+  let [isSearch, setIsSearch] = useState(false);
   let [search, setSearch] = useState( _.isNull(localStorage.getItem('SEARCH')) ? Constants.INIT_SEARCH : JSON.parse(localStorage.getItem('SEARCH')) );
 
   let { user, ws, onLogin, onMutationFollow } = props
@@ -182,8 +181,33 @@ const HomePage = (props) => {
   }, [datas, total])
 
   useEffect(()=>{
-    console.log("useEffect search :", search)
-  }, [search])
+    if(isSearch){
+      setLoading(true)
+      
+      fetchMoreSuppliers({
+        variables: { input: { ...search, PAGE: 1 } },
+        updateQuery: (prev, {fetchMoreResult, variables}) => {
+          setIsSearch(false)
+          setLoading(false)
+
+          if (!fetchMoreResult?.suppliers?.data?.length) {
+            setDatas([])
+            setSlice(0)
+            setTotal(0)
+            return fetchMoreResult?.suppliers
+          }
+          
+          let { status, total, data } = fetchMoreResult?.suppliers
+          if(status){
+            setDatas(data)
+            setSlice(data?.length)
+            setTotal(total)
+          }
+          return fetchMoreResult?.suppliers
+        },
+      });
+    }
+  }, [ isSearch ])
 
   const scrollToTop = () => {
     window?.scrollTo(0, 0);
@@ -199,25 +223,20 @@ const HomePage = (props) => {
         fetchMoreSuppliers({
           variables: { input: {...search, PAGE: search.PAGE - 1} },
           updateQuery: (prev, {fetchMoreResult, variables}) => {
-              if (!fetchMoreResult?.suppliers?.data?.length) {
-                  return prev;
-              }
-              let { input } = variables
+            if (!fetchMoreResult?.suppliers?.data?.length) {
+                return prev;
+            }
+            let { input } = variables
 
-              search = { ...search, PAGE: input.PAGE }
-              setSearch(search)
-              localStorage.setItem('SEARCH', JSON.stringify(search));
+            search = { ...search, PAGE: input.PAGE }
+            setSearch(search)
+            localStorage.setItem('SEARCH', JSON.stringify(search));
 
-              let suppliers = {...prev.suppliers, data: [...fetchMoreResult?.suppliers?.data, ...prev?.suppliers?.data] }
-              return Object.assign({}, prev, {suppliers} );
+            let suppliers = {...prev.suppliers, data: [...fetchMoreResult?.suppliers?.data, ...prev?.suppliers?.data] }
+            return Object.assign({}, prev, {suppliers} );
           },
         });
       }
-    }else{
-      search = {...search, PAGE: 1}
-      setSearch(search)
-
-      localStorage.setItem('SEARCH', JSON.stringify(search));
     }
   }
 
@@ -308,9 +327,23 @@ const HomePage = (props) => {
                   onReset={()=>{
                     setSearch(Constants.INIT_SEARCH)
                     localStorage.setItem('SEARCH', JSON.stringify(Constants.INIT_SEARCH));
+
+                    setLoading(true)
+                    fetchMoreSuppliers({
+                      variables: { input: Constants.INIT_SEARCH },
+                      updateQuery: (prev, {fetchMoreResult, variables}) => {
+                        setLoading(false)
+                        if (!fetchMoreResult?.suppliers?.data?.length) {
+                            return prev;
+                        }
+                        return fetchMoreResult?.suppliers;
+                      },
+                    });
                   }}
                   onSearch={(search)=>
                   {
+                    setIsSearch(true)
+
                     setSearch(search)
                     localStorage.setItem('SEARCH', JSON.stringify(search));
                   }} />
@@ -347,7 +380,7 @@ const HomePage = (props) => {
                         endMessage={<div className="text-center">End Message</div>}
                         
                         // below props only if you need pull down functionality
-                        refreshFunction={handlePulldownToLoadMore}
+                        refreshFunction={()=>handlePulldownToLoadMore()}
                         pullDownToRefresh
                         pullDownToRefreshThreshold={50}
                         pullDownToRefreshContent={
