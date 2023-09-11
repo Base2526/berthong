@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { styled } from "@mui/material/styles";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
@@ -248,9 +247,4 @@ const UserPage = (props) => {
           </form>);
 }
 
-const mapStateToProps = (state, ownProps) => {
-  return {user: state.auth.user}
-}
-
-const mapDispatchToProps = {}
-export default connect( mapStateToProps, mapDispatchToProps )(UserPage);
+export default UserPage;

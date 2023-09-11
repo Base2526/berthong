@@ -471,43 +471,28 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-
-      // let transitions = await Model.Transition.find({ userId: current_user?._id, type: Constants.SUPPLIER });
-
-      // transitions = _.filter( await Promise.all(_.map(transitions, async(transition)=>{
-      //                 let supplier = await Model.Supplier.findOne( {_id: transition.refId} );//await Utils.getSupplier({_id: transition.refId}) 
-
-      //                 if(supplier){
-      //                   let { buys } = supplier
-      //                   let book  = _.filter(buys, buy=> _.isEqual(buy.userId, current_user?._id)  && (buy.selected == 0 || buy.selected == 1))
-  
-      //                   return book?.length > 0 /*|| buy.length > 0*/  ? {...transition._doc, ...supplier._doc } : null
-      //                 }
-      //                 return null                
-      //               })), item=>!_.isNull(item) ) 
-
       let userId = current_user?._id;
 
       let transitions = await Model.Transition.aggregate([
-        { 
-            $match: { userId, type: Constants.SUPPLIER  } 
-        },
-        {
-          $lookup: {
-              localField: "refId",
-              from: "supplier",
-              foreignField: "_id",
-              pipeline: [{ $match: { buys: { $elemMatch : { userId }} }}],
-              as: "supplier"
-          }                 
-        },
-        {
-          $unwind: {
-              "path": "$supplier",
-              "preserveNullAndEmptyArrays": false
-          }
-        }
-      ])
+                              { 
+                                  $match: { userId: mongoose.Types.ObjectId(userId), type: Constants.SUPPLIER  } 
+                              },
+                              {
+                                $lookup: {
+                                    localField: "refId",
+                                    from: "supplier",
+                                    foreignField: "_id",
+                                    pipeline: [{ $match: { buys: { $elemMatch : { userId: mongoose.Types.ObjectId(userId) }} }}],
+                                    as: "supplier"
+                                }                 
+                              },
+                              {
+                                $unwind: {
+                                    "path": "$supplier",
+                                    "preserveNullAndEmptyArrays": false
+                                }
+                              }
+                            ])
 
       return {  status: true,
                 data: transitions,
@@ -993,33 +978,23 @@ export default {
       let start = Date.now()
         
       let { req } = context
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
-
-      // let transitions = await Model.Transition.find({ type: Constants.WITHDRAW, status: Constants.WAIT });
-
-      // transitions = await Promise.all(_.map(transitions, async(transition)=>{
-      //                       let withdraw = await Model.Withdraw.findOne({_id: transition?.refId})
-      //                       let user    = await Utils.getUser({_id: transition?.userId}) 
-      //                       return {...withdraw?._doc, ...transition?._doc, user}
-      //                     }))
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let transitions = await Model.Transition.aggregate([
-        { 
-            $match: { status: Constants.WAIT /* 13 */, type: Constants.WITHDRAW /* 11 */ } 
-        },
+        { $match: { status: Constants.WAIT, type: Constants.WITHDRAW } },
         {
-            $lookup: {
-                localField: "refId",
-                from: "withdraw",
-                foreignField: "_id",
-                as: "withdraw"
-            }
+          $lookup: {
+            localField: "refId",
+            from: "withdraw",
+            foreignField: "_id",
+            as: "withdraw"
+          }
         },
         {
           $unwind: {
-            "path": "$withdraw",
-            "preserveNullAndEmptyArrays": false
+            path: "$withdraw",
+            preserveNullAndEmptyArrays: false
           }
         }
       ])

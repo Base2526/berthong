@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useQuery } from "@apollo/client";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import _ from "lodash"
-import { connect } from "react-redux";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 import { useTranslation } from "react-i18next";
@@ -306,6 +305,14 @@ const SuppliersPage = (props) => {
         }
       },
       {
+        Header: 'OWNER',
+        accessor: "ownerId",
+        Cell: props =>{
+          let { owner } = props.row.original
+          return <div>{owner.username}</div>
+        }
+      },
+      {
         Header: 'Price',
         accessor: "price",
         Cell: props => {
@@ -372,7 +379,6 @@ const SuppliersPage = (props) => {
       setPageIndex(pageIndex)
   })
 
-  console.log("datas :", datas)
   return  useMemo(() => {
             return (
               <div className="App">
@@ -385,39 +391,35 @@ const SuppliersPage = (props) => {
                   skipReset={skipResetRef.current}
                   isDebug={false}/> 
 
-                    {openDialogDelete.isOpen && (
-                <Dialog
-                  open={openDialogDelete.isOpen}
-                  onClose={handleClose}
-                  aria-labelledby="alert-dialog-title"
-                  aria-describedby="alert-dialog-description"
-                >
-                  <DialogTitle id="alert-dialog-title">{t("confirm_delete")}</DialogTitle>
-                  <DialogContent>
-                    <DialogContentText id="alert-dialog-description">
-                      {openDialogDelete.description}
-                    </DialogContentText>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button
-                      variant="outlined"
-                      onClick={() => {
-                        handleDelete(openDialogDelete.id);
+                { openDialogDelete.isOpen && 
+                  <Dialog
+                    open={openDialogDelete.isOpen}
+                    onClose={handleClose}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description">
+                    <DialogTitle id="alert-dialog-title">{t("confirm_delete")}</DialogTitle>
+                    <DialogContent>
+                      <DialogContentText id="alert-dialog-description">
+                        {openDialogDelete.description}
+                      </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button
+                        variant="outlined"
+                        onClick={() => {
+                          handleDelete(openDialogDelete.id);
 
-                        setOpenDialogDelete({ isOpen: false, id: "", description: "" });
-                      }}
-                    >{t("delete")}</Button>
-                    <Button variant="contained" onClick={handleClose} autoFocus>{t("close")}</Button>
-                  </DialogActions>
-                </Dialog>
-              )}
+                          setOpenDialogDelete({ isOpen: false, id: "", description: "" });
+                        }}
+                      >{t("delete")}</Button>
+                      <Button variant="contained" onClick={handleClose} autoFocus>{t("close")}</Button>
+                    </DialogActions>
+                  </Dialog>
+                }
               </div>
             )
           }, [datas, openDialogDelete.isOpen])
   
 };
 
-const mapStateToProps = (state, ownProps) => {
-  return {}
-};
-export default connect( mapStateToProps, null )(SuppliersPage);
+export default SuppliersPage;

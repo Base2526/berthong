@@ -28,8 +28,6 @@ import PopupCart from "./pages/detail/PopupCart";
 
 deepdash(_);
 
-
-
 let initOpenComfirmCancelDialog = { isOpen: false, id: "" }
 
 const BookBuysPage = (props) => {

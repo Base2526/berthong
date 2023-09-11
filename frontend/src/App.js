@@ -874,10 +874,6 @@ const App =(props) =>{
       }
   );
 
-  // useEffect(()=>{
-  //   console.log("search :", search)
-  // }, [search])
-
   useEffect(()=>{
     if(!_.isEmpty(user)){
       refetchNotifications();
@@ -1319,7 +1315,7 @@ const App =(props) =>{
               <Route path="/admin-date-lotterys" element={<DateLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
               <Route path="/admin-date-lottery" element={<DateLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
               <Route path="/admin-users" element={<UsersPage />} />
-              <Route path="/user" element={<UserPage />} />
+              <Route path="/user" element={<UserPage {...props} />} />
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
               <Route path="/taxonomy-bank" element={<TaxonomyBankPage  {...props} onMutationBank={(evt)=>onMutationBank(evt)}/>} />
               <Route path="/dblog" element={<DblogPage  {...props} />} />
