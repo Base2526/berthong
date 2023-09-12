@@ -177,7 +177,7 @@ const modelExists =()=>{
   Model.Notification.find({}, async(err, result)=> {
     if (result.length > 0) {
     } else {
-      let newNotification = new Model.Notification({ user_to_notify: new mongoose.Types.ObjectId() });
+      let newNotification = new Model.Notification({ user_to_notify: new mongoose.Types.ObjectId(), user_id_approve: new mongoose.Types.ObjectId() });
       await newNotification.save();
       await Model.Notification.deleteMany({})
     }
@@ -185,7 +185,6 @@ const modelExists =()=>{
 
   Model.Phone.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Model.Phone');
     } else {
       let newPhone = new Model.Phone({});
       await newPhone.save();
@@ -195,7 +194,6 @@ const modelExists =()=>{
 
   Model.BasicContent.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Model.BasicContent');
     } else {
       let newBasicContent = new Model.BasicContent({});
       await newBasicContent.save();
@@ -205,7 +203,6 @@ const modelExists =()=>{
 
   Model.Supplier.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Model.BasicContent');
     } else {
       let newSupplier = new Model.Supplier({title: "title", 
                                       price: 0, 

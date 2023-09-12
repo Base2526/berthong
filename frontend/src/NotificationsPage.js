@@ -10,17 +10,21 @@ import {
     MdOutlineAttachMoney as DepositIcon,
     MdOutlineMoneyOffCsred as WithdrawIcon
 } from "react-icons/md"
+import {
+    AiOutlineInfoCircle as InfoIcon
+} from "react-icons/ai"
 import moment from "moment";
 
 import { getHeaders } from "./util"
 import { queryNotifications } from "./gqlQuery"
+import * as Constants from "./constants"
 
-const initialValue = { data: [] , total : 0, slice: 20, hasMore: true}
+let initialValue = { data: [] , total : 0, slice: 20, hasMore: true}
 
 const NotificationsPage = (props) => {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { t } = useTranslation();
+    let navigate = useNavigate();
+    let location = useLocation();
+    let { t } = useTranslation();
     
     let [input, setInput] = useState(initialValue)
 
@@ -30,10 +34,10 @@ const NotificationsPage = (props) => {
             data: dataNotifications, 
             error: errorNotifications,
             fetchMore: fetchMoreNotifications } = useQuery( queryNotifications, { 
-                                                    context: { headers: getHeaders(location) }, 
-                                                    fetchPolicy: 'cache-first', // Used for first execution
-                                                    nextFetchPolicy: 'network-only', // Used for subsequent executions
-                                                    notifyOnNetworkStatusChange: true});
+                                                            context: { headers: getHeaders(location) }, 
+                                                            fetchPolicy: 'cache-first', 
+                                                            nextFetchPolicy: 'network-only', 
+                                                            notifyOnNetworkStatusChange: true});
 
     useEffect(() => {
         if (!loadingNotifications) {
@@ -67,63 +71,71 @@ const NotificationsPage = (props) => {
     return (<div className="content-bottom">
                 <div className="content-page border">   
                 <div className="row">
-                            {
-                            loadingNotifications
-                            ?   <LinearProgress />
-                            :   input?.data?.length == 0
-                                ? <div>Empty data</div>
-                                : <InfiniteScroll
-                                    dataLength={input.slice}
-                                    next={fetchMoreData}
-                                    hasMore={input.hasMore}
-                                    loader={<h4>Loading...</h4>}>
-                                    { 
-                                        _.map(input.data, (i, index) => {
-                                            switch(i?.type){
-                                                case "system":{
-                                                    return  <div class="alert alert-secondary p-1 m-1" role="alert"><Stack direction="row" spacing={2}>
-                                                                <SystemIcon />
-                                                                <div 
-                                                                    onClick={(evt)=>{
-                                                                        console.log("system")
+                    {
+                    loadingNotifications
+                    ?   <LinearProgress />
+                    :   input?.data?.length == 0
+                        ? <div>Empty data</div>
+                        : <InfiniteScroll
+                            dataLength={input.slice}
+                            next={fetchMoreData}
+                            hasMore={input.hasMore}
+                            loader={<h4>Loading...</h4>}>
+                            { 
+                                //  0: 'withdraw', 1: 'deposit', 2: 'system', 3: 'info'
+                                _.map(input.data, (i, index) => {
+                                    switch(i?.type){
+                                        case 3:{
+                                            return  <div class="alert alert-warning p-1 m-1" role="alert">
+                                                        <Stack direction="row" spacing={2}>
+                                                            <InfoIcon />
+                                                            <div 
+                                                                onClick={(evt)=>{
+                                                                    console.log("info")
+                                                                }
+                                                            } key={index}>{(moment(i?.createdAt, 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')}  </div>
+                                                        </Stack>
+                                                    </div>
+                                        }
+                                        case 2:{
+                                            return  <div class="alert alert-secondary p-1 m-1" role="alert"><Stack direction="row" spacing={2}>
+                                                        <SystemIcon />
+                                                        <div 
+                                                            onClick={(evt)=>{
+                                                                console.log("system")
 
-                                                                        onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
-                                                                    }
-                                                                } key={index}>{(moment(i?.createdAt, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY')} {i?.data} </div>
-                                                            </Stack>
-                                                            </div>
-                                                }
-                                                case "withdraw":{
-                                                    return  <div class="alert alert-success p-1 m-1" role="alert"><Stack direction="row" spacing={2}>
-                                                                <WithdrawIcon />
-                                                                <div 
-                                                                    onClick={(evt)=>{
-                                                                        console.log("withdraw")
-
-                                                                        onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
-                                                                    }
-                                                                } key={index}>{(moment(i?.createdAt, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY')} {i?.data} </div>
-                                                            </Stack>
-                                                            </div>
-                                                }
-                                                case "deposit":{
-                                                    return  <div class="alert alert-warning p-1 m-1" role="alert"><Stack direction="row" spacing={2}>
-                                                                <DepositIcon />
-                                                                <div 
-                                                                    onClick={(evt)=>{
-                                                                        console.log("deposit")
-
-                                                                        onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
-                                                                    }
-                                                                } key={index}>{(moment(i?.createdAt, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY')} {i?.data}  </div>
-                                                            </Stack>
-                                                            </div>
-                                                }
-                                            }
-                                        }) 
+                                                                // onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
+                                                            }
+                                                        } key={index}>{(moment(i?.createdAt, 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')}  </div>
+                                                    </Stack>
+                                                    </div>
+                                        }
+                                        case 1:{
+                                            // status >>  Constants.REJECT, Constants.APPROVED
+                                            // flag   >>  0: 'unread', 1: 'read'
+                                            return  <div class="alert alert-warning p-1 m-1" role="alert">
+                                                        <Stack direction="row" spacing={2}>
+                                                            <DepositIcon />
+                                                            <div>ยอดฝากเงิน : {i?.data?.deposit?.balance} </div>
+                                                            <div>{i?.status === Constants.APPROVED ? "APPROVED" : "REJECT"}</div>
+                                                            {/* <div>{i?.flag === 0 ? "UNREAD" : "READ"}</div> */}
+                                                            <div key={index}>{(moment(i?.createdAt, 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')}  </div>
+                                                        </Stack>
+                                                    </div>
+                                        }
+                                        case 0:{
+                                            return  <div class="alert alert-success p-1 m-1" role="alert">
+                                                        <Stack direction="row" spacing={2}>
+                                                            <WithdrawIcon />
+                                                            <div key={index}>{(moment(i?.createdAt, 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')} </div>
+                                                        </Stack>
+                                                    </div>
+                                        }
                                     }
-                                </InfiniteScroll>
+                                }) 
                             }
+                        </InfiniteScroll>
+                    }
                         
                 </div>
                 </div>
