@@ -26,7 +26,7 @@ import moment from "moment";
 import { useTable, useFilters, useGlobalFilter, useAsyncDebounce } from 'react-table'
 
 import { getHeaders, checkRole } from "./util"
-import { querySuppliers } from "./gqlQuery"
+import { queryAdminSuppliers } from "./gqlQuery"
 import UserComp from "./components/UserComp"
 
 import * as Constants from "./constants"
@@ -71,7 +71,7 @@ const SuppliersPage = (props) => {
           error: errorSuppliers, 
           subscribeToMore: subscribeToMoreSuppliers, 
           fetchMore: fetchMoreSuppliers,
-          networkStatus: networkStatusSuppliers } = useQuery( querySuppliers, { 
+          networkStatus: networkStatusSuppliers } = useQuery( queryAdminSuppliers, { 
                                                                 context: { headers: getHeaders(location) }, 
                                                                 variables: { input: search },
                                                                 fetchPolicy: 'cache-first' , 
@@ -81,8 +81,8 @@ const SuppliersPage = (props) => {
 
   useEffect(() => {
     if(!loadingSuppliers){
-      if (dataSuppliers?.suppliers) {
-        let { status, data } = dataSuppliers?.suppliers
+      if (dataSuppliers?.adminSuppliers) {
+        let { status, data } = dataSuppliers?.adminSuppliers
         if(status){
           setDatas(data)
         }
@@ -297,11 +297,16 @@ const SuppliersPage = (props) => {
         }
       },
       {
-        Header: 'Description',
-        accessor: "description",
+        Header: 'จอง/ขาย',
+        accessor: "buys",
         Cell: props =>{
-          let {description} = props.row.values 
-          return <div>{ description }</div>
+          let { original } = props.row
+          console.log("จอง/ขาย :", original)
+
+          let books     =  _.filter(original?.buys, (buy)=> _.isEqual(buy?.selected, 0) )
+          let buys      =  _.filter(original?.buys, (buy)=> _.isEqual(buy?.selected, 1) )
+        
+          return <div>{books.length}/{buys.length}</div>
         }
       },
       {

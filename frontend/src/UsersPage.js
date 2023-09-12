@@ -23,10 +23,10 @@ import moment from "moment";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, createSearchParams } from "react-router-dom";
 
-import { queryUsers } from "./gqlQuery";
+import { queryAdminUsers } from "./gqlQuery";
 import { getHeaders, handlerErrorApollo } from "./util";
 import RolesComp from "./components/RolesComp"
-// import * as Constants from "./constants";
+import * as Constants from "./constants";
 
 const UsersPage = (props) => {
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ const UsersPage = (props) => {
           data: dataUsers, 
           error: errorUsers, 
           networkStatus: networkStatusUsers,
-          fetchMore: fetchMoreUsers } = useQuery(queryUsers, 
+          fetchMore: fetchMoreUsers } = useQuery(queryAdminUsers, 
                                         { 
                                           context: { headers: getHeaders(location) }, 
                                           variables: {input},
@@ -109,14 +109,41 @@ const UsersPage = (props) => {
                       hasMore={hasMore}
                       loader={<h4>Loading...</h4>}>
                       { 
-                      _.map(datas, (item, index) => {                       
-                        let _id         = item._id;
-                        let avatar      = item.avatar;
-                        let displayName = item.displayName;
-                        let username    = item.username;
-                        let email       = item.email;
-                        let roles       = item.roles;
-                        let lastAccess  = item.lastAccess;
+                      _.map(datas, (item, index) => {            
+                        let { _id,  avatar, displayName, username, email, roles, lastAccess, transition } = item
+
+                        // console.log("transition :", transition)
+
+                        let money_deposit = 0
+                        let money_withdraw = 0
+                        if(!_.isEmpty(transition)){
+                          _.map(transition, (tra)=>{
+                            switch(tra.type){
+                              case Constants.SUPPLIER:{
+                                let {supplier} = tra
+
+                                if(supplier !== undefined){
+                                  console.log("supplier: ", supplier)
+                                }
+                                break;
+                              }
+                              case Constants.DEPOSIT:{
+                                let {status, deposit} = tra
+                                if( status === Constants.APPROVED && deposit !== undefined){
+                                  money_deposit += deposit?.balance
+                                }
+                                break;
+                              }
+                              case Constants.WITHDRAW:{
+                                let {status, withdraw} = tra
+                                if( status === Constants.APPROVED && withdraw !== undefined){
+                                  money_withdraw += withdraw?.balance
+                                }
+                                break;
+                              }
+                            }
+                          })
+                        }
 
                         return <Stack direction="row" spacing={2} >
                                   <Box sx={{ width: '8%' }}>
@@ -124,9 +151,6 @@ const UsersPage = (props) => {
                                       alt="Example avatar"
                                       variant="rounded"
                                       src={avatar?.url}
-                                      // onClick={(e) => {
-                                      //   // onLightbox({ isOpen: true, photoIndex: 0, images:files })
-                                      // }}
                                       sx={{ width: 56, height: 56 }}
                                     />
                                   </Box>
@@ -137,6 +161,8 @@ const UsersPage = (props) => {
                                     }}>{displayName}</Box>
                                   <Box sx={{ width: '10%' }}>{username}</Box>
                                   <Box sx={{ width: '20%' }}>{email}</Box>
+                                  <Box sx={{width: '10%'}}>{money_deposit}</Box>
+                                  <Box sx={{width: '10%'}}>{money_withdraw}</Box>
                                   <Box sx={{ width: '15%' }}> {/*{roles.join(',')}*/} <RolesComp Ids={roles}/> </Box>
                                   <Box sx={{ width: '5%' }}>{ (moment(lastAccess, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</Box>
                                   <Box sx={{ width: '20%' }}>
