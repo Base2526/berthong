@@ -324,30 +324,6 @@ const AdminDepositsPage = (props) => {
                                             userId={userId} 
                                             balance={item?.deposit?.balance} 
                                             onMutationAdminDeposit={(v)=>onMutationAdminDeposit(v)}/>
-                                  return  <Stack direction="row" spacing={2} >
-                                            <Box>Deposit</Box>
-                                            <Box>
-                                              <Avatar 
-                                                sx={{ width: 40, height: 40 }} 
-                                                src= { _.isEmpty(user?.avatar) ? "" :  user?.avatar?.url ? user?.avatar?.url : URL.createObjectURL(user?.avatar) }
-                                                variant="rounded" />
-                                            </Box>
-                                            <Box>{user?.displayName}</Box>
-                                            <Box>{item?.deposit?.balance}</Box>
-                                            <Button 
-                                              size="small" 
-                                              variant="contained"
-                                              onClick={(evt)=>{
-                                                onMutationAdminDeposit({ variables: {input: { _id, status: Constants.APPROVED } } });
-                                              }}>APPROVED</Button>
-                                            <Button 
-                                              size="small" 
-                                              variant="outlined" 
-                                              color="error"
-                                              onClick={(evt)=>{
-                                                onMutationAdminDeposit({ variables: {input: { _id, status: Constants.REJECT } } });
-                                              }}>REJECT</Button>
-                                          </Stack>
                                 }
 
                                 case Constants.WITHDRAW:{

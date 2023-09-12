@@ -113,6 +113,7 @@ const HistoryTransitionsPage = (props) => {
   }
 
   const ItemView = (value, index) =>{
+    console.log("ItemView :", value)
     switch(value?.type){
       case Constants.SUPPLIER:{
         return  <div class="alert alert-danger p-1 m-1" role="alert">

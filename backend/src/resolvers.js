@@ -503,88 +503,48 @@ export default {
     async historyTransitions(parent, args, context, info){
       let start = Date.now()
       let { req } = context
-
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-
-      let userId = current_user?._id
-      // let transitions = await Model.Transition.find({ userId });
-      // transitions = await Promise.all(_.map(transitions, async(transition)=>{
-      //     // export const SUPPLIER       = 10;
-      //     // export const DEPOSIT        = 11;
-      //     // export const WITHDRAW       = 12;
-      //     switch(transition.type){ 
-      //       case Constants.SUPPLIER:{
-      //           let supplier = await Utils.getSupplier({_id: transition?.refId}) 
-      //           let buys = _.filter(supplier?.buys, (buy)=> _.isEqual(buy?.userId, userId))
-                
-      //           if(_.isEmpty(buys)){
-      //             return {};
-      //           }
-                
-      //           let balance = buys?.length * supplier?.price
-      //           return {...transition?._doc, 
-      //                   title: supplier?.title, 
-      //                   balance, 
-      //                   description: supplier?.description, 
-      //                   dateLottery: supplier?.dateLottery}
-      //       }
-      //       case Constants.DEPOSIT:{
-      //           let deposit = await Model.Deposit.findById(transition.refId)
-      //           return {...transition?._doc, ...deposit?._doc}
-      //       }
-      //       case Constants.WITHDRAW:{
-      //           let withdraw = await Model.Withdraw.findById(transition.refId)
-      //           return {...transition?._doc, 
-      //                   title: "title", 
-      //                   balance: withdraw.balance, 
-      //                   description: "description", 
-      //                   dateLottery: "dateLottery"}
-      //       }
-      //     }
-      // }).filter(i=>!_.isNull(i)))
-
-      let deposit = await Model.Transition.aggregate([
-                      { 
-                          $match: {userId, status: { $in: [ 13, 14 /*, 0 Constants.WAIT, Constants.APPROVED*/ ] }, type: 11 /* Constants.DEPOSIT = 11 */ } 
-                      },
-                      {
-                          $lookup: {
-                              localField: "refId",
-                              from: "deposit",
-                              foreignField: "_id",
-                              as: "deposit"
-                          }
-                      },
-                      {
-                        $unwind: {
-                          "path": "$deposit",
-                          "preserveNullAndEmptyArrays": false
-                        }
-                      }
-                    ])
-
-      let withdraw =  await Model.Transition.aggregate([
-                        { 
-                            $match: {userId, status: { $in: [ 13, 14 /*, 0 Constants.WAIT, Constants.APPROVED*/ ] }, type: 12 /* Constants.WITHDRAW = 12 */ } 
-                        },
-                        {
-                            $lookup: {
-                                localField: "refId",
-                                from: "withdraw",
-                                foreignField: "_id",
-                                as: "withdraw"
-                            }
-                        },
-                        {
-                          $unwind: {
-                            "path": "$withdraw",
-                            "preserveNullAndEmptyArrays": false
-                            }
-                        }
-                      ])
+      let { current_user } =  await Utils.checkAuth(req);
+    
+      let data = await Model.Transition.aggregate([
+                                                      { 
+                                                        $match: { 
+                                                                  userId: mongoose.Types.ObjectId(current_user?._id), 
+                                                                  status: { $in: [ 13, 14 ] }, //  0 Constants.WAIT, Constants.APPROVED 
+                                                                  type:{ $in: [ 11, 12]}       //  Constants.DEPOSIT = 11, Constants.WITHDRAW = 12 
+                                                                } 
+                                                      },
+                                                      {
+                                                        $lookup: {
+                                                          localField: "refId",
+                                                          from: "deposit",
+                                                          foreignField: "_id",
+                                                          as: "deposit"
+                                                        }
+                                                      },
+                                                      {
+                                                        $lookup: {
+                                                          localField: "refId",
+                                                          from: "withdraw",
+                                                          foreignField: "_id",
+                                                          as: "withdraw"
+                                                        }
+                                                      },
+                                                      {
+                                                        $unwind: {
+                                                          "path": "$deposit",
+                                                          "preserveNullAndEmptyArrays": true
+                                                        }
+                                                      },
+                                                      {
+                                                        $unwind: {
+                                                          "path": "$withdraw",
+                                                          "preserveNullAndEmptyArrays": true
+                                                          }
+                                                      }
+                                                    ])
 
       return {  status: true,
-                data: [...deposit, ...withdraw],
+                data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
@@ -640,31 +600,29 @@ export default {
     async notifications(parent, args, context, info){
       let start = Date.now()
       let { req } = context
+      let { current_user } =  await Utils.checkAuth(req);
+      let aggregate = [
+                        { 
+                          $match: { user_to_notify: mongoose.Types.ObjectId(current_user?._id), delete: 0 } 
+                        },
+                        {
+                          $lookup: {
+                            localField: "user_id_approve",
+                            from: "user",
+                            foreignField: "_id",
+                            as: "user"
+                          }
+                        },
+                        {
+                          $unwind: {
+                              path: "$user",
+                              preserveNullAndEmptyArrays: false
+                          }
+                        },
+                      ]
 
-      console.log("notifications: #1 ", args)
-
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      // console.log("notifications: #2 ", current_user)
-      // if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
-
-      let data =  await Model.Notification.find({ user_to_notify: current_user?._id });
-
-      // let data = [{ user_to_notify: '63ff3c0c6637e303283bc40f', 
-      //               type: "system",
-      //               data: "test [system]",
-      //               status: "unread"
-      //             },
-      //             { user_to_notify: '63ff3c0c6637e303283bc40f', 
-      //               type: "withdraw",
-      //               data: "test [withdraw]",
-      //               status: "unread"
-      //             },
-      //             { user_to_notify: '63ff3c0c6637e303283bc40f', 
-      //               type: "deposit",
-      //               data: "test [deposit]",
-      //               status: "unread"
-      //             }]
-
+      let data = await Model.Notification.aggregate(aggregate);
+      
       return {  status: true,
                 data,
                 total: data.length,
@@ -2322,10 +2280,43 @@ export default {
 
       console.log("adminDeposit #1 :", input)
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
-      let transition = await Model.Transition.findOne({ _id: input?._id })
+      // let transition = await Model.Transition.findOne({ _id: input?._id })
+
+      let aggregate = [
+                        { 
+                          $match: { _id: mongoose.Types.ObjectId(input?._id) } 
+                        },
+                        {
+                          $lookup: {
+                            localField: "refId",
+                            from: "deposit",
+                            foreignField: "_id",
+                            as: "deposit"
+                          }
+                        },
+                        {
+                          $unwind: {
+                              path: "$deposit",
+                              preserveNullAndEmptyArrays: false
+                          }
+                        },
+                      ]
+
+      let transition = await Model.Transition.aggregate(aggregate);
+      console.log("adminDeposit #2 ", transition)
+
+      if(_.isEmpty(transition)){
+        return {
+          status: false,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }      
+      }
+
+      transition = transition[0]
+      console.log("adminDeposit #3 ", transition)
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -2336,12 +2327,15 @@ export default {
         switch(input?.status){
           case Constants.APPROVED:
           case Constants.REJECT:{
-
-            let newInput = {
-              user_to_notify: transition.userId,
-              type: "deposit",
-              data: input?.status === Constants.APPROVED ? "Admin approved" : "Admin reject"
-            }
+            let newInput =  {
+                              user_to_notify: transition.userId,
+                              user_id_approve: current_user?._id,
+                              type: 1,
+                              status: input?.status,
+                              data: transition,
+                              message: input?.message
+                            }
+                            
             await Model.Notification.create(newInput);
           }
         }

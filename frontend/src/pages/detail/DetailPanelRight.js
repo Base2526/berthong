@@ -37,7 +37,9 @@ const DetailPanel = (props) => {
                       {numberLotterys.map((seat) => {
 
                         const isSelected  = _.find(data?.buys, (buy)=> _.isEqual(buy?.itemId, seat) && _.isEqual( buy?.userId,  user?._id));  //selectedSeats.includes(seat);
-                        // const isOccupied  = _.find(data?.buys, (buy)=> !_.isEqual( buy?.userId,  user?._id) && _.isEqual( buy?.selected, 1)); //movies.occupied?.includes(seat);
+                        
+                        // กรณีรายการซื้อไม่ใช่ current login
+                        const isOccupied  = _.find(data?.buys, (buy)=> _.isEqual(buy?.itemId, seat) && !_.isEqual( buy?.userId,  user?._id) && _.isEqual( buy?.selected, 1)); //movies.occupied?.includes(seat);
                         const isFinish    = _.find(data?.buys, (buy)=> _.isEqual(buy?.itemId, seat) && _.isEqual( buy?.userId,  user?._id) && _.isEqual( buy?.selected, 1));  //movies.finish?.includes(seat);
                         const isBooking   = _.find(data?.buys, (buy)=> _.isEqual(buy?.itemId, seat) && !_.isEqual( buy?.userId,  user?._id) && _.isEqual( buy?.selected, 0));//movies.booking?.includes(seat);
                         return (
@@ -45,9 +47,9 @@ const DetailPanel = (props) => {
                             <span
                               tabIndex="0"
                               key={seat}
-                              className={clsx("circle", isSelected && "selected", /*isOccupied && "occupied",*/  isFinish && "finish",  isBooking && "booking" )}
-                              onClick={(evt) => /*isOccupied ||*/ isFinish || isBooking ? null : onMutationBook({ variables: { input: { id: data?._id, itemId: seat } } }) } 
-                              onKeyDown={(evt) => /*isOccupied ||*/ isFinish || isBooking ? null : (evt.key === "Enter" ?  onMutationBook({ variables: { input: { id: data?._id, itemId: seat } } }) : null) }>
+                              className={clsx("circle", isSelected && "selected", isOccupied && "occupied",  isFinish && "finish",  isBooking && "booking" )}
+                              onClick={(evt) => isOccupied || isFinish || isBooking ? null : onMutationBook({ variables: { input: { id: data?._id, itemId: seat } } }) } 
+                              onKeyDown={(evt) => isOccupied || isFinish || isBooking ? null : (evt.key === "Enter" ?  onMutationBook({ variables: { input: { id: data?._id, itemId: seat } } }) : null) }>
                               {" "}
                               {isBooking ? <span className="booking-font">ติดจอง</span> : ""}
                               {seat <= 9 ? "0" + seat : seat}
