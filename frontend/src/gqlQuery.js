@@ -6,7 +6,7 @@ export const querySuppliers     = gql`query suppliers( $input: SearchInput ) { s
 export const querySupplierById  = gql`query supplierById($id: ID!) { supplierById(_id: $id) }`;
 // export const queryDepositById   = gql`query depositById($id: ID!) { depositById(_id: $id) }`;
 // export const queryWithdrawById  = gql`query withdrawById($id: ID!) { withdrawById(_id: $id) }`;
-export const queryUsers         = gql`query users($input: PagingInput ) { users(input: $input) }`;
+
 export const queryUserById      = gql`query userById($id: ID!) { userById(_id: $id) }`;
 // export const queryRoles         = gql`query roles { roles }`;
 export const queryRoleByIds     = gql`query roleByIds($input: [String]) { roleByIds(input: $input) }`;
@@ -32,6 +32,10 @@ export const queryAdminHome       = gql`query adminHome { adminHome }`;
 export const queryAdminBanks      = gql`query adminBanks { adminBanks }`;
 export const queryAdminDeposits   = gql`query adminDeposits{ adminDeposits }`;
 export const queryAdminWithdraws  = gql`query adminWithdraws{ adminWithdraws }`;
+export const queryAdminSuppliers  = gql`query adminSuppliers($input: SearchInput){ adminSuppliers( input: $input) }`;
+export const queryAdminUsers         = gql`query users($input: PagingInput ) { users(input: $input) }`;
+
+// 
 
 // mutation
 export const mutationLogin      = gql`mutation login($input: LoginInput) { login(input: $input) }`;

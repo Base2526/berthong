@@ -490,6 +490,7 @@ export default gql`
     adminBanks: JSON
     adminDeposits: JSON
     adminWithdraws: JSON
+    adminSuppliers( input:SearchInput ): JSON
   }  
   
   input RoomInput {

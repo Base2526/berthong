@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
 import { getHeaders, handlerErrorApollo } from "./util"
-import { mutationSupplier, queryDateLotterys, mutationRegister, queryUsers } from "./gqlQuery"
+import { mutationSupplier, queryDateLotterys, mutationRegister, queryAdminUsers } from "./gqlQuery"
 
 const { faker } = require("@faker-js/faker");
 
@@ -15,7 +15,7 @@ const AutoGenerationContent = (props) => {
     const { loading: loadingUsers, 
             data: dataUsers, 
             error: errorUsers,
-            networkStatus } = useQuery(queryUsers, 
+            networkStatus } = useQuery(queryAdminUsers, 
                                         { 
                                         context: { headers: getHeaders(location) }, 
                                         variables: {input: { OFF_SET: 0, LIMIT: 1000 }},

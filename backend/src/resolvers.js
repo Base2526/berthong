@@ -262,9 +262,122 @@ export default {
                                   { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 })
                                   .limit(LIMIT)
                                   .skip(OFF_SET); 
+
+      ///// 
+
+      /*
+            let data = await Model.Transition.aggregate([
+                                                      { 
+                                                        $match: { 
+                                                                  userId: mongoose.Types.ObjectId(current_user?._id), 
+                                                                  status: { $in: [ 13, 14 ] }, //  0 Constants.WAIT, Constants.APPROVED 
+                                                                  type:{ $in: [ 10, 11, 12]}       //  Constants.SUPPLIER = 10, Constants.DEPOSIT = 11, Constants.WITHDRAW = 12 
+                                                                } 
+                                                      },
+                                                      {
+                                                        $lookup: {
+                                                            localField: "refId",
+                                                            from: "supplier",
+                                                            foreignField: "_id",
+                                                            pipeline: [{ $match: { buys: { $elemMatch : { userId: mongoose.Types.ObjectId(userId) }} }}],
+                                                            as: "supplier"
+                                                        }                 
+                                                      },
+                                                      {
+                                                        $lookup: {
+                                                          localField: "refId",
+                                                          from: "deposit",
+                                                          foreignField: "_id",
+                                                          as: "deposit"
+                                                        }
+                                                      },
+                                                      {
+                                                        $lookup: {
+                                                          localField: "refId",
+                                                          from: "withdraw",
+                                                          foreignField: "_id",
+                                                          as: "withdraw"
+                                                        }
+                                                      },
+                                                      {
+                                                        $unwind: {
+                                                          "path": "$supplier",
+                                                          "preserveNullAndEmptyArrays": true
+                                                        }
+                                                      },
+                                                      {
+                                                        $unwind: {
+                                                          "path": "$deposit",
+                                                          "preserveNullAndEmptyArrays": true
+                                                        }
+                                                      },
+                                                      {
+                                                        $unwind: {
+                                                          "path": "$withdraw",
+                                                          "preserveNullAndEmptyArrays": true
+                                                          }
+                                                      }
+                                                    ])
+      */
+     
+      let transitions = await Promise.all(_.map(users, async(user)=>{
+                          let transition =  await Model.Transition.aggregate([
+                                        { 
+                                          $match: { 
+                                                    userId: mongoose.Types.ObjectId(user?._id), 
+                                                    status: { $in: [ 13, 14 ] }, //  0 Constants.WAIT, Constants.APPROVED 
+                                                    type:{ $in: [ 10, 11, 12]}       //  Constants.SUPPLIER = 10, Constants.DEPOSIT = 11, Constants.WITHDRAW = 12 
+                                                  } 
+                                        },
+                                        {
+                                          $lookup: {
+                                              localField: "refId",
+                                              from: "supplier",
+                                              foreignField: "_id",
+                                              pipeline: [{ $match: { buys: { $elemMatch : { userId: mongoose.Types.ObjectId(user?._id) }} }}],
+                                              as: "supplier"
+                                          }                 
+                                        },
+                                        {
+                                          $lookup: {
+                                            localField: "refId",
+                                            from: "deposit",
+                                            foreignField: "_id",
+                                            as: "deposit"
+                                          }
+                                        },
+                                        {
+                                          $lookup: {
+                                            localField: "refId",
+                                            from: "withdraw",
+                                            foreignField: "_id",
+                                            as: "withdraw"
+                                          }
+                                        },
+                                        {
+                                          $unwind: {
+                                            "path": "$supplier",
+                                            "preserveNullAndEmptyArrays": true
+                                          }
+                                        },
+                                        {
+                                          $unwind: {
+                                            "path": "$deposit",
+                                            "preserveNullAndEmptyArrays": true
+                                          }
+                                        },
+                                        {
+                                          $unwind: {
+                                            "path": "$withdraw",
+                                            "preserveNullAndEmptyArrays": true
+                                            }
+                                        }
+                                      ])
+                            return {...user._doc, transition}
+                        }))
       return { 
               status: true,
-              data: users,
+              data: transitions,
               total: ( await Utils.getUserFull({roles: {$nin:[Constants.AMDINISTRATOR]}}) )?.length,
               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
             }
@@ -960,6 +1073,117 @@ export default {
       return {  status:true,
                 data: transitions,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    },
+
+    async adminSuppliers(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+      // console.log("suppliers : #0 ", args?.input)
+      await Utils.checkAuth(req);
+
+      let { TITLE, NUMBER, PAGE, LIMIT } = args?.input
+      let SKIP = (PAGE - 1) * LIMIT
+
+      console.log("suppliers : #1 ", args?.input, SKIP)
+
+      let aggregate = []
+      if(!_.isEmpty(TITLE)){
+        aggregate = [
+                      {
+                        $match: {
+                          title: {
+                            $regex: TITLE,
+                            $options: "i"
+                          }
+                        }
+                      }
+                    ]
+      }
+
+      aggregate = [ ...aggregate,
+                    { $skip: SKIP }, 
+                    { $limit: LIMIT }, 
+                    {
+                      $lookup: {
+                          localField: "ownerId",
+                          from: "user",
+                          foreignField: "_id",
+                          pipeline: [
+                            { $project:{ username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }}
+                          ],
+                          as: "owner"
+                      }
+                    },
+                    {
+                      $lookup: {
+                          localField: "dateLottery",
+                          from: "dateLottery",
+                          foreignField: "_id",
+                          pipeline: [
+                            { $project:{ date: 1 }}
+                          ],
+                          as: "dateLottery"
+                      }
+                    },
+                    {
+                      $unwind: {
+                              "path": "$owner",
+                              "preserveNullAndEmptyArrays": false
+                      }
+                    },
+                    {
+                      $unwind: {
+                              "path": "$dateLottery",
+                              "preserveNullAndEmptyArrays": false
+                      }
+                    }
+                  ]
+
+      if(!_.isEmpty(NUMBER)){
+        let q = _.map(NUMBER.split(","), (v, i)=>{
+          return {
+                    "buys":{
+                      $not:{ $elemMatch : {itemId: parseInt(v)} } 
+                    }
+                  }
+        })
+
+        aggregate = [...aggregate, { $match: { "$and" : q  } }]
+
+        
+
+        let suppliers = await Model.Supplier.aggregate(aggregate)
+
+        aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
+        let total     = await Model.Supplier.aggregate(aggregate)
+
+        suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
+
+        console.log( "suppliers : #2 q >> :", JSON.stringify(q), JSON.stringify(aggregate), suppliers.length )
+        return {  
+          status: true,
+          data: suppliers,
+          total: total.length,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+        }
+      }
+
+      console.log( "suppliers : #2 aggregate 1 :", JSON.stringify(aggregate) )
+
+      let suppliers = await Model.Supplier.aggregate(aggregate)
+
+      aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
+
+      console.log( "suppliers : #2 aggregate 2 :", JSON.stringify(aggregate) )
+
+      let total     = await Model.Supplier.aggregate(aggregate)
+      suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
+      return {  
+        status: true,
+        data: suppliers,
+        total: total.length,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+      }
     },
   },
   Upload: GraphQLUpload,
