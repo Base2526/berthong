@@ -280,6 +280,16 @@ const modelExists =()=>{
       await Model.Test.deleteMany({})
     }
   });
+
+
+  Model.ManageLottery.find({}, async(err, result)=> {
+    if (result.length > 0) {
+    } else {
+      let newManageLottery = new Model.ManageLottery({ title: "xxx", start_date_time: new Date(), end_date_time: new Date() });
+      await newManageLottery.save();
+      await Model.ManageLottery.deleteMany({})
+    }
+  });
 }
 
 // TODO: initial and connect to MongoDB

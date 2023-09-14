@@ -11,7 +11,7 @@ import {
   MdOutlineBookmarkAdd as MdOutlineBookmarkAddIcon,
   MdOutlineBookmarkAdded as MdOutlineBookmarkAddedIcon
 } from "react-icons/md"
-import { AiOutlineComment, AiOutlineShareAlt, AiOutlineCopy } from "react-icons/ai"
+import { AiOutlineShareAlt, AiOutlineCopy } from "react-icons/ai"
 
 import CommentItem from "./CommentItem"
 
@@ -146,10 +146,11 @@ const HomeItem = (props) => {
                           style={{ float: "left" }}
                           onClick={()=>{
                             navigate({
-                            pathname: "/d",
-                            search: `?${createSearchParams({ id: item._id})}`,
-                            state: { id: item._id }
-                          })}}>
+                              pathname: "/d",
+                              search: `?${createSearchParams({ id: item._id})}`,
+                              state: { id: item._id }
+                            })
+                          }}>
                           <b>{item?.title}</b>
                         </span>
                         {/* <h4 className="card-title" 

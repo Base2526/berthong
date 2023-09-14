@@ -3,14 +3,14 @@ import { useLocation } from "react-router-dom";
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
 import { getHeaders, handlerErrorApollo } from "./util"
-import { mutationSupplier, queryDateLotterys, mutationRegister, queryAdminUsers } from "./gqlQuery"
+import { mutationSupplier, queryManageLotterys, mutationRegister, queryAdminUsers } from "./gqlQuery"
 
 const { faker } = require("@faker-js/faker");
 
 const AutoGenerationContent = (props) => {
     const location              = useLocation();
     const [users, setUsers]     = useState([]); 
-    const [dateLotterys, setDateLotterys] = useState([]); 
+    const [manageLotterys, setManageLotterys] = useState([]); 
  
     const { loading: loadingUsers, 
             data: dataUsers, 
@@ -19,20 +19,22 @@ const AutoGenerationContent = (props) => {
                                         { 
                                         context: { headers: getHeaders(location) }, 
                                         variables: {input: { OFF_SET: 0, LIMIT: 1000 }},
-                                        fetchPolicy: 'network-only', // Used for first execution
-                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
+                                        fetchPolicy: 'cache-first', 
+                                        nextFetchPolicy: 'network-only',
                                         notifyOnNetworkStatusChange: true
                                         }
                                     );
 
     if(!_.isEmpty(errorUsers)) handlerErrorApollo( props, errorUsers )
 
-    const { loading: loadingDateLotterys, 
-            data: dataDateLotterys, 
-            error: errorDateLotterys,
-            networkStatus: networkStatusDateLotterys } = useQuery(queryDateLotterys, { 
-                                                                        context: { headers: getHeaders(location) }, 
-                                                                        notifyOnNetworkStatusChange: true }
+    const { loading: loadingManageLotterys, 
+            data: dataManageLotterys, 
+            error: errorManageLotterys,
+            networkStatus: networkStatusManageLotterys } = useQuery( queryManageLotterys, { 
+                                                                    context: { headers: getHeaders(location) }, 
+                                                                    fetchPolicy: 'cache-first', 
+                                                                    nextFetchPolicy: 'network-only', 
+                                                                    notifyOnNetworkStatusChange: true }
                                                                     );
 
     const [onSupplier, resultSupplier] = useMutation(mutationSupplier, {
@@ -67,13 +69,13 @@ const AutoGenerationContent = (props) => {
     }, [dataUsers, loadingUsers ])
 
     useEffect(() => {
-        if(!loadingDateLotterys){
-          if(!_.isEmpty(dataDateLotterys?.dateLotterys)){
-            let { status, data } = dataDateLotterys?.dateLotterys
-            if(status)setDateLotterys(data)
+        if(!loadingManageLotterys){
+          if(!_.isEmpty(dataManageLotterys?.manageLotterys)){
+            let { status, data } = dataManageLotterys?.manageLotterys
+            if(status)setManageLotterys(data)
           }
         }
-    }, [dataDateLotterys, loadingDateLotterys])
+    }, [dataManageLotterys, loadingManageLotterys])
 
     const makeFile = (length) =>{
         let files = []
@@ -113,7 +115,7 @@ const AutoGenerationContent = (props) => {
                                 price: parseInt(makeNumber(3)),
                                 priceUnit: parseInt(makeNumber(2)),
                                 description: faker.lorem.paragraph(),
-                                dateLottery: dateLotterys[randomNumberInRange(0, dateLotterys.length - 1)]?._id,
+                                dateLottery: manageLotterys[randomNumberInRange(0, manageLotterys.length - 1)]?._id,
                                 files: makeFile(5),
                                 condition: parseInt(randomNumberInRange(11, 100)),    // 11-100
                                 category: parseInt(randomNumberInRange(0, 3)),        // money, gold, things, etc

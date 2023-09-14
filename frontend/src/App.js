@@ -79,8 +79,8 @@ import _ from "lodash"
 import TaxonomyBankPage from "./TaxonomyBankPage";
 import TaxonomyBanksPage from "./TaxonomyBanksPage";
 import BookBuysPage from "./BookBuysPage";
-import DateLotteryPage from "./DateLotteryPage";
-import DateLotterysPage from "./DateLotterysPage";
+import ManageLotteryPage from "./ManageLotteryPage";
+import ManageLotterysPage from "./ManageLotterysPage";
 import DepositPage from "./DepositPage";
 import AdminDepositsPage from "./AdminDepositsPage";
 import AdminWithdrawsPage from "./AdminWithdrawsPage";
@@ -999,7 +999,7 @@ const App =(props) =>{
                 {id: 3, title:"รายการ หวยทั้งหมด", icon: <AdjustIcon />, path: "/suppliers"},
                 {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/admin-users"},
                 {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
-                {id: 6, title:"วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/admin-date-lotterys"},
+                {id: 6, title:"จัดการหวยทั้งหมด", icon: <AssistantIcon />, path: "/manage-lotterys"},
                 {id: 7, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
                 // {id: 8, title:"Logout", icon: <LogoutIcon size="1.5em"/>, path: "/logout"}
               ]
@@ -1312,8 +1312,8 @@ const App =(props) =>{
                                                       {...props} 
                                                       onMutationAdminWithdraw={(evt)=>onMutationAdminWithdraw(evt)} 
                                                       onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/admin-date-lotterys" element={<DateLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
-              <Route path="/admin-date-lottery" element={<DateLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
+              <Route path="/manage-lotterys" element={<ManageLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
+              <Route path="/manage-lottery" element={<ManageLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
               <Route path="/admin-users" element={<UsersPage />} />
               <Route path="/user" element={<UserPage {...props} />} />
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
