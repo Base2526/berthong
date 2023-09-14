@@ -78,6 +78,7 @@ const CommentComp = (props) => {
             loadingCommentById
             ?  <LinearProgress />
             :  <CommentSection
+                {...props}
                 currentUser={
                     _.isEmpty(user)  
                     ? null

@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useQuery } from "@apollo/client";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import _ from "lodash"
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import EditIcon from '@mui/icons-material/Edit';
+import { AddBox as AddBoxIcon, 
+         Edit as EditIcon, 
+         DeleteForever as DeleteForeverIcon } from '@mui/icons-material';
 import { useTranslation } from "react-i18next";
 import {
   Box,
@@ -387,6 +388,9 @@ const SuppliersPage = (props) => {
   return  useMemo(() => {
             return (
               <div className="App">
+                <div>
+                  <button onClick={(evt)=>{ navigate("/supplier", {state: {from: "/", mode: "new" } }) }}> <AddBoxIcon/>{t("ADD")} </button>
+                </div>
                 <TableComp
                   columns={columns}
                   data={datas}

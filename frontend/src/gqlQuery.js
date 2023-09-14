@@ -24,6 +24,10 @@ export const querySubscribes      = gql`query subscribes{ subscribes }`;
 export const queryDblog           = gql`query dblog{ dblog }`;
 export const queryProducers       = gql`query producers{ producers }`;
 
+export const queryManageLotterys      = gql`query manageLotterys{ manageLotterys }`;
+export const queryManageLotteryById   = gql`query manageLotteryById($id: ID!){ manageLotteryById(_id: $id) }`;
+
+
 // ADMIN
 export const queryDateLotterys    = gql`query dateLotterys { dateLotterys }`;
 export const queryDateLotteryById = gql`query dateLotteryById($id: ID!) { dateLotteryById(_id: $id) }`;
@@ -62,6 +66,8 @@ export const mutationSearch       = gql`mutation search($input: SearchInput) { s
 
 export const mutationAdminDeposit   = gql`mutation adminDeposit($input: JSON){ adminDeposit(input: $input) }`;
 export const mutationAdminWithdraw  = gql`mutation adminWithdraw($input: JSON){ adminWithdraw(input: $input) }`;
+
+export const mutationManageLottery       = gql`mutation manageLottery($input: ManageLotteryInput) { manageLottery(input: $input) }`;
 
 // subscription 
 export const subscriptionMe            = gql`subscription subscriptionMe($sessionId: ID!){ subscriptionMe(sessionId: $sessionId) }`;

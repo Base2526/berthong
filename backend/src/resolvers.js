@@ -8,6 +8,7 @@ import * as fs from "fs";
 import mongoose from 'mongoose';
 import fetch from "node-fetch";
 import { GraphQLUpload } from 'graphql-upload';
+import moment from "moment";
 
 import pubsub from './pubsub'
 import AppError from "./utils/AppError"
@@ -882,10 +883,45 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
       let producers = await Model.Supplier.find({ ownerId: current_user?._id })
       return {  status: true,
                 data: producers,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
+    async manageLotterys(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+
+      console.log("manageLotterys")
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      let manageLotterys = await Model.ManageLottery.find({})
+
+      return {  status: true,
+                data: manageLotterys,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
+    async manageLotteryById(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+      let { _id } = args
+
+      console.log("manageLotteryById :", _id)
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      let manageLottery = await Model.ManageLottery.findOne({_id})
+
+      return {  status: true,
+                data: manageLottery,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
     },
@@ -2624,6 +2660,60 @@ export default {
         mode: input?.status,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }      
+    },
+
+    async manageLottery(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      let result = {input}
+
+      switch(input?.mode.toLowerCase()){
+        case "new":
+        case "edit":{
+          const startDateTime = moment(input.start_date_time);
+          const endDateTime   = moment(input.end_date_time);
+          const diff          = endDateTime.diff(startDateTime);
+          const diffDuration  = moment.duration(diff);
+    
+          if(diffDuration.days() < 5) throw new AppError(Constants.ERROR, 'Date start - end > 5 day')
+          
+          if(input?._id){
+            let newInput =  _.omit(input, ['_id', 'mode']);
+            await Model.ManageLottery.updateOne({ _id: input?._id }, newInput);
+    
+            let data = await Model.ManageLottery.findOne({ _id: input?._id });
+    
+            return  { ...result, 
+                      status: true,
+                      data,
+                      executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+                    }   
+          }else{
+            let newInput  =  _.omit(input, ['mode']);
+            let data      = await Model.ManageLottery.create(newInput);
+    
+            return  {
+                      ...result, 
+                      status: true,
+                      data,
+                      executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+                    }   
+          }
+        }
+        case "delete":{
+          await Model.ManageLottery.deleteOne({_id: mongoose.Types.ObjectId(input?._id)});
+          return  {
+                    ...result, 
+                    status: true,
+                    executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+                  }   
+        }
+      }
     },
 
     async testNodeCacheSave(parent, args, context, info) {

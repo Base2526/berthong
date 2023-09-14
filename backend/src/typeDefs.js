@@ -485,6 +485,9 @@ export default gql`
     dateLotteryById(_id: ID!): JSON
 
     producers: JSON
+
+    manageLotterys: JSON
+    manageLotteryById(_id: ID!): JSON
     
     adminHome: JSON
     adminBanks: JSON
@@ -754,6 +757,16 @@ export default gql`
     TITLE: String
   }
 
+  input ManageLotteryInput{
+    mode: String!
+    _id: ID
+    title: String!
+    start_date_time: Date!
+    end_date_time: Date!
+    bon: String
+    lang: String
+  }
+
   type Mutation {
     login(input: LoginInput): JSON
     loginWithSocial(input: LoginWithSocialInput): JSON
@@ -775,6 +788,9 @@ export default gql`
     subscribe(_id: ID!): JSON 
     adminDeposit(input: JSON): JSON 
     adminWithdraw(input: JSON): JSON 
+
+    manageLottery(input: ManageLotteryInput): JSON
+
     testNodeCacheSave(id: String): JSON
     testNodeCacheGet(id: String): JSON
     testNodeCacheDelete(id: String): JSON

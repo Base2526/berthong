@@ -229,10 +229,17 @@ const BreadcsComp = (props) => {
         }
       }
 
-      case "/admin-date-lotterys":{
+      case "/manage-lottery":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-          <Typography key="1" color="text.primary">วันออกหวยทั้งหมด</Typography>
+          <Typography key="1" color="text.primary">จัดการหวย</Typography>
+        ]
+      }
+
+      case "/manage-lotterys":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">จัดการหวยทั้งหมด</Typography>
         ]
       }
 
