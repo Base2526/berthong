@@ -1165,7 +1165,6 @@ export default {
   },
   Upload: GraphQLUpload,
   Mutation: {
-
     async login(parent, args, context, info) {
       let start = Date.now()
       let {input} = args
@@ -1195,7 +1194,7 @@ export default {
       return {
         status: true,
         data: user,
-        sessionId: await Utils.getSessionId(user?._id, input),
+        sessionId: await Utils.getSession(user?._id, input),
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
@@ -1298,7 +1297,7 @@ export default {
           return {
             status: true,
             data: user,
-            sessionId: await Utils.getSessionId(user?._id, input),
+            sessionId: await Utils.getSession(user?._id, input),
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }
@@ -1430,7 +1429,7 @@ export default {
           return {
             status:true,
             data: user,
-            sessionId: await Utils.getSessionId(user?._id, input),
+            sessionId: await Utils.getSession(user?._id, input),
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }
@@ -1511,7 +1510,7 @@ export default {
           return {
             status:true,
             data: user,
-            sessionId: await Utils.getSessionId(user?._id, input),
+            sessionId: await Utils.getSession(user?._id, input),
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }
@@ -2655,6 +2654,37 @@ export default {
                   }   
         }
       }
+    },
+
+    async forceLogout(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      switch(input?.mode.toLowerCase()){
+        case "all":{
+          await Model.Session.deleteMany({})
+          return  { 
+            status: true,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }  
+        }
+
+        case "id":{
+          await Model.Session.deleteOne({_id: mongoose.Types.ObjectId(input?._id)});
+          return  { 
+            status: true,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }  
+        }
+      }
+      return  { 
+        status: false,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }   
     },
 
     async testNodeCacheSave(parent, args, context, info) {

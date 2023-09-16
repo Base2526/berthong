@@ -16,19 +16,18 @@ import CryptoJS from 'crypto-js';
 
 import reducers from "./redux/reducers";
 
-let { REACT_APP_NODE_ENV } = process.env
+let { REACT_APP_NODE_ENV, REACT_APP_ENCRYPT_PASS } = process.env
 
-let encrypt_pass = "b9be11166d72e9e3ae7fd407165e4bd2";
 const encrypt = createTransform(
   (inboundState, key) => {
     if (!inboundState) return inboundState;
-    const cryptedText = CryptoJS.AES.encrypt(JSON.stringify(inboundState), encrypt_pass);
+    const cryptedText = CryptoJS.AES.encrypt(JSON.stringify(inboundState), REACT_APP_ENCRYPT_PASS);
 
     return cryptedText.toString(); 
   },
   (outboundState, key) => {
     if (!outboundState) return outboundState;
-    const bytes = CryptoJS.AES.decrypt(outboundState, encrypt_pass);
+    const bytes = CryptoJS.AES.decrypt(outboundState, REACT_APP_ENCRYPT_PASS);
     const decrypted = bytes.toString(CryptoJS.enc.Utf8);
 
     return JSON.parse(decrypted);

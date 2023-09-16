@@ -93,7 +93,7 @@ export default gql`
   }
 
   input LoginWithSocialInput{
-    authType: AuthType!     # 
+    authType: AuthType!    # 
     data: JSON!            # for github
     deviceAgent: JSON
   }
@@ -462,13 +462,10 @@ export default gql`
     checkUser: JSON 
     users(input: PagingInput): JSON
     userById(_id: ID): JSON
-    # roles: JSON
     roleByIds(input: [String]): JSON
     homes: JSON
     suppliers( input:SearchInput ): JSON
     supplierById(_id: ID!): JSON
-    # depositById(_id: ID!): JSON
-    # withdrawById(_id: ID!): JSON
     banks: JSON
     bankById(_id: ID!): JSON
     bankByIds(input: [ID]!): JSON
@@ -483,15 +480,11 @@ export default gql`
     dblog: JSON
     dateLotterys: JSON
     dateLotteryById(_id: ID!): JSON
-
     producers: JSON
-
     manageLotterys: JSON
     manageLotteryById(_id: ID!): JSON
-
     deposits( input: JSON ): JSON
     withdraws( input: JSON ): JSON
-    
     adminHome: JSON
     adminBanks: JSON
     adminDeposits: JSON
@@ -663,7 +656,6 @@ export default gql`
   input BookInput{
     id: ID!
     itemId: Long!
-    # selected: Int!
   }
 
   enum SupplierModeType {
@@ -793,6 +785,7 @@ export default gql`
     adminWithdraw(input: JSON): JSON 
 
     manageLottery(input: ManageLotteryInput): JSON
+    forceLogout(input: JSON): JSON
 
     testNodeCacheSave(id: String): JSON
     testNodeCacheGet(id: String): JSON

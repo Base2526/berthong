@@ -69,8 +69,8 @@ export const mutationSearch       = gql`mutation search($input: SearchInput) { s
 
 export const mutationAdminDeposit   = gql`mutation adminDeposit($input: JSON){ adminDeposit(input: $input) }`;
 export const mutationAdminWithdraw  = gql`mutation adminWithdraw($input: JSON){ adminWithdraw(input: $input) }`;
-
-export const mutationManageLottery       = gql`mutation manageLottery($input: ManageLotteryInput) { manageLottery(input: $input) }`;
+export const mutationManageLottery  = gql`mutation manageLottery($input: ManageLotteryInput) { manageLottery(input: $input) }`;
+export const mutationForceLogout    = gql`mutation forceLogout($input: JSON){ forceLogout(input: $input) }`;
 
 // subscription 
 export const subscriptionMe            = gql`subscription subscriptionMe($sessionId: ID!){ subscriptionMe(sessionId: $sessionId) }`;
