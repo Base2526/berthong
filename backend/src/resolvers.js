@@ -186,6 +186,8 @@ export default {
     async ping(parent, args, context, info){
       let { req } = context
 
+      await Utils.checkAuth(req);
+
       const session = await mongoose.startSession();
       session.startTransaction()
 
@@ -237,6 +239,8 @@ export default {
       let { req } = context
       let { _id } = args
 
+      await Utils.checkAuth(req);
+
       let ca_get = cache.ca_get(_id)
       console.log("ca_get :", ca_get)
       // let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
@@ -246,7 +250,7 @@ export default {
 
     async checkUser(parent, args, context, info){
       let { req } = context
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
       console.log("checkUser :", current_user, req?.headers?.authorization)
       return { status:true }
     },
@@ -255,7 +259,7 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Administrator only!')
 
       let { OFF_SET, LIMIT } = args?.input
@@ -389,11 +393,9 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-
+      await Utils.checkAuth(req);
       let user = await Utils.getUserFull({_id})
       if(_.isNull(user)) throw new AppError(Constants.USER_NOT_FOUND, 'Model.User not found.')
-
       return {  status: true,
                 data: user,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
@@ -403,7 +405,7 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Admin only!')
 
       let data = await Model.Role.find({_id: {$in: args?.input }})
@@ -417,13 +419,10 @@ export default {
     async suppliers(parent, args, context, info){
       let start = Date.now()
       let { req } = context
-      // console.log("suppliers : #0 ", args?.input)
       await Utils.checkAuth(req);
 
       let { TITLE, NUMBER, PAGE, LIMIT } = args?.input
       let SKIP = (PAGE - 1) * LIMIT
-
-      console.log("suppliers : #1 ", args?.input, SKIP)
 
       let aggregate = []
       if(!_.isEmpty(TITLE)){
@@ -498,7 +497,6 @@ export default {
 
         suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
 
-        console.log( "suppliers : #2 q >> :", JSON.stringify(q), JSON.stringify(aggregate), suppliers.length )
         return {  
           status: true,
           data: suppliers,
@@ -507,13 +505,9 @@ export default {
         }
       }
 
-      console.log( "suppliers : #2 aggregate 1 :", JSON.stringify(aggregate) )
-
       let suppliers = await Model.Supplier.aggregate(aggregate)
 
       aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
-
-      console.log( "suppliers : #2 aggregate 2 :", JSON.stringify(aggregate) )
 
       let total     = await Model.Supplier.aggregate(aggregate)
       suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
@@ -531,7 +525,6 @@ export default {
       let { req } = context
 
       await Utils.checkAuth(req);
-
       return {  status: true,
                 data: await Utils.getSupplier({_id}),
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
@@ -542,7 +535,6 @@ export default {
       let { req } = context
 
       await Utils.checkAuth(req);
-
       let banks = await Model.Bank.find({})
       if(_.isNull(banks)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
       return {  status: true,
@@ -556,7 +548,6 @@ export default {
       let { req } = context
 
       await Utils.checkAuth(req);
-
       let bank = await Model.Bank.findById(_id)
       if(_.isNull(bank)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
 
@@ -571,7 +562,6 @@ export default {
       let { req } = context
 
       await Utils.checkAuth(req);
-
       let banks = await Model.Bank.find({ _id : { $in : input } });
       if(_.isNull(banks)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
 
@@ -586,7 +576,6 @@ export default {
 
       let { current_user } =  await Utils.checkAuth(req);
       let userId = current_user?._id;
-
       let transitions = await Model.Transition.aggregate([
                               { 
                                   $match: { userId: mongoose.Types.ObjectId(userId), type: Constants.SUPPLIER  } 
@@ -618,7 +607,6 @@ export default {
       let start = Date.now()
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
-    
       let data = await Model.Transition.aggregate([
                                                       { 
                                                         $match: { 
@@ -667,8 +655,7 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-
+      await Utils.checkAuth(req);
       let user = await Utils.getUserFull({_id})
       if(_.isNull(user)) throw new AppError(Constants.USER_NOT_FOUND, 'Model.User not found.')
 
@@ -685,12 +672,10 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      // if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
-
+      let { current_user } =  await Utils.checkAuth(req);
       let transitions = await Model.Transition.find({userId: current_user?._id, type: Constants.SUPPLIER, status: Constants.OK });
       transitions = await Promise.all(_.map(transitions, async(transition)=>{
-                          switch(transition.type){ // 'supplier', 'deposit', 'withdraw'
+                          switch(transition.type){
                             case Constants.SUPPLIER:{
 
                               let supplier = await Utils.getSupplier({_id: transition?.refId}) 
@@ -698,8 +683,6 @@ export default {
                               // price, buys
 
                               let balance = buys.length * supplier.price
-
-                              // console.log("transitions > supplier :", supplier)
 
                               return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
                             }
@@ -736,7 +719,6 @@ export default {
                       ]
 
       let data = await Model.Notification.aggregate(aggregate);
-      
       return {  status: true,
                 data,
                 total: data.length,
@@ -761,26 +743,23 @@ export default {
       let start = Date.now()
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
-
       let suppliers = await Model.Supplier.aggregate([
-        { 
-            $match: { follows: {$elemMatch: {userId: current_user?._id} }  } 
-        },
-        {
-          $lookup: {
-              localField: "ownerId",
-              from: "user",
-              foreignField: "_id",
-              as: "owner"
-          }                 
-        },
-        {
-          $unwind: {
-              "path": "$owner",
-              "preserveNullAndEmptyArrays": false
-          }
-        }
-      ])
+                      {  $match: { follows: {$elemMatch: {userId: current_user?._id} }  } },
+                      {
+                        $lookup: {
+                            localField: "ownerId",
+                            from: "user",
+                            foreignField: "_id",
+                            as: "owner"
+                        }                 
+                      },
+                      {
+                        $unwind: {
+                            "path": "$owner",
+                            "preserveNullAndEmptyArrays": false
+                        }
+                      }
+                    ])
 
       return {  status: true,
                 data: suppliers,
@@ -789,32 +768,23 @@ export default {
     },
 
     async subscribes(parent, args, context, info){
-      try{
-        let start = Date.now()
-        let { req } = context
-
-        let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-
-        let users = await Utils.getUsers({subscriber: { $elemMatch : {userId: current_user?._id }}})
-        
-        return {  status: true,
-                  data: users,
-                  total: users.length,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }catch(error){
-        console.log("commentById error :", error)
-        return {  status: false,
-                  error: error?.message,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }
+      let start = Date.now()
+      let { req } = context
+      let { current_user } =  await Utils.checkAuth(req);
+      let users = await Utils.getUsers({subscriber: { $elemMatch : {userId: current_user?._id }}})
+      
+      return {  status: true,
+                data: users,
+                total: users.length,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
     async dblog(parent, args, context, info){
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let dblogs = await Model.Dblog.find({})
       
@@ -827,34 +797,7 @@ export default {
     async dateLotterys(parent, args, context, info){
       let start = Date.now()
       let { req } = context
-
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      // if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
-
       let dateLotterys = await Model.DateLottery.find({})
-
-      // if(_.isNull(dateLotterys)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
-      // dateLotterys = await Promise.all( _.map(dateLotterys, async(lo)=>{
-      //   let suppliers = await Model.Supplier.find({ dateLottery: lo?._id });
-      //   return  {...lo._doc, suppliers }
-      // }) )
-      // let dateLotterys = await Model.DateLottery.aggregate([
-      //   {
-      //       $lookup: {
-      //           localField: "_id",
-      //           from: "supplier",
-      //           foreignField: "dateLottery",
-      //           as: "suppliers"
-      //       }
-      //   },
-      //   {
-      //       $unwind: {
-      //               "path": "$suppliers",
-      //               "preserveNullAndEmptyArrays": false
-      //       }
-      //   }
-      // ])
-      // console.log("dateLotterys :", dateLotterys)
       
       return {  status: true,
                 data: dateLotterys,
@@ -867,7 +810,7 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
 
       let dateLottery = await Model.DateLottery.findById(_id)
@@ -894,14 +837,9 @@ export default {
     async manageLotterys(parent, args, context, info){
       let start = Date.now()
       let { req } = context
-
       let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
-
-      let data = await Model.ManageLottery.find({end_date_time:{$gte:new Date() }})
-
-      console.log("manageLotterys :", data)
-
+      let data = await Model.ManageLottery.find({})
       return {  status: true,
                 data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
@@ -912,16 +850,12 @@ export default {
       let start = Date.now()
       let { req } = context
       let { _id } = args
-
-      console.log("manageLotteryById :", _id)
-
       let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
-      let manageLottery = await Model.ManageLottery.findOne({_id})
-
+      let data = await Model.ManageLottery.findOne({_id})
       return {  status: true,
-                data: manageLottery,
+                data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
     },
@@ -934,9 +868,7 @@ export default {
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let data = await Model.Transition.aggregate([
-                  { 
-                      $match: { type: Constants.DEPOSIT } 
-                  },
+                  { $match: { type: Constants.DEPOSIT } },
                   {
                     $lookup: {
                       localField: "refId",
@@ -952,9 +884,6 @@ export default {
                     }
                   }
                 ])
-
-      console.log("deposits :", data)
-
       return {  status: true,
                 data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
@@ -969,11 +898,7 @@ export default {
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let data = await Model.Transition.aggregate([
-                          { 
-                              $match: { 
-                                type: Constants.WITHDRAW,
-                              } 
-                          },
+                          { $match: { type: Constants.WITHDRAW } },
                           {
                             $lookup: {
                               localField: "refId",
@@ -989,8 +914,6 @@ export default {
                             }
                           }
                         ])
-
-      console.log("withdraws :", data)
 
       return {  status: true,
                 data,
@@ -1078,39 +1001,29 @@ export default {
       let start = Date.now()
         
       let { req } = context
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
 
-      // let transitions = await Model.Transition.find({ type: Constants.DEPOSIT, status: Constants.WAIT });
-
-      // transitions = await Promise.all(_.map(transitions, async(transition)=>{
-      //                       let deposit = await Model.Deposit.findOne({_id: transition?.refId})
-      //                       let user    = await Utils.getUser({_id: transition?.userId}) 
-      //                       return {...deposit?._doc, ...transition?._doc, user}
-      //                     }))
-
-      let transitions = await Model.Transition.aggregate([
-        { 
-            $match: { status: Constants.WAIT /* 13 */, type: Constants.DEPOSIT /* 11 */ } 
-        },
-        {
-            $lookup: {
-                localField: "refId",
-                from: "deposit",
-                foreignField: "_id",
-                as: "deposit"
-            }
-        },
-        {
-          $unwind: {
-            "path": "$deposit",
-            "preserveNullAndEmptyArrays": false
-          }
-        }
-      ])
+      let data = await Model.Transition.aggregate([
+                              { $match: { status: Constants.WAIT, type: Constants.DEPOSIT } },
+                              {
+                                  $lookup: {
+                                      localField: "refId",
+                                      from: "deposit",
+                                      foreignField: "_id",
+                                      as: "deposit"
+                                  }
+                              },
+                              {
+                                $unwind: {
+                                  "path": "$deposit",
+                                  "preserveNullAndEmptyArrays": false
+                                }
+                              }
+                            ])
 
       return {  status:true,
-                data: transitions,
+                data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
@@ -1121,39 +1034,38 @@ export default {
       let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
-      let transitions = await Model.Transition.aggregate([
-        { $match: { status: Constants.WAIT, type: Constants.WITHDRAW } },
-        {
-          $lookup: {
-            localField: "refId",
-            from: "withdraw",
-            foreignField: "_id",
-            as: "withdraw"
-          }
-        },
-        {
-          $unwind: {
-            path: "$withdraw",
-            preserveNullAndEmptyArrays: false
-          }
-        }
-      ])
+      let data = await Model.Transition.aggregate([
+                  { $match: { status: Constants.WAIT, type: Constants.WITHDRAW } },
+                  {
+                    $lookup: {
+                      localField: "refId",
+                      from: "withdraw",
+                      foreignField: "_id",
+                      as: "withdraw"
+                    }
+                  },
+                  {
+                    $unwind: {
+                      path: "$withdraw",
+                      preserveNullAndEmptyArrays: false
+                    }
+                  }
+                ])
 
       return {  status:true,
-                data: transitions,
+                data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
     async adminSuppliers(parent, args, context, info){
       let start = Date.now()
       let { req } = context
-      // console.log("suppliers : #0 ", args?.input)
-      await Utils.checkAuth(req);
+      let { current_user } =   await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
 
       let { TITLE, NUMBER, PAGE, LIMIT } = args?.input
       let SKIP = (PAGE - 1) * LIMIT
-
-      console.log("suppliers : #1 ", args?.input, SKIP)
 
       let aggregate = []
       if(!_.isEmpty(TITLE)){
@@ -1237,13 +1149,9 @@ export default {
         }
       }
 
-      console.log( "suppliers : #2 aggregate 1 :", JSON.stringify(aggregate) )
-
       let suppliers = await Model.Supplier.aggregate(aggregate)
 
       aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
-
-      console.log( "suppliers : #2 aggregate 2 :", JSON.stringify(aggregate) )
 
       let total     = await Model.Supplier.aggregate(aggregate)
       suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
