@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { DeleteForever as DeleteForeverIcon, 
         Edit as EditIcon, 
         ExitToApp as ExitToAppIcon } from '@mui/icons-material';
@@ -23,8 +23,8 @@ import moment from "moment";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, createSearchParams } from "react-router-dom";
 
-import { queryAdminUsers } from "./gqlQuery";
-import { getHeaders, handlerErrorApollo } from "./util";
+import { queryAdminUsers, mutationForceLogout } from "./gqlQuery";
+import { getHeaders, handlerErrorApollo, showToast } from "./util";
 import RolesComp from "./components/RolesComp"
 import * as Constants from "./constants";
 
@@ -42,6 +42,32 @@ const UsersPage = (props) => {
   const [loading, setLoading] = useState(true);
 
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
+
+  const [onMutationForceLogout, resultMutationForceLogout] = useMutation(mutationForceLogout
+  , {
+      update: (cache, {data: {forceLogout}} ) => {
+        console.log("forceLogout :", forceLogout)
+        
+        // let { status, input } = manageLottery
+        // if(status){
+        //   let queryManageLotterysValue = cache.readQuery({ query: queryManageLotterys });
+        //   if(queryManageLotterysValue){
+        //     let filterData = _.filter(queryManageLotterysValue.manageLotterys.data, (v)=>v._id !== input._id)
+        //     cache.writeQuery({
+        //       query: queryManageLotterys,
+        //       data: { manageLotterys: {...queryManageLotterysValue.manageLotterys, data: filterData } },
+        //     });
+        //   }
+        // }
+      },
+      onCompleted(data) {
+        showToast("info", `ลบเรียบร้อย`)
+      },
+      onError(error){
+        return handlerErrorApollo( props, error )
+      }
+    }
+  );
 
   const { loading: loadingUsers, 
           data: dataUsers, 
@@ -103,77 +129,82 @@ const UsersPage = (props) => {
           ?  <CircularProgress />
           :  datas?.length == 0 
               ?   <label>Empty data</label>
-              :   <InfiniteScroll
-                      dataLength={slice}
-                      next={fetchMoreData}
-                      hasMore={hasMore}
-                      loader={<h4>Loading...</h4>}>
-                      { 
-                      _.map(datas, (item, index) => {            
-                        let { _id,  avatar, displayName, username, email, roles, lastAccess, transition } = item
+              :   <div>
+                    <button onClick={(e)=>{ onMutationForceLogout({ variables: { input: { mode: "all" } } }) }}><ExitToAppIcon />Force logout all</button>
+                    <InfiniteScroll
+                        dataLength={slice}
+                        next={fetchMoreData}
+                        hasMore={hasMore}
+                        loader={<h4>Loading...</h4>}>
+                        { 
+                        _.map(datas, (item, index) => {            
+                          let { _id,  avatar, displayName, username, email, roles, lastAccess, transition } = item
 
-                        // console.log("transition :", transition)
+                          // console.log("transition :", transition)
 
-                        let money_deposit = 0
-                        let money_withdraw = 0
-                        if(!_.isEmpty(transition)){
-                          _.map(transition, (tra)=>{
-                            switch(tra.type){
-                              case Constants.SUPPLIER:{
-                                let {supplier} = tra
+                          let money_deposit = 0
+                          let money_withdraw = 0
+                          if(!_.isEmpty(transition)){
+                            _.map(transition, (tra)=>{
+                              switch(tra.type){
+                                case Constants.SUPPLIER:{
+                                  let {supplier} = tra
 
-                                if(supplier !== undefined){
-                                  console.log("supplier: ", supplier)
+                                  if(supplier !== undefined){
+                                    console.log("supplier: ", supplier)
+                                  }
+                                  break;
                                 }
-                                break;
-                              }
-                              case Constants.DEPOSIT:{
-                                let {status, deposit} = tra
-                                if( status === Constants.APPROVED && deposit !== undefined){
-                                  money_deposit += deposit?.balance
+                                case Constants.DEPOSIT:{
+                                  let {status, deposit} = tra
+                                  if( status === Constants.APPROVED && deposit !== undefined){
+                                    money_deposit += deposit?.balance
+                                  }
+                                  break;
                                 }
-                                break;
-                              }
-                              case Constants.WITHDRAW:{
-                                let {status, withdraw} = tra
-                                if( status === Constants.APPROVED && withdraw !== undefined){
-                                  money_withdraw += withdraw?.balance
+                                case Constants.WITHDRAW:{
+                                  let {status, withdraw} = tra
+                                  if( status === Constants.APPROVED && withdraw !== undefined){
+                                    money_withdraw += withdraw?.balance
+                                  }
+                                  break;
                                 }
-                                break;
                               }
-                            }
-                          })
-                        }
+                            })
+                          }
 
-                        return <Stack direction="row" spacing={2} >
-                                  <Box sx={{ width: '8%' }}>
-                                    <Avatar
-                                      alt="Example avatar"
-                                      variant="rounded"
-                                      src={avatar?.url}
-                                      sx={{ width: 56, height: 56 }}
-                                    />
-                                  </Box>
-                                  <Box 
-                                    sx={{ width: '8%' }}
-                                    onClick={()=>{
-                                      navigate({ pathname: `/p`, search: `?${createSearchParams({ id: _id })}` })
-                                    }}>{displayName}</Box>
-                                  <Box sx={{ width: '10%' }}>{username}</Box>
-                                  <Box sx={{ width: '20%' }}>{email}</Box>
-                                  <Box sx={{width: '10%'}}>{money_deposit}</Box>
-                                  <Box sx={{width: '10%'}}>{money_withdraw}</Box>
-                                  <Box sx={{ width: '15%' }}> {/*{roles.join(',')}*/} <RolesComp Ids={roles}/> </Box>
-                                  <Box sx={{ width: '5%' }}>{ (moment(lastAccess, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</Box>
-                                  <Box sx={{ width: '20%' }}>
-                                    <button onClick={(e)=>{ console.log("Force logout") }}><ExitToAppIcon />Force logout</button>
-                                    <button onClick={()=>{ navigate("/user", {state: {from: "/", mode: "edit", id: _id}}) }}><EditIcon/>{t("edit")}</button>
-                                    <button onClick={(e)=>{ setOpenDialogDelete({ isOpen: true, id: _id, description: displayName }) }}><DeleteForeverIcon/>{t("delete")}</button>
-                                  </Box>
-                              </Stack>
-                      })
-                    }
-                  </InfiniteScroll>
+                          return <Stack direction="row" spacing={2} >
+                                    <Box sx={{ width: '8%' }}>
+                                      <Avatar
+                                        alt="Example avatar"
+                                        variant="rounded"
+                                        src={avatar?.url}
+                                        sx={{ width: 56, height: 56 }}
+                                      />
+                                    </Box>
+                                    <Box 
+                                      sx={{ width: '8%' }}
+                                      onClick={()=>{
+                                        navigate({ pathname: `/p`, search: `?${createSearchParams({ id: _id })}` })
+                                      }}>{displayName}</Box>
+                                    <Box sx={{ width: '10%' }}>{username}</Box>
+                                    <Box sx={{ width: '20%' }}>{email}</Box>
+                                    <Box sx={{width: '10%'}}>{money_deposit}</Box>
+                                    <Box sx={{width: '10%'}}>{money_withdraw}</Box>
+                                    <Box sx={{ width: '15%' }}> {/*{roles.join(',')}*/} <RolesComp Ids={roles}/> </Box>
+                                    <Box sx={{ width: '5%' }}>{ (moment(lastAccess, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</Box>
+                                    <Box sx={{ width: '20%' }}>
+                                      <button onClick={(e)=>{ 
+                                        onMutationForceLogout({ variables: { input: { mode: "id", _id } } })
+                                      }}><ExitToAppIcon />Force logout</button>
+                                      <button onClick={()=>{ navigate("/user", {state: {from: "/", mode: "edit", id: _id}}) }}><EditIcon/>{t("edit")}</button>
+                                      <button onClick={(e)=>{ setOpenDialogDelete({ isOpen: true, id: _id, description: displayName }) }}><DeleteForeverIcon/>{t("delete")}</button>
+                                    </Box>
+                                </Stack>
+                        })
+                      }
+                    </InfiniteScroll>
+                  </div>
         }
       
         {openDialogDelete.isOpen && (

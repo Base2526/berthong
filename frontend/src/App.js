@@ -1003,7 +1003,7 @@ const App =(props) =>{
                 {id: 3, title:"รายการถอดเงินทั้งหมด", icon: <AccountTreeIcon />, path: "/withdraws"},
                 {id: 4, title:"รายการฝากเงินทั้งหมด", icon: <AddRoadIcon />, path: "/deposits"},
                 {id: 5, title:"รายการ หวยทั้งหมด", icon: <AdjustIcon />, path: "/lotterys"},
-                {id: 6, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/admin-users"},
+                {id: 6, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
                 {id: 7, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
                 {id: 8, title:"จัดการหวยทั้งหมด", icon: <AssistantIcon />, path: "/manage-lotterys"},
                 {id: 9, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
@@ -1319,7 +1319,7 @@ const App =(props) =>{
                                                       onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/manage-lotterys" element={<ManageLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
               <Route path="/manage-lottery" element={<ManageLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
-              <Route path="/admin-users" element={<UsersPage />} />
+              <Route path="/users" element={<UsersPage />} />
               <Route path="/user" element={<UserPage {...props} />} />
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
               <Route path="/taxonomy-bank" element={<TaxonomyBankPage  {...props} onMutationBank={(evt)=>onMutationBank(evt)}/>} />

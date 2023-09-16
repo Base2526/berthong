@@ -105,7 +105,7 @@ const BreadcsComp = (props) => {
         }
       }
 
-      case "/admin-users":{
+      case "/users":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายชื่อบุคคลทั้งหมด</Typography>
@@ -115,12 +115,10 @@ const BreadcsComp = (props) => {
       case "/user":{
         switch(checkRole(user)){
           case Constants.AMDINISTRATOR:{
-
             const { mode, id } = location.state
-
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/users">{t("รายชื่อบุคคลทั้งหมด")}</MuiLink>,
+              // <MuiLink key="1" component={Link} to="/users">{t("รายชื่อบุคคลทั้งหมด")}</MuiLink>,
               <Typography key="2" color="text.primary">{ _.isEqual(mode, "edit") ? "แก้ไข" : "" } โปรไฟล์</Typography>
             ]
           }
@@ -178,7 +176,7 @@ const BreadcsComp = (props) => {
           case Constants.AMDINISTRATOR:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18}/>{t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/users">รายชื่อบุคคลทั้งหมด</MuiLink>,
+              // <MuiLink key="1" component={Link} to="/users">รายชื่อบุคคลทั้งหมด</MuiLink>,
               <Typography key="2" color="text.primary">โปรไฟล์ {loadingProfile ? <LinearProgress/> : profile?.displayName}</Typography>
             ]
           }

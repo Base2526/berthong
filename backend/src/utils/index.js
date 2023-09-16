@@ -3,6 +3,7 @@ import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
 import mongoose from 'mongoose';
+import cryptojs from "crypto-js";
 
 import AppError from "./AppError"
 
@@ -22,19 +23,13 @@ export const fileRenamer = (filename) => {
     return `${arrTemp[0].slice(0, arrTemp[0].length - 1).join("_")}${queHoraEs}.${arrTemp[0].pop()}`;
 };
 
-export const getSessionId = async(userId, input) => {  
+export const getSession = async(userId, input) => {  
     await Model.Session.remove({userId})
-
-    // let session = await Model.Session.findOne({userId, deviceAgent: newInput.deviceAgent})
-    // if(_.isEmpty(session)){
-    //     let  session = await Model.Session.create(newInput);
-    // }
-
-    let session = await Model.Session.create({...input, 
-                                        userId, 
-                                        token: jwt.sign(userId.toString(), process.env.JWT_SECRET)});
+    let session = await Model.Session.create({  ...input, 
+                                                userId, 
+                                                token: jwt.sign(userId.toString(), process.env.JWT_SECRET)});
   
-    return session?._id.toString()
+    return cryptojs.AES.encrypt(session?._id.toString(), process.env.JWT_SECRET).toString() 
 }
 
 export const checkAuth = async(req) => {
@@ -43,18 +38,15 @@ export const checkAuth = async(req) => {
         let customLocation = JSON.parse(req.headers["custom-location"])
         pathname = customLocation?.pathname
     }
-    // console.log("checkAuth #1 :", req.headers)
+
     if (req.headers && req.headers.authorization) {
         var auth    = req.headers.authorization;
         var parts   = auth.split(" ");
         var bearer  = parts[0];
-        var sessionId   = parts[1];
-
-        // console.log("checkAuth #3 :", bearer, sessionId)
+        var sessionId   = cryptojs.AES.decrypt(parts[1], process.env.JWT_SECRET).toString(cryptojs.enc.Utf8);
+        
         if (bearer == "Bearer") {
-            // let decode = jwt.verify(token, process.env.JWT_SECRET);
-            // console.log("sessionId > ", sessionId)
-            let session = await Model.Session.findOne({_id:sessionId});
+            let session = await Model.Session.findOne({_id: sessionId});
             if(!_.isEmpty(session)){
                 var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));
 
