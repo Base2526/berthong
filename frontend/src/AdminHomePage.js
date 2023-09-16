@@ -98,14 +98,14 @@ const AdminHomePage = (props) => {
           error: errorAdminHome, 
           refetch: refetchAdminHome,
           subscribeToMore: subscribeToMoreAdminHome, 
-          networkStatus: networkStatusAdminHome } = useQuery(queryAdminHome, 
-                                      { 
-                                        context: { headers: getHeaders(location) }, 
-                                        fetchPolicy: 'network-only', // Used for first execution
-                                        nextFetchPolicy: 'cache-first', // Used for subsequent executions
-                                        notifyOnNetworkStatusChange: true
-                                      }
-                                    );
+          networkStatus: networkStatusAdminHome } = useQuery( queryAdminHome, 
+                                                              { 
+                                                                context: { headers: getHeaders(location) }, 
+                                                                fetchPolicy: 'cache-first', // Used for first execution
+                                                                nextFetchPolicy: 'network-only', // Used for subsequent executions
+                                                                notifyOnNetworkStatusChange: true
+                                                              }
+                                                            );
 
   if(!_.isEmpty(errorAdminHome)) handlerErrorApollo( props, errorAdminHome )
   
@@ -282,6 +282,7 @@ const AdminHomePage = (props) => {
     }
     */
 
+
     return  _.map(datas, (item, index)=>{
               switch(index){
                 case 0:{
@@ -293,7 +294,7 @@ const AdminHomePage = (props) => {
                 }
 
                 case 2:{
-                  return <div className="card-admin" onClick={(evt)=>navigate("/suppliers")}>{item.title} - {item.data?.length}</div>
+                  return <div className="card-admin" onClick={(evt)=>navigate("/lotterys")}>{item.title} - {item.data?.length}</div>
                 }
 
                 case 3:{

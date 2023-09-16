@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import moment from "moment";
 
-import { mutationSupplier, queryDateLotterys, querySupplierById } from "./gqlQuery";
+import { mutationSupplier, queryManageLotterys, querySupplierById } from "./gqlQuery";
 import { getHeaders, handlerErrorApollo } from "./util";
 import AttackFileField from "./AttackFileField";
 
@@ -15,21 +15,21 @@ let initValues = {
   price: "", 
   priceUnit: "",
   description: "",
-  dateLottery: null,
+  manageLottery: null,
   files: [],
   condition: "",       // 11-100
   category: "",        // 0: money, 1: gold, 2 : things, 3 : etc
   type: "",            // 0: bon, 1 : lang
 }
 
-const SupplierPage = (props) => {
+const LotteryPage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
 
   const [input, setInput]       = useState(initValues);
-  let [error, setError]       = useState(initValues);
-  let [dateLotterysValues, setDateLotterysValues] = useState([]);
+  let [error, setError]         = useState(initValues);
+  let [manageLotterys, setManageLotterys] = useState([]);
   let [types, setTypes] = useState([{id: 0, name: "bon"}, {id: 1, name: "lang"}]);
   let [categorys, setCategorys] = useState([{id: 0, name: "money"}, {id: 1, name: "gold"}, 
                                             {id: 2, name: "things"}, {id: 3, name: "etc"}]);
@@ -80,9 +80,9 @@ const SupplierPage = (props) => {
     }
   });
 
-  let { loading: loadingDateLotterys, 
-        data: dataDateLotterys, 
-        error: errorDateLotterys } = useQuery(queryDateLotterys, 
+  let { loading: loadingManageLotterys, 
+        data: dataManageLotterys, 
+        error: errorManageLotterys } = useQuery(queryManageLotterys, 
                                               { 
                                                 context: { headers: getHeaders(location) },
                                                 fetchPolicy: 'cache-first', 
@@ -130,21 +130,19 @@ const SupplierPage = (props) => {
   }, [id])
 
   useEffect(()=>{
-    // console.log("input :", input)
+    console.log("input :", input)
   }, [input])
 
   useEffect(()=>{
-    if(!loadingDateLotterys){
-      if(!_.isEmpty(dataDateLotterys?.dateLotterys)){
-        let { status, data:newData } = dataDateLotterys.dateLotterys
+    if(!loadingManageLotterys){
+      if(!_.isEmpty(dataManageLotterys?.manageLotterys)){
+        let { status, data:newManageLotterys } = dataManageLotterys.manageLotterys
         if(status){
-          if(!_.isEqual( dateLotterysValues, newData )){
-            setDateLotterysValues(newData)
-          }
+          if(!_.isEqual( manageLotterys, newManageLotterys ))setManageLotterys(newManageLotterys)
         } 
       }
     }
-  }, [dataDateLotterys, loadingDateLotterys])
+  }, [dataManageLotterys, loadingManageLotterys])
 
   const submitForm = async(event) => {
     event.preventDefault();
@@ -277,19 +275,16 @@ const SupplierPage = (props) => {
                       <div>
                         <label>งวดที่ออกรางวัล * :</label>
                         {
-                          _.isEmpty(dateLotterysValues) 
+                          _.isEmpty(manageLotterys) 
                           ? <LinearProgress />
                           : <select 
-                              name="dateLottery" 
-                              id="dateLottery" 
-                              value={ input.dateLottery }
+                              name="manageLottery" 
+                              id="manageLottery" 
+                              value={ input.manageLottery }
                               onChange={ onInputChange }
                               onBlur={ validateInput } >
                               <option value={""}>ไม่เลือก</option>
-                              {_.map(dateLotterysValues, (dateLotterysValue)=>{
-                                let date = new Date(dateLotterysValue.date).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-                                return <option value={dateLotterysValue._id}>งวดวันที่ { (moment(date, 'MM/DD/YYYY')).format('DD MMM, YYYY')}</option>
-                              })}
+                              {_.map(manageLotterys, (manageLotterys)=><option value={manageLotterys._id}>{ manageLotterys?.title }</option>)}
                             </select>
                         }
                         <p className="text-red-500"> {_.isEmpty(error.dateLottery) ? "" : error.dateLottery} </p>
@@ -361,9 +356,19 @@ const SupplierPage = (props) => {
                         variant="contained" 
                         color="primary"
                         // onClick={evt=>{ submitForm(evt) }}
+                        disabled={   input.title === "" 
+                                    || input.price === "" 
+                                    || input.priceUnit === ""
+                                    || input.description === ""
+                                    || _.isNull(input.manageLottery)
+                                    // || _.isEmpty(input.files ) 
+                                    || input.condition === ""
+                                    || input.category === ""
+                                    || input.type === ""
+                                  }
                         >{ mode == "edit" ? t("update") : t("create")}</Button>
                     </form>
           // }, [ input, dateLotterysValues ]);
 }
 
-export default SupplierPage;
+export default LotteryPage;

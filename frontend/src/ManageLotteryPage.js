@@ -139,7 +139,6 @@ const ManageLotteryPage = (props) => {
             label="ผลการออกรางวัล บน"
             variant="filled"
             value={input.bon}
-            required
             onChange={(e) => {
               setInput({...input, bon:e.target.value})
             }}
@@ -151,7 +150,6 @@ const ManageLotteryPage = (props) => {
             variant="filled"
             type="number"
             value={input.lang}
-            required
             onChange={(e) => {
               setInput({...input, lang:e.target.value})
             }}
@@ -160,6 +158,7 @@ const ManageLotteryPage = (props) => {
             type="submit" 
             variant="contained" 
             color="primary"
+            disabled={input.title === "" || input.start_date_time === null || input.end_date_time === null}
             onClick={(evt)=>submitForm(evt)}>{"SAVE"} </Button>
           </Stack>
         </Box>

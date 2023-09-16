@@ -488,6 +488,9 @@ export default gql`
 
     manageLotterys: JSON
     manageLotteryById(_id: ID!): JSON
+
+    deposits( input: JSON ): JSON
+    withdraws( input: JSON ): JSON
     
     adminHome: JSON
     adminBanks: JSON

@@ -895,15 +895,15 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      console.log("manageLotterys")
-
       let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
-      let manageLotterys = await Model.ManageLottery.find({})
+      let data = await Model.ManageLottery.find({end_date_time:{$gte:new Date() }})
+
+      console.log("manageLotterys :", data)
 
       return {  status: true,
-                data: manageLotterys,
+                data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
 
     },
@@ -926,99 +926,132 @@ export default {
 
     },
 
+    async deposits(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      let data = await Model.Transition.aggregate([
+                  { 
+                      $match: { type: Constants.DEPOSIT } 
+                  },
+                  {
+                    $lookup: {
+                      localField: "refId",
+                      from: "deposit",
+                      foreignField: "_id",
+                      as: "deposit"
+                    }
+                  },
+                  {
+                    $unwind: {
+                      path: "$deposit",
+                      preserveNullAndEmptyArrays: false
+                    }
+                  }
+                ])
+
+      console.log("deposits :", data)
+
+      return {  status: true,
+                data,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
+    async withdraws(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      let data = await Model.Transition.aggregate([
+                          { 
+                              $match: { 
+                                type: Constants.WITHDRAW,
+                              } 
+                          },
+                          {
+                            $lookup: {
+                              localField: "refId",
+                              from: "withdraw",
+                              foreignField: "_id",
+                              as: "withdraw"
+                            }
+                          },
+                          {
+                            $unwind: {
+                              path: "$withdraw",
+                              preserveNullAndEmptyArrays: false
+                            }
+                          }
+                        ])
+
+      console.log("withdraws :", data)
+
+      return {  status: true,
+                data,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
     async adminHome(parent, args, context, info){
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
-      /*
-      try{
-
-      }catch(error){
-        console
-      }
-      console.log("adminHome: ", current_user)
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Administrator only!')
-
-      // 0: 'wait', 1: 'approved',  2: 'approved'
-      let deposits = await Model.Deposit.find({status: Constants.WAIT})
-      deposits  = _.filter(await Promise.all(_.map(deposits, async(deposit)=>{
-                                    let f = await Model.Bank.findById(deposit.bank.bankId)
-                                    if(_.isNull(f)) return null
-                                    return {...deposit._doc, bank: {...deposit.bank, bankName: f?.name}}
-                                  })), i=>!_.isEmpty(i))
-
-      let withdraws = await Model.Withdraw.find({status: Constants.WAIT})
-      withdraws = _.filter(await Promise.all(_.map(withdraws, async(i)=>{
-                                            let user = await Model.User.findById(i.userIdRequest)
-                                            return _.isEmpty(user) ? null : {...i._doc, userNameRequest: user?.displayName}
-                                          }), i=>!_.isEmpty(i)))
-
-      let suppliers = await Model.Supplier.find({}); 
-
-
-      let users = await Model.User.find({})
-      users = _.filter( await Promise.all(_.map(users, async(user)=>{
-                if(_.isEqual(user._id, current_user?._id)) return null
-
-                let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
-                  return (await Model.Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
-                }))            
-                
-                let newUser = {...user._doc, roles: _.filter(roles, (role)=>role!=undefined)};
-                return _.omit(newUser, ['password']);
-              })), i => !_.isEmpty(i))
-              */
-
-      let deposits = await Model.Transition.aggregate([
+      let transitions = await Model.Transition.aggregate([
         { 
-            $match: { status: Constants.WAIT /* 13 */, type: Constants.DEPOSIT /* 11 */ } 
+            $match: { 
+              status: Constants.WAIT, 
+              type: {$in: [Constants.DEPOSIT, Constants.WITHDRAW]},
+            } 
         },
         {
-            $lookup: {
-                localField: "refId",
-                from: "deposit",
-                foreignField: "_id",
-                as: "deposit"
-            }
-        },
-        {
-          $unwind: {
-            "path": "$deposit",
-            "preserveNullAndEmptyArrays": false
+          $lookup: {
+            localField: "refId",
+            from: "deposit",
+            foreignField: "_id",
+            as: "deposit"
           }
-        }
-      ])
-
-      let withdraws = await Model.Transition.aggregate([
-        { 
-            $match: { status: Constants.WAIT /* 13 */, type: Constants.WITHDRAW /* 11 */ } 
         },
         {
-            $lookup: {
-                localField: "refId",
-                from: "withdraw",
-                foreignField: "_id",
-                as: "withdraw"
-            }
+          $lookup: {
+            localField: "refId",
+            from: "withdraw",
+            foreignField: "_id",
+            as: "withdraw"
+          }
         },
         {
           $unwind: {
-            "path": "$withdraw",
-            "preserveNullAndEmptyArrays": false
+            path: "$deposit",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $unwind: {
+            path: "$withdraw",
+            preserveNullAndEmptyArrays: true
           }
         }
       ])
 
       let suppliers = Array.from({ length: await Utils.getTotalSupplier() }, (_, i) => i);
+      let users     = await Model.User.find({ roles: {$nin:[Constants.AMDINISTRATOR]} }, 
+                                            { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 }); 
 
-      let users = await Model.User.find({roles: {$nin:[Constants.AMDINISTRATOR]}}, 
-                  { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 }); 
+      let withdraws = _.filter(transitions, (transition)=>transition?.withdraw)
+      let deposits  = _.filter(transitions, (transition)=>transition?.deposit)
 
       let data =  [ 
-                    { title: "รายการ ฝากเงินรออนุมัติ", data: deposits },
-                    { title: "รายการ ถอดเงินรออนุมัติ", data: withdraws }, 
+                    { title: "รายการ ฝากเงิน รออนุมัติ", data: deposits },
+                    { title: "รายการ ถอดเงิน รออนุมัติ", data: withdraws },
                     { title: "รายการ สินค้าทั้งหมด", data: suppliers },
                     { title: "รายชื่อบุคคลทั้งหมด", data: users } 
                   ]

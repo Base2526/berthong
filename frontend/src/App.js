@@ -94,9 +94,9 @@ import MePage from "./MePage";
 import BankPage from "./BankPage";
 import BanksPage from "./BanksPage";
 import { editedUserBalace, editedUserBalaceBook } from "./redux/actions/auth";
-import SupplierPage from "./SupplierPage";
+import LotteryPage from "./LotteryPage";
 import FriendPage from "./FriendPage";
-import SuppliersPage from "./SuppliersPage";
+import LotterysPage from "./LotterysPage";
 import UserPage from "./UserPage";
 import UsersPage from "./UsersPage";
 import { checkRole, getHeaders, handlerErrorApollo, showToast} from "./util";
@@ -115,6 +115,9 @@ import Footer from "./Footer";
 import DblogPage from "./DblogPage";
 import AutoGenerationContent from "./AutoGenerationContent"
 import ProducersPage from "./ProducersPage"
+import DepositsPage from "./DepositsPage"
+import WithdrawsPage from "./WithdrawsPage"
+ 
 import { queryNotifications, 
           mutationFollow, 
           querySuppliers, 
@@ -990,18 +993,20 @@ const App =(props) =>{
     setOpen(false);
   };
 
+  
   const menuList = () =>{
     switch(checkRole(user)){
       case Constants.AMDINISTRATOR:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em"/>, path: "/"},
                 {id: 1, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/admin-withdraws"},
                 {id: 2, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/admin-deposits"},
-                {id: 3, title:"รายการ หวยทั้งหมด", icon: <AdjustIcon />, path: "/suppliers"},
-                {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/admin-users"},
-                {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
-                {id: 6, title:"จัดการหวยทั้งหมด", icon: <AssistantIcon />, path: "/manage-lotterys"},
-                {id: 7, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
-                // {id: 8, title:"Logout", icon: <LogoutIcon size="1.5em"/>, path: "/logout"}
+                {id: 3, title:"รายการถอดเงินทั้งหมด", icon: <AccountTreeIcon />, path: "/withdraws"},
+                {id: 4, title:"รายการฝากเงินทั้งหมด", icon: <AddRoadIcon />, path: "/deposits"},
+                {id: 5, title:"รายการ หวยทั้งหมด", icon: <AdjustIcon />, path: "/lotterys"},
+                {id: 6, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/admin-users"},
+                {id: 7, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
+                {id: 8, title:"จัดการหวยทั้งหมด", icon: <AssistantIcon />, path: "/manage-lotterys"},
+                {id: 9, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
               ]
       }
       case Constants.AUTHENTICATED:{
@@ -1299,11 +1304,11 @@ const App =(props) =>{
               <Route path="/bookmarks" element={<BookMarksPage {...props} onMutationFollow={(evt)=>onMutationFollow(evt) } />} />
               <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />} />
               <Route path="/producers" element={<ProducersPage {...props}  onLightbox={(evt)=>setLightbox(evt)}  />} />
-              <Route path="/supplier" element={<SupplierPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
+              <Route path="/lottery" element={<LotteryPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
-              <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/supplier" element={<SupplierPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
+              <Route path="/lotterys" element={<LotterysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/lottery" element={<LotteryPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
               <Route path="/admin-deposits" element={<AdminDepositsPage 
                                                       {...props} 
                                                       onLightbox={(value)=>setLightbox(value)} 
@@ -1320,6 +1325,9 @@ const App =(props) =>{
               <Route path="/taxonomy-bank" element={<TaxonomyBankPage  {...props} onMutationBank={(evt)=>onMutationBank(evt)}/>} />
               <Route path="/dblog" element={<DblogPage  {...props} />} />
               <Route path="/auto-generation-content" element={<AutoGenerationContent  {...props} />} />
+
+              <Route path="/deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/withdraws" element={<WithdrawsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
             </Route>
             <Route path="*" element={<p>There's nothing here: 404!</p>} />
           </Routes>
