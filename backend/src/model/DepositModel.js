@@ -32,12 +32,9 @@ const depositSchema = new Schema({
         min: 13,
         max: 15,
         default: Constants.WAIT // 0: 'wait', 1: 'approved',  2: 'reject'
-
-        // export const WAIT           = 13;
-        // export const APPROVED       = 14;
-        // export const REJECT         = 15;
     }, 
-    bankId:{ type: String, required:[true, "Bank-Id Request is a required field"] }
+    bankId:{ type: String, required:[true, "Bank-Id Request is a required field"] },
+    message:{ type: String }
 },
 {
     timestamps: true

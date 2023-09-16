@@ -28,6 +28,9 @@ export const queryManageLotterys      = gql`query manageLotterys{ manageLotterys
 export const queryManageLotteryById   = gql`query manageLotteryById($id: ID!){ manageLotteryById(_id: $id) }`;
 
 
+export const queryDeposits     = gql`query deposits( $input: JSON ) { deposits( input: $input) }`;
+export const queryWithdraws    = gql`query withdraws( $input: JSON ) { withdraws( input: $input) }`;
+
 // ADMIN
 export const queryDateLotterys    = gql`query dateLotterys { dateLotterys }`;
 export const queryDateLotteryById = gql`query dateLotteryById($id: ID!) { dateLotteryById(_id: $id) }`;

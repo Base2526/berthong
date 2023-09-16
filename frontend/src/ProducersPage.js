@@ -153,7 +153,7 @@ const ProducersPage = (props) => {
               console.log("props.row.values :", original)
               return  <div>
                         <button onClick={(evt)=>{
-                          navigate("/supplier", {state: {from: "/", mode: "edit", id: original?._id } })
+                          navigate("/lottery", {state: {from: "/", mode: "edit", id: original?._id } })
                         }}><EditIcon/>{t("edit")}
                         </button>
                         <button onClick={(e)=>{
@@ -192,7 +192,7 @@ const ProducersPage = (props) => {
                 size="small"
                 //   disabled={ _.isEmpty(_.filter(input, (b)=>b.bankId == "" || b.bankNumber == "")) ? false : true }
                 onClick={(evt)=>{
-                    navigate("/supplier", {state: {from: "/", mode: "new"} }) 
+                    navigate("/lottery", {state: {from: "/", mode: "new"} }) 
                 }}>สร้างหวยใหม่</Button>
             <div className="row">
                 <TableComp

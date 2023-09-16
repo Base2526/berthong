@@ -88,18 +88,18 @@ const BreadcsComp = (props) => {
         ]
       }
 
-      case "/suppliers":{
+      case "/lotterys":{
         switch(checkRole(user)){
           case Constants.AMDINISTRATOR:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">รายการสินค้าทั้งหมด</Typography>
+              <Typography key="1" color="text.primary">รายการหวยทั้งหมด</Typography>
             ]
           }
           case Constants.AUTHENTICATED:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">รายการสินค้า</Typography>
+              <Typography key="1" color="text.primary">รายการหวยทั้งหมด</Typography>
             ]
           }
         }
@@ -140,22 +140,20 @@ const BreadcsComp = (props) => {
         ]
       }
 
-      case "/supplier":{
+      case "/lottery":{
         let { state } = location
         switch(state?.mode){
           case "new":{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/suppliers">{t("รายการสินค้าทั้งหมด")}</MuiLink>,
-              <Typography key="2" color="text.primary">เพิ่มสินค้าใหม่</Typography>
+              <Typography key="2" color="text.primary">เพิ่มหวยใหม่</Typography>
             ]
           }
 
           case "edit":{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/suppliers"> {t("รายการสินค้าทั้งหมด")}</MuiLink>,
-              <Typography key="2" color="text.primary">แก้ไขสินค้า</Typography>
+              <Typography key="2" color="text.primary">แก้ไขหวย</Typography>
             ]
           }
         }
@@ -192,13 +190,19 @@ const BreadcsComp = (props) => {
           }
         }
       }
+      case "/deposits":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="2" color="text.primary">แจ้งฝากเงินทั้งหมด</Typography>
+        ]
+        break;
+      }
 
       case "/deposit":{
         switch(checkRole(user)){
           case Constants.AMDINISTRATOR:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/deposits">{t("รายการ แจ้งฝากเงิน")}</MuiLink>,
               <Typography key="2" color="text.primary">แจ้งฝากเงิน</Typography>
             ]
           }
@@ -211,12 +215,20 @@ const BreadcsComp = (props) => {
         }
       }
 
+      case "/withdraws":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="2" color="text.primary">แจ้งถอดเงินทั้งหมด</Typography>
+        ]
+        break;
+      }
+
       case "/withdraw":{
         switch(checkRole(user)){
           case Constants.AMDINISTRATOR:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/withdraws">{t("รายการ แจ้งถอดเงิน")}</MuiLink>,
+              // <MuiLink key="1" component={Link} to="/withdraws">{t("รายการ แจ้งถอดเงิน")}</MuiLink>,
               <Typography key="2" color="text.primary">แจ้งถอดเงิน</Typography>
             ]
           }
