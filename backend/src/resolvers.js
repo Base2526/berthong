@@ -263,10 +263,112 @@ export default {
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Administrator only!')
 
       let { OFF_SET, LIMIT } = args?.input
-      let users = await Model.User.find({roles: {$nin:[Constants.AMDINISTRATOR]}}, 
-                                  { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 })
-                                  .limit(LIMIT)
-                                  .skip(OFF_SET); 
+      // let users = await Model.User.find({roles: {$nin:[Constants.AMDINISTRATOR]}}, 
+      //                             { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 })
+      //                             .limit(LIMIT)
+      //                             .skip(OFF_SET); 
+
+      /*
+      
+      db.getCollection("user").aggregate([
+                                                {
+                                                  $match: {
+                                                    roles: {$nin:[ "62a2ccfbcf7946010d3c74a2" ]} // 
+                                                  }
+                                                },
+                                                {
+                                                  $lookup: {
+                                                    localField: "_id",
+                                                    from: "session",
+                                                    foreignField: "userId",
+                                                    as: "session"
+                                                  }
+                                                },
+                                                {
+                                                  $unwind: {
+                                                    path: "$session",
+                                                    preserveNullAndEmptyArrays: true
+                                                  }
+                                                },
+                                              ])
+                                              */
+
+      let users = await Model.User.aggregate([
+                                                {
+                                                  $match: {
+                                                    roles: {$nin:[Constants.AMDINISTRATOR]} // 62a2ccfbcf7946010d3c74a2
+                                                  }
+                                                },
+                                                { $skip: OFF_SET }, 
+                                                { $limit: LIMIT }, 
+                                                {
+                                                  $lookup: {
+                                                    localField: "_id",
+                                                    from: "session",
+                                                    foreignField: "userId",
+                                                    as: "session"
+                                                  }
+                                                },
+                                                {
+                                                  $unwind: {
+                                                    path: "$session",
+                                                    preserveNullAndEmptyArrays: true
+                                                  }
+                                                },
+                                              ])
+
+      /*
+
+       aggregate = [
+                      {
+                        $match: {
+                          title: {
+                            $regex: TITLE,
+                            $options: "i"
+                          }
+                        }
+                      }
+                    ]
+                    
+           aggregate = [ ...aggregate,
+                    { $skip: SKIP }, 
+                    { $limit: LIMIT }, 
+                    {
+                      $lookup: {
+                          localField: "ownerId",
+                          from: "user",
+                          foreignField: "_id",
+                          pipeline: [
+                            { $project:{ username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }}
+                          ],
+                          as: "owner"
+                      }
+                    },
+                    {
+                      $lookup: {
+                          localField: "dateLottery",
+                          from: "dateLottery",
+                          foreignField: "_id",
+                          pipeline: [
+                            { $project:{ date: 1 }}
+                          ],
+                          as: "dateLottery"
+                      }
+                    },
+                    {
+                      $unwind: {
+                              "path": "$owner",
+                              "preserveNullAndEmptyArrays": false
+                      }
+                    },
+                    {
+                      $unwind: {
+                              "path": "$dateLottery",
+                              "preserveNullAndEmptyArrays": false
+                      }
+                    }
+                  ]
+      */
 
       ///// 
 

@@ -1319,7 +1319,7 @@ const App =(props) =>{
                                                       onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/manage-lotterys" element={<ManageLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
               <Route path="/manage-lottery" element={<ManageLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
-              <Route path="/users" element={<UsersPage />} />
+              <Route path="/users" element={<UsersPage {...props} />} />
               <Route path="/user" element={<UserPage {...props} />} />
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
               <Route path="/taxonomy-bank" element={<TaxonomyBankPage  {...props} onMutationBank={(evt)=>onMutationBank(evt)}/>} />
