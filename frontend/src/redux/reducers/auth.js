@@ -20,6 +20,8 @@ import {UPDATED_PROFILE,
 
 import _ from "lodash"
 
+import { removeCookie } from "../../util"
+
 const initialState = {
     user: {},
     conversations: [],
@@ -42,6 +44,9 @@ const auth = (state = initialState, action) => {
         case LOGOUT:{
             // localStorage.removeItem("token");
             localStorage.clear();
+
+            removeCookie("token")
+            
             return {...initialState, terms_and_conditions: state.terms_and_conditions};
         }
 

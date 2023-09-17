@@ -23,7 +23,7 @@ import moment from "moment";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, createSearchParams } from "react-router-dom";
 
-import { queryAdminUsers, mutationForceLogout } from "./gqlQuery";
+import { queryUsers, mutationForceLogout } from "./gqlQuery";
 import { getHeaders, handlerErrorApollo, showToast } from "./util";
 import RolesComp from "./components/RolesComp"
 import * as Constants from "./constants";
@@ -43,8 +43,9 @@ const UsersPage = (props) => {
 
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
-  const [onMutationForceLogout, resultMutationForceLogout] = useMutation(mutationForceLogout
-  , {
+  const [onMutationForceLogout, resultMutationForceLogout] = useMutation(mutationForceLogout,
+    {
+      context: { headers: getHeaders(location) },
       update: (cache, {data: {forceLogout}} ) => {
         console.log("forceLogout :", forceLogout)
         
@@ -73,7 +74,7 @@ const UsersPage = (props) => {
           data: dataUsers, 
           error: errorUsers, 
           networkStatus: networkStatusUsers,
-          fetchMore: fetchMoreUsers } = useQuery(queryAdminUsers, 
+          fetchMore: fetchMoreUsers } = useQuery(queryUsers, 
                                         { 
                                           context: { headers: getHeaders(location) }, 
                                           variables: {input},
@@ -140,8 +141,6 @@ const UsersPage = (props) => {
                         _.map(datas, (item, index) => {            
                           let { _id,  avatar, displayName, username, email, roles, lastAccess, transition } = item
 
-                          // console.log("transition :", transition)
-
                           let money_deposit = 0
                           let money_withdraw = 0
                           if(!_.isEmpty(transition)){
@@ -194,9 +193,11 @@ const UsersPage = (props) => {
                                     <Box sx={{ width: '15%' }}> {/*{roles.join(',')}*/} <RolesComp Ids={roles}/> </Box>
                                     <Box sx={{ width: '5%' }}>{ (moment(lastAccess, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</Box>
                                     <Box sx={{ width: '20%' }}>
-                                      <button onClick={(e)=>{ 
-                                        onMutationForceLogout({ variables: { input: { mode: "id", _id } } })
-                                      }}><ExitToAppIcon />Force logout</button>
+                                      {
+                                        item?.session 
+                                        ? <button onClick={(e)=>{ onMutationForceLogout({ variables: { input: { mode: "id", _id } } }) }}><ExitToAppIcon />Force logout</button>
+                                        : <></>
+                                      }
                                       <button onClick={()=>{ navigate("/user", {state: {from: "/", mode: "edit", id: _id}}) }}><EditIcon/>{t("edit")}</button>
                                       <button onClick={(e)=>{ setOpenDialogDelete({ isOpen: true, id: _id, description: displayName }) }}><DeleteForeverIcon/>{t("delete")}</button>
                                     </Box>

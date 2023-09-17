@@ -99,7 +99,7 @@ import FriendPage from "./FriendPage";
 import LotterysPage from "./LotterysPage";
 import UserPage from "./UserPage";
 import UsersPage from "./UsersPage";
-import { checkRole, getHeaders, handlerErrorApollo, showToast} from "./util";
+import { checkRole, getHeaders, handlerErrorApollo, showToast, setCookie, getCookie} from "./util";
 import WithdrawPage from "./WithdrawPage";
 import BreadcsComp from "./components/BreadcsComp";
 import DialogLogoutComp from "./components/DialogLogoutComp";
@@ -445,10 +445,13 @@ const App =(props) =>{
   });
 
   const [onMutationLogin, resultMutationLogin] = useMutation(mutationLogin, {
+    context: { headers: getHeaders(location) },
     update: (cache, {data:{login}}) => {
       let {status, data, sessionId} = login
       if(status){
-        localStorage.setItem('token', sessionId)
+        console.log("onMutationLogin :", data, sessionId)
+        // localStorage.setItem('token', sessionId)
+        setCookie('token', sessionId, {})
         updateProfile(data)
         setDialogLogin(false);
       }
@@ -464,10 +467,14 @@ const App =(props) =>{
 
   const [onMutationLoginWithSocial, resultMutationLoginWithSocial] = useMutation(mutationLoginWithSocial, 
     {
+      context: { headers: getHeaders(location) },
       update: (cache, {data: {loginWithSocial}}) => {
         let {status, data, sessionId} = loginWithSocial
         if(status){
-          localStorage.setItem('token', sessionId)
+          // localStorage.setItem('token', sessionId)
+
+          setCookie('token', sessionId, {})
+
           updateProfile(data)
           setDialogLogin(false);
         }
@@ -516,6 +523,7 @@ const App =(props) =>{
 
   const [onMutationBank, resultMutationBankValues] = useMutation(mutationBank
     , {
+        context: { headers: getHeaders(location) },
         update: (cache, {data: {bank}}) => {
 
           ////////// udpate cache Banks ///////////
@@ -734,6 +742,7 @@ const App =(props) =>{
 
   const [onMutationDateLottery, resultMutationDateLotteryValues] = useMutation(mutationDatesLottery
     , {
+        context: { headers: getHeaders(location) },
         update: (cache, {data: {dateLottery}}) => {
 
           console.log("DateLottery :", dateLottery)
@@ -788,6 +797,7 @@ const App =(props) =>{
 
   const [onMutationDatesLottery, resultMutationDatesLottery] = useMutation(mutationDatesLottery
     , {
+        context: { headers: getHeaders(location) },
         update: (cache, {data: {datesLottery}}) => {
 
           console.log("datesLottery :", datesLottery)
@@ -843,6 +853,7 @@ const App =(props) =>{
 
   const [onMutationAdminDeposit, resultMutationAdminDeposit] = useMutation(mutationAdminDeposit
     , {
+        context: { headers: getHeaders(location) },
         update: (cache, {data: {adminDeposit}}) => {
           console.log("adminDeposit :", adminDeposit)
         },
@@ -861,6 +872,7 @@ const App =(props) =>{
 
   const [onMutationAdminWithdraw, resultMutationAdminWithdraw] = useMutation(mutationAdminWithdraw
     , {
+        context: { headers: getHeaders(location) },
         update: (cache, {data: {adminWithdraw}}) => {
           console.log("adminWithdraw :", adminWithdraw)
         },
@@ -925,7 +937,7 @@ const App =(props) =>{
     onError: useCallback((err) => {
       console.log("subscriptionMe :", err)
     }, []),
-    variables: {sessionId: localStorage.getItem('token')},
+    variables: {sessionId: /*localStorage.getItem('token')*/ getCookie('token') }, // setCookie('token', sessionId, {})
   });
  
   const ProtectedAuthenticatedRoute = ({ user, redirectPath = '/' }) => {
@@ -1319,7 +1331,7 @@ const App =(props) =>{
                                                       onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/manage-lotterys" element={<ManageLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
               <Route path="/manage-lottery" element={<ManageLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
-              <Route path="/users" element={<UsersPage />} />
+              <Route path="/users" element={<UsersPage {...props} />} />
               <Route path="/user" element={<UserPage {...props} />} />
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
               <Route path="/taxonomy-bank" element={<TaxonomyBankPage  {...props} onMutationBank={(evt)=>onMutationBank(evt)}/>} />

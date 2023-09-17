@@ -40,7 +40,7 @@ export const queryAdminBanks      = gql`query adminBanks { adminBanks }`;
 export const queryAdminDeposits   = gql`query adminDeposits{ adminDeposits }`;
 export const queryAdminWithdraws  = gql`query adminWithdraws{ adminWithdraws }`;
 export const queryAdminSuppliers  = gql`query adminSuppliers($input: SearchInput){ adminSuppliers( input: $input) }`;
-export const queryAdminUsers         = gql`query users($input: PagingInput ) { users(input: $input) }`;
+export const queryUsers      = gql`query users($input: PagingInput ) { users(input: $input) }`;
 
 // 
 

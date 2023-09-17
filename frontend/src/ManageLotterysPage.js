@@ -49,6 +49,7 @@ const ManageLotterysPage = (props) => {
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
   const [onMutationManageLottery, resultMutationManageLotteryValues] = useMutation(mutationManageLottery
     , {
+        context: { headers: getHeaders(location) },
         update: (cache, {data: {manageLottery}} ) => {
           console.log("manageLottery :", manageLottery)
           

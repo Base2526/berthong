@@ -263,67 +263,34 @@ export default {
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Administrator only!')
 
       let { OFF_SET, LIMIT } = args?.input
-      let users = await Model.User.find({roles: {$nin:[Constants.AMDINISTRATOR]}}, 
-                                  { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 })
-                                  .limit(LIMIT)
-                                  .skip(OFF_SET); 
-
-      ///// 
-
-      /*
-            let data = await Model.Transition.aggregate([
-                                                      { 
-                                                        $match: { 
-                                                                  userId: mongoose.Types.ObjectId(current_user?._id), 
-                                                                  status: { $in: [ 13, 14 ] }, //  0 Constants.WAIT, Constants.APPROVED 
-                                                                  type:{ $in: [ 10, 11, 12]}       //  Constants.SUPPLIER = 10, Constants.DEPOSIT = 11, Constants.WITHDRAW = 12 
-                                                                } 
-                                                      },
-                                                      {
-                                                        $lookup: {
-                                                            localField: "refId",
-                                                            from: "supplier",
-                                                            foreignField: "_id",
-                                                            pipeline: [{ $match: { buys: { $elemMatch : { userId: mongoose.Types.ObjectId(userId) }} }}],
-                                                            as: "supplier"
-                                                        }                 
-                                                      },
-                                                      {
-                                                        $lookup: {
-                                                          localField: "refId",
-                                                          from: "deposit",
-                                                          foreignField: "_id",
-                                                          as: "deposit"
-                                                        }
-                                                      },
-                                                      {
-                                                        $lookup: {
-                                                          localField: "refId",
-                                                          from: "withdraw",
-                                                          foreignField: "_id",
-                                                          as: "withdraw"
-                                                        }
-                                                      },
-                                                      {
-                                                        $unwind: {
-                                                          "path": "$supplier",
-                                                          "preserveNullAndEmptyArrays": true
-                                                        }
-                                                      },
-                                                      {
-                                                        $unwind: {
-                                                          "path": "$deposit",
-                                                          "preserveNullAndEmptyArrays": true
-                                                        }
-                                                      },
-                                                      {
-                                                        $unwind: {
-                                                          "path": "$withdraw",
-                                                          "preserveNullAndEmptyArrays": true
-                                                          }
-                                                      }
-                                                    ])
-      */
+      // let users = await Model.User.find({roles: {$nin:[Constants.AMDINISTRATOR]}}, 
+      //                             { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 })
+      //                             .limit(LIMIT)
+      //                             .skip(OFF_SET); 
+      
+      let users = await Model.User.aggregate([
+                                                {
+                                                  $match: {
+                                                    roles: {$nin:[Constants.AMDINISTRATOR]} // 62a2ccfbcf7946010d3c74a2
+                                                  }
+                                                },
+                                                { $skip: OFF_SET }, 
+                                                { $limit: LIMIT }, 
+                                                {
+                                                  $lookup: {
+                                                    localField: "_id",
+                                                    from: "session",
+                                                    foreignField: "userId",
+                                                    as: "session"
+                                                  }
+                                                },
+                                                {
+                                                  $unwind: {
+                                                    path: "$session",
+                                                    preserveNullAndEmptyArrays: true
+                                                  }
+                                                },
+                                              ])
      
       let transitions = await Promise.all(_.map(users, async(user)=>{
                           let transition =  await Model.Transition.aggregate([
@@ -378,7 +345,7 @@ export default {
                                             }
                                         }
                                       ])
-                            return {...user._doc, transition}
+                          return {...user, transition}
                         }))
       return { 
               status: true,
@@ -2662,6 +2629,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
+      console.log("current_user :", current_user)
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       switch(input?.mode.toLowerCase()){
@@ -2816,6 +2784,17 @@ export default {
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }   
     },
+    async crypto(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      return {
+        status: true,
+        data: cryptojs.AES.decrypt(input?.encrypt, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8),
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }   
+    }
   },
   Subscription:{
     subscriptionMe: {
