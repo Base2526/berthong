@@ -45,6 +45,7 @@ export const checkAuth = async(req) => {
         var bearer  = parts[0];
         var sessionId   = cryptojs.AES.decrypt(parts[1], process.env.JWT_SECRET).toString(cryptojs.enc.Utf8);
         
+        console.log("checkAuth # ", auth, req.headers)
         if (bearer == "Bearer") {
             let session = await Model.Session.findOne({_id: sessionId});
             if(!_.isEmpty(session)){
@@ -70,6 +71,7 @@ export const checkAuth = async(req) => {
             }
             await Model.Session.deleteOne( {"_id": sessionId} )
         }else if(bearer == "Basic"){
+            // checkAuth #  Basic YmFubGlzdDpiYW5saXN0MTIzNA==
             return {
                 status: false,
                 code: Constants.USER_NOT_FOUND,

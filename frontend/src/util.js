@@ -71,12 +71,13 @@ export const currencyFormat = (num) => {
 export const getCurrentLanguage = () => i18n.language || localStorage.getItem("i18n")
 
 export const getHeaders = (params) =>{
-    return  {
-                "apollo-require-preflight": true,
-                "content-Type": "application/json",
-                authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : '',
-                "custom-location":  JSON.stringify(params)
-            }
+  return  {
+              "apollo-require-preflight": true,
+              "content-Type": "application/json",
+              authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : '',
+              "custom-location":  JSON.stringify(params),
+              "custom-x": "--1--"
+          }
 }
 
 export const getCurrentDate =(separator='')=>{

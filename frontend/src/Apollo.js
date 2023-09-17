@@ -246,5 +246,6 @@ export const client = new ApolloClient({
     fetchOptions: {
         timeout: 10000, // Set the timeout value in milliseconds
     },
+    credentials: 'include',
     debug: false
 })

@@ -98,6 +98,7 @@
     "styled-components": "^5.3.1",
     "subscriptions-transport-ws": "^0.11.0",
     "truncate-html": "^1.0.4",
+    "universal-cookie": "^6.1.1",
     "utf8": "^3.0.0",
     "web-vitals": "^2.1.4"
   },

@@ -140,8 +140,6 @@ const UsersPage = (props) => {
                         _.map(datas, (item, index) => {            
                           let { _id,  avatar, displayName, username, email, roles, lastAccess, transition } = item
 
-                          // console.log("transition :", transition)
-
                           let money_deposit = 0
                           let money_withdraw = 0
                           if(!_.isEmpty(transition)){
@@ -194,9 +192,11 @@ const UsersPage = (props) => {
                                     <Box sx={{ width: '15%' }}> {/*{roles.join(',')}*/} <RolesComp Ids={roles}/> </Box>
                                     <Box sx={{ width: '5%' }}>{ (moment(lastAccess, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</Box>
                                     <Box sx={{ width: '20%' }}>
-                                      <button onClick={(e)=>{ 
-                                        onMutationForceLogout({ variables: { input: { mode: "id", _id } } })
-                                      }}><ExitToAppIcon />Force logout</button>
+                                      {
+                                        item?.session 
+                                        ? <button onClick={(e)=>{ onMutationForceLogout({ variables: { input: { mode: "id", _id } } }) }}><ExitToAppIcon />Force logout</button>
+                                        : <></>
+                                      }
                                       <button onClick={()=>{ navigate("/user", {state: {from: "/", mode: "edit", id: _id}}) }}><EditIcon/>{t("edit")}</button>
                                       <button onClick={(e)=>{ setOpenDialogDelete({ isOpen: true, id: _id, description: displayName }) }}><DeleteForeverIcon/>{t("delete")}</button>
                                     </Box>

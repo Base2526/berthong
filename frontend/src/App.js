@@ -448,6 +448,7 @@ const App =(props) =>{
     update: (cache, {data:{login}}) => {
       let {status, data, sessionId} = login
       if(status){
+        console.log("onMutationLogin :", data, sessionId)
         localStorage.setItem('token', sessionId)
         updateProfile(data)
         setDialogLogin(false);

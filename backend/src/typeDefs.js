@@ -792,6 +792,8 @@ export default gql`
     testNodeCacheDelete(id: String): JSON
 
     search(input: SearchInput): JSON
+
+    crypto(input: JSON):JSON
   }
 
   type Subscription {

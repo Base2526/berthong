@@ -251,6 +251,13 @@ async function startApolloServer(typeDefs, resolvers) {
 
             return req;
         },
+        formatError: (error) => {
+            // Log the error here
+            // console.error("formatError :", error);
+
+            logger.error(error);
+            return error;
+        },
         // subscriptions: {
         //     onConnect: (connectionParams, webSocket, context) => {
         //       console.log('connect...');
