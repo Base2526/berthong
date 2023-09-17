@@ -1,11 +1,7 @@
 import React , {useState, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useApolloClient } from "@apollo/client";
-import { useDeviceData } from "react-device-detect";
 import _ from "lodash";
-import AccountCircle from "@material-ui/icons/AccountCircle";
-import EmailSharpIcon from '@mui/icons-material/EmailSharp';
-import LockIcon from '@mui/icons-material/Lock';
 import { useTranslation } from "react-i18next";
 import {
     Stack,
@@ -14,10 +10,11 @@ import {
     DialogContent,
     DialogActions,
     Dialog,
-    Button,
     Box,
+    TextField,
     Avatar,
-    LinearProgress
+    LinearProgress,
+    Button
   } from '@mui/material'
 
 import { loadCaptchaEnginge, LoadCanvasTemplate , validateCaptcha} from "react-simple-captcha";
@@ -110,10 +107,98 @@ const RegisterPage = (props) => {
         onRegister({ variables: { input: _.omit(input, ['confirm_password', 'captcha']) } })
     }
 
-    return (<div className="page-userlog pl-2 pr-2">
+    return (<div className="content-bottom">
+            <div className="content-page border">
+                <div className="col-lg-6 col-12">
+                <div className="row m-2">
+                <div className="page-userlog pl-2 pr-2">
                 <div className="Mui-usercontainerss">
                     <form >
-                        <div className="d-flex form-input">
+                    <Stack
+                          direction="column"
+                          justifyContent="center"
+                          alignItems="flex-start"
+                          spacing={2}>
+                        <Box> 
+                                <TextField 
+                                    name="username"
+                                    label={"ชื่อผู้ใช้งาน *"}
+                                    sx={{ width: 200 }}
+                                    value={input.username} 
+                                    onChange={onInputChange}
+                                    onBlur={ validateInput } /> 
+                        </Box>
+                        {/* ขอเพิ่มเบอร์โทรศัพท์  */}
+                        {/* <Box> 
+                                <TextField 
+                                    name="เบอร์โทร"
+                                    label={"เบอร์โทร *"}
+                                    sx={{ width: 200 }}
+                                    value={input.phone} 
+                                    onChange={onInputChange}
+                                    onBlur={ validateInput } /> 
+                        </Box>    */}
+                        <Box> 
+                                <TextField 
+                                    name="email"
+                                    label={"อีเมลล์ *"}
+                                    sx={{ width: 200 }}
+                                    value={input.email} 
+                                    onChange={onInputChange}
+                                    onBlur={ validateInput } /> 
+                        </Box>   
+                        <Box> 
+                                <TextField 
+                                    type="password"
+                                    name="password"
+                                    label={"รหัสผ่าน *"}
+                                    sx={{ width: 200 }}
+                                    value={input.password} 
+                                    onChange={onInputChange}
+                                    onBlur={ validateInput } /> 
+                        </Box>
+                        <Box> 
+                                <TextField 
+                                    type="password"
+                                    name="confirm_password"
+                                    label={"ยืนยันรหัสผ่าน *"}
+                                    sx={{ width: 200 }}
+                                    value={input.confirm_password} 
+                                    onChange={onInputChange}
+                                    onBlur={ validateInput } /> 
+                                    <p className="text-red-500"> {_.isEmpty(error.password_not_match) ? "" : error.password_not_match} </p>
+                        </Box>
+                        <Box>
+                            <LoadCanvasTemplate reloadText="Reload Captcha" reloadColor="red" />
+                        </Box>
+                        <Box>
+                            <div className="">
+                                    {/* <input 
+                                        type="text"  
+                                        id="captcha" 
+                                        name="captcha" 
+                                        placeholder="Enter the Captcha"
+                                        onChange={(evt)=> setInput({...input, captcha: evt.target.value}) }
+                                        autoComplete="off"/> */}
+                                    <TextField 
+                                    type="text"  
+                                    id="captcha" 
+                                    name="captcha" 
+                                    label={"Enter the Captcha *"}
+                                    sx={{ width: 200 }}
+                                    onChange={(evt)=> setInput({...input, captcha: evt.target.value}) }
+                                    autoComplete="off"/> 
+                            </div>
+                        </Box>
+                        <Box>
+                        <Button 
+                            variant="contained" 
+                            color="warning" 
+                            disabled={ input.username == "" || input.email == "" || input.password == "" || input.confirm_password == "" || !_.isEqual(input.password, input.confirm_password) || !validateCaptcha(input.captcha, false)}
+                            onClick={evt=>{ submitForm(evt) }}>สมัครสมาชิก</Button>    
+                        </Box>
+                    </Stack>
+                        {/* <div className="d-flex form-input">
                             <label>{t("username")}</label>
                             <div className="position-relative wrapper-form">
                                 <input type="text" name="username" className="input-bl-form" value={input.username} onChange={onInputChange} />
@@ -141,27 +226,10 @@ const RegisterPage = (props) => {
                                 <LockIcon/>
                             </div>
                             <p className="text-red-500"> {_.isEmpty(error.password_not_match) ? "" : error.password_not_match} </p>
-                        </div>
-                        <div className="">
-                            <LoadCanvasTemplate reloadText="Reload Captcha" reloadColor="red" />
-                            <div  className="input-block">
-                                <input 
-                                    type="text"  
-                                    id="captcha" 
-                                    name="captcha" 
-                                    placeholder="Enter the Captcha"
-                                    onChange={(evt)=> setInput({...input, captcha: evt.target.value}) }
-                                    autoComplete="off"/>
-                            </div>
-                        </div>
-                        <Button 
-                            variant="contained" 
-                            color="warning" 
-                            disabled={ input.username == "" || input.email == "" || input.password == "" || input.confirm_password == "" || !_.isEqual(input.password, input.confirm_password) || !validateCaptcha(input.captcha, false)}
-                            onClick={evt=>{ submitForm(evt) }}>สมัครสมาชิก</Button>    
+                        </div> */}
                     </form>
                 </div>
-            </div> );
+                </div></div></div></div></div> );
 }
 
 export default RegisterPage

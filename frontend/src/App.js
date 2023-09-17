@@ -151,7 +151,7 @@ import { queryNotifications,
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
 
-import logo from "./images/logo-search-grid-1x.png";
+import logo from "./images/logo_4.png";
 
 let { REACT_APP_SITE_TITLE } = process.env
 
@@ -1251,7 +1251,7 @@ const App =(props) =>{
               <Divider />
               <div className="text-center">
                 <img
-                  style={{width:"130px",height:"130px",borderRadius:"50%"}}
+                  className="logo1"
                   src={logo}
                   alt="Avatar"
                 />

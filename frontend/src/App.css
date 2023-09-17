@@ -1074,5 +1074,17 @@ background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/s
   border: 1px solid #cec6c6 !important;
 }
 
+#reload_href{
+  padding-left: 1rem;
+}
+
+.text-red-500{
+  color: "red";
+}
+
+.logo1{
+  width:70%;
+}
+
 /* ._loading_overlay_overlay {  position: fixed; } */
 
