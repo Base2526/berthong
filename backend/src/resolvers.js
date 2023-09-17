@@ -2629,6 +2629,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
+      console.log("current_user :", current_user)
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       switch(input?.mode.toLowerCase()){

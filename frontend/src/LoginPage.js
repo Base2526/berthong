@@ -7,6 +7,7 @@ import AccountCircle from "@material-ui/icons/AccountCircle";
 import LockIcon from '@mui/icons-material/Lock';
 
 import { mutationLogin } from "./gqlQuery"
+import { setCookie } from "./util"
 
 const LoginPage = (props) => {
     const navigate = useNavigate();
@@ -21,11 +22,13 @@ const LoginPage = (props) => {
 
     let [input, setInput]   = useState({ username: "",  password: ""});
     const [onLogin, resultLogin] = useMutation(mutationLogin, { 
+        context: { headers: getHeaders(location) },
         onCompleted: async(datas)=>{
             console.log("onCompleted :", datas)
             let {status, data, sessionId} = datas.login
             if(status){
-                localStorage.setItem('token', sessionId)
+                // localStorage.setItem('token', sessionId)
+                setCookie('token', sessionId, {})
                 updateProfile(data)
             }
 

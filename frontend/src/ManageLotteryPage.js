@@ -27,6 +27,7 @@ const ManageLotteryPage = (props) => {
 
   const [onMutationManageLottery, resultMutationManageLotteryValues] = useMutation(mutationManageLottery
     , {
+        context: { headers: getHeaders(location) },
         update: (cache, {data: {manageLottery}} ) => {
           console.log("manageLottery :", manageLottery)
           

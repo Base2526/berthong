@@ -39,6 +39,7 @@ export const checkAuth = async(req) => {
         pathname = customLocation?.pathname
     }
 
+    /*
     if (req.headers && req.headers.authorization) {
         var auth    = req.headers.authorization;
         var parts   = auth.split(" ");
@@ -48,6 +49,50 @@ export const checkAuth = async(req) => {
         console.log("checkAuth # ", auth, req.headers)
         if (bearer == "Bearer") {
             let session = await Model.Session.findOne({_id: sessionId});
+            if(!_.isEmpty(session)){
+                var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));
+
+                // code
+                // -1 : force logout
+                //  0 : anonymums
+                //  1 : OK
+                if(expiredDays >= 0){
+                    let userId  = jwt.verify(session.token, process.env.JWT_SECRET);
+                    let current_user = await Model.User.findOne({_id: userId});
+
+                    if(!_.isNull(current_user)){
+                        return {
+                            status: true,
+                            code: Constants.SUCCESS,
+                            pathname,
+                            current_user,
+                        }
+                    }
+                }
+            }
+            await Model.Session.deleteOne( {"_id": sessionId} )
+        }else if(bearer == "Basic"){
+            // checkAuth #  Basic YmFubGlzdDpiYW5saXN0MTIzNA==
+            return {
+                status: false,
+                code: Constants.USER_NOT_FOUND,
+                message: "without user - anonymous user"
+            }
+        }
+        // force logout
+        throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
+    }
+    */
+    if (req.headers && req.headers["custom-authorization"]) {
+        var auth    = req.headers["custom-authorization"];
+        var parts   = auth.split(" ");
+        var bearer  = parts[0];
+        var sessionId   = cryptojs.AES.decrypt(parts[1], process.env.JWT_SECRET).toString(cryptojs.enc.Utf8);
+        
+        console.log("checkAuth # ", auth, req.headers)
+        if (bearer == "Bearer") {
+            let session = await Model.Session.findOne({_id: sessionId});
+            console.log("checkAuth #  session ", session)
             if(!_.isEmpty(session)){
                 var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));
 

@@ -1,8 +1,25 @@
 import _ from "lodash"
 import { toast } from 'react-toastify';
+import UniversalCookie from 'universal-cookie';
+
 import i18n from './translations/i18n';
  
 import * as Constants from "./constants"
+
+const cookies = new UniversalCookie();
+
+export const setCookie = (name, value, options) => {
+  cookies.set(name, value, options);
+};
+
+export const getCookie = (name) => {
+  return cookies.get(name);
+};
+
+export const removeCookie = (name, options) => {
+  cookies.remove(name, options);
+};
+
 /**
  * Convert a `File` object returned by the upload input into a base 64 string.
  * That's not the most optimized way to store images in production, but it's
@@ -74,9 +91,10 @@ export const getHeaders = (params) =>{
   return  {
               "apollo-require-preflight": true,
               "content-Type": "application/json",
-              authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : '',
+              authorization: /*localStorage.getItem('token')*/ !_.isUndefined(getCookie('token'))  ? `Bearer ${ /*localStorage.getItem('token')*/ getCookie('token')}` : '',
               "custom-location":  JSON.stringify(params),
-              "custom-x": "--1--"
+              "custom-authorization":  !_.isUndefined(getCookie('token'))  ? `Bearer ${getCookie('token')}` : '',
+              "custom-x": "--1-- " + getCookie('token')
           }
 }
 

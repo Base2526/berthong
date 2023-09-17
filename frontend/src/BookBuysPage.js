@@ -46,7 +46,6 @@ const BookBuysPage = (props) => {
   let [isPopupOpenedShoppingBag, setPopupOpenedShoppingBag] = useState({ isOpen: false, data: null });
 
   const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
-    // refetchQueries: [queryBookBuyTransitions],
     context: { headers: getHeaders(location) },
     update: (cache, {data: {buy}}) => {
       let { status, transitionId, data:newData, user } = buy

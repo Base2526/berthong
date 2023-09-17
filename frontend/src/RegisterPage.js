@@ -1,5 +1,5 @@
 import React , {useState, useEffect} from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useMutation, useApolloClient } from "@apollo/client";
 import { useDeviceData } from "react-device-detect";
 import _ from "lodash";
@@ -28,6 +28,7 @@ let initValues = { username: "", email: "",  password: "", confirm_password: "",
 const RegisterPage = (props) => {
     let { t } = useTranslation();
     let navigate = useNavigate();
+    const location = useLocation();
 
     let [input, setInput]   = useState(initValues);
     let [error, setError]   = useState({password_not_match: ""});
@@ -38,6 +39,7 @@ const RegisterPage = (props) => {
     }
 
     const [onRegister, resultRegister] = useMutation(mutationRegister, { 
+        context: { headers: getHeaders(location) },
         update: (cache, {data: {register}}) => {
             console.log("update :", register)
         },

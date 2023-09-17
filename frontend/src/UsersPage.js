@@ -43,8 +43,9 @@ const UsersPage = (props) => {
 
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
-  const [onMutationForceLogout, resultMutationForceLogout] = useMutation(mutationForceLogout
-  , {
+  const [onMutationForceLogout, resultMutationForceLogout] = useMutation(mutationForceLogout,
+    {
+      context: { headers: getHeaders(location) },
       update: (cache, {data: {forceLogout}} ) => {
         console.log("forceLogout :", forceLogout)
         
