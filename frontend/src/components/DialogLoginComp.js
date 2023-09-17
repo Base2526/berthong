@@ -29,7 +29,7 @@ import {
 } from "@material-ui/core";
 import line from '../line.svg';
 
-import logo from "../images/logo-search-grid-1x.png";
+import logo from "../images/logo_4.png";
 
 const DialogLoginComp = (props) => {
   const { t } = useTranslation();
@@ -103,7 +103,7 @@ const DialogLoginComp = (props) => {
               <Dialog open={open}>
                 <DialogTitle className="text-center">
                   <img
-                    style={{width:"130px",height:"130px",borderRadius:"50%"}}
+                    className="logo1"
                     src={logo}
                     alt="Avatar"
                   />

@@ -107,7 +107,7 @@ const DetailPanelRight = (props) =>{
                               <div className="col-lg-6 col-12 wishlist_cart d-flex flex-row align-items-center justify-content-evenly">
                                 <div className="row box wishlist bg-wallet p-2" onClick={() => onPopupWallet(true)}>
                                   <div className="col-6 bag text-center">
-                                    กระเป๋าเงิน<br />
+                                    คลิกเพื่อเติมเงิน<br />
                                     <CurrencyExchangeOutlinedIcon size={70}/>
                                   </div>
                                   <div className="col-6 money-p text-center"> 
