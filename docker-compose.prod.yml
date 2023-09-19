@@ -19,6 +19,7 @@ services:
         REACT_APP_SITE_TITLE: BERTHONG
         # REACT_APP_XXXX: ${REACT_APP_XXXX}
         REACT_APP_ENCRYPT_PASS: b9be11166d72e9e3ae7fd407165e4bd2
+        REACT_APP_USER_ROLES: 62a2ccfbcf7946010d3c74a2,62a2ccfbcf7946010d3c74a6,62a2ccfbcf7946010d3c74a4
     ports:
       - "8011:80"
       - "443:443"

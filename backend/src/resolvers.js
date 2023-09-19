@@ -260,7 +260,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Administrator only!')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let { OFF_SET, LIMIT } = args?.input
       // let users = await Model.User.find({roles: {$nin:[Constants.AMDINISTRATOR]}}, 
@@ -271,7 +271,7 @@ export default {
       let users = await Model.User.aggregate([
                                                 {
                                                   $match: {
-                                                    roles: {$nin:[Constants.AMDINISTRATOR]} // 62a2ccfbcf7946010d3c74a2
+                                                    roles: {$nin:[Constants.AMDINISTRATOR]}
                                                   }
                                                 },
                                                 { $skip: OFF_SET }, 
@@ -373,7 +373,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Admin only!')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let data = await Model.Role.find({_id: {$in: args?.input }})
       return {
@@ -1238,7 +1238,7 @@ export default {
               password: cryptojs.AES.encrypt( data.profileObj.googleId, process.env.JWT_SECRET).toString(),
               email: data.profileObj.email,
               displayName: data.profileObj.givenName +" " + data.profileObj.familyName ,
-              roles: [/*'62a2ccfbcf7946010d3c74a4', '62a2ccfbcf7946010d3c74a6'*/ Constants.AUTHENTICATED ], // anonymous, authenticated
+              roles: [ Constants.AUTHENTICATED ], // authenticated
               isActive: 'active',
               banks: [],
               image :[{
@@ -1374,7 +1374,7 @@ export default {
               password: cryptojs.AES.encrypt(data.code, process.env.JWT_SECRET).toString(),
               email: github_user.email,
               displayName: github_user.name,
-              roles: ['62a2ccfbcf7946010d3c74a4', '62a2ccfbcf7946010d3c74a6'], // anonymous, authenticated
+              roles: [ Constants.AUTHENTICATED ], // authenticated
               isActive: 'active',
               image :[{
                 url: github_user.avatar_url,
@@ -1435,7 +1435,7 @@ export default {
               password: cryptojs.AES.encrypt(data.id, process.env.JWT_SECRET).toString(),
               email: data.email,
               displayName: data.name,
-              roles: ['62a2ccfbcf7946010d3c74a4', '62a2ccfbcf7946010d3c74a6'], // anonymous, authenticated
+              roles: [ Constants.AUTHENTICATED ], // authenticated
               isActive: 'active',
               image :[{
                 url: _.isEmpty(data.picture.data) ? "" : data.picture.data.url,
@@ -1783,28 +1783,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      // if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
-
-      // let supplier = await Model.Supplier.findById(_id);
-      // if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
-
-      // let buys =  _.map(supplier.buys, (buy)=> buy.userId == current_user?._id.toString() ? {...buy._doc, selected: 1} : buy )
-      // console.log(">>>> buy", buys)
-      // await Model.Supplier.updateOne({ _id }, { buys });
-      // let user = await Utils.getUser({_id: current_user?._id}) 
-      // user =  { ...user, ...await checkBalance(current_user?._id) }
-      // pubsub.publish("ME", {
-      //   me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
-      // });
-      // 
-
-      // let price       = supplier?.price
-      // let balance     = await Utils.getBalance(current_user?._id)
-      // let balanceBook = await Utils.getBalanceBook(current_user?._id)
-      // if(price > (balance - balanceBook)){
-      //   console.log("book #[NOT_ENOUGH_BALANCE] : ", price, balance, balanceBook)
-      //   throw new AppError(Constants.NOT_ENOUGH_BALANCE, 'NOT ENOUGH BALANCE')
-      // }
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY!')
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -1862,7 +1841,7 @@ export default {
       let { req } = context
 
       let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -1916,7 +1895,7 @@ export default {
 
       console.log("supplier :", input)
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated and Authenticated only!')
 
       if(input.test){
@@ -2053,8 +2032,8 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
 
       const { createReadStream, filename, encoding, mimetype } = (await input.file).file
 
@@ -2119,7 +2098,8 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -2200,7 +2180,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
 
       cache.ca_delete(_id)
 
@@ -2240,9 +2220,8 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-
-      if( !_.isEqual(Utils.checkRole(current_user), Constants.AMDINISTRATOR) ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( !_.isEqual(Utils.checkRole(current_user), Constants.AMDINISTRATOR) ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       await Promise.all( _.map(input, async(date, weight)=>{
                           let dateLottery =  await Model.DateLottery.findOne({date})
@@ -2260,43 +2239,6 @@ export default {
         data: dateLottery,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
-
-      /*
-      switch(input.mode.toLowerCase()){
-        case "new":{
-          input = {...input, weight: 1}
-
-          console.log("input : ", input )
-
-          let dateLottery = await Model.DateLottery.create(input);
-          
-          return {
-            status: true,
-            mode: input.mode.toLowerCase(),
-            data: dateLottery,
-            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          }
-        }
-
-        case "edit":{
-          let { input } = args
-
-          console.log("edit dateLottery : ", input)
-  
-          let dateLottery = await Model.DateLottery.findOneAndUpdate({ _id: input._id }, input, { new: true });
-          return {
-            status: true,
-            mode: input.mode.toLowerCase(),
-            data: dateLottery,
-            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          }
-        }
-
-        default:{
-          throw new AppError(Constants.ERROR, 'Other case')
-        }
-      }
-      */
     },
 
     async notification(parent, args, context, info) {
@@ -2306,7 +2248,7 @@ export default {
 
       console.log("notification :", _id)
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
 
       // let supplier = await Model.Supplier.findOne({_id})
@@ -2339,8 +2281,8 @@ export default {
       let { req } = context
       let { input } = args
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
 
       let comment = await Model.Comment.findOne({ _id: input?._id })
 
@@ -2378,8 +2320,7 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      // if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      await Utils.checkAuth(req);
 
       let newFiles = [];
       if(!_.isEmpty(input.files)){
@@ -2424,8 +2365,8 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
 
       let { subscriber } = await Utils.getUserFull({ _id })
       if( _.find(subscriber, (item)=> _.isEqual(item.userId, current_user?._id)) ) {
@@ -2445,12 +2386,8 @@ export default {
       let { input } = args
       let { req } = context
 
-      console.log("adminDeposit #1 :", input)
-
       let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
-
-      // let transition = await Model.Transition.findOne({ _id: input?._id })
 
       let aggregate = [
                         { 
@@ -2536,8 +2473,8 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let transition = await Model.Transition.findOne({ _id: input?._id })
       
@@ -2629,7 +2566,6 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      console.log("current_user :", current_user)
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       switch(input?.mode.toLowerCase()){
