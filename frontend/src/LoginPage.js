@@ -1,5 +1,5 @@
 import React , {useState, useEffect} from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useMutation, useApolloClient } from "@apollo/client";
 import { useDeviceData } from "react-device-detect";
 import _ from "lodash";
@@ -7,11 +7,12 @@ import AccountCircle from "@material-ui/icons/AccountCircle";
 import LockIcon from '@mui/icons-material/Lock';
 
 import { mutationLogin } from "./gqlQuery"
-import { setCookie } from "./util"
+import { setCookie, getHeaders } from "./util"
 
 const LoginPage = (props) => {
-    const navigate = useNavigate();
+    let navigate = useNavigate();
     let deviceData = useDeviceData();
+    let location = useLocation();
     let client = useApolloClient();
 
     let { user, updateProfile } = props

@@ -91,7 +91,7 @@ export const getHeaders = (params) =>{
   return  {
               "apollo-require-preflight": true,
               "content-Type": "application/json",
-              authorization: /*localStorage.getItem('token')*/ !_.isUndefined(getCookie('token'))  ? `Bearer ${ /*localStorage.getItem('token')*/ getCookie('token')}` : '',
+              "authorization": /*localStorage.getItem('token')*/ !_.isUndefined(getCookie('token'))  ? `Bearer ${ /*localStorage.getItem('token')*/ getCookie('token')}` : '',
               "custom-location":  JSON.stringify(params),
               "custom-authorization":  !_.isUndefined(getCookie('token'))  ? `Bearer ${getCookie('token')}` : '',
               "custom-x": "--1-- " + getCookie('token')
@@ -108,15 +108,30 @@ export const getCurrentDate =(separator='')=>{
 }
 
 export const checkRole = (user) =>{
-    if(user?.roles){
-        if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a2") || _.includes( user?.roles, "administrator")){
-            return Constants.AMDINISTRATOR;
-        }
-        // else if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a6")){
-        return Constants.AUTHENTICATED;
-        // }
+  if(user?.roles){
+    let { REACT_APP_USER_ROLES } = process.env
+    if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[0]) ){
+        return Constants.AMDINISTRATOR;
     }
-    return Constants.ANONYMOUS;
+    else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[1]) ){
+        return Constants.AUTHENTICATED;
+    }
+    else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[2]) ){
+        return Constants.SELLER;
+    }
+  }
+
+  return Constants.ANONYMOUS;
+
+  // if(user?.roles){
+  //   if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a2") || _.includes( user?.roles, "administrator")){
+  //       return Constants.AMDINISTRATOR;
+  //   }
+  //   // else if(_.includes( user?.roles, "62a2ccfbcf7946010d3c74a6")){
+  //   return Constants.AUTHENTICATED;
+  //   // }
+  // }
+  // return Constants.ANONYMOUS;
 }
 
 export const bookView = (val) =>{

@@ -24,9 +24,13 @@ export const EDITED_USER_BALANCE_BOOK = "EDITED_USER_BALANCE_BOOK";
 
 
 // AMDINISTRATOR, AUTHENTICATED, ANONYMOUS
-export const AMDINISTRATOR = "AMDINISTRATOR";
-export const AUTHENTICATED = "AUTHENTICATED";
-export const ANONYMOUS     = "ANONYMOUS";
+// export const AMDINISTRATOR = "AMDINISTRATOR";
+// export const AUTHENTICATED = "AUTHENTICATED";
+// export const ANONYMOUS     = "ANONYMOUS";
+export const ANONYMOUS        = 0;
+export const AMDINISTRATOR    = 1;
+export const AUTHENTICATED    = 2;
+export const SELLER           = 3;
 
 
 //// ws status

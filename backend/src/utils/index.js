@@ -76,7 +76,7 @@ export const checkAuth = async(req) => {
             return {
                 status: false,
                 code: Constants.USER_NOT_FOUND,
-                message: "without user - anonymous user"
+                message: "without user  user"
             }
         }
         // force logout
@@ -89,7 +89,7 @@ export const checkAuth = async(req) => {
         var bearer  = parts[0];
         var sessionId   = cryptojs.AES.decrypt(parts[1], process.env.JWT_SECRET).toString(cryptojs.enc.Utf8);
         
-        console.log("checkAuth # ", auth, req.headers)
+        // console.log("checkAuth # ", auth, req.headers)
         if (bearer == "Bearer") {
             let session = await Model.Session.findOne({_id: sessionId});
             console.log("checkAuth #  session ", session)
@@ -517,11 +517,15 @@ export const checkBalance = async(userId) =>{
 
 export const checkRole = (user) =>{
     if(user?.roles){
-        if(_.includes( user?.roles, Constants.AMDINISTRATOR)){
+        let { REACT_APP_USER_ROLES } = process.env
+        if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[0]) ){
             return Constants.AMDINISTRATOR;
         }
-        else if(_.includes( user?.roles, Constants.AUTHENTICATED)){
+        else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[1]) ){
             return Constants.AUTHENTICATED;
+        }
+        else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[2]) ){
+            return Constants.SELLER;
         }
     }
     return Constants.ANONYMOUS;
