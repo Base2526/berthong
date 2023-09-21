@@ -75,6 +75,9 @@ import {
 import {
   SlUserFollowing
 } from "react-icons/sl"
+import {
+  BiStoreAlt
+} from "react-icons/bi"
 import _ from "lodash"
 import TaxonomyBankPage from "./TaxonomyBankPage";
 import TaxonomyBanksPage from "./TaxonomyBanksPage";
@@ -132,7 +135,7 @@ import { queryNotifications,
           mutationLoginWithSocial,
           mutationWithdraw,
           mutationBank,
-          mutationSupplier,
+          mutationLottery,
           mutationNotification,
           mutationDeposit,
           queryBanks,
@@ -451,7 +454,7 @@ const App =(props) =>{
       if(status){
         console.log("onMutationLogin :", data, sessionId)
         // localStorage.setItem('token', sessionId)
-        setCookie('token', sessionId, {})
+        setCookie('token', sessionId)
         updateProfile(data)
         setDialogLogin(false);
       }
@@ -473,7 +476,7 @@ const App =(props) =>{
         if(status){
           // localStorage.setItem('token', sessionId)
 
-          setCookie('token', sessionId, {})
+          setCookie('token', sessionId)
 
           updateProfile(data)
           setDialogLogin(false);
@@ -568,7 +571,7 @@ const App =(props) =>{
       }
   );
 
-  const [onMutationSupplier, resultSupplier] = useMutation(mutationSupplier, {
+  const [onMutationSupplier, resultSupplier] = useMutation(mutationLottery, {
     context: { headers: getHeaders(location) },
     update: (cache, {data: {supplier}}) => {
       let { data, mode, status } = supplier
@@ -952,6 +955,16 @@ const App =(props) =>{
     }
   };
 
+  const ProtectedSellerRoute = ({ user, redirectPath = '/' }) => {
+    switch(checkRole(user)){
+      case Constants.AMDINISTRATOR:
+      case Constants.SELLER:
+        return <Outlet />;
+      default:
+        return <Navigate to={redirectPath} replace />;
+    }
+  };
+
   const ProtectedAdministratorRoute = ({ user, redirectPath = '/' }) => {
     switch(checkRole(user)){
       case Constants.AMDINISTRATOR:{
@@ -1018,24 +1031,28 @@ const App =(props) =>{
                 {id: 6, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
                 {id: 7, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
                 {id: 8, title:"จัดการหวยทั้งหมด", icon: <AssistantIcon />, path: "/manage-lotterys"},
-                {id: 9, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
+                {id: 9, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"}
               ]
       }
       case Constants.AUTHENTICATED:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
-                // {id: 1, title:"รายการ หวยทั้งหมด", icon: <AssistantIcon />, path: "/producers"},
+                {id: 1, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
+                {id: 2, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
+                {id: 3, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"}
+              ]
+      }
+
+      case Constants.SELLER:{
+        return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
+                {id: 1, title:"รายการ หวยทั้งหมด", icon: <AdjustIcon />, path: "/lotterys"},
                 {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
-                {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"},
-                // {id: 5, title:"บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/bank"},
-                // {id: 6, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
-                // {id: 7, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}
+                {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"}
               ]
       }
       default:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
-                // {id: 1, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
-                {id: 2, title:"Login", icon: <LoginIcon size="1.5em"  />, path: "/login"}]
+                {id: 1, title:"Login", icon: <LoginIcon size="1.5em"  />, path: "/login"}]
       }
     }
   }
@@ -1069,6 +1086,88 @@ const App =(props) =>{
                 setOpenDialogLogout(true)
               }}><LoginIcon size={20} round />Logout</MenuItem>
             </Menu>
+  }
+
+  const toolbarMenu = () =>{
+      if(!_.isEmpty(user)){
+        switch(checkRole(user)){
+          case Constants.AUTHENTICATED:{
+            return  <Stack direction={"row"} spacing={2} alignItems="center">
+                      <div className="border-login">
+                        <IconButton size={'small'} onClick={()=> navigate("/notifications") }>
+                          <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
+                            <MdCircleNotificationsIcon color={ _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
+                          </Badge>
+                        </IconButton>
+                        <IconButton size={'small'} onClick={()=> navigate("/book-buy")}>
+                          <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
+                            <FiShoppingCart color={ _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
+                          </Badge>
+                        </IconButton>
+                        <IconButton size={'small'} onClick={()=> navigate("/bookmarks")}>
+                          <MdOutlineBookmarkAddedIcon color={ _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
+                        </IconButton>
+                        <IconButton size={'small'} onClick={()=> navigate("/subscribes")}>
+                          <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
+                        </IconButton>
+                        <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
+                          <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }/>
+                        </IconButton>
+                      </div>
+                    </Stack>
+          }
+
+          case Constants.AMDINISTRATOR:{
+            return  <Stack direction={"row"} spacing={2} alignItems="center">
+                      <div className="border-login">
+                        <IconButton 
+                          size={'small'}
+                          onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
+                          <Avatar 
+                            src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
+                            alt="profile"
+                          />
+                        </IconButton>
+                      </div>
+                    </Stack>
+          }
+
+          case Constants.SELLER:{
+            return  <Stack direction={"row"} spacing={2} alignItems="center">
+                      <div className="border-login">
+                        <IconButton size={'small'} onClick={()=> navigate("/notifications") }>
+                          <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
+                            <MdCircleNotificationsIcon color={ _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
+                          </Badge>
+                        </IconButton>
+                        <IconButton size={'small'} onClick={()=> navigate("/book-buy")}>
+                          <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
+                            <FiShoppingCart color={ _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
+                          </Badge>
+                        </IconButton>
+                        <IconButton size={'small'} onClick={()=> navigate("/bookmarks")}>
+                          <MdOutlineBookmarkAddedIcon color={ _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
+                        </IconButton>
+                        <IconButton size={'small'} onClick={()=> navigate("/subscribes")}>
+                          <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
+                        </IconButton>
+                        <IconButton size={'small'} onClick={()=> navigate("/lotterys")}>
+                          <BiStoreAlt color={ _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1.2em"/>
+                        </IconButton>
+                        <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
+                          <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }/>
+                        </IconButton>
+                      </div>
+                    </Stack>
+          }
+        }
+      }
+
+      return  <Stack direction={"row"} spacing={2} alignItems="center">
+                <IconButton size={'small'} onClick={()=>{ setDialogLogin(true) }}>
+                  <LoginIcon color="white" size="1.2em"/>
+                </IconButton>
+              </Stack>
   }
 
   return (
@@ -1130,70 +1229,8 @@ const App =(props) =>{
                     edge="start"
                     className={clsx(classes.menuButton, open && classes.hide)}
                   ><MenuIcon /></IconButton>
-                  <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">{ REACT_APP_SITE_TITLE }</div></Typography>
-                  {
-                    !_.isEmpty(user)
-                    ? _.isEqual(checkRole(user), Constants.AUTHENTICATED ) 
-                        ? <Stack direction={"row"} spacing={2} alignItems="center">
-                            <div className="border-login">
-                              <IconButton 
-                                size={'small'}
-                                onClick={()=> navigate("/notifications") }>
-                                <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
-                                  <MdCircleNotificationsIcon color={ _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
-                                </Badge>
-                              </IconButton>
-                              <IconButton 
-                                size={'small'}
-                                onClick={()=> navigate("/book-buy")}>
-                                <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
-                                  <FiShoppingCart color={ _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
-                                </Badge>
-                              </IconButton>
-                              <IconButton 
-                                size={'small'}
-                                onClick={()=> navigate("/bookmarks")}>
-                                <MdOutlineBookmarkAddedIcon color={ _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
-                              </IconButton>
-                              <IconButton 
-                                size={'small'}
-                                onClick={()=> navigate("/subscribes")}>
-                                <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
-                              </IconButton>
-                              <IconButton 
-                                size={'small'}
-                                onClick={(evt)=>{
-                                  setOpenMenuProfile(evt.currentTarget)
-                                }  }>
-                                <Avatar 
-                                  src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
-                                  alt="profile"
-                                />
-                              </IconButton>
-                            </div>
-                          </Stack>
-                        : _.isEqual(checkRole(user), Constants.AMDINISTRATOR ) 
-                           ?  <Stack direction={"row"} spacing={2} alignItems="center">
-                                <div className="border-login">
-                                  <IconButton 
-                                    size={'small'}
-                                    onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
-                                    <Avatar 
-                                      src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
-                                      alt="profile"
-                                    />
-                                  </IconButton>
-                                </div>
-                              </Stack>
-                            : ""
-                    : <Stack direction={"row"} spacing={2} alignItems="center">
-                         <IconButton 
-                          size={'small'}
-                          onClick={()=>{ setDialogLogin(true) }}>
-                          <LoginIcon color="white" size="1.2em"/>
-                        </IconButton>
-                      </Stack>
-                  }
+                  <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">{ REACT_APP_SITE_TITLE } { checkRole(user) === Constants.SELLER ? "(Seller)" : ""}</div></Typography>
+                  {toolbarMenu()}
                 </>
               }
             </Toolbar>
@@ -1316,11 +1353,12 @@ const App =(props) =>{
               <Route path="/bookmarks" element={<BookMarksPage {...props} onMutationFollow={(evt)=>onMutationFollow(evt) } />} />
               <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />} />
               <Route path="/producers" element={<ProducersPage {...props}  onLightbox={(evt)=>setLightbox(evt)}  />} />
+            </Route>
+            <Route element={<ProtectedSellerRoute user={user} />}>
+              <Route path="/lotterys" element={<LotterysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/lottery" element={<LotteryPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
-              <Route path="/lotterys" element={<LotterysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/lottery" element={<LotteryPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
               <Route path="/admin-deposits" element={<AdminDepositsPage 
                                                       {...props} 
                                                       onLightbox={(value)=>setLightbox(value)} 

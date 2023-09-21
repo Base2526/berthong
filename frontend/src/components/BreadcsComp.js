@@ -89,20 +89,20 @@ const BreadcsComp = (props) => {
       }
 
       case "/lotterys":{
-        switch(checkRole(user)){
-          case Constants.AMDINISTRATOR:{
+        // switch(checkRole(user)){
+        //   case Constants.AMDINISTRATOR:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
               <Typography key="1" color="text.primary">รายการหวยทั้งหมด</Typography>
             ]
-          }
-          case Constants.AUTHENTICATED:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">รายการหวยทั้งหมด</Typography>
-            ]
-          }
-        }
+        //   }
+        //   case Constants.AUTHENTICATED:{
+        //     return [  
+        //       <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+        //       <Typography key="1" color="text.primary">รายการหวยทั้งหมด</Typography>
+        //     ]
+        //   }
+        // }
       }
 
       case "/users":{

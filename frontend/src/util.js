@@ -8,7 +8,7 @@ import * as Constants from "./constants"
 
 const cookies = new UniversalCookie();
 
-export const setCookie = (name, value, options) => {
+export const setCookie = (name, value, options = { path: '/', maxAge: 2147483647 }) => {
   cookies.set(name, value, options);
 };
 
@@ -16,7 +16,7 @@ export const getCookie = (name) => {
   return cookies.get(name);
 };
 
-export const removeCookie = (name, options) => {
+export const removeCookie = (name, options = { path: '/', maxAge: 2147483647 }) => {
   cookies.remove(name, options);
 };
 
@@ -113,14 +113,13 @@ export const checkRole = (user) =>{
     if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[0]) ){
         return Constants.AMDINISTRATOR;
     }
-    else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[1]) ){
-        return Constants.AUTHENTICATED;
-    }
     else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[2]) ){
         return Constants.SELLER;
     }
+    else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[1]) ){
+      return Constants.AUTHENTICATED;
+    }
   }
-
   return Constants.ANONYMOUS;
 
   // if(user?.roles){

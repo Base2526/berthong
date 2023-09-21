@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import moment from "moment";
 
-import { mutationSupplier, queryManageLotterys, querySupplierById } from "./gqlQuery";
+import { queryManageSuppliers, queryManageLotterys, querySupplierById, mutationLottery } from "./gqlQuery";
 import { getHeaders, handlerErrorApollo } from "./util";
 import AttackFileField from "./AttackFileField";
 
@@ -22,10 +22,25 @@ let initValues = {
   type: "",            // 0: bon, 1 : lang
 }
 
+const INIT_SEARCH = {
+  PAGE: 1,
+  LIMIT: 1000,
+  NUMBER: "",
+  TITLE: "",
+  DETAIL: "",
+  PRICE: 500,
+  CHK_BON: false,
+  CHK_LAND: false,
+  CHK_MONEY: false,
+  CHK_GOLD: false
+}
+
 const LotteryPage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+
+  let [search, setSearch] = useState(INIT_SEARCH)
 
   const [input, setInput]       = useState(initValues);
   let [error, setError]         = useState(initValues);
@@ -37,40 +52,42 @@ const LotteryPage = (props) => {
   let { mode, id } = location.state
   // const { onMutationSupplier } = props
 
-  const [onMutationSupplier, resultSupplier] = useMutation(mutationSupplier, {
+  const [onMutationSupplier, resultSupplier] = useMutation(mutationLottery, {
     context: { headers: getHeaders(location) },
-    update: (cache, {data: {supplier}}) => {
-      let { data, mode, status } = supplier
+    update: (cache, {data : {supplier} }, context) => {
+      let { status, data } = supplier
+      console.log("data :", data, context)
 
-      // if(status){
-      //   switch(mode){
-      //     case "new":{
-      //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+      if(status){
+        let { variables } = context
+        switch(variables?.input?.mode.toUpperCase()){
+          case "NEW":{
+            const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers, variables: { input: search } });
+            if(!_.isNull(manageSuppliersValue)){
+              let newData = [...manageSuppliersValue.manageSuppliers.data, data];
+              cache.writeQuery({
+                query: queryManageSuppliers,
+                variables: { input: search },
+                data: { suppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
+              });
+            }
+            break;
+          }
 
-      //       if(!_.isNull(querySuppliersValue)){
-      //         let newData = [...querySuppliersValue.suppliers.data, data];
-
-      //         cache.writeQuery({
-      //           query: querySuppliers,
-      //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-      //         });
-      //       }
-      //       break;
-      //     }
-      //     case "edit":{
-      //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
-      //       if(!_.isNull(querySuppliersValue)){
-      //         let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
-
-      //         cache.writeQuery({
-      //           query: querySuppliers,
-      //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-      //         });
-      //       }
-      //       break;
-      //     }
-      //   }
-      // }
+          case "EDIT":{
+            const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers, variables: { input: search } });
+            if(!_.isNull(manageSuppliersValue)){
+              let newData = _.map(manageSuppliersValue.manageSuppliers.data, (item)=> item._id == data._id ? data : item ) 
+              cache.writeQuery({
+                query: queryManageSuppliers,
+                variables: { input: search },
+                data: { manageSuppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
+              });
+            }
+            break;
+          }
+        }
+      }
     },
     onCompleted(data) {
       navigate(-1)
@@ -91,6 +108,10 @@ const LotteryPage = (props) => {
                                               }
                                             );
 
+  if(!_.isEmpty(errorManageLotterys)){
+    handlerErrorApollo( props, errorManageLotterys )
+  }
+
   let { loading: loadingSupplierById, 
         data: dataSupplierById, 
         error: errorSupplierById,
@@ -102,6 +123,10 @@ const LotteryPage = (props) => {
                                                   notifyOnNetworkStatusChange: true,
                                                 })
 
+  if(!_.isEmpty(errorSupplierById)){
+    handlerErrorApollo( props, errorSupplierById )
+  }
+
   useEffect(()=>{
     if( !loadingSupplierById && mode == "edit"){
       if(!_.isEmpty(dataSupplierById?.supplierById)){
@@ -112,7 +137,7 @@ const LotteryPage = (props) => {
             price: data.price, 
             priceUnit: data.priceUnit, 
             description: data.description, 
-            dateLottery: data.dateLottery, 
+            manageLottery: data.manageLottery?._id, 
             files: data.files, 
             condition: data.condition,  // 11-100
             category: data.category,    // money, gold, things, etc
@@ -153,13 +178,30 @@ const LotteryPage = (props) => {
         price: parseInt(input.price),
         priceUnit: parseInt(input.priceUnit),
         description: input.description,
-        dateLottery: input.dateLottery,
+        manageLottery: input.manageLottery,
         files: input.files,
         condition: parseInt(input.condition),    // 11-100
         category: parseInt(input.category),      // money, gold, things, etc
         type: parseInt(input.type)               // bon, lang
     }
 
+    /*
+    mode: SupplierModeType!
+    _id: ID
+    title: String!
+    price: Int!
+    priceUnit: Int!
+    description: String
+    dateLottery: ID!
+    files: [JSON]
+    condition: Int!
+    category: Int!
+    type: Int!
+    buys: [JSON]
+    publish: Boolean = false
+    test: Boolean = false
+    ownerId: ID
+    */
     console.log("newInput :", newInput)
 
     if(mode == "edit"){
@@ -204,7 +246,7 @@ const LotteryPage = (props) => {
           break;
         }
 
-        case "dateLottery":{
+        case "manageLottery":{
           if (!value) {
             objs[name] = "Please enter date-lottery.";
           } 
@@ -241,133 +283,134 @@ const LotteryPage = (props) => {
   };
 
   // return  useMemo(() => {
-            return  <form onSubmit={submitForm}>
-                      <div>
-                        <label>ชื่อ * :</label>
-                        <input 
-                          type="text" 
-                          name="title"
-                          value={ _.isEmpty(input.title) ? "" : input.title }
-                          onChange={ onInputChange }
-                          onBlur={ validateInput } />
-                        <p className="text-red-500"> {_.isEmpty(error.title) ? "" : error.title} </p>
-                      </div>
-                      <div>
-                        <label>ราคาสินค้า * :</label>
-                        <input 
-                          type="number" 
-                          name="price"
-                          value={ input.price }
-                          onChange={ onInputChange }
-                          onBlur={ validateInput } />
-                        <p className="text-red-500"> {_.isEmpty(error.price) ? "" : error.price} </p>
-                      </div>
-                      <div>
-                        <label>ขายเบอละ * :</label>
-                        <input 
-                          type="number" 
-                          name="priceUnit"
-                          value={ input.priceUnit }
-                          onChange={ onInputChange }
-                          onBlur={ validateInput } />
-                        <p className="text-red-500"> {_.isEmpty(error.priceUnit) ? "" : error.priceUnit} </p>
-                      </div>
-                      <div>
-                        <label>งวดที่ออกรางวัล * :</label>
-                        {
-                          _.isEmpty(manageLotterys) 
-                          ? <LinearProgress />
-                          : <select 
-                              name="manageLottery" 
-                              id="manageLottery" 
-                              value={ input.manageLottery }
-                              onChange={ onInputChange }
-                              onBlur={ validateInput } >
-                              <option value={""}>ไม่เลือก</option>
-                              {_.map(manageLotterys, (manageLotterys)=><option value={manageLotterys._id}>{ manageLotterys?.title }</option>)}
-                            </select>
+  return  <form onSubmit={submitForm}>
+            <div>
+              <label>ชื่อ * :</label>
+              <input 
+                type="text" 
+                name="title"
+                value={ _.isEmpty(input.title) ? "" : input.title }
+                onChange={ onInputChange }
+                onBlur={ validateInput } />
+              <p className="text-red-500"> {_.isEmpty(error.title) ? "" : error.title} </p>
+            </div>
+            <div>
+              <label>ราคาสินค้า * :</label>
+              <input 
+                type="number" 
+                name="price"
+                value={ input.price }
+                onChange={ onInputChange }
+                onBlur={ validateInput } />
+              <p className="text-red-500"> {_.isEmpty(error.price) ? "" : error.price} </p>
+            </div>
+            <div>
+              <label>ขายเบอละ * :</label>
+              <input 
+                type="number" 
+                name="priceUnit"
+                value={ input.priceUnit }
+                onChange={ onInputChange }
+                onBlur={ validateInput } />
+              <p className="text-red-500"> {_.isEmpty(error.priceUnit) ? "" : error.priceUnit} </p>
+            </div>
+            <div>
+              <label>งวดที่ออกรางวัล * :</label>
+              {
+                _.isEmpty(manageLotterys) 
+                ? <LinearProgress />
+                : <select 
+                    name="manageLottery" 
+                    id="manageLottery" 
+                    value={ input.manageLottery }
+                    onChange={ onInputChange }
+                    onBlur={ validateInput } >
+                    <option value={""}>ไม่เลือก</option>
+                    {_.map(manageLotterys, (manageLotterys)=><option value={manageLotterys._id}>{ manageLotterys?.title }</option>)}
+                  </select>
+              }
+              <p className="text-red-500"> {_.isEmpty(error.manageLottery) ? "" : error.manageLottery} </p>
+            </div>
+            <div>
+              <label>ยอดขั้นตํ่า * :</label>
+              <select 
+                name="condition" 
+                id="condition" 
+                value={input.condition}
+                onChange={ onInputChange }
+                onBlur={ validateInput } >
+                <option value={""}>ไม่เลือก</option>
+                {_.map(Array(90), (v, k)=> <option value={k+11}>{k+11}</option> )}
+              </select>  
+              <p className="text-red-500"> {_.isEmpty(error.condition) ? "" : error.condition} </p>  
+            </div>
+            <div>
+              <label>บน/ล่าง *</label>
+              <select 
+                name="type" 
+                id="type" 
+                value={input.type}
+                onChange={ onInputChange }
+                onBlur={ validateInput } >
+              <option value={""}>ไม่เลือก</option>
+              {_.map(types, (val)=><option key={val.id} value={val.id}>{t(val.name)}</option> )}
+              </select>    
+              <p className="text-red-500"> {_.isEmpty(error.type) ? "" : error.type} </p>  
+            </div> 
+            <div>
+              <label>หมวดหมู่ *</label>
+              <select 
+                name="category" 
+                id="category" 
+                value={input.category}
+                onChange={ onInputChange }
+                onBlur={ validateInput }>
+              <option value={""}>ไม่เลือก</option>
+                { _.map(categorys, (val)=><option key={val.id} value={val.id}>{t(val.name)} </option>) }
+              </select> 
+              <p className="text-red-500"> {_.isEmpty(error.category) ? "" : error.category} </p>  
+            </div>   
+            <div > 
+              <label>{t('detail')}</label>               
+              <textarea 
+                defaultValue={input.description} 
+                rows={4} 
+                cols={40}
+                onChange={(evt)=>{
+                  setInput({...input, description: evt.target.value})
+                }
+              } />
+            </div>
+            <div>
+              <AttackFileField
+                label={t("attack_file") + " (อย่างน้อย  1 ไฟล์)"}
+                values={input.files}
+                multiple={true}
+                onChange={(values) =>{
+                  // console.log("{...input, files: values} :", input, {...input, files: values})
+                  setInput({...input, files: values})
+                } }
+                onSnackbar={(data) => console.log(data) }/>
+            </div>
+            {/* <button type="submit" variant="contained" color="primary"> { mode == "edit" ? t("update") : t("create")}</button> */}
+            <Button 
+              type="submit" 
+              variant="contained" 
+              color="primary"
+              // onClick={evt=>{ submitForm(evt) }}
+              disabled={   input.title === "" 
+                          || input.price === "" 
+                          || input.priceUnit === ""
+                          || input.description === ""
+                          || _.isNull(input.manageLottery)
+                          // || _.isEmpty(input.files ) 
+                          || input.condition === ""
+                          || input.category === ""
+                          || input.type === ""
                         }
-                        <p className="text-red-500"> {_.isEmpty(error.dateLottery) ? "" : error.dateLottery} </p>
-                      </div>
-                      <div>
-                        <label>ยอดขั้นตํ่า * :</label>
-                        <select 
-                          name="condition" 
-                          id="condition" 
-                          value={input.condition}
-                          onChange={ onInputChange }
-                          onBlur={ validateInput } >
-                          <option value={""}>ไม่เลือก</option>
-                          {_.map(Array(90), (v, k)=> <option value={k+11}>{k+11}</option> )}
-                        </select>  
-                        <p className="text-red-500"> {_.isEmpty(error.condition) ? "" : error.condition} </p>  
-                      </div>
-                      <div>
-                        <label>บน/ล่าง *</label>
-                        <select 
-                          name="type" 
-                          id="type" 
-                          value={input.type}
-                          onChange={ onInputChange }
-                          onBlur={ validateInput } >
-                        <option value={""}>ไม่เลือก</option>
-                        {_.map(types, (val)=><option key={val.id} value={val.id}>{t(val.name)}</option> )}
-                        </select>    
-                        <p className="text-red-500"> {_.isEmpty(error.type) ? "" : error.type} </p>  
-                      </div> 
-                      <div>
-                        <label>หมวดหมู่ *</label>
-                        <select 
-                          name="category" 
-                          id="category" 
-                          value={input.category}
-                          onChange={ onInputChange }
-                          onBlur={ validateInput }>
-                        <option value={""}>ไม่เลือก</option>
-                          { _.map(categorys, (val)=><option key={val.id} value={val.id}>{t(val.name)} </option>) }
-                        </select> 
-                        <p className="text-red-500"> {_.isEmpty(error.category) ? "" : error.category} </p>  
-                      </div>   
-                      <div > 
-                        <label>{t('detail')}</label>               
-                        <textarea 
-                          defaultValue={input.description} 
-                          rows={4} 
-                          cols={40}
-                          onChange={(evt)=>{
-                            setInput({...input, description: evt.target.value})
-                          }
-                        } />
-                      </div>
-                      <div>
-                        <AttackFileField
-                          label={t("attack_file") + " (อย่างน้อย  1 ไฟล์)"}
-                          values={input.files}
-                          multiple={true}
-                          onChange={(values) =>{
-                            // console.log("{...input, files: values} :", input, {...input, files: values})
-                            setInput({...input, files: values})
-                          } }
-                          onSnackbar={(data) => console.log(data) }/>
-                      </div>
-                      {/* <button type="submit" variant="contained" color="primary"> { mode == "edit" ? t("update") : t("create")}</button> */}
-                      <Button 
-                        type="submit" 
-                        variant="contained" 
-                        color="primary"
-                        // onClick={evt=>{ submitForm(evt) }}
-                        disabled={   input.title === "" 
-                                    || input.price === "" 
-                                    || input.priceUnit === ""
-                                    || input.description === ""
-                                    || _.isNull(input.manageLottery)
-                                    // || _.isEmpty(input.files ) 
-                                    || input.condition === ""
-                                    || input.category === ""
-                                    || input.type === ""
-                                  }
-                        >{ mode == "edit" ? t("update") : t("create")}</Button>
-                    </form>
+              >{ mode == "edit" ? t("update") : t("create")}
+            </Button>
+          </form>
           // }, [ input, dateLotterysValues ]);
 }
 

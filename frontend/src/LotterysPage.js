@@ -26,8 +26,8 @@ import moment from "moment";
 
 import { useTable, useFilters, useGlobalFilter, useAsyncDebounce } from 'react-table'
 
-import { getHeaders, checkRole } from "./util"
-import { queryAdminSuppliers } from "./gqlQuery"
+import { getHeaders, handlerErrorApollo } from "./util"
+import { queryManageSuppliers } from "./gqlQuery"
 import UserComp from "./components/UserComp"
 
 import * as Constants from "./constants"
@@ -72,25 +72,28 @@ const LotterysPage = (props) => {
           error: errorSuppliers, 
           subscribeToMore: subscribeToMoreSuppliers, 
           fetchMore: fetchMoreSuppliers,
-          networkStatus: networkStatusSuppliers } = useQuery( queryAdminSuppliers, { 
-                                                                context: { headers: getHeaders(location) }, 
-                                                                variables: { input: search },
-                                                                fetchPolicy: 'cache-first' , 
-                                                                nextFetchPolicy: 'network-only' , 
-                                                                notifyOnNetworkStatusChange: true
-                                                              });
+          networkStatus: networkStatusSuppliers } = useQuery( queryManageSuppliers, { 
+                                                              context: { headers: getHeaders(location) }, 
+                                                              variables: { input: search },
+                                                              fetchPolicy: 'cache-first' , 
+                                                              nextFetchPolicy: 'network-only' , 
+                                                              notifyOnNetworkStatusChange: true
+                                                            });
+
+  if(!_.isEmpty(errorSuppliers)){
+    handlerErrorApollo( props, errorSuppliers )
+  }
 
   useEffect(() => {
     if(!loadingSuppliers){
-      if (dataSuppliers?.adminSuppliers) {
-        let { status, data } = dataSuppliers?.adminSuppliers
+      if (dataSuppliers?.manageSuppliers) {
+        let { status, data } = dataSuppliers?.manageSuppliers
         if(status){
           setDatas(data)
         }
       }
     }
   }, [dataSuppliers, loadingSuppliers])
-
 
   const handleClose = () => {
     setOpenDialogDelete({ ...openDialogDelete, isOpen: false, description: "" });

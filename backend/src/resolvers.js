@@ -805,7 +805,7 @@ export default {
       let start = Date.now()
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      // if( Utils.checkRole(current_user) == Constants.AMDINISTRATOR || Utils.checkRole(current_user) == Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
       let data = await Model.ManageLottery.find({})
       return {  status: true,
                 data,
@@ -818,7 +818,7 @@ export default {
       let { req } = context
       let { _id } = args
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      // if( Utils.checkRole(current_user) == Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let data = await Model.ManageLottery.findOne({_id})
       return {  status: true,
@@ -1024,28 +1024,28 @@ export default {
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
-    async adminSuppliers(parent, args, context, info){
+    async manageSuppliers(parent, args, context, info){
       let start = Date.now()
       let { req } = context
       let { current_user } =   await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
-
+      let role = Utils.checkRole(current_user)
+      if( role !== Constants.AMDINISTRATOR && role !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
 
       let { TITLE, NUMBER, PAGE, LIMIT } = args?.input
       let SKIP = (PAGE - 1) * LIMIT
 
       let aggregate = []
+      let match     = {}
       if(!_.isEmpty(TITLE)){
-        aggregate = [
-                      {
-                        $match: {
-                          title: {
-                            $regex: TITLE,
-                            $options: "i"
-                          }
-                        }
-                      }
-                    ]
+        match = { title: { $regex: TITLE, $options: "i" } }
+      }
+
+      if( role === Constants.SELLER){
+        match = {...match, ownerId: mongoose.Types.ObjectId(current_user?._id)}
+      }
+
+      if(!_.isEmpty(match)){
+        aggregate = [ { $match: match } ]
       }
 
       aggregate = [ ...aggregate,
@@ -1064,25 +1064,25 @@ export default {
                     },
                     {
                       $lookup: {
-                          localField: "dateLottery",
-                          from: "dateLottery",
+                          localField: "manageLottery",
+                          from: "manageLottery",
                           foreignField: "_id",
-                          pipeline: [
-                            { $project:{ date: 1 }}
-                          ],
-                          as: "dateLottery"
+                          // pipeline: [
+                          //   { $project:{ date: 1 }}
+                          // ],
+                          as: "manageLottery"
                       }
                     },
                     {
                       $unwind: {
-                              "path": "$owner",
-                              "preserveNullAndEmptyArrays": false
+                        path: "$owner",
+                        preserveNullAndEmptyArrays: true
                       }
                     },
                     {
                       $unwind: {
-                              "path": "$dateLottery",
-                              "preserveNullAndEmptyArrays": false
+                        path: "$manageLottery",
+                        preserveNullAndEmptyArrays: true
                       }
                     }
                   ]
@@ -1097,8 +1097,6 @@ export default {
         })
 
         aggregate = [...aggregate, { $match: { "$and" : q  } }]
-
-        
 
         let suppliers = await Model.Supplier.aggregate(aggregate)
 
@@ -1116,6 +1114,7 @@ export default {
         }
       }
 
+      console.log("manageSuppliers :", aggregate)
       let suppliers = await Model.Supplier.aggregate(aggregate)
 
       aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
@@ -1896,13 +1895,13 @@ export default {
       console.log("supplier :", input)
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated and Authenticated only!')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && 
+          Utils.checkRole(current_user) != Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
 
       if(input.test){
         let supplier = await Model.Supplier.create(input);
         return {
           status: true,
-          mode: input.mode.toLowerCase(),
           data: supplier,
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
@@ -1947,7 +1946,6 @@ export default {
         
           return {
             status: true,
-            mode: input.mode.toLowerCase(),
             data: supplier,
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
@@ -2015,7 +2013,6 @@ export default {
 
           return {
             status: true,
-            mode: input.mode.toLowerCase(),
             data: await Utils.getSupplier({ _id: input._id }),
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }

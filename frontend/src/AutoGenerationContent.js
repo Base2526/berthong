@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
 import { getHeaders, handlerErrorApollo } from "./util"
-import { mutationSupplier, queryManageLotterys, mutationRegister, queryUsers } from "./gqlQuery"
+import { mutationLottery, queryManageLotterys, mutationRegister, queryUsers } from "./gqlQuery"
 
 const { faker } = require("@faker-js/faker");
 
@@ -37,7 +37,7 @@ const AutoGenerationContent = (props) => {
                                                                     notifyOnNetworkStatusChange: true }
                                                                     );
 
-    const [onSupplier, resultSupplier] = useMutation(mutationSupplier, {
+    const [onSupplier, resultSupplier] = useMutation(mutationLottery, {
         context: { headers: getHeaders(location) },
         update: (cache, {data: {supplier}}) => { },
         onCompleted(data) {
@@ -115,7 +115,7 @@ const AutoGenerationContent = (props) => {
                                 price: parseInt(makeNumber(3)),
                                 priceUnit: parseInt(makeNumber(2)),
                                 description: faker.lorem.paragraph(),
-                                dateLottery: manageLotterys[randomNumberInRange(0, manageLotterys.length - 1)]?._id,
+                                manageLottery: manageLotterys[randomNumberInRange(0, manageLotterys.length - 1)]?._id,
                                 files: makeFile(5),
                                 condition: parseInt(randomNumberInRange(11, 100)),    // 11-100
                                 category: parseInt(randomNumberInRange(0, 3)),        // money, gold, things, etc
