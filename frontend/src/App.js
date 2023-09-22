@@ -30,7 +30,8 @@ import {
   Adjust as AdjustIcon,
   AlternateEmail as AlternateEmailIcon,
   AllOut as AllOutIcon,
-  Assistant as AssistantIcon
+  Assistant as AssistantIcon,
+  AddTask as AddTaskIcon
 } from '@mui/icons-material';
 import LinearProgress from '@mui/material/LinearProgress';
 import {
@@ -683,41 +684,39 @@ const App =(props) =>{
 
   const [onMutationMe, resultMutationMe] = useMutation(mutationMe, {
     context: { headers: getHeaders(location) },
-    update: (cache, {data:{ me }}) => {
+    update: (cache, {data:{ me }}, context) => {
       let { status, data } = me
       if(status){
         updateProfile(data)
-      }
-    },
-    onCompleted(data) {
-      let {type, mode} = data?.me
-      switch(type){
-        case "bank":{
-          switch(mode){
-            case "new":{
-              showToast("success", `Add bank success`)
-              navigate(-1)
-              break;
+
+        let { type, mode } = context?.variables?.input
+        switch(type){
+          case "bank":{
+            switch(mode){
+              case "new":{
+                showToast("success", `Add bank success`)
+                navigate(-1)
+                break;
+              }
+              case "delete":{
+                showToast("success", `Delete bank success`)
+                setOpenDialogDeleteBank({ open: false, id: ""})  
+                break;
+              }
             }
-            case "delete":{
-              showToast("success", `Delete bank success`)
-              setOpenDialogDeleteBank({ open: false, id: ""})  
-              break;
-            }
+  
+            break;
           }
-
-          break;
-        }
-
-        case "avatar":{
-          showToast("success", `Update profile success`)
-          break;
+  
+          case "avatar":{
+            showToast("success", `Update profile success`)
+            break;
+          }
         }
       }
     },
-    onError(error){
-      return handlerErrorApollo( props, error )
-    }
+    onCompleted: (data) => {},
+    onError: (error) => handlerErrorApollo( props, error )
   });
 
   const [onMutationDateLottery, resultMutationDateLotteryValues] = useMutation(mutationDatesLottery
@@ -923,12 +922,11 @@ const App =(props) =>{
   const ProtectedAuthenticatedRoute = ({ user, redirectPath = '/' }) => {
     switch(checkRole(user)){
       case Constants.AMDINISTRATOR:
-      case Constants.AUTHENTICATED:{
+      case Constants.AUTHENTICATED:
+      case Constants.SELLER: 
         return <Outlet />;
-      }
-      default:{
+      default:
         return <Navigate to={redirectPath} replace />;
-      }
     }
   };
 
@@ -944,12 +942,10 @@ const App =(props) =>{
 
   const ProtectedAdministratorRoute = ({ user, redirectPath = '/' }) => {
     switch(checkRole(user)){
-      case Constants.AMDINISTRATOR:{
+      case Constants.AMDINISTRATOR:
         return <Outlet />;
-      }
-      default:{
+      default:
         return <Navigate to={redirectPath} replace />;
-      }
     }
   };
 
@@ -995,16 +991,15 @@ const App =(props) =>{
     setOpen(false);
   };
 
-  
   const menuList = () =>{
     switch(checkRole(user)){
       case Constants.AMDINISTRATOR:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em"/>, path: "/"},
-                {id: 1, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/admin-withdraws"},
-                {id: 2, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/admin-deposits"},
+                {id: 1, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/withdraws"},
+                {id: 2, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/deposits"},
                 {id: 3, title:"รายการถอดเงินทั้งหมด", icon: <AccountTreeIcon />, path: "/withdraws"},
-                {id: 4, title:"รายการฝากเงินทั้งหมด", icon: <AddRoadIcon />, path: "/deposits"},
-                {id: 5, title:"รายการ หวยทั้งหมด", icon: <AdjustIcon />, path: "/lotterys"},
+                {id: 4, title:"รายการฝากเงินทั้งหมด", icon: <AddRoadIcon />, path: "/all-deposits"},
+                {id: 5, title:"รายการหวยทั้งหมด", icon: <AddTaskIcon />, path: "/lotterys"},
                 {id: 6, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
                 {id: 7, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
                 {id: 8, title:"จัดการหวยทั้งหมด", icon: <AssistantIcon />, path: "/manage-lotterys"},
@@ -1021,7 +1016,7 @@ const App =(props) =>{
 
       case Constants.SELLER:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
-                {id: 1, title:"รายการ หวยทั้งหมด", icon: <AdjustIcon />, path: "/lotterys"},
+                {id: 1, title:"รายการหวยทั้งหมด", icon: <AddTaskIcon />, path: "/lotterys"},
                 {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
                 {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"}
@@ -1336,11 +1331,11 @@ const App =(props) =>{
               <Route path="/lottery" element={<LotteryPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
-              <Route path="/admin-deposits" element={<AdminDepositsPage 
+              <Route path="/deposits" element={<AdminDepositsPage 
                                                       {...props} 
                                                       onLightbox={(value)=>setLightbox(value)} 
                                                       onMutationAdminDeposit={(evt)=>onMutationAdminDeposit(evt)} />} />
-              <Route path="/admin-withdraws" element={<AdminWithdrawsPage 
+              <Route path="/withdraws" element={<AdminWithdrawsPage 
                                                       {...props} 
                                                       onMutationAdminWithdraw={(evt)=>onMutationAdminWithdraw(evt)} 
                                                       onLightbox={(value)=>setLightbox(value)} />} />
@@ -1353,7 +1348,7 @@ const App =(props) =>{
               <Route path="/dblog" element={<DblogPage  {...props} />} />
               <Route path="/auto-generation-content" element={<AutoGenerationContent  {...props} />} />
 
-              <Route path="/deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/all-deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/withdraws" element={<WithdrawsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
             </Route>
             <Route path="*" element={<p>There's nothing here: 404!</p>} />

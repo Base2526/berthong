@@ -286,11 +286,11 @@ const AdminHomePage = (props) => {
     return  _.map(datas, (item, index)=>{
               switch(index){
                 case 0:{
-                  return <div className="card-admin" onClick={(evt)=>navigate("/admin-deposits")}>{item.title} - {item.data?.length}</div>
+                  return <div className="card-admin" onClick={(evt)=>navigate("/deposits")}>{item.title} - {item.data?.length}</div>
                 }
 
                 case 1:{
-                  return <div className="card-admin" onClick={(evt)=>navigate("/admin-withdraws")}>{item.title} - {item.data?.length}</div>
+                  return <div className="card-admin" onClick={(evt)=>navigate("/withdraws")}>{item.title} - {item.data?.length}</div>
                 }
 
                 case 2:{

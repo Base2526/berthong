@@ -138,6 +138,8 @@ const HomePage = (props) => {
           setDatas(data)
           setSlice(data?.length)
           setTotal(total)
+
+          if(data?.length === total)setHasMore(false)
         }
 
         setLoading(false)

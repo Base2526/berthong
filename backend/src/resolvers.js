@@ -710,6 +710,9 @@ export default {
       let start = Date.now()
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
+
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
+    
       let suppliers = await Model.Supplier.aggregate([
                       {  $match: { follows: {$elemMatch: {userId: current_user?._id} }  } },
                       {
@@ -751,7 +754,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let dblogs = await Model.Dblog.find({})
       
@@ -1618,8 +1621,6 @@ export default {
 
       return {
         status: true,
-        type,
-        mode,
         data: user,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
@@ -1957,7 +1958,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED OR SELLER ONLY')
 
       const { createReadStream, filename, encoding, mimetype } = (await input.file).file
 

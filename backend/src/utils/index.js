@@ -519,7 +519,7 @@ export const checkRole = (user) =>{
     if(user?.roles){
         let { REACT_APP_USER_ROLES } = process.env
 
-        console.log("checkRole :", user?.roles, REACT_APP_USER_ROLES)
+        // console.log("checkRole :", user?.roles, REACT_APP_USER_ROLES)
         if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[0]) ){
             return Constants.AMDINISTRATOR;
         }

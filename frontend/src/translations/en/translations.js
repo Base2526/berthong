@@ -80,4 +80,6 @@ export const TRANSLATIONS_EN = {
     FORCE_LOGOUT: "Login again",
 
     wallet: "Wallet",
+
+    deposit: "Deposit",
 };
