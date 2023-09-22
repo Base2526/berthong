@@ -53,7 +53,6 @@ const Detail = (props) => {
   let { user, onLogin, onMutationFollow, onMutationBook, updateProfile } = props
 
   const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
-    refetchQueries: [queryBookBuyTransitions],
     context: { headers: getHeaders(location) },
     update: (cache, {data: {buy}}) => {
       let { status, transitionId, data:newData, user } = buy

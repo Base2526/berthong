@@ -291,33 +291,21 @@ const App =(props) =>{
             variables: { id: data._id }
           }); 
         }
-      }
-    },
-    onCompleted(data) {
-      let { mode, status } = data?.follow
-      if(status){
-        switch(mode?.toUpperCase()){
-          case "FOLLOW":{
-            showToast("info", `Bookmark`)
-            break
-          }
-  
-          case "UNFOLLOW":{
-            showToast("info", `Un-Bookmark`)
-            break
-          }
+
+        if(_.find(data?.follows, (follow)=> _.isEqual(follow.userId, user._id) )){
+          showToast("info", `Bookmark`)
+        }else{
+          showToast("info", `Un-Bookmark`)
         }
       }
     },
-    onError: (error) => {
-      return handlerErrorApollo( props, error )
-    }
+    onCompleted(data) { },
+    onError: (error) => handlerErrorApollo( props, error ) 
   });
 
   const [onMutationBook, resultMutationBook] = useMutation(mutationBook,{
-    refetchQueries: [queryBookBuyTransitions],
     context: { headers: getHeaders(location) },
-    update: (cache, {data: {book}}) => {
+    update: (cache, {data: {book}}, context) => {
       let { status, action, data, user } = book
       if(status){
         updateProfile(user)
@@ -342,26 +330,17 @@ const App =(props) =>{
           });
         }
         ////////// update cache querySuppliers ///////////
-      }
-    },
-    onCompleted(data) {
-      let { status, action } = data?.book
-      let {mode, itemId} = action
-      switch(mode?.toUpperCase()){
-        case "BOOK":{
-          showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
-          break
-        }
 
-        case "UNBOOK":{
+        let { itemId } = context?.variables?.input
+        if(_.find(data?.buys, buy=>buy.itemId === itemId && _.isEqual(buy.userId, user._id) && buy.selected === 0 )){
+          showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
+        }else{
           showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
-          break
         }
       }
     },
-    onError: (error) => {
-      return handlerErrorApollo( props, error )
-    }
+    onCompleted(data) {},
+    onError: (error) => handlerErrorApollo( props, error )
   });
 
   const [onMutationComment, resultMutationComment] = useMutation(mutationComment,{
@@ -393,9 +372,7 @@ const App =(props) =>{
     onCompleted(data) {
       console.log("onCompleted")
     },
-    onError: (error) => {
-      return handlerErrorApollo( props, error ) 
-    }
+    onError: (error) => handlerErrorApollo( props, error ) 
   });
 
   const [onMutationContactUs, resultMutationContactUs] = useMutation(mutationContactUs,{

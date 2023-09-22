@@ -62,7 +62,6 @@ const HomeItem = (props) => {
                   <TwitterIcon size={32} round /> Twitter
                 </TwitterShareButton>
               </MenuItem>
-              {/* /d?id= */}
               <MenuItem 
                 onClick={async(e)=>{
                   let text = window.location.href + "d?id=" + item._id

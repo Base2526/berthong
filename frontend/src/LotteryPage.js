@@ -68,7 +68,7 @@ const LotteryPage = (props) => {
               cache.writeQuery({
                 query: queryManageSuppliers,
                 variables: { input: search },
-                data: { suppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
+                data: { manageSuppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
               });
             }
             break;

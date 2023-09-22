@@ -630,14 +630,14 @@ export const getSupplier = async(query) =>{
         },
         {
             $unwind: {
-                    "path": "$owner",
-                    "preserveNullAndEmptyArrays": false
+                path: "$owner",
+                preserveNullAndEmptyArrays: false
             }
         },
         {
             $unwind: {
-                    "path": "$manageLottery",
-                    "preserveNullAndEmptyArrays": false
+                path: "$manageLottery",
+                preserveNullAndEmptyArrays: false
             }
         }
     ])
