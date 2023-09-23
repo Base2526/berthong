@@ -82,4 +82,6 @@ export const TRANSLATIONS_EN = {
     wallet: "Wallet",
 
     deposit: "Deposit",
+
+    subscribes: "Subscribes",
 };

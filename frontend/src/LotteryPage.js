@@ -1,6 +1,13 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useQuery, useMutation } from "@apollo/client";
-import { Button ,LinearProgress } from '@mui/material';
+import {  Button, 
+          LinearProgress, 
+          Radio,
+          RadioGroup,
+          FormControlLabel,
+          FormControl,
+          FormLabel
+         } from '@mui/material';
 import _ from "lodash";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -20,6 +27,7 @@ let initValues = {
   condition: "",       // 11-100
   category: "",        // 0: money, 1: gold, 2 : things, 3 : etc
   type: "",            // 0: bon, 1 : lang
+  publish: false
 }
 
 const INIT_SEARCH = {
@@ -142,6 +150,7 @@ const LotteryPage = (props) => {
             condition: data.condition,  // 11-100
             category: data.category,    // money, gold, things, etc
             type: data.type,            // bon, lang
+            publish: data.publish
           })
         }
       }
@@ -182,7 +191,8 @@ const LotteryPage = (props) => {
         files: input.files,
         condition: parseInt(input.condition),    // 11-100
         category: parseInt(input.category),      // money, gold, things, etc
-        type: parseInt(input.type)               // bon, lang
+        type: parseInt(input.type),               // bon, lang
+        publish: input.publish
     }
 
     /*
@@ -391,6 +401,20 @@ const LotteryPage = (props) => {
                   setInput({...input, files: values})
                 } }
                 onSnackbar={(data) => console.log(data) }/>
+            </div>
+            <div>
+              <FormLabel id="demo-row-radio-buttons-group-label">สถานะการขาย</FormLabel>
+              <RadioGroup
+                row
+                aria-labelledby="demo-row-radio-buttons-group-label"
+                name="row-radio-buttons-group"
+                onChange={(evt)=>{
+                  setInput({...input, publish: !input.publish})
+                }} 
+                value={input.publish ? "true" : "false"}>
+                <FormControlLabel value="false" control={<Radio />} label="ปิดการขาย" />
+                <FormControlLabel value="true" control={<Radio />} label="เปิดการขาย" />
+              </RadioGroup>
             </div>
             {/* <button type="submit" variant="contained" color="primary"> { mode == "edit" ? t("update") : t("create")}</button> */}
             <Button 

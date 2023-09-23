@@ -196,6 +196,14 @@ const LotterysPage = (props) => {
         }
       },
       {
+        Header: 'Publish',
+        accessor: "publish",
+        Cell: props => {
+          let {publish} = props.row.values 
+          return  <div>{ publish ? "เปิด" : "ปิด" }</div>
+        }
+      },
+      {
         Header: 'Date',
         accessor: 'createdAt',
         Cell: props => {

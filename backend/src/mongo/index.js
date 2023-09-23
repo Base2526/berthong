@@ -307,6 +307,7 @@ mongoose.connect(
     useCreateIndex: true,
     useUnifiedTopology: true,
     serverSelectionTimeoutMS: 100000, // Defaults to 30000 (30 seconds)
+    poolSize: 100, // Set the maximum number of connections in the connection pool
   }
 );
 

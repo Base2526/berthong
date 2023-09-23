@@ -45,6 +45,7 @@ export const queryUsers      = gql`query users($input: PagingInput ) { users(inp
 // 
 
 // mutation
+export const mutationCheck_db   = gql`mutation check_db{ check_db }`;
 export const mutationLogin      = gql`mutation login($input: LoginInput) { login(input: $input) }`;
 export const mutationLoginWithSocial = gql`mutation loginWithSocial($input: LoginWithSocialInput) { loginWithSocial(input: $input) }`;
 export const mutationRegister   = gql`mutation register($input: RegisterInput) { register(input: $input) }`;

@@ -110,5 +110,6 @@ export const TRANSLATIONS_TH = {
 
     wallet: "กระเป๋าเงิน",
 
-    deposit: "ฝากเงิน"
+    deposit: "ฝากเงิน",
+    subscribes: "ติดตาม",
 };
