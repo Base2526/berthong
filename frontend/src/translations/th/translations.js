@@ -109,4 +109,6 @@ export const TRANSLATIONS_TH = {
     FORCE_LOGOUT: "กรุณาเข้าสู่ระบบใหม่อีกครั้ง",
 
     wallet: "กระเป๋าเงิน",
+
+    deposit: "ฝากเงิน"
 };

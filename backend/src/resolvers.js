@@ -421,25 +421,25 @@ export default {
                     },
                     {
                       $lookup: {
-                          localField: "dateLottery",
-                          from: "dateLottery",
+                          localField: "manageLottery",
+                          from: "manageLottery",
                           foreignField: "_id",
-                          pipeline: [
-                            { $project:{ date: 1 }}
-                          ],
-                          as: "dateLottery"
+                          // pipeline: [
+                          //   { $project:{ date: 1 }}
+                          // ],
+                          as: "manageLottery"
                       }
                     },
                     {
                       $unwind: {
-                              "path": "$owner",
-                              "preserveNullAndEmptyArrays": false
+                        path: "$owner",
+                        preserveNullAndEmptyArrays: false
                       }
                     },
                     {
                       $unwind: {
-                              "path": "$dateLottery",
-                              "preserveNullAndEmptyArrays": false
+                        path: "$manageLottery",
+                        preserveNullAndEmptyArrays: false
                       }
                     }
                   ]
@@ -710,6 +710,9 @@ export default {
       let start = Date.now()
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
+
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
+    
       let suppliers = await Model.Supplier.aggregate([
                       {  $match: { follows: {$elemMatch: {userId: current_user?._id} }  } },
                       {
@@ -751,7 +754,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let dblogs = await Model.Dblog.find({})
       
@@ -805,7 +808,7 @@ export default {
       let start = Date.now()
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      // if( Utils.checkRole(current_user) == Constants.AMDINISTRATOR || Utils.checkRole(current_user) == Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
       let data = await Model.ManageLottery.find({})
       return {  status: true,
                 data,
@@ -818,7 +821,7 @@ export default {
       let { req } = context
       let { _id } = args
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      // if( Utils.checkRole(current_user) == Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let data = await Model.ManageLottery.findOne({_id})
       return {  status: true,
@@ -1024,28 +1027,28 @@ export default {
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
-    async adminSuppliers(parent, args, context, info){
+    async manageSuppliers(parent, args, context, info){
       let start = Date.now()
       let { req } = context
       let { current_user } =   await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
-
+      let role = Utils.checkRole(current_user)
+      if( role !== Constants.AMDINISTRATOR && role !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
 
       let { TITLE, NUMBER, PAGE, LIMIT } = args?.input
       let SKIP = (PAGE - 1) * LIMIT
 
       let aggregate = []
+      let match     = {}
       if(!_.isEmpty(TITLE)){
-        aggregate = [
-                      {
-                        $match: {
-                          title: {
-                            $regex: TITLE,
-                            $options: "i"
-                          }
-                        }
-                      }
-                    ]
+        match = { title: { $regex: TITLE, $options: "i" } }
+      }
+
+      if( role === Constants.SELLER){
+        match = {...match, ownerId: mongoose.Types.ObjectId(current_user?._id)}
+      }
+
+      if(!_.isEmpty(match)){
+        aggregate = [ { $match: match } ]
       }
 
       aggregate = [ ...aggregate,
@@ -1064,25 +1067,25 @@ export default {
                     },
                     {
                       $lookup: {
-                          localField: "dateLottery",
-                          from: "dateLottery",
+                          localField: "manageLottery",
+                          from: "manageLottery",
                           foreignField: "_id",
-                          pipeline: [
-                            { $project:{ date: 1 }}
-                          ],
-                          as: "dateLottery"
+                          // pipeline: [
+                          //   { $project:{ date: 1 }}
+                          // ],
+                          as: "manageLottery"
                       }
                     },
                     {
                       $unwind: {
-                              "path": "$owner",
-                              "preserveNullAndEmptyArrays": false
+                        path: "$owner",
+                        preserveNullAndEmptyArrays: true
                       }
                     },
                     {
                       $unwind: {
-                              "path": "$dateLottery",
-                              "preserveNullAndEmptyArrays": false
+                        path: "$manageLottery",
+                        preserveNullAndEmptyArrays: true
                       }
                     }
                   ]
@@ -1097,8 +1100,6 @@ export default {
         })
 
         aggregate = [...aggregate, { $match: { "$and" : q  } }]
-
-        
 
         let suppliers = await Model.Supplier.aggregate(aggregate)
 
@@ -1116,6 +1117,7 @@ export default {
         }
       }
 
+      console.log("manageSuppliers :", aggregate)
       let suppliers = await Model.Supplier.aggregate(aggregate)
 
       aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
@@ -1619,8 +1621,6 @@ export default {
 
       return {
         status: true,
-        type,
-        mode,
         data: user,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
@@ -1652,8 +1652,6 @@ export default {
           tran =  await Model.Transition.create( { refId: supplier?._id, userId: current_user?._id } )
         }
 
-        let mode = "BOOK";
-        // let { price, buys } = supplier
         let check =  _.find(supplier?.buys, (buy)=> buy.itemId == itemId && buy.userId.toString() === current_user?._id.toString() )
         if(check === undefined){
           let { money_balance } = await Utils.getBalance(current_user?._id)
@@ -1664,7 +1662,6 @@ export default {
 
           await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: [...supplier?.buys, {userId: current_user?._id, itemId, transitionId: tran?._id, selected: 0 }] })   
         }else{
-          mode = "UNBOOK";
           let buys = _.filter(supplier?.buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id )
           await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys })   
         }
@@ -1692,80 +1689,10 @@ export default {
 
         return {
           status: true,
-          action: {mode, itemId},
           user,
           data: newSupplier,
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
-
-        /*
-        let { buys } = supplier
-        if(selected == 0){
-          let check =  _.find(buys, (buy)=> buy.itemId == itemId )
-          if(check == undefined){
-
-            await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, selected}] })
-              
-            let newSupplier = await Utils.getSupplier({ _id: id }) 
-
-            // Case current open multi browser
-            pubsub.publish("SUPPLIER_BY_ID", {
-              supplierById: { mutation: "BOOK", data: newSupplier },
-            });
-
-            // Case other people open home page
-            pubsub.publish("SUPPLIERS", {
-              suppliers: { mutation: "BOOK", data: newSupplier },
-            });
-
-            let user = await Utils.getUserFull({_id: current_user?._id}) 
-
-            pubsub.publish("ME", {
-              me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } },
-            });
-
-            // Commit the transaction
-            await session.commitTransaction();
-
-            return {
-              status: true,
-              action: {mode: "BOOK", itemId},
-              data: newSupplier,
-              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-            }
-          }
-          throw new Error('ALREADY BOOK')
-        }else{
-          await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id ) })
-
-          let newSupplier = await Utils.getSupplier({ _id: id })
-          
-          pubsub.publish("SUPPLIER_BY_ID", {
-            supplierById: { mutation: "UNBOOK", data: newSupplier },
-          });
-
-          pubsub.publish("SUPPLIERS", {
-            suppliers: { mutation: "UNBOOK", data: newSupplier },
-          });
-
-          let user = await Utils.getUserFull({_id: current_user?._id }) 
-          pubsub.publish("ME", {
-              me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } 
-            },
-          });
-
-          // Commit the transaction
-          await session.commitTransaction();
-
-          return {
-            status: true,
-            action: {mode: "UNBOOK", itemId},
-            data: newSupplier,
-            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          }
-        }  
-        */
-
       }catch(error){
         await session.abortTransaction();
         console.log(`book #error : ${error}`)
@@ -1896,13 +1823,13 @@ export default {
       console.log("supplier :", input)
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated and Authenticated only!')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && 
+          Utils.checkRole(current_user) != Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
 
       if(input.test){
         let supplier = await Model.Supplier.create(input);
         return {
           status: true,
-          mode: input.mode.toLowerCase(),
           data: supplier,
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
@@ -1947,7 +1874,6 @@ export default {
         
           return {
             status: true,
-            mode: input.mode.toLowerCase(),
             data: supplier,
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
@@ -2015,7 +1941,6 @@ export default {
 
           return {
             status: true,
-            mode: input.mode.toLowerCase(),
             data: await Utils.getSupplier({ _id: input._id }),
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
@@ -2033,7 +1958,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED OR SELLER ONLY')
 
       const { createReadStream, filename, encoding, mimetype } = (await input.file).file
 
@@ -2180,14 +2105,12 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED OR SELLER ONLY')
 
       cache.ca_delete(_id)
 
       let supplier = await Utils.getSupplier({_id})
       if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
-
-      let mode = "follow";
 
       let {follows} = supplier  
       if(!_.isEmpty(follows)){
@@ -2196,20 +2119,15 @@ export default {
           follows = [...follows, {userId: current_user?._id}]
         }else{
           follows = _.filter(follows, (follow)=>!_.isEqual(follow.userId, current_user?._id))
-
-          mode = "unfollow";
         }
       }else{
         follows = [{userId: current_user?._id}]
       }
 
       await Utils.updateSupplier({ _id }, { follows });
-      
       let data  = await Utils.getSupplier({_id});
-      
       return {
         status: true,
-        mode,
         data,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }

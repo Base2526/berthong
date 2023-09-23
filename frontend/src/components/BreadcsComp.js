@@ -74,14 +74,14 @@ const BreadcsComp = (props) => {
                 ]
       }
 
-      case "/admin-withdraws":{
+      case "/withdraws":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายการถอดเงินรออนุมัติ</Typography>
         ]
       }
 
-      case "/admin-deposits":{
+      case "/deposits":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายการฝากเงินรออนุมัติ</Typography>
@@ -89,20 +89,20 @@ const BreadcsComp = (props) => {
       }
 
       case "/lotterys":{
-        switch(checkRole(user)){
-          case Constants.AMDINISTRATOR:{
+        // switch(checkRole(user)){
+        //   case Constants.AMDINISTRATOR:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
               <Typography key="1" color="text.primary">รายการหวยทั้งหมด</Typography>
             ]
-          }
-          case Constants.AUTHENTICATED:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">รายการหวยทั้งหมด</Typography>
-            ]
-          }
-        }
+        //   }
+        //   case Constants.AUTHENTICATED:{
+        //     return [  
+        //       <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+        //       <Typography key="1" color="text.primary">รายการหวยทั้งหมด</Typography>
+        //     ]
+        //   }
+        // }
       }
 
       case "/users":{
@@ -176,7 +176,6 @@ const BreadcsComp = (props) => {
           case Constants.AMDINISTRATOR:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18}/>{t("home")}</MuiLink>,
-              // <MuiLink key="1" component={Link} to="/users">รายชื่อบุคคลทั้งหมด</MuiLink>,
               <Typography key="2" color="text.primary">โปรไฟล์ {loadingProfile ? <LinearProgress/> : profile?.displayName}</Typography>
             ]
           }
@@ -188,29 +187,18 @@ const BreadcsComp = (props) => {
           }
         }
       }
-      case "/deposits":{
+      case "/all-deposits":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="2" color="text.primary">แจ้งฝากเงินทั้งหมด</Typography>
         ]
-        break;
       }
 
       case "/deposit":{
-        switch(checkRole(user)){
-          case Constants.AMDINISTRATOR:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="2" color="text.primary">แจ้งฝากเงิน</Typography>
-            ]
-          }
-          case Constants.AUTHENTICATED:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">แจ้งฝากเงิน</Typography>
-            ]
-          }
-        }
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">แจ้งฝากเงิน</Typography>
+        ]
       }
 
       case "/withdraws":{
@@ -218,25 +206,13 @@ const BreadcsComp = (props) => {
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="2" color="text.primary">แจ้งถอดเงินทั้งหมด</Typography>
         ]
-        break;
       }
 
       case "/withdraw":{
-        switch(checkRole(user)){
-          case Constants.AMDINISTRATOR:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              // <MuiLink key="1" component={Link} to="/withdraws">{t("รายการ แจ้งถอดเงิน")}</MuiLink>,
-              <Typography key="2" color="text.primary">แจ้งถอดเงิน</Typography>
-            ]
-          }
-          case Constants.AUTHENTICATED:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">แจ้งถอดเงิน</Typography>
-            ]
-          }
-        }
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">แจ้งถอดเงิน</Typography>
+        ]
       }
 
       case "/manage-lottery":{
@@ -291,7 +267,6 @@ const BreadcsComp = (props) => {
       case "/bank":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-          // <MuiLink key="0" component={Link} to="/banks">รายการ บัญชีธนาคาร</MuiLink>,
           <Typography key="1" color="text.primary">เพิ่ม บัญชีธนาคาร</Typography>
         ]
       }

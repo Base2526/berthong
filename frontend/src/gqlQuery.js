@@ -39,7 +39,7 @@ export const queryAdminHome       = gql`query adminHome { adminHome }`;
 export const queryAdminBanks      = gql`query adminBanks { adminBanks }`;
 export const queryAdminDeposits   = gql`query adminDeposits{ adminDeposits }`;
 export const queryAdminWithdraws  = gql`query adminWithdraws{ adminWithdraws }`;
-export const queryAdminSuppliers  = gql`query adminSuppliers($input: SearchInput){ adminSuppliers( input: $input) }`;
+export const queryManageSuppliers  = gql`query manageSuppliers($input: SearchInput){ manageSuppliers( input: $input) }`;
 export const queryUsers      = gql`query users($input: PagingInput ) { users(input: $input) }`;
 
 // 
@@ -54,7 +54,8 @@ export const mutationMe         = gql`mutation me($input: JSON){ me(input: $inpu
 export const mutationBook       = gql`mutation book($input: BookInput) { book(input: $input) }`;
 export const mutationBuy        = gql`mutation buy($id: ID!) { buy(_id: $id) }`;
 export const mutationCancelTransition        = gql`mutation cancelTransition($id: ID!) { cancelTransition(_id: $id) }`;
-export const mutationSupplier   = gql`mutation supplier($input: SupplierInput) { supplier(input: $input) }`;
+// export const mutationSupplier   = gql`mutation supplier($input: SupplierInput) { supplier(input: $input) }`;
+export const mutationLottery   = gql`mutation supplier($input: SupplierInput) { supplier(input: $input) }`;
 export const mutationDeposit    = gql`mutation deposit($input: DepositInput){ deposit(input: $input) }`;
 export const mutationWithdraw   = gql`mutation withdraw($input: WithdrawInput){ withdraw(input: $input) }`;
 export const mutationBank       = gql`mutation bank($input: BankInput){ bank(input: $input) }`;

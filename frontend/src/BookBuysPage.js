@@ -204,14 +204,10 @@ const BookBuysPage = (props) => {
                     let condition   = supplier.condition;                    
                     let buy         = _.filter(supplier.buys, (it)=>it.userId == user._id && it.selected == 1 &&  it.transitionId == item._id)
                     let book        = _.filter(supplier.buys, (it)=>it.userId == user._id && it.selected == 0 &&  it.transitionId == item._id)
-
-                    // let buys     = supplier.buys;
                     let follows     = supplier.follows;
                     let files       = supplier?.files
                     let createdAt   = new Date(supplier.createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
                     let status      = item?.status
-
-                    console.log("buys :", item, supplier, buy, book)
 
                     return  <div className="content-bottom" key={index}>
                               <div className="row">

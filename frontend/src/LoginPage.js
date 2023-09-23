@@ -29,7 +29,7 @@ const LoginPage = (props) => {
             let {status, data, sessionId} = datas.login
             if(status){
                 // localStorage.setItem('token', sessionId)
-                setCookie('token', sessionId, {})
+                setCookie('token', sessionId)
                 updateProfile(data)
             }
 

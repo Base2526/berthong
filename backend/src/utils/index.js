@@ -92,7 +92,7 @@ export const checkAuth = async(req) => {
         // console.log("checkAuth # ", auth, req.headers)
         if (bearer == "Bearer") {
             let session = await Model.Session.findOne({_id: sessionId});
-            console.log("checkAuth #  session ", session)
+            // console.log("checkAuth #  session ", session)
             if(!_.isEmpty(session)){
                 var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));
 
@@ -518,14 +518,16 @@ export const checkBalance = async(userId) =>{
 export const checkRole = (user) =>{
     if(user?.roles){
         let { REACT_APP_USER_ROLES } = process.env
+
+        // console.log("checkRole :", user?.roles, REACT_APP_USER_ROLES)
         if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[0]) ){
             return Constants.AMDINISTRATOR;
         }
-        else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[1]) ){
-            return Constants.AUTHENTICATED;
-        }
         else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[2]) ){
             return Constants.SELLER;
+        }
+        else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[1]) ){
+            return Constants.AUTHENTICATED;
         }
     }
     return Constants.ANONYMOUS;
@@ -619,23 +621,23 @@ export const getSupplier = async(query) =>{
         },
         {
             $lookup: {
-                localField: "dateLottery",
-                from: "dateLottery",
+                localField: "manageLottery",
+                from: "manageLottery",
                 foreignField: "_id",
-                pipeline: [ { $project:{ date: 1 }} ],
-                as: "dateLottery"
+                // pipeline: [ { $project:{ date: 1 }} ],
+                as: "manageLottery"
             }
         },
         {
             $unwind: {
-                    "path": "$owner",
-                    "preserveNullAndEmptyArrays": false
+                path: "$owner",
+                preserveNullAndEmptyArrays: false
             }
         },
         {
             $unwind: {
-                    "path": "$dateLottery",
-                    "preserveNullAndEmptyArrays": false
+                path: "$manageLottery",
+                preserveNullAndEmptyArrays: false
             }
         }
     ])

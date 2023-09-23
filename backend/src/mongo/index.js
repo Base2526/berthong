@@ -205,11 +205,11 @@ const modelExists =()=>{
     if (result.length > 0) {
     } else {
       let newSupplier = new Model.Supplier({title: "title", 
-                                      price: 0, 
-                                      priceUnit: 0, 
-                                      condition: 1,
-                                      dateLottery: new mongoose.Types.ObjectId(),
-                                      ownerId: new mongoose.Types.ObjectId() });
+                                            price: 0, 
+                                            priceUnit: 0, 
+                                            condition: 1,
+                                            manageLottery: new mongoose.Types.ObjectId(),
+                                            ownerId: new mongoose.Types.ObjectId() });
       await newSupplier.save();
       await Model.Supplier.deleteMany({})
     }

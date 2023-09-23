@@ -21,7 +21,8 @@ import { handlerErrorApollo,  getHeaders, showToast } from "./util";
 let initValues = {  balance: "", 
                     bankId: "", 
                     date: null, 
-                    file: undefined
+                    file: undefined,
+                    remark: ""
                   }
 
 const DepositPage = (props) => {
@@ -59,7 +60,8 @@ const DepositPage = (props) => {
   }, [dataAdminBanks, loadingAdminBanks])
 
   const submitForm = async(event) => {
-    onMutationDeposit({ variables: { input } });
+    console.log("input :", input)
+    // onMutationDeposit({ variables: { input } });
   }
 
   const onInputChange = (e) => {
@@ -186,6 +188,20 @@ const DepositPage = (props) => {
                                 // setSnackbar(data);
                               }}/>
                           </Box>
+                          <Box>
+                            <TextField
+                              id="remark"
+                              name="remark"
+                              label="หมายเหตุ"
+                              value={ input.remark }
+                              multiline
+                              rows={4}
+                              // defaultValue=""
+                              onChange={ onInputChange }
+                              onBlur={ validateInput }
+                              // variant="standard"
+                            />
+                          </Box>
                           <Button 
                             type="submit" 
                             variant="contained" 
@@ -201,8 +217,6 @@ const DepositPage = (props) => {
               // }, [input])
             }
           </div>
-  
-          
 }
 
 export default DepositPage;

@@ -489,7 +489,7 @@ export default gql`
     adminBanks: JSON
     adminDeposits: JSON
     adminWithdraws: JSON
-    adminSuppliers( input:SearchInput ): JSON
+    manageSuppliers( input:SearchInput ): JSON
   }  
   
   input RoomInput {
@@ -670,7 +670,7 @@ export default gql`
     price: Int!
     priceUnit: Int!
     description: String
-    dateLottery: ID!
+    manageLottery: ID!
     files: [JSON]
     condition: Int!
     category: Int!
