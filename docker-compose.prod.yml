@@ -68,6 +68,8 @@ services:
       - 29102
     ports:
       - 29102:29102
+    environment:
+      - MONGO_MAX_CONNECTIONS=100
     volumes:
       - ./mongo-single/data:/data/db
       - ./mongo-single/restore:/mongo-single/restore

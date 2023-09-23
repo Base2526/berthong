@@ -201,7 +201,7 @@ const BreadcsComp = (props) => {
         ]
       }
 
-      case "/withdraws":{
+      case "/all-withdraws":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="2" color="text.primary">แจ้งถอดเงินทั้งหมด</Typography>
@@ -275,6 +275,13 @@ const BreadcsComp = (props) => {
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">{t("profile")}</Typography>
+        ]
+      }
+
+      case "/dblog":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">{t("DB Log")}</Typography>
         ]
       }
    

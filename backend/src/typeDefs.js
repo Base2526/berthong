@@ -456,7 +456,6 @@ export default gql`
 
   type Query {
     checkWalletByUserId(_id: ID): JSON
-    check_db: JSON
     ping: JSON
     checkCacheById(_id: ID): JSON
     checkUser: JSON 
@@ -763,6 +762,7 @@ export default gql`
   }
 
   type Mutation {
+    check_db: JSON
     login(input: LoginInput): JSON
     loginWithSocial(input: LoginWithSocialInput): JSON
     loginWithGithub(code: String!): JSON

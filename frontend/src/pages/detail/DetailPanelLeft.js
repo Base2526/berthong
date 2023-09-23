@@ -22,7 +22,7 @@ const DetailPanelLeft = (props) =>{
                               onLightbox({ isOpen: true, photoIndex, images:data?.files })
                             }} />
                           </div>
-                          <img src={currentImage.url} style={{width:"100%",borderRadius:"4px"}} alt="picture"/>
+                          <img src={currentImage?.url} style={{width:"100%",borderRadius:"4px"}} alt="picture"/>
                         </div>
                     </div>
                       <div className="row pb-3" style={{ justifyContent: "center" }}>

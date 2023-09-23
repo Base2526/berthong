@@ -14,7 +14,7 @@ import {
   Box
 } from '@mui/material';
 import _ from "lodash"
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 import moment from "moment";
 import DatePicker from "react-multi-date-picker"
@@ -24,8 +24,8 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { DeleteForever as DeleteForeverIcon, 
         Edit as EditIcon} from '@mui/icons-material';
 
-import { queryDblog } from "./gqlQuery"
-import { getHeaders } from "./util"
+import { queryDblog, mutationCheck_db } from "./gqlQuery"
+import { getHeaders, handlerErrorApollo } from "./util"
 import TableComp from "./components/TableComp"
 
 const DblogPage = (props) => {
@@ -44,6 +44,14 @@ const DblogPage = (props) => {
 
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
+  const [onMutationCheck_db, resultMutationCheck_db] = useMutation(mutationCheck_db,{
+    context: { headers: getHeaders(location) },
+    update: (cache, {data: { check_db }}, context) => {
+      console.log("check_db :", check_db)
+    },
+    onCompleted(data) {},
+    onError: (error) => handlerErrorApollo( props, error )
+  });
 
   const { loading: loadingDblog, 
           data: dataDblog, 
@@ -64,6 +72,17 @@ const DblogPage = (props) => {
       }
     }
   }, [dataDblog, loadingDblog])
+
+  // useEffect(() => {
+  //   if(!loadingCheck_db){
+  //     if(!_.isEmpty(dataCheck_db?.check_db)){
+  //       let { status, data } = dataCheck_db.check_db
+  //       // if(status){
+  //       //   setDates(data)
+  //       // }
+  //     }
+  //   }
+  // }, [dataCheck_db, loadingCheck_db])
 
 //   const handleClose = () => {
 //     setOpenDialogDelete({ ...openDialogDelete, isOpen: false });
@@ -160,6 +179,9 @@ message
     }
 
     return (<div className="dblog-list-container">
+      <div>
+      <button onClick={()=>{onMutationCheck_db()}}>Check_db</button>
+      </div>
                 <TableComp
                     columns={columns}
                     data={dates}

@@ -156,33 +156,6 @@ export default {
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
-    async check_db(parent, args, context, info){
-      let { req } = context
-
-      let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
-
-      let { readyState } = connection
-      let mongo_db_state = "Empty"
-      if (readyState === 0) {
-        mongo_db_state = "Disconnected"
-      } else if (readyState === 1) {
-        mongo_db_state = "Connected"
-      } else if (readyState === 2) {
-        mongo_db_state = "Connecting"
-      } else if (readyState === 3) {
-        mongo_db_state = "Disconnecting"
-      }
-
-      let text = "1234"
-      let encrypt = cryptojs.AES.encrypt(text, process.env.JWT_SECRET).toString()
-      // encrypt = "U2FsdGVkX18wIs5DOBhZOddShspHwri5Z8KFIXtyHzU="
-      let decrypt = cryptojs.AES.decrypt(encrypt, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8);
-      console.log("encrypt ++ :", encrypt, decrypt)
-  
-      return { status:true, "mongo db state" : mongo_db_state }
-    },
-
     async ping(parent, args, context, info){
       let { req } = context
 
@@ -392,17 +365,14 @@ export default {
       let SKIP = (PAGE - 1) * LIMIT
 
       let aggregate = []
+
+      let match     = {publish: true}
       if(!_.isEmpty(TITLE)){
-        aggregate = [
-                      {
-                        $match: {
-                          title: {
-                            $regex: TITLE,
-                            $options: "i"
-                          }
-                        }
-                      }
-                    ]
+        match = {...match,  title: { $regex: TITLE, $options: "i" } }
+      }
+
+      if(!_.isEmpty(match)){
+        aggregate = [ { $match: match } ]
       }
 
       aggregate = [ ...aggregate,
@@ -1043,7 +1013,7 @@ export default {
         match = { title: { $regex: TITLE, $options: "i" } }
       }
 
-      if( role === Constants.SELLER){
+      if( role === Constants.SELLER ){
         match = {...match, ownerId: mongoose.Types.ObjectId(current_user?._id)}
       }
 
@@ -1134,6 +1104,36 @@ export default {
   },
   Upload: GraphQLUpload,
   Mutation: {
+    async check_db(parent, args, context, info){
+      let { req } = context
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      console.log("check_db :", connection)
+      let { readyState } = connection
+      let mongo_db_state = "Empty"
+      if (readyState === 0) {
+        mongo_db_state = "Disconnected"
+      } else if (readyState === 1) {
+        mongo_db_state = "Connected"
+      } else if (readyState === 2) {
+        mongo_db_state = "Connecting"
+      } else if (readyState === 3) {
+        mongo_db_state = "Disconnecting"
+      }
+      // mongoose.connection.poolSize
+
+      console.log("process.env :", process.env)
+
+      let text = "1234"
+      let encrypt = cryptojs.AES.encrypt(text, process.env.JWT_SECRET).toString()
+      // encrypt = "U2FsdGVkX18wIs5DOBhZOddShspHwri5Z8KFIXtyHzU="
+      let decrypt = cryptojs.AES.decrypt(encrypt, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8);
+      console.log("encrypt ++ :", encrypt, decrypt)
+  
+      return { status:true, "mongo db state" : mongo_db_state }
+    },
     async login(parent, args, context, info) {
       let start = Date.now()
       let {input} = args
@@ -1820,7 +1820,7 @@ export default {
       let { input } = args
       let { req } = context
 
-      console.log("supplier :", input)
+      // console.log("supplier :", input)
 
       let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && 
@@ -1837,9 +1837,7 @@ export default {
 
       switch(input.mode.toLowerCase()){
         case "new":{
-
           cache.ca_delete("length")
-
           let newFiles = [];
           if(!_.isEmpty(input.files)){
         
