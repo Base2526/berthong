@@ -1,6 +1,7 @@
-import React , {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
+import { useTranslation } from "react-i18next";
 import {
   Stack,
   Box,
@@ -12,8 +13,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import _ from "lodash";
 
-import { queryManageLotteryById, queryManageLotterys, mutationManageLottery } from "./gqlQuery"
-import { getHeaders, handlerErrorApollo } from "./util"
+import { queryManageLotteryById, queryManageLotterys, mutationManageLottery, mutationCalculateLottery } from "./gqlQuery"
+import { getHeaders, handlerErrorApollo, showToast } from "./util"
 
 let editValues = undefined;
 let initValues =  { mode: "new", title: "", start_date_time: null, end_date_time: null, bon: null, lang: null }
@@ -21,9 +22,38 @@ let initValues =  { mode: "new", title: "", start_date_time: null, end_date_time
 const ManageLotteryPage = (props) => {
   let location = useLocation();
   let navigate = useNavigate();
+  const { t } = useTranslation();
   let [input, setInput] = useState(initValues)
 
   let { mode, _id } = location.state
+
+  const [onMutationCalculateLottery, resultMutationCalculateLottery] = useMutation(mutationCalculateLottery
+    , {
+        context: { headers: getHeaders(location) },
+        update: (cache, {data: {calculateLottery}} ) => {
+          console.log("calculateLottery :", calculateLottery)
+          
+          // let { status, data: newData } = manageLottery
+          // if(status){
+          //   let queryManageLotterysValue = cache.readQuery({ query: queryManageLotterys });
+          //   if(queryManageLotterysValue){
+          //     let filterData = _.filter(queryManageLotterysValue.manageLotterys.data, (v)=>v._id !== newData._id)
+          //     cache.writeQuery({
+          //       query: queryManageLotterys,
+          //       data: { manageLotterys: {...queryManageLotterysValue.manageLotterys, data: [...filterData, newData] } },
+          //     });
+          //   }
+          // }
+        },
+        onCompleted(data) {
+          // navigate(-1)
+          showToast("success", "คำนวนหวยเรียบร้อย")
+        },
+        onError(error){
+          return handlerErrorApollo( props, error )
+        }
+      }
+  );
 
   const [onMutationManageLottery, resultMutationManageLotteryValues] = useMutation(mutationManageLottery
     , {
@@ -93,6 +123,12 @@ const ManageLotteryPage = (props) => {
     onMutationManageLottery({ variables: { input: mode == "edit" ? {...input, _id } : input } })
   };
 
+  const onCalculate = () =>{
+    console.log("onCalculate")
+
+    onMutationCalculateLottery({ variables: { input: { _id } } })
+  }
+
   return (
     <div>
       {
@@ -155,12 +191,22 @@ const ManageLotteryPage = (props) => {
               setInput({...input, lang:e.target.value})
             }}
           />
+          {
+            mode == "edit" 
+            ? <Button 
+                variant="contained" 
+                color="primary"
+                disabled={input.title === "" || input.start_date_time === null || input.end_date_time === null || input.bon === "" || input.lang === null }
+                onClick={(evt)=>{ onCalculate() }}>{t("calculate")}</Button>
+            : <div />
+          }
+         
           <Button 
             type="submit" 
             variant="contained" 
             color="primary"
             disabled={input.title === "" || input.start_date_time === null || input.end_date_time === null}
-            onClick={(evt)=>submitForm(evt)}>{"SAVE"} </Button>
+            onClick={(evt)=>submitForm(evt)}>{t("save")}</Button>
           </Stack>
         </Box>
       }
