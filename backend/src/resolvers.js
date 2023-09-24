@@ -1712,7 +1712,8 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY!')
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED &&
+          Utils.checkRole(current_user) !== Constants.SELLER  ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -1770,7 +1771,7 @@ export default {
       let { req } = context
 
       let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -1826,7 +1827,7 @@ export default {
 
       let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && 
-          Utils.checkRole(current_user) != Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
+          Utils.checkRole(current_user) != Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       if(input.test){
         let supplier = await Model.Supplier.create(input);
@@ -1958,7 +1959,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED OR SELLER ONLY')
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const { createReadStream, filename, encoding, mimetype } = (await input.file).file
 
@@ -2024,7 +2025,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -2105,7 +2106,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED OR SELLER ONLY')
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       cache.ca_delete(_id)
 
@@ -2167,7 +2168,7 @@ export default {
       console.log("notification :", _id)
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied!')
 
       // let supplier = await Model.Supplier.findOne({_id})
       // if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
@@ -2200,7 +2201,7 @@ export default {
       let { input } = args
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let comment = await Model.Comment.findOne({ _id: input?._id })
 
@@ -2284,7 +2285,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let { subscriber } = await Utils.getUserFull({ _id })
       if( _.find(subscriber, (item)=> _.isEqual(item.userId, current_user?._id)) ) {
@@ -2519,26 +2520,6 @@ export default {
       let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
-      /*
-      db.getCollection("supplier").aggregate([
-                                              { 
-                                                $match: { 
-                                                          manageLottery : ObjectId("65030b38dbfc10000799cfaf"),
-                                                          publish: true,
-                                                          type: 0,      //  0: bon, 1: lang
-                                                          kind: 0,      //  0: thai, 1: laos, 2: vietnam
-                                                          buys:{
-                                                                  $elemMatch: {
-                                                                    selected: 1, 
-                                                                    itemId: 2,
-                                                                    //  quantity: { $gt: 1 } // Quantity greater than 1
-                                                                  }
-                                                                }
-                                                        }
-                                              }
-                                              ])
-                                              */
-
       let manageL = await Model.ManageLottery.findOne({_id: mongoose.Types.ObjectId(input?._id)})
 
       console.log("Calculate lottery manageL :", manageL)
@@ -2564,6 +2545,7 @@ export default {
                                                               }
                                                     }
                                                     ]);
+
         let langs = await Model.Supplier.aggregate([
                                                     { 
                                                       $match: { 
