@@ -110,7 +110,7 @@ export const getCurrentDate =(separator='')=>{
 export const checkRole = (user) =>{
   if(user?.roles){
     let { REACT_APP_USER_ROLES } = process.env
-    console.log("REACT_APP_USER_ROLES :", REACT_APP_USER_ROLES)
+    // console.log("REACT_APP_USER_ROLES :", REACT_APP_USER_ROLES)
     if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[0]) ){
         return Constants.AMDINISTRATOR;
     }

@@ -1126,6 +1126,8 @@ export default {
 
       console.log("process.env :", process.env)
 
+      logger.error(JSON.stringify(process.env));
+
       let text = "1234"
       let encrypt = cryptojs.AES.encrypt(text, process.env.JWT_SECRET).toString()
       // encrypt = "U2FsdGVkX18wIs5DOBhZOddShspHwri5Z8KFIXtyHzU="
@@ -2503,6 +2505,89 @@ export default {
       }
       return  { 
         status: false,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }   
+    },
+
+    async calculateLottery(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      console.log("Calculate lottery :", input)
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      /*
+      db.getCollection("supplier").aggregate([
+                                              { 
+                                                $match: { 
+                                                          manageLottery : ObjectId("65030b38dbfc10000799cfaf"),
+                                                          publish: true,
+                                                          type: 0,      //  0: bon, 1: lang
+                                                          kind: 0,      //  0: thai, 1: laos, 2: vietnam
+                                                          buys:{
+                                                                  $elemMatch: {
+                                                                    selected: 1, 
+                                                                    itemId: 2,
+                                                                    //  quantity: { $gt: 1 } // Quantity greater than 1
+                                                                  }
+                                                                }
+                                                        }
+                                              }
+                                              ])
+                                              */
+
+      let manageL = await Model.ManageLottery.findOne({_id: mongoose.Types.ObjectId(input?._id)})
+
+      console.log("Calculate lottery manageL :", manageL)
+      if(!_.isNull(manageL)){
+        let _id  =  manageL._id
+        let bon  =  manageL.bon
+        let lang =  manageL.lang
+
+        let bons  = await Model.Supplier.aggregate([
+                                                    { 
+                                                      $match: { 
+                                                                manageLottery: _id,
+                                                                publish: true,
+                                                                type: 0,      //  0: bon, 1: lang
+                                                                kind: 0,      //  0: thai, 1: laos, 2: vietnam
+                                                                buys:{
+                                                                        $elemMatch: {
+                                                                          selected: 1, 
+                                                                          itemId: parseInt(bon),
+                                                                          //  quantity: { $gt: 1 } // Quantity greater than 1
+                                                                        }
+                                                                      }
+                                                              }
+                                                    }
+                                                    ]);
+        let langs = await Model.Supplier.aggregate([
+                                                    { 
+                                                      $match: { 
+                                                                manageLottery: _id,
+                                                                publish: true,
+                                                                type: 1,      //  0: bon, 1: lang
+                                                                kind: 0,      //  0: thai, 1: laos, 2: vietnam
+                                                                buys:{
+                                                                        $elemMatch: {
+                                                                          selected: 1, 
+                                                                          itemId: parseInt(lang),
+                                                                          //  quantity: { $gt: 1 } // Quantity greater than 1
+                                                                        }
+                                                                      }
+                                                              }
+                                                    }
+                                                    ]);
+
+        console.log("result all :", bons, langs)
+      }
+     
+      return  { 
+        status: true,
+        data: manageL,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }   
     },
