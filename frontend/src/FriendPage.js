@@ -18,6 +18,9 @@ import {
 } from "react-icons/sl"
 import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
+import {
+    HiChatBubbleLeftRight as HiChatBubbleLeftRightIcon
+  } from "react-icons/hi2"
 
 import { getHeaders } from "./util"
 import { queryFriendProfile } from "./gqlQuery"
@@ -27,7 +30,7 @@ const FriendPage = (props) => {
     const location = useLocation();
     const { t } = useTranslation();
 
-    const { user, onLogin, onLightbox, onMutationSubscribe } = props
+    const { user, onLogin, onLightbox, onMutationSubscribe, onMutationConversation } = props
 
     let [data, setData] = useState([]);
     let [total, setTotal] = useState(0)
@@ -119,6 +122,9 @@ const FriendPage = (props) => {
                                                 : <SlUserFollow size={"20px"} /> 
                                             } 
                                         </IconButton> 
+                                        <IconButton onClick={(evt)=> _.isEmpty(user) ? onLogin(true) : onMutationConversation({ variables: { mode: "NEW", id: params.id } })  }>
+                                            <HiChatBubbleLeftRightIcon alt="chat" size="20px"/>
+                                        </IconButton>
                                     </Box>
                                 </div>   
                             </>

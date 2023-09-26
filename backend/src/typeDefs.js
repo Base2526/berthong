@@ -489,6 +489,9 @@ export default gql`
     adminDeposits: JSON
     adminWithdraws: JSON
     manageSuppliers( input:SearchInput ): JSON
+
+    message(_id: ID!): JSON
+    conversations: JSON
   }  
   
   input RoomInput {
@@ -728,6 +731,18 @@ export default gql`
     DELETE
   }
 
+  enum MessageMode {
+    NEW
+    EDIT
+    DELETE
+  }
+
+  enum ConversationMode {
+    NEW
+    EDIT
+    DELETE
+  }
+
   input DatesLotteryInput{
     mode: DatesLotteryModeType!
     _id: ID
@@ -796,6 +811,9 @@ export default gql`
     search(input: SearchInput): JSON
 
     crypto(input: JSON):JSON
+
+    conversation( mode: ConversationMode!, _id: ID! ): JSON
+    message( mode: MessageMode!, conversationId: ID!, input: MessageInput ): JSON
   }
 
   type Subscription {

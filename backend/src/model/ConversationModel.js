@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
-
 const Schema = mongoose.Schema
+
+var MemberSchema = new Schema({
+    userId: { type: Schema.Types.ObjectId, required:[true, "User-ID is a required field"]},
+    name: { type: String },
+    avatarSrc: { type: String },
+    unreadCnt: { type: Number }
+})
 
 const conversationSchema = new Schema({
     name: { type: String },
@@ -11,8 +17,8 @@ const conversationSchema = new Schema({
     status: { type: String },
     unreadCnt: { type: Number },
     sentTime: { type: Date },
-    senderId: { type: String },
-    members: [Object],
+    senderId: { type: Schema.Types.ObjectId, required:[true, "Sender-ID is a required field"]},
+    members: [MemberSchema],
 
     // testMembers: Object
     

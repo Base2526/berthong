@@ -8,11 +8,12 @@ export const querySupplierById  = gql`query supplierById($id: ID!) { supplierByI
 // export const queryWithdrawById  = gql`query withdrawById($id: ID!) { withdrawById(_id: $id) }`;
 
 export const queryUserById      = gql`query userById($id: ID!) { userById(_id: $id) }`;
+export const queryUsers         = gql`query users($input: PagingInput ) { users(input: $input) }`;
 // export const queryRoles         = gql`query roles { roles }`;
 export const queryRoleByIds     = gql`query roleByIds($input: [String]) { roleByIds(input: $input) }`;
 export const queryBanks         = gql`query banks{ banks }`;
 export const queryBankById      = gql`query bankById($id: ID!) { bankById(_id: $id) }`;
-export const queryBankByIds      = gql`query bankByIds($input: [ID]!) { bankByIds(input: $input) }`;
+export const queryBankByIds     = gql`query bankByIds($input: [ID]!) { bankByIds(input: $input) }`;
 export const queryBookBuyTransitions = gql`query bookBuyTransitions { bookBuyTransitions }`;
 export const queryHistoryTransitions = gql`query historyTransitions { historyTransitions }`;
 export const queryFriendProfile      = gql`query friendProfile($id: ID!) { friendProfile(_id: $id) }`;
@@ -23,26 +24,19 @@ export const queryBookmarks       = gql`query bookmarks{ bookmarks }`;
 export const querySubscribes      = gql`query subscribes{ subscribes }`;
 export const queryDblog           = gql`query dblog{ dblog }`;
 export const queryProducers       = gql`query producers{ producers }`;
-
 export const queryManageLotterys      = gql`query manageLotterys{ manageLotterys }`;
 export const queryManageLotteryById   = gql`query manageLotteryById($id: ID!){ manageLotteryById(_id: $id) }`;
-
-
-export const queryDeposits     = gql`query deposits( $input: JSON ) { deposits( input: $input) }`;
-export const queryWithdraws    = gql`query withdraws( $input: JSON ) { withdraws( input: $input) }`;
-
+export const queryDeposits            = gql`query deposits( $input: JSON ) { deposits( input: $input) }`;
+export const queryWithdraws           = gql`query withdraws( $input: JSON ) { withdraws( input: $input) }`;
 // ADMIN
 export const queryDateLotterys    = gql`query dateLotterys { dateLotterys }`;
 export const queryDateLotteryById = gql`query dateLotteryById($id: ID!) { dateLotteryById(_id: $id) }`;
-
 export const queryAdminHome       = gql`query adminHome { adminHome }`;
 export const queryAdminBanks      = gql`query adminBanks { adminBanks }`;
 export const queryAdminDeposits   = gql`query adminDeposits{ adminDeposits }`;
 export const queryAdminWithdraws  = gql`query adminWithdraws{ adminWithdraws }`;
 export const queryManageSuppliers  = gql`query manageSuppliers($input: SearchInput){ manageSuppliers( input: $input) }`;
-export const queryUsers      = gql`query users($input: PagingInput ) { users(input: $input) }`;
 
-// 
 
 // mutation
 export const mutationCheck_db   = gql`mutation check_db{ check_db }`;
@@ -82,3 +76,29 @@ export const subscriptionSuppliers     = gql`subscription subscriptionSuppliers(
 export const subscriptionAdmin         = gql`subscription subscriptionAdmin($sessionId: ID!){ subscriptionAdmin(sessionId: $sessionId) }`;
 
 export const subscriptionCommentById   = gql`subscription subscriptionCommentById($id:ID!){ subscriptionCommentById(_id:$id) }`;
+
+
+////// conversation  conversation
+export const queryConversations = gql`query conversations{ conversations }`;
+export const queryMessage       = gql`query message($id: ID!){ message(_id: $id) }`;
+
+// export const gqlAddMessage = gql`
+//     mutation AddMessage( $conversationId: ID! , $input: MessageInput ) {
+//         addMessage( conversationId: $conversationId, input: $input )
+//     }`;
+
+export const mutationMessage = gql`
+    mutation message( $mode: MessageMode!,  $conversationId: ID!, $input: MessageInput ) {
+        message( mode: $mode, conversationId: $conversationId, input: $input )
+    }`;
+
+export const mutationConversation = gql`mutation conversation($mode: ConversationMode!, $id: ID!){ conversation(mode: $mode, _id: $id) }`;
+
+export const subMessage = gql`subscription subMessage($userId: ID!, $conversationId: ID!) { subMessage( userId: $userId, conversationId: $conversationId)  }`;
+export const gqlUpdateMessageRead = gql`
+        mutation UpdateMessageRead($conversationId: ID!) {
+            updateMessageRead( conversationId: $conversationId)
+        }`;
+
+export const gqlUser = gql`query User($id: ID){ user(_id: $id) }`;
+export const gqlUsers = gql`query users($page: Int, $perPage: Int){ users( page: $page perPage: $perPage ) }`;

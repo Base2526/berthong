@@ -1101,6 +1101,66 @@ export default {
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
       }
     },
+
+    async message(parent, args, context, info) {
+      let start = Date.now()
+      let { req } = context
+      let { _id } = args
+
+      let { current_user } =  await Utils.checkAuth(req);
+
+      if(_.isEmpty(_id)){
+        return ;
+      }
+
+      let data = await Model.Message.find({ conversationId: _id });
+
+      return {
+        status:true,
+        data,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+    },
+
+    async conversations(parent, args, context, info) {
+      let start = Date.now()
+      try{
+        let { req } = context
+
+        let { current_user } =  await Utils.checkAuth(req);
+
+        // let authorization = await checkAuthorization(req);
+        // let { status, code, current_user } =  authorization
+
+        // console.log("conversations #0 : ", authorization)
+
+        // if( status && code == 1 ){
+        let data=  await Model.Conversation.find({
+          "members.userId": { $all: [ current_user?._id.toString() ] }
+        });
+
+        return {
+          status:true,
+          data,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+        // }
+        // console.log("conversations #2")
+        // return {
+        //   status:false,
+        //   data: [],
+        //   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        // }
+      } catch(err) {
+        logger.error(err.toString());
+        
+        return {
+          status:false,
+          message: err.toString(),
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }
+    },
   },
   Upload: GraphQLUpload,
   Mutation: {
@@ -2703,6 +2763,7 @@ export default {
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }   
     },
+
     async crypto(parent, args, context, info) {
       let start = Date.now()
       let { input } = args
@@ -2713,7 +2774,315 @@ export default {
         data: cryptojs.AES.decrypt(input?.encrypt, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8),
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }   
-    }
+    },
+
+    /*
+      async createConversation(parent, args, context, info) {
+      try{
+        let {input} = args
+        
+        let currentUser = await User.findById(input.userId);
+        let friend = await User.findById(input.friendId);
+
+        let result =  await Conversation.findOne({ "members.userId": { $all: [ currentUser._id.toString(), input.friendId ] } });
+                        
+        if(result === null){
+          result = await Conversation.create({
+            // name: friend.displayName,
+            lastSenderName: currentUser.displayName,
+            info:"",
+            // avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
+            // avatarName: friend.displayName,
+            senderId: currentUser._id.toString(),
+            status: "available",
+            // unreadCnt: 0,
+            sentTime: Date.now(),
+            // userId: input.friendId,
+            // members: [input.userId, input.friendId],
+            // members: {[input.userId]:{ 
+            //                           name: currentUser.displayName, 
+            //                           avatarSrc: _.isEmpty(currentUser.image) ? "" :  currentUser.image[0].base64,
+            //                           unreadCnt: 0 
+            //                         }, 
+            //           [input.friendId]:{ 
+            //                           name: friend.displayName, 
+            //                           avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
+            //                           unreadCnt: 0 
+            //                         }},
+            members:[
+              { 
+                userId: currentUser._id.toString(),
+                name: currentUser.displayName, 
+                avatarSrc: _.isEmpty(currentUser.image) ? "" :  currentUser.image[0].url,
+                unreadCnt: 0 
+              },
+              {
+                userId: input.friendId,
+                name: friend.displayName, 
+                avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].url,
+                unreadCnt: 0 
+              }
+            ]
+          });
+
+          pubsub.publish("CONVERSATION", {
+            conversation: {
+              mutation: "CREATED",
+              data: result,
+            },
+          });
+        }else{
+          pubsub.publish("CONVERSATION", {
+            conversation: {
+              mutation: "UPDATED",
+              data: result,
+            },
+          });
+        }
+        
+        return result;
+
+      } catch(err) {
+        logger.error(err.toString());
+        return;
+      }
+    },
+    async updateConversation(parent, args, context, info) {
+      try{
+        let {_id, input} = args
+
+        let result = await Conversation.findOneAndUpdate({
+          _id
+        }, input, {
+          new: true
+        })
+
+        pubsub.publish("CONVERSATION", {
+          conversation: {
+            mutation: "UPDATED",
+            data: result,
+          },
+        });
+
+        console.log("updateConversation friend : ", result)
+
+        return result;
+      } catch(err) {
+        logger.error(err.toString());
+        return;
+      }
+    },
+    */
+
+    async conversation(parent, args, context, info) {
+      try{
+        let start = Date.now()
+        let { mode, _id } = args
+        let { req } = context
+
+        let { current_user } =  await Utils.checkAuth(req);
+
+        let friend = await Model.User.findById(mongoose.Types.ObjectId(_id))
+
+        
+        
+        // let currentUser = await User.findById(input.userId);
+        // let friend = await User.findById(input.friendId);
+        let result =  await Model.Conversation.findOne({ "members.userId": { $all: [ current_user._id, mongoose.Types.ObjectId(_id) ] } });            
+        console.log("args :", args, friend, result)
+        if( _.isNull(result) ){
+          let input = {
+                        // name: friend.displayName,
+                        lastSenderName: current_user.displayName,
+                        info:"",
+                        // avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
+                        // avatarName: friend.displayName,
+                        senderId: current_user._id,
+                        status: "available",
+                        // unreadCnt: 0,
+                        sentTime: Date.now(),
+                        // userId: input.friendId,
+                        // members: [input.userId, input.friendId],
+                        // members: {[input.userId]:{ 
+                        //                           name: currentUser.displayName, 
+                        //                           avatarSrc: _.isEmpty(currentUser.image) ? "" :  currentUser.image[0].base64,
+                        //                           unreadCnt: 0 
+                        //                         }, 
+                        //           [input.friendId]:{ 
+                        //                           name: friend.displayName, 
+                        //                           avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
+                        //                           unreadCnt: 0 
+                        //                         }},
+                        members:[
+                          { 
+                            userId: current_user._id,
+                            name: current_user.displayName, 
+                            avatarSrc: _.isEmpty(current_user.image) ? "" :  current_user.image[0].url,
+                            unreadCnt: 0 
+                          },
+                          {
+                            userId: mongoose.Types.ObjectId(_id),
+                            name: friend.displayName, 
+                            avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].url,
+                            unreadCnt: 0 
+                          }
+                        ]
+                      }
+          await Conversation.create(input);
+
+        //   pubsub.publish("CONVERSATION", {
+        //     conversation: {
+        //       mutation: "CREATED",
+        //       data: result,
+        //     },
+        //   });
+        }else{
+        //   pubsub.publish("CONVERSATION", {
+        //     conversation: {
+        //       mutation: "UPDATED",
+        //       data: result,
+        //     },
+        //   });
+        }
+        
+        return {
+          status: true,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }   
+
+      } catch(err) {
+        logger.error(err.toString());
+        return;
+      }
+    },
+
+    async message(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      console.log("message : ", input)
+      // let { currentUser } = context
+
+      // if(_.isEmpty(currentUser)){
+      //   return;
+      // }
+
+      /*
+      console.log("addMessage : ", args)
+
+      let { userId, conversationId, input } = args
+
+
+      let { req } = context
+
+      let authorization = await checkAuthorization(req);
+      let { status, code, current_user } =  authorization
+
+
+      ///////////////////////
+      if(input.type === "image"){
+        let {payload, files} = input
+
+        let url = [];
+        for (let i = 0; i < files.length; i++) {
+          const { createReadStream, filename, encoding, mimetype } = await files[i];
+          const stream = createReadStream();
+          const assetUniqName = fileRenamer(filename);
+          let pathName = `/app/uploads/${assetUniqName}`;
+          
+
+          const output = fs.createWriteStream(pathName)
+          stream.pipe(output);
+
+          await new Promise(function (resolve, reject) {
+            output.on('close', () => {
+              resolve();
+            });
+      
+            output.on('error', (err) => {
+              logger.error(err.toString());
+
+              reject(err);
+            });
+          });
+
+          const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+          url.push({ url: urlForArray });
+        }
+
+        input = {...input, payload: _.map(payload, (p, index)=>{ return {...p, src: url[index].url} })}
+        input = _.omit(input, ['files'])
+      }
+
+      /////////////////////////
+
+      let result = await Message.findById(input._id);
+
+      
+      // let currentUser = await User.findById(userId);
+      
+      if(_.isEmpty(result)){
+        input = { ...input, 
+                  conversationId, 
+                  senderId: current_user?._id.toString(), 
+                  senderName: current_user?.displayName, 
+                  sentTime: Date.now(), 
+                  status: "sent",
+                  reads: []}
+         
+        result = await Message.create(input);
+
+        try {
+          let conversation = await Conversation.findById(conversationId);
+  
+          if(!_.isEmpty(conversation)){
+            conversation = _.omit({...conversation._doc}, ["_id", "__v"])
+  
+            let newMember = _.find(conversation.members, member => member.userId != current_user?._id.toString());
+  
+  
+            // หาจำนวน unread total = (await Post.find().lean().exec()).length; 
+            // https://www.educative.io/answers/what-is-the-ne-operator-in-mongodb
+            let unreadCnt = (await Message.find({ conversationId, 
+                                                  senderId: {$all : current_user?._id.toString()}, 
+                                                  status: 'sent',
+                                                  reads: { $nin: [ newMember.userId ] }}).lean().exec()).length; 
+            // หาจำนวน unread
+  
+            newMember = {...newMember, unreadCnt}
+            
+            let newMembers = _.map(conversation.members, (member)=>member.userId == newMember.userId ? newMember : member)
+  
+            conversation = {...conversation, lastSenderName:current_user?.displayName, info:input.message, sentTime: Date.now(), members: newMembers }
+  
+            let conversat = await Conversation.findOneAndUpdate({ _id : conversationId }, conversation, { new: true })
+  
+            let p = pubsub.publish("CONVERSATION", {
+              conversation: {
+                mutation: "UPDATED",
+                data: conversat,
+              },
+            });
+          }
+        } catch (err) {
+          console.log("conversation err:" , err)
+        }
+
+        pubsub.publish('MESSAGE', {
+          message:{
+            mutation: 'CREATED',
+            data: result
+          }
+        });
+      }
+      */
+
+      return {
+        status: true,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }   
+    },
   },
   Subscription:{
     subscriptionMe: {
