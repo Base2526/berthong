@@ -9,7 +9,7 @@ import {
     Stack
 } from '@mui/material';
 import { loadCaptchaEnginge, LoadCanvasTemplate , validateCaptcha} from "react-simple-captcha";
-import AttackFileField from "./AttackFileField";
+import AttackFileField from "./components/AttackFileField";
 
 import { queryBankByIds } from "./apollo/gqlQuery"
 import { checkRole, getHeaders, handlerErrorApollo, showToast} from "./util";

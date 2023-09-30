@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 
 import * as Constants from "./constants"
-import AttackFileField from "./AttackFileField";
+import AttackFileField from "./components/AttackFileField";
 import { queryAdminBanks } from "./apollo/gqlQuery";
 import { handlerErrorApollo,  getHeaders, showToast } from "./util";
 

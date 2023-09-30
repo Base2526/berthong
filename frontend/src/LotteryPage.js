@@ -15,7 +15,7 @@ import moment from "moment";
 
 import { queryManageSuppliers, queryManageLotterys, querySupplierById, mutationLottery } from "./apollo/gqlQuery";
 import { getHeaders, handlerErrorApollo } from "./util";
-import AttackFileField from "./AttackFileField";
+import AttackFileField from "./components/AttackFileField";
 
 let initValues = {
   title: "", 
