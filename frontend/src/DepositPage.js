@@ -15,7 +15,7 @@ import {
 
 import * as Constants from "./constants"
 import AttackFileField from "./AttackFileField";
-import { queryAdminBanks } from "./gqlQuery";
+import { queryAdminBanks } from "./apollo/gqlQuery";
 import { handlerErrorApollo,  getHeaders, showToast } from "./util";
 
 let initValues = {  balance: "", 

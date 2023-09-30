@@ -39,7 +39,7 @@ import {
 } from "@chatscope/chat-ui-kit-react";
 import LinearProgress from '@mui/material/LinearProgress';
 
-import { queryUserById } from "../gqlQuery"
+import { queryUserById } from "../apollo/gqlQuery"
 
 import { getHeaders } from "../util";
 

@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import moment from "moment";
 
-import { queryManageSuppliers, queryManageLotterys, querySupplierById, mutationLottery } from "./gqlQuery";
+import { queryManageSuppliers, queryManageLotterys, querySupplierById, mutationLottery } from "./apollo/gqlQuery";
 import { getHeaders, handlerErrorApollo } from "./util";
 import AttackFileField from "./AttackFileField";
 

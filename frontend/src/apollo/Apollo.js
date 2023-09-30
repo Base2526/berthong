@@ -5,9 +5,9 @@ import { createUploadLink } from 'apollo-upload-client'; // v15.0.0
 import { createClient } from 'graphql-ws';
 import _ from "lodash"
 
-import { store } from "./Redux";
-import { ws_status } from "./redux/actions/ws";
-import * as Constants from "./constants"
+import { store } from "../redux/Redux";
+import { ws_status } from "../redux/actions/ws";
+import * as Constants from "../constants"
 
 /////////////////////////
 

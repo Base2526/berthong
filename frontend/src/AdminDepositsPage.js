@@ -25,7 +25,7 @@ import {
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import { getHeaders, handlerErrorApollo } from "./util"
-import { queryAdminDeposits } from "./gqlQuery"
+import { queryAdminDeposits } from "./apollo/gqlQuery"
 import * as Constants from "./constants"
 
 import AdminDepositItem from "./item/AdminDepositItem"

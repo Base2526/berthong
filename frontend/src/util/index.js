@@ -2,9 +2,9 @@ import _ from "lodash"
 import { toast } from 'react-toastify';
 import UniversalCookie from 'universal-cookie';
 
-import i18n from './translations/i18n';
+import i18n from '../translations/i18n';
  
-import * as Constants from "./constants"
+import * as Constants from "../constants"
 
 const cookies = new UniversalCookie();
 
@@ -46,12 +46,12 @@ export const convertDate = (date) =>{
     const monthNamesThai = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.", "ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
     const monthNameEnglish = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
-    if(i18n.language.toLowerCase() == 'th'){
+    if(i18n.language.toLowerCase() === 'th'){
 
         date = date.split(" ")
         let x = date[1];
         let vx = _.findIndex(monthNameEnglish, (month) => {
-          return x.toLowerCase() == month.toLowerCase();
+          return x.toLowerCase() === month.toLowerCase();
         });
       
         date[1] = monthNamesThai[vx];
@@ -153,12 +153,12 @@ export const checkRole = (user) =>{
 }
 
 export const bookView = (val) =>{
-    let fn = _.filter(val.buys, (buy)=> buy.selected == 0 );
+    let fn = _.filter(val.buys, (buy)=> buy.selected === 0 );
     return fn.length;
 }
 
 export const sellView = (val) =>{
-    let fn = _.filter(val.buys, (buy)=> buy.selected == 1 );
+    let fn = _.filter(val.buys, (buy)=> buy.selected === 1 );
     return fn.length;
 }
 

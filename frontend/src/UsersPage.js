@@ -23,7 +23,7 @@ import moment from "moment";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, createSearchParams } from "react-router-dom";
 
-import { queryUsers, mutationForceLogout } from "./gqlQuery";
+import { queryUsers, mutationForceLogout } from "./apollo/gqlQuery";
 import { getHeaders, handlerErrorApollo, showToast } from "./util";
 import RolesComp from "./components/RolesComp"
 import * as Constants from "./constants";

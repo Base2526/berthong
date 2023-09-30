@@ -8,7 +8,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import _ from "lodash";
 
 import { getHeaders } from "./util";
-import { queryBankById } from "./gqlQuery"
+import { queryBankById } from "./apollo/gqlQuery"
 
 let editValues = undefined;
 let initValues =  { mode: "NEW",  name : "",  description: "" }

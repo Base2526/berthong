@@ -15,7 +15,7 @@ import moment from "moment";
 import {Edit as EditIcon,  DeleteForever as DeleteForeverIcon} from '@mui/icons-material';
 
 import { getHeaders } from "./util"
-import { queryProducers } from "./gqlQuery"
+import { queryProducers } from "./apollo/gqlQuery"
 
 import TableComp from "./components/TableComp"
 

@@ -16,7 +16,7 @@ import {
 import moment from "moment";
 
 import { getHeaders } from "./util"
-import { queryNotifications } from "./gqlQuery"
+import { queryNotifications } from "./apollo/gqlQuery"
 import * as Constants from "./constants"
 
 let initialValue = { data: [] , total : 0, slice: 20, hasMore: true}

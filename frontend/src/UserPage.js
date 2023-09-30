@@ -8,7 +8,7 @@ import { useQuery } from "@apollo/client";
 import { IconButton, Avatar } from "@mui/material";
 
 import { getHeaders } from "./util"
-import { queryUserById } from "./gqlQuery"
+import { queryUserById } from "./apollo/gqlQuery"
 
 const Input = styled("input")({ display: "none" });
 

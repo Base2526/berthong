@@ -18,7 +18,7 @@ import {
 } from "react-icons/md"
 
 import { getHeaders } from "./util"
-import { queryBookmarks } from "./gqlQuery"
+import { queryBookmarks } from "./apollo/gqlQuery"
 
 const initialValue = { data: [], slice: 20, total: 0, hasMore: true}
 const BookMarksPage = (props) => {

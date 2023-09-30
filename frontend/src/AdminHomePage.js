@@ -13,7 +13,7 @@ import {
 import {
   FiRefreshCcw
 } from "react-icons/fi"
-import { queryAdminHome } from "./gqlQuery";
+import { queryAdminHome } from "./apollo/gqlQuery";
 import { getHeaders, showToast, handlerErrorApollo } from "./util";
 import * as Constants from "./constants"
 

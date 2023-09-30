@@ -25,7 +25,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 
-import { queryBankById } from "./gqlQuery"
+import { queryBankById } from "./apollo/gqlQuery"
 import { getHeaders } from "./util"
 
 const BanksPage = (props) => {

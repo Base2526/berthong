@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import { FaAngleUp } from 'react-icons/fa';
 import { IoReloadCircle } from 'react-icons/io5'
 
-import { querySuppliers, subscriptionSuppliers } from "./gqlQuery";
+import { querySuppliers, subscriptionSuppliers } from "./apollo/gqlQuery";
 import { handlerErrorApollo,  getHeaders } from "./util";
 import HomeItem from "./item/HomeItem"
 import SearchComp from "./components/SearchComp"

@@ -13,7 +13,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import _ from "lodash";
 
-import { queryManageLotteryById, queryManageLotterys, mutationManageLottery, mutationCalculateLottery } from "./gqlQuery"
+import { queryManageLotteryById, queryManageLotterys, mutationManageLottery, mutationCalculateLottery } from "./apollo/gqlQuery"
 import { getHeaders, handlerErrorApollo, showToast } from "./util"
 
 let editValues = undefined;

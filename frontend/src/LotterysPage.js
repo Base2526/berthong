@@ -19,19 +19,14 @@ import {
   DialogContentText,
   DialogTitle,
   CircularProgress,
-  LinearProgress
+  LinearProgress,
+  IconButton
 } from "@mui/material";
-import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
-
-import { useTable, useFilters, useGlobalFilter, useAsyncDebounce } from 'react-table'
-
-import { getHeaders, handlerErrorApollo } from "./util"
-import { queryManageSuppliers } from "./gqlQuery"
+import { getHeaders, handlerErrorApollo, checkRole } from "./util"
+import { queryManageSuppliers } from "./apollo/gqlQuery"
 import UserComp from "./components/UserComp"
-
 import * as Constants from "./constants"
-
 import TableComp from "./components/TableComp"
 
 const INIT_SEARCH = {
@@ -155,6 +150,7 @@ const LotterysPage = (props) => {
                         }}
                         sx={{ width: 56, height: 56 }}
                       />
+                      <div>{ files.length }</div>
                     </div>
         }
       },
@@ -176,7 +172,7 @@ const LotterysPage = (props) => {
         accessor: "ownerId",
         Cell: props =>{
           let { owner } = props.row.original
-          return <div>{owner.username}</div>
+          return  <div onClick={()=>{ _.isEqual(user._id, owner?._id ) ? navigate("/me") : navigate({ pathname: `/p`, search: `?${createSearchParams({ id: owner._id })}` })}}>{owner.username} </div>
         }
       },
       {
@@ -261,7 +257,12 @@ const LotterysPage = (props) => {
         loadingSuppliers
         ? <CircularProgress />
         : <div>
-            <button onClick={(evt)=>{ navigate("/lottery", {state: {from: "/", mode: "new" } }) }}> <AddBoxIcon/>{t("ADD")} </button>
+          {
+            checkRole(user) == Constants.SELLER 
+            ? <button onClick={(evt)=>{ navigate("/lottery", {state: {from: "/", mode: "new" } }) }}> <AddBoxIcon/>{t("ADD")} </button>
+            : <div/>
+          }
+            
             <TableComp
               columns={columns}
               data={datas}

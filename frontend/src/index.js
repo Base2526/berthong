@@ -1,4 +1,4 @@
-import './App.css';
+import './css/App.css';
 import "./skeleton.scss";
 import "react-toastify/dist/ReactToastify.css";
 import "react-image-lightbox/style.css";
@@ -14,10 +14,10 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { PersistGate } from "redux-persist/integration/react";
 import { CssVarsProvider } from "@mui/joy/styles";
 
-import { client } from "./Apollo";
+import { client } from "./apollo/Apollo";
 import App from "./App";
-import { persistor, store } from "./Redux";
-import Store from "./Store";
+import { persistor, store } from "./redux/Redux";
+import Store from "./redux/Store";
 
 let { REACT_APP_NODE_ENV, REACT_APP_GOOGLE_ANALYTICS4 } = process.env
  

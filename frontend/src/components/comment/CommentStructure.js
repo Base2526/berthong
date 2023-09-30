@@ -23,7 +23,7 @@ import moment from "moment";
 import { useTranslation } from "react-i18next";
 
 import { ActionContext } from './ActionContext'
-import { queryUserById } from "../../gqlQuery"
+import { queryUserById } from "../../apollo/gqlQuery"
 import { getHeaders } from "../../util"
 import { useLocation } from "react-router-dom";
 

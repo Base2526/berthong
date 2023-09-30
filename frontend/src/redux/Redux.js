@@ -1,20 +1,14 @@
 //////////////// redux /////////////////
-import { applyMiddleware, legacy_createStore as createStore, combineReducers, compose  } from "redux";
-import { configureStore } from '@reduxjs/toolkit'
-import { Provider } from "react-redux";
+import { applyMiddleware, legacy_createStore as createStore, compose  } from "redux";
 import thunk from "redux-thunk";
 import { createLogger } from "redux-logger";    // Logger with default options
 
 // persist
 import { persistStore, persistReducer, createTransform } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import { PersistGate } from "redux-persist/integration/react";
-import { BrowserRouter, Switch } from "react-router-dom";
-
-import ReactGA4 from "react-ga4";
 import CryptoJS from 'crypto-js';
 
-import reducers from "./redux/reducers";
+import reducers from "./reducers";
 
 let { REACT_APP_NODE_ENV, REACT_APP_ENCRYPT_PASS } = process.env
 
