@@ -813,7 +813,7 @@ export default gql`
     crypto(input: JSON):JSON
 
     conversation( mode: ConversationMode!, _id: ID! ): JSON
-    message( mode: MessageMode!, conversationId: ID!, input: MessageInput ): JSON
+    message( mode: MessageMode!, input: MessageInput ): JSON
   }
 
   type Subscription {
@@ -822,6 +822,9 @@ export default gql`
     subscriptionSuppliers(supplierIds: String!): JSON
     subscriptionAdmin(supplierIds: String!): JSON
     subscriptionCommentById(_id: ID!): JSON
+
+    subConversation(userId: ID): JSON
+    subMessage(userId: ID!, conversationId: ID!): JSON
   }
 
   type PostSubscriptionPayload {

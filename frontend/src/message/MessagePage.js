@@ -35,28 +35,23 @@ import { useQuery, useMutation, useSubscription } from "@apollo/client";
 import moment from "moment";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import mongoose from "mongoose";
 
 import { queryMessage, mutationMessage, subMessage, gqlUpdateMessageRead, queryConversations} from "../gqlQuery"
-
-// import { addedConversation } from "../../redux/actions/auth"
-
 import MessageItem from "./MessageItem"
-
-import { getHeaders, makeid, truncate } from "../util"
+import { getHeaders, truncate, handlerErrorApollo } from "../util"
 
 let unsubscribeSubMessage = null
-
 const MessagePage = (props) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const {user, conversations /*, addedConversation*/ } = props;
+  const { user, conversations } = props;
 
   const inputFile = useRef(null) 
 
-  const [conversationList, setConversationList] = useState(conversations);
-  const [preConversationList, setPreConversationList] = useState(conversations);
-  const [currentConversation, setCurrentConversation] = useState([]);//useState(conversations[0]);
+  const [conversationList, setConversationList] = useState([]);
+  const [currentConversation, setCurrentConversation] = useState([]);
   const [messageList, setMessageList] = useState([]);
 
   const [loadingMore, setLoadingMore] = useState(false);
@@ -65,7 +60,6 @@ const MessagePage = (props) => {
 
   const [messageInputValue, setMessageInputValue] = useState("");
 
-  //  fetchMessageValues
   const { loading: loadingMessage, 
           data: dataMessage, 
           error: errorMessage, 
@@ -74,46 +68,48 @@ const MessagePage = (props) => {
           networkStatus }   =   useQuery(queryMessage, 
                                   { 
                                     context: { headers: getHeaders(location) }, 
-                                    // variables: {conversationId: ""}, 
                                     fetchPolicy: 'cache-first', 
                                     nextFetchPolicy: 'network-only', 
                                     notifyOnNetworkStatusChange: true
                                   });  
 
-  let { loading: loadingConversations, 
-        data: dataConversations, 
-        error: errorConversations  } =  useQuery( queryConversations, { 
-                                                  context: { headers: getHeaders(location) }, 
-                                                  fetchPolicy: 'cache-first', 
-                                                  nextFetchPolicy: 'network-only', 
-                                                  notifyOnNetworkStatusChange: true});
+  // let { loading: loadingConversations, 
+  //       data: dataConversations, 
+  //       error: errorConversations  } =  useQuery( queryConversations, { 
+  //                                                 context: { headers: getHeaders(location) }, 
+  //                                                 fetchPolicy: 'cache-first', 
+  //                                                 nextFetchPolicy: 'network-only', 
+  //                                                 notifyOnNetworkStatusChange: true});
 
   const [onMessage, resultMessage] = useMutation(mutationMessage
     , {
         context: { headers: getHeaders(location) },
         update: (cache, {data: {message}}, context) => {
-          // const data1 = cache.readQuery({
-          //     query: gqlFetchMessage,
-          //     variables: {conversationId: currentConversation._id},
-          // });
-          // let newData = {...data1.fetchMessage}
-          // if(!_.find(newData.data, n=>n._id === addMessage._id)) {
-          //   newData = {...newData, data: [...newData.data, addMessage]}
-          //   cache.writeQuery({
-          //       query: gqlFetchMessage,
-          //       data: {
-          //           fetchMessage: newData
-          //       },
-          //       variables: {conversationId: currentConversation._id},
-          //   });
-          // }
+          let { status, data, conversation } = message
+          if(status){
+            let messages = cache.readQuery({ query: queryMessage, variables: { id: currentConversation._id } });
+            if(!_.isEmpty(messages)){
+              cache.writeQuery({ query: queryMessage, 
+                                 data: { message: { ...messages.message, data: [...messages.message.data, data] } }, 
+                                 variables: { id: currentConversation._id } }); 
+            }
+            let conv = cache.readQuery({ query: queryConversations, variables: { id: currentConversation._id } });
+            if(!_.isEmpty(conv)){
+              cache.writeQuery({  
+                                  query: queryConversations, 
+                                  data: { conversations: { ...conv.conversations, data: _.map(conv.conversations.data, (value)=> _.isEqual(value._id, conversation?._id) ? conversation : value ) } } 
+                                }); 
+            }
+          }
         },
         onCompleted(data) {
           console.log(data)
+        },
+        onError(error){
+          return handlerErrorApollo( props, error )
         }
     },  
   );
-  console.log("resultMessage :", resultMessage)
 
   const [onUpdateMessageRead, resultUpdateMessageRead] = useMutation(gqlUpdateMessageRead
     , {
@@ -143,16 +139,18 @@ const MessagePage = (props) => {
         },
         onCompleted({ data }) {
           console.log(data)
+        },
+        onError(error){
+          return handlerErrorApollo( props, error )
         }
     },  
   );
 
-  // useEffect(()=>{
-  //   return () => {
-  //     console.log("cleaned up");
-  //     unsubscribeSubMessage && unsubscribeSubMessage()
-  //   };
-  // }, [])
+  useEffect(()=>{
+    return () => {
+      unsubscribeSubMessage && unsubscribeSubMessage()
+    };
+  }, [])
 
   // useEffect(()=>{
   //   if(!_.isEmpty(state)){
@@ -161,37 +159,49 @@ const MessagePage = (props) => {
   //   }
   // }, [state])
 
-  // useEffect(async()=>{
-  //   // let mfriend = _.find(conversation.members, (member)=>member.userId !== user._id)
-  //   // console.log("mfriend :", mfriend)
-  //   // _.map(conversationList, (conversation)=>{
-  //   // })
-  //   // console.log("new_data :", new_data)
-  //   setConversationList(conversations)
-  //   setPreConversationList(conversations)
-  //   // console.log("conversations :", currentConversation)
-  // }, [conversations])
+  useEffect(()=>{
+    // let mfriend = _.find(conversation.members, (member)=>member.userId !== user._id)
+    // console.log("mfriend :", mfriend)
+    // _.map(conversationList, (conversation)=>{
+    // })
+    // console.log("new_data :", new_data)
+    // setConversationList(conversations)
+    // setPreConversationList(conversations)
+    // console.log("conversations :", currentConversation)
 
-  useEffect(async()=>{
-    if(!dataConversations){
-      if(!_.isEmpty(dataConversations?.conversations)){
-        let { status, data } = dataConversations?.conversations
-        if(status){
-          // setConversationList(data)
-        }
-      }
-    }
-  }, [dataConversations, loadingConversations])
+    let newConversations = _.sortBy(conversations, "updatedAt").reverse()
+    setConversationList(newConversations)
+    if(!_.isEmpty(newConversations)) setCurrentConversation(newConversations[0])
+  }, [conversations])
 
   // useEffect(()=>{
-  //   console.log("currentConversation :", currentConversation)
-  //   if(!_.isEmpty(currentConversation)){
-  //     fetchMessageValues.refetch({conversationId: currentConversation._id});
-  //     onUpdateMessageRead({ variables: {conversationId: currentConversation._id} });
-  //   }else{
-  //     fetchMessageValues.refetch({conversationId: ""});
+  //   if(!loadingConversations){
+  //     if(!_.isEmpty(dataConversations?.conversations)){
+  //       let { status, data } = dataConversations?.conversations
+  //       if(status){
+  //         let newData = _.sortBy(data, "updatedAt").reverse()
+  //         setConversationList(newData)
+  //         if(!_.isEmpty(newData)) setCurrentConversation(newData[0])
+  //       }
+  //     }
   //   }
-  // }, [currentConversation])
+  // }, [dataConversations, loadingConversations])
+
+  useEffect(()=>{
+    if(!_.isEmpty(currentConversation)){
+      refetchMessage({id: currentConversation._id});
+      // onUpdateMessageRead({ variables: {conversationId: currentConversation._id} });
+    }
+  }, [currentConversation])
+
+  useEffect(()=>{
+    if(!loadingMessage){
+      if(!_.isEmpty(dataMessage?.message)){
+        let { status, data } = dataMessage?.message
+        if(status) setMessageList(data)
+      }
+    }
+  }, [dataMessage, loadingMessage])
   
   // status, waiting, sent, received, read
   const onSidebarLeft = () =>{
@@ -199,22 +209,26 @@ const MessagePage = (props) => {
               <Search 
                 placeholder="Search..." 
                 onClearClick={(e)=>{
-                  setConversationList(preConversationList)
+                  // setConversationList(preConversationList)
+                  console.log("setConversationList")
                 }}
                 onChange={(e)=>{
-                  if(!_.isEmpty(e)){
+                  // if(!_.isEmpty(e)){
                     let newConversationList = _.filter(conversationList, conversation =>{ 
                       let mfriend = _.find(conversation.members, (member)=>member.userId !== user._id)
-                      return conversation.lastSenderName.toLowerCase().includes(e.toLowerCase()) || conversation.info.toLowerCase().includes(e.toLowerCase()) || mfriend.name.toLowerCase().includes(e.toLowerCase())
+                      return conversation.lastSenderName.toLowerCase().includes(e.toLowerCase()) || 
+                             conversation.info.toLowerCase().includes(e.toLowerCase()) || 
+                             mfriend.name.toLowerCase().includes(e.toLowerCase())
                     })
                     setConversationList(newConversationList)
-                  }else{
-                    setConversationList(preConversationList)
-                  }
+                  // }else{
+                  //   setConversationList(preConversationList)
+                  // }
                 }}/>
               <ConversationList>
                 {
                   _.map(conversationList, (conversation)=>{
+                    console.log("conversation :", conversation)
                     let muser = _.find(conversation.members, (member)=>member.userId === user._id)
                     let mfriend = _.find(conversation.members, (member)=>member.userId !== user._id)
 
@@ -224,9 +238,7 @@ const MessagePage = (props) => {
                               info={ truncate(conversation.info, 25)}
                               unreadCnt={muser.unreadCnt}
                               active={ conversation._id === currentConversation._id ? true: false}
-                              onClick={(e)=>{
-                                setCurrentConversation(conversation)
-                              }}
+                              onClick={(e)=>{ setCurrentConversation(conversation) }}
                               lastActivityTime={moment(conversation.sentTime).format('M/D/YY, hh:mm A')}>
                               <Avatar src={mfriend.avatarSrc} name={conversation.avatarName} status={conversation.status} />
                             </Conversation>
@@ -293,10 +305,20 @@ const MessagePage = (props) => {
   }
 
   const onMessageList = () =>{
-    /*
-    if(!fetchMessageValues.loading){
+  
+    if(!loadingMessage){
+
+      unsubscribeSubMessage =  subscribeToMoreMessage({
+        document: subMessage,
+        variables: { userId: user?._id, conversationId: currentConversation?._id },
+        updateQuery: (prev, {subscriptionData, variables}) => {
+          // if (!subscriptionData.data) return prev;
+          console.log("")
+          return prev;
+        }
+      })
       
-      console.log("fetchMessageValues :", fetchMessageValues)
+      // console.log("subscribeToMoreMessage :", subscribeToMoreMessage)
 
       // let {executionTime, status, data}= fetchMessageValues.data.fetchMessage
       // let {subscribeToMore} = fetchMessageValues
@@ -333,62 +355,53 @@ const MessagePage = (props) => {
       //   }
       // });
 
-      let data = []
 
       return  <MessageList
                 // typingIndicator={<TypingIndicator content="Zoe is typing" />}
                 // loadingMore={loadingMore} 
                 // onYReachStart={onYReachStart()}
                 >
-                { _.map( data, item=>{ return <MessageItem {...props} item={item} /> }) }  
+                { _.map( messageList, item=>{ return <MessageItem {...props} item={item} /> }) }  
               </MessageList>  
     }
-    */
-    return <div />
+    
+    return <LinearProgress />
   }
 
   const onMessageInput = () =>{
     return  <MessageInput
               placeholder="Type message here"
               value={messageInputValue}
-              onAttachClick={(f)=>{
-                console.log("onAttachClick :", f)
-                inputFile.current.click();
-              }}
+              attachDisabled={true}
+              attachButton={false}
+              // onAttachClick={(f)=>{
+              //   console.log("onAttachClick :", f)
+              //   inputFile.current.click();
+              // }}
               onChange={(val) =>{
                 console.log("onChange :", val)
                 setMessageInputValue(val)
               } }
               onSend={(a, b, c, d) => {
+                let input = {
+                              _id: new mongoose.Types.ObjectId(), 
+                              conversationId: currentConversation._id, 
+                              status: "waiting",
+                              message: messageInputValue,
+                              sentTime: Date.now(),
+                              // sender: user.displayName,
+                              // senderId: user.id, 
+                              direction: "outgoing",
+                              position: "single"
+                            }
 
-                let input = {}
                 if(/<\/?[a-z][\s\S]*>/i.test(messageInputValue)){
-                  input = {
-                            type: "html",
-                            message: messageInputValue,
-                            sentTime: Date.now(),
-                            // sender: user.displayName,
-                            // senderId: user.id, 
-                            direction: "outgoing",
-                            position: "single"
-                          }
-                        
+                  input = { ...input, type: "html" }
                 }else{
-                  input = {
-                            type: "text",
-                            message: messageInputValue,
-                            sentTime: Date.now(),
-                            // sender: user.displayName,
-                            // senderId: user.id, 
-                            direction: "outgoing",
-                            position: "single"
-                          }
+                  input = { ...input, type: "text" }
                 }
 
-                input = {...input, _id: makeid(20) , conversationId: currentConversation._id, status: "waiting" }
-
-                console.log("input ", input, user._id)
-                onMessage({ variables: {mode: "NEW", conversationId: currentConversation._id, input } });
+                onMessage({ variables: { mode: "NEW", input } });
                 setMessageInputValue("")
               }}
             />
@@ -430,6 +443,9 @@ const MessagePage = (props) => {
     console.log("file :", event.target.files);
 
     let input = {
+      _id: new mongoose.Types.ObjectId(), 
+      conversationId: currentConversation._id, 
+      status: "waiting",
       type: "image",
       message: "picture",
       sentTime: Date.now(),
@@ -437,19 +453,11 @@ const MessagePage = (props) => {
       // senderId: user.id, 
       direction: "outgoing",
       position: "single",
-
-      payload: [{
-              src: URL.createObjectURL(event.target.files[0]),
-              alt: "Joe avatar",
-              width: "100px"
-            }],
-
+      payload: [{ src: URL.createObjectURL(event.target.files[0]), alt: "Joe avatar", width: "100px" }],
       files:event.target.files
     }
     
-    input = {...input, _id: makeid(20) , conversationId: currentConversation._id, status: "waiting" }
-
-    onMessage({ variables: {mode: "NEW", conversationId: currentConversation._id, input } });
+    onMessage({ variables: {mode: "NEW",  input } });
   }
 
   return (
@@ -464,7 +472,6 @@ const MessagePage = (props) => {
               {onMessageInput()}
             </ChatContainer>
             {/* {onSidebarRight()} */}
-
             <input type='file' id='file' ref={inputFile} style={{display: 'none'}}  onChange={onChangeFile} />
           </MainContainer>
         </div>
@@ -472,21 +479,5 @@ const MessagePage = (props) => {
     </div>
   );
 }
-
-// const mapStateToProps = (state, ownProps) => {
-//   let user = state.auth.user;
-//   let conversations = _.orderBy(state.auth.conversations, (dateObj) => new Date(dateObj.sentTime) , 'desc')
-  
-//   console.log("conversations :", conversations)
-
-//   return {
-//     user,
-//     conversations
-//   }
-// };
-
-// const mapDispatchToProps = {
-//   // addedConversation
-// }
 
 export default MessagePage;

@@ -45,11 +45,8 @@ import { getHeaders } from "../util";
 
 const MessageItem = (props) => {
     let location = useLocation();
-
     let {user, item} = props 
     let {type, message, sentTime, senderId, senderName, position, payload} = item
-
-    // let userValues = useQuery(queryUserById, { variables: {id: senderId}, notifyOnNetworkStatusChange: true });
 
     const { loading: loadingUserById, 
             data: dataUserById, 
@@ -67,6 +64,8 @@ const MessageItem = (props) => {
 
     if(loadingUserById) return <div />;
 
+    console.log("dataUserById :", dataUserById)
+
     let direction = senderId == user._id  ? "outgoing" : "incoming"
     
     switch(type){
@@ -82,7 +81,7 @@ const MessageItem = (props) => {
                                 direction,
                                 position
                             }}>
-                             { loadingUserById ? <LinearProgress sx={{width:"100px"}} /> : <Avatar src={_.isEmpty(dataUserById.data.user.data) ? "" : dataUserById.data.user.data.image[0].url} name="Zoe" size="sm" /> }
+                             { loadingUserById ? <LinearProgress sx={{width:"100px"}} /> : <Avatar src={_.isEmpty(dataUserById?.userById?.data?.avatar) ? "" : dataUserById?.userById?.data?.avatar?.url} name="Zoe" size="sm" /> }
                             <Message.Footer sentTime={moment.unix(sentTime/1000).format('hh:mm A')} />
                         </Message>
             }
@@ -116,7 +115,7 @@ const MessageItem = (props) => {
                     }}>
                         
                         <Message.HtmlContent html={message} />
-                        { loadingUserById ? <LinearProgress sx={{width:"100px"}} /> : <Avatar src={_.isEmpty(dataUserById.data.user.data) ? "" : dataUserById.data.user.data.image[0].url} name="Zoe" size="sm" /> }
+                        { loadingUserById ? <LinearProgress sx={{width:"100px"}} /> : <Avatar src={_.isEmpty(dataUserById?.userById?.data?.avatar) ? "" : dataUserById?.userById?.data?.avatar?.url} name="Zoe" size="sm" /> }
                         <Message.Footer sentTime={moment.unix(sentTime/1000).format('hh:mm A')} />
                     </Message>
 
@@ -142,7 +141,7 @@ const MessageItem = (props) => {
             switch(direction){
                 case "incoming":{
                     return  <Message model={{direction, position}}>
-                                { loadingUserById ? <LinearProgress sx={{width:"100px"}} /> : <Avatar src={_.isEmpty(dataUserById.data.user.data) ? "" : dataUserById.data.user.data.image[0].url} name="Zoe" size="sm" /> }
+                                { loadingUserById ? <LinearProgress sx={{width:"100px"}} /> : <Avatar src={_.isEmpty(dataUserById?.userById?.data?.avatar) ? "" : dataUserById?.userById?.data?.avatar?.url} name="Zoe" size="sm" /> }
                                 <Message.ImageContent className={"message-image"} src={src} alt={"alt"} width={150} onClick={(event)=>{ console.log("event")}} />
                                 <Message.Footer sentTime={moment.unix(sentTime/1000).format('hh:mm A')} />   
                             </Message>

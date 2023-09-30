@@ -87,10 +87,7 @@ export const queryMessage       = gql`query message($id: ID!){ message(_id: $id)
 //         addMessage( conversationId: $conversationId, input: $input )
 //     }`;
 
-export const mutationMessage = gql`
-    mutation message( $mode: MessageMode!,  $conversationId: ID!, $input: MessageInput ) {
-        message( mode: $mode, conversationId: $conversationId, input: $input )
-    }`;
+export const mutationMessage = gql`mutation message( $mode: MessageMode!, $input: MessageInput ) { message( mode: $mode, input: $input ) }`;
 
 export const mutationConversation = gql`mutation conversation($mode: ConversationMode!, $id: ID!){ conversation(mode: $mode, _id: $id) }`;
 

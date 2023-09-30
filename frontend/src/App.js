@@ -266,6 +266,7 @@ const App =(props) =>{
   let [lightbox, setLightbox]           = useState({ isOpen: false, photoIndex: 0, images: [] });
   let [notifications, setNotifications] = useState([])
   let [search, setSearch]               = useState(Constants.INIT_SEARCH)
+  let [conversations, setConversations] = useState([])
 
   let { ws, user, updateProfile, logout } = props
 
@@ -888,9 +889,28 @@ const App =(props) =>{
     , {
         context: { headers: getHeaders(location) },
         update: (cache, {data: {conversation}}) => {
-          console.log("conversation :", conversation)
+          let { data, status } = conversation
+          if(status){
+            let conv = cache.readQuery({ query: queryConversations });
+            if(!_.isEmpty(conv)){
+              let check = _.find(conv.conversations.data, (d)=>_.isEqual(d?._id, data?._id))//
+              if(_.isEmpty(check)){
+                cache.writeQuery({ query: queryConversations, 
+                  data: { conversations: { ...conv.conversations, data: [...conv.conversations.data, data] } } 
+                 }); 
+              }else{
+                let newData = _.map(conv.conversations.data, (d)=>_.isEqual(d?._id, data?._id) ? data : d)//
+                cache.writeQuery({ query: queryConversations, 
+                  data: { conversations: { ...conv.conversations, data: newData } } 
+                 }); 
+              }
+             
+            }
+          }
         },
-        onCompleted(data) { },
+        onCompleted(data) {
+          navigate("/messages")
+        },
         onError(error){
           return handlerErrorApollo( props, error )
         }
@@ -921,7 +941,7 @@ const App =(props) =>{
       if(dataConversations?.conversations){
         let { status, data } = dataConversations?.conversations
         if(status){
-          // setNotifications(data)
+          setConversations(data)
         }
       }
     }
@@ -1122,8 +1142,8 @@ const App =(props) =>{
                       <IconButton size={'small'} onClick={()=> navigate("/subscribes")}>
                         <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
                       </IconButton>
-                      <IconButton size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
-                        <HiChatBubbleLeftRightIcon alt="chat" color={ _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                      <IconButton disabled={_.isEmpty(conversations) ? true : false}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
+                        <HiChatBubbleLeftRightIcon alt="chat" color={ _.isEmpty(conversations) ? "gray" : _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
                       </IconButton>
                       <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
                         <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } size="1.2em"/>
@@ -1166,6 +1186,9 @@ const App =(props) =>{
                       </IconButton>
                       <IconButton size={'small'} onClick={()=> navigate("/subscribes")}>
                         <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
+                      </IconButton>
+                      <IconButton disabled={_.isEmpty(conversations) ? true : false}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
+                        <HiChatBubbleLeftRightIcon alt="chat" color={ _.isEmpty(conversations) ? "gray" :  _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
                       </IconButton>
                       <IconButton size={'small'} onClick={()=> navigate("/lotterys")}>
                         <BiStoreAlt color={ _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1.2em"/>
@@ -1370,7 +1393,7 @@ const App =(props) =>{
               <Route path="/bookmarks" element={<BookMarksPage {...props} onMutationFollow={(evt)=>onMutationFollow(evt) } />} />
               <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />} />
               <Route path="/producers" element={<ProducersPage {...props}  onLightbox={(evt)=>setLightbox(evt)}  />} />
-              <Route path="/messages" element={<MessagePage {...props}  onLightbox={(evt)=>setLightbox(evt)}  />} />
+              <Route path="/messages" element={<MessagePage {...props} conversations={conversations}  onLightbox={(evt)=>setLightbox(evt)}  />} />
             </Route>
             <Route element={<ProtectedSellerRoute user={user} />}>
               <Route path="/lotterys" element={<LotterysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />

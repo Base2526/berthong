@@ -103,10 +103,9 @@ const HomeItem = (props) => {
                     <img
                       className="img-fluid"
                       onClick={(e)=>{
-                        navigate({
-                          pathname: `/p`,
-                          search: `?${createSearchParams({ id: item.ownerId})}`
-                        })
+                        _.isEqual(user?._id, item?.ownerId)
+                        ? navigate("/me")
+                        : navigate({ pathname: `/p`, search: `?${createSearchParams({ id: item.ownerId})}` })
                       }}
                       src={
                         !_.isEmpty(item?.owner?.avatar)
