@@ -1,5 +1,5 @@
 import './css/App.css';
-import "./skeleton.scss";
+import "./css/skeleton.scss";
 import "react-toastify/dist/ReactToastify.css";
 import "react-image-lightbox/style.css";
 import 'font-awesome/css/font-awesome.min.css';
