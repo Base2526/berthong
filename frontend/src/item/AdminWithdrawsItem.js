@@ -14,7 +14,7 @@ import { useLocation } from "react-router-dom";
 
 import * as Constants from "../constants"
 import { getHeaders } from "../util"
-import { queryUserById } from "../gqlQuery"
+import { queryUserById } from "../apollo/gqlQuery"
 
 const AdminWithdrawsItem = (props) => {
     const location = useLocation();

@@ -3,8 +3,6 @@ import IconButton from "@mui/material/IconButton";
 import { useQuery } from "@apollo/client";
 import ShareIcon from "@mui/icons-material/Share";
 import _ from "lodash"
-
-// import { gqlShareByPostId, subShare } from "../../gqlQuery"
 import { getHeaders } from "../util"
 
 let unsubscribe =  null

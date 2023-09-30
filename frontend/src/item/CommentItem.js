@@ -5,7 +5,7 @@ import _ from "lodash"
 import { createSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 
-import { queryCommentById } from "../gqlQuery"
+import { queryCommentById } from "../apollo/gqlQuery"
 import { getHeaders } from "../util"
 
 // let unsubscribe =  null

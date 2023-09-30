@@ -19,7 +19,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
 
 import { getHeaders } from "./util"
-import { queryHistoryTransitions, queryAdminBanks } from "./gqlQuery"
+import { queryHistoryTransitions, queryAdminBanks } from "./apollo/gqlQuery"
 import * as Constants from "./constants"
 deepdash(_);
 

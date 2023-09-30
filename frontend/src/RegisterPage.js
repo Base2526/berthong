@@ -19,7 +19,7 @@ import {
 
 import { loadCaptchaEnginge, LoadCanvasTemplate , validateCaptcha} from "react-simple-captcha";
 import { checkRole, getHeaders, handlerErrorApollo, showToast} from "./util";
-import { mutationRegister } from "./gqlQuery"
+import { mutationRegister } from "./apollo/gqlQuery"
 
 let initValues = { username: "", email: "",  password: "", confirm_password: "", captcha: "" }
 const RegisterPage = (props) => {

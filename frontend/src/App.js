@@ -158,7 +158,7 @@ import { queryNotifications,
           queryConversations,
 
           mutationConversation
-        } from "./gqlQuery"
+        } from "./apollo/gqlQuery"
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";

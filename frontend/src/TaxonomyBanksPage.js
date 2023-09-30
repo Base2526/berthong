@@ -21,7 +21,7 @@ import { useQuery } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
 
-import { queryBanks } from "./gqlQuery"
+import { queryBanks } from "./apollo/gqlQuery"
 import { getHeaders, handlerErrorApollo } from "./util"
 
 import * as Constants from "./constants"

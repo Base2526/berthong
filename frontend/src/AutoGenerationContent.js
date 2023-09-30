@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
 import { getHeaders, handlerErrorApollo } from "./util"
-import { mutationLottery, queryManageLotterys, mutationRegister, queryUsers } from "./gqlQuery"
+import { mutationLottery, queryManageLotterys, mutationRegister, queryUsers } from "./apollo/gqlQuery"
 
 const { faker } = require("@faker-js/faker");
 

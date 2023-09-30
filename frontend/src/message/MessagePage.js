@@ -37,7 +37,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import mongoose from "mongoose";
 
-import { queryMessage, mutationMessage, subMessage, gqlUpdateMessageRead, queryConversations} from "../gqlQuery"
+import { queryMessage, mutationMessage, subMessage, gqlUpdateMessageRead, queryConversations} from "../apollo/gqlQuery"
 import MessageItem from "./MessageItem"
 import { getHeaders, truncate, handlerErrorApollo } from "../util"
 

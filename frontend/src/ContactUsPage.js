@@ -11,7 +11,7 @@ import {
 import { loadCaptchaEnginge, LoadCanvasTemplate , validateCaptcha} from "react-simple-captcha";
 import AttackFileField from "./AttackFileField";
 
-import { queryBankByIds } from "./gqlQuery"
+import { queryBankByIds } from "./apollo/gqlQuery"
 import { checkRole, getHeaders, handlerErrorApollo, showToast} from "./util";
 
 const initialValue = { title: "", description: "", files: [], captcha: "", }

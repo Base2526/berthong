@@ -24,7 +24,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { DeleteForever as DeleteForeverIcon, 
         Edit as EditIcon} from '@mui/icons-material';
 
-import { queryDblog, mutationCheck_db } from "./gqlQuery"
+import { queryDblog, mutationCheck_db } from "./apollo/gqlQuery"
 import { getHeaders, handlerErrorApollo } from "./util"
 import TableComp from "./components/TableComp"
 

@@ -14,7 +14,7 @@ import {
 } from 'react-icons/md';
 
 import { getHeaders, checkRole } from "../util"
-import { queryFriendProfile } from "../gqlQuery"
+import { queryFriendProfile } from "../apollo/gqlQuery"
 import * as Constants from "../constants"
 
 const BreadcsComp = (props) => {
@@ -172,20 +172,20 @@ const BreadcsComp = (props) => {
       }
 
       case "/p":{
-        switch(checkRole(user)){
-          case Constants.AMDINISTRATOR:{
+        // switch(checkRole(user)){
+        //   case Constants.AMDINISTRATOR:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18}/>{t("home")}</MuiLink>,
               <Typography key="2" color="text.primary">โปรไฟล์ {loadingProfile ? <LinearProgress/> : profile?.displayName}</Typography>
             ]
-          }
-          case Constants.AUTHENTICATED:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">โปรไฟล์ {loadingProfile ? <LinearProgress/> : profile?.displayName}</Typography>
-            ]
-          }
-        }
+          // }
+        //   case Constants.AUTHENTICATED:{
+        //     return [  
+        //       <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+        //       <Typography key="1" color="text.primary">โปรไฟล์ {loadingProfile ? <LinearProgress/> : profile?.displayName}</Typography>
+        //     ]
+        //   }
+        // }
       }
       case "/all-deposits":{
         return [  

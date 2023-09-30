@@ -4,7 +4,7 @@ import _ from "lodash"
 import { useQuery } from "@apollo/client";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 
-import { queryRoleByIds } from "../gqlQuery"
+import { queryRoleByIds } from "../apollo/gqlQuery"
 import { getHeaders, handlerErrorApollo } from "../util"
 
 const RolesComp = (props) => {

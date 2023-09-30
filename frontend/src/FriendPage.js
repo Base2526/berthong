@@ -22,8 +22,9 @@ import {
     HiChatBubbleLeftRight as HiChatBubbleLeftRightIcon
   } from "react-icons/hi2"
 
-import { getHeaders } from "./util"
-import { queryFriendProfile } from "./gqlQuery"
+import * as Constants from "./constants"
+import { getHeaders, checkRole } from "./util"
+import { queryFriendProfile } from "./apollo/gqlQuery"
 
 const FriendPage = (props) => {
     const navigate = useNavigate();
@@ -122,9 +123,14 @@ const FriendPage = (props) => {
                                                 : <SlUserFollow size={"20px"} /> 
                                             } 
                                         </IconButton> 
-                                        <IconButton onClick={(evt)=> _.isEmpty(user) ? onLogin(true) : onMutationConversation({ variables: { mode: "NEW", id: params.id } })  }>
-                                            <HiChatBubbleLeftRightIcon alt="chat" size="20px"/>
-                                        </IconButton>
+                                        {
+                                            checkRole(user) !== Constants.AMDINISTRATOR
+                                            ?   <IconButton onClick={(evt)=> _.isEmpty(user) ? onLogin(true) : onMutationConversation({ variables: { mode: "NEW", id: params.id } })  }>
+                                                    <HiChatBubbleLeftRightIcon alt="chat" size="20px"/>
+                                                </IconButton>
+                                            : <div />
+                                        }
+                                        
                                     </Box>
                                 </div>   
                             </>

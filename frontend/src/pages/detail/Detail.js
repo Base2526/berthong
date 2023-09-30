@@ -30,7 +30,7 @@ import {  querySupplierById,
           subscriptionSupplierById, 
           mutationBuy,
           queryBookBuyTransitions
-        } from "../../gqlQuery";
+        } from "../../apollo/gqlQuery";
 
 import * as Constants from "../../constants"
 

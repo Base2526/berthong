@@ -35,7 +35,7 @@ import { IconButton } from "@material-ui/core";
 import _ from "lodash"
 import { styled } from "@mui/material/styles";
 
-import { queryBankByIds } from "./gqlQuery"
+import { queryBankByIds } from "./apollo/gqlQuery"
 import { checkRole, getHeaders, handlerErrorApollo, showToast} from "./util";
 
 const Input = styled("input")({ display: "none" });

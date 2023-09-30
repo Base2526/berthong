@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 
 import { getHeaders } from "./util"
-import { querySubscribes } from "./gqlQuery"
+import { querySubscribes } from "./apollo/gqlQuery"
 
 const initialValue = { data: [], slice: 20, total: 0, hasMore: true}
 

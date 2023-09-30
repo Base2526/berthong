@@ -6,7 +6,7 @@ import _ from "lodash";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import LockIcon from '@mui/icons-material/Lock';
 
-import { mutationLogin } from "./gqlQuery"
+import { mutationLogin } from "./apollo/gqlQuery"
 import { setCookie, getHeaders } from "./util"
 
 const LoginPage = (props) => {

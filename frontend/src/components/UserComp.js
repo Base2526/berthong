@@ -5,7 +5,7 @@ import { useQuery } from "@apollo/client";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import { Avatar } from "@mui/material"
 
-import { queryUserById } from "../gqlQuery"
+import { queryUserById } from "../apollo/gqlQuery"
 import { getHeaders, handlerErrorApollo } from "../util"
 
 const UserComp = (props) => {

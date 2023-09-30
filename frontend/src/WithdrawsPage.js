@@ -27,7 +27,7 @@ import moment from "moment";
 import { useTable, useFilters, useGlobalFilter, useAsyncDebounce } from 'react-table'
 
 import { getHeaders, checkRole } from "./util"
-import { queryWithdraws } from "./gqlQuery"
+import { queryWithdraws } from "./apollo/gqlQuery"
 import UserComp from "./components/UserComp"
 
 import * as Constants from "./constants"

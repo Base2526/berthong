@@ -4,7 +4,7 @@ import { LinearProgress } from '@mui/material';
 import _ from "lodash"
 import { useLocation } from "react-router-dom";
 
-import { queryCommentById, subscriptionCommentById } from "../gqlQuery"
+import { queryCommentById, subscriptionCommentById } from "../apollo/gqlQuery"
 import { CommentSection } from "./comment";
 import { getHeaders, handlerErrorApollo } from "../util"
 

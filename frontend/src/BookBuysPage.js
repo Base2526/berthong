@@ -19,7 +19,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
 import deepdash from "deepdash";
 
-import { queryBookBuyTransitions, mutationCancelTransition, mutationBuy, querySupplierById, querySuppliers } from "./gqlQuery"
+import { queryBookBuyTransitions, mutationCancelTransition, mutationBuy, querySupplierById, querySuppliers } from "./apollo/gqlQuery"
 import UserComp from "./components/UserComp"
 import { getHeaders, showToast, handlerErrorApollo, minTwoDigits } from "./util"
 import ComfirmCancelDialog from "./dialog/ComfirmCancelDialog"

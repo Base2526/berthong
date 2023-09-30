@@ -36,7 +36,7 @@ import { useQuery, useMutation } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 import moment from "moment";
 
-import { queryManageLotterys, mutationManageLottery } from "./gqlQuery"
+import { queryManageLotterys, mutationManageLottery } from "./apollo/gqlQuery"
 import { getHeaders, handlerErrorApollo, showToast } from "./util"
 
 const ManageLotterysPage = (props) => {
@@ -51,8 +51,6 @@ const ManageLotterysPage = (props) => {
     , {
         context: { headers: getHeaders(location) },
         update: (cache, {data: {manageLottery}} ) => {
-          console.log("manageLottery :", manageLottery)
-          
           let { status, input } = manageLottery
           if(status){
             let queryManageLotterysValue = cache.readQuery({ query: queryManageLotterys });
@@ -189,5 +187,4 @@ const ManageLotterysPage = (props) => {
     </div>
   );
 };
-
 export default ManageLotterysPage;
