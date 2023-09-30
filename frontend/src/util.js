@@ -98,6 +98,24 @@ export const getHeaders = (params) =>{
           }
 }
 
+export const makeid = (length) => {
+  var result           = '';
+  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for ( var i = 0; i < length; i++ ) {
+    result += characters.charAt(Math.floor(Math.random() *  charactersLength));
+ }
+ return result;
+}
+
+export const truncate = (str, n) => {
+
+  const regex = /(<([^>]+)>)/ig;
+  str = str.replace(regex, '');
+
+  return (str.length > n) ? str.substr(0, n-1) + '...' : str;
+};
+
 export const getCurrentDate =(separator='')=>{
     let newDate = new Date()
     let date = newDate.getDate();

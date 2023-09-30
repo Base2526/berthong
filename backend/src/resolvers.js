@@ -1101,6 +1101,69 @@ export default {
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
       }
     },
+
+    async message(parent, args, context, info) {
+      let start = Date.now()
+      let { req } = context
+      let { _id } = args
+
+      let { current_user } =  await Utils.checkAuth(req);
+
+      console.log("message :", args)
+
+      // if(_.isEmpty(_id)){
+      //   return ;
+      // }
+
+      let data = await Model.Message.find({ conversationId: _id });
+
+      return {
+        status:true,
+        data,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+    },
+
+    async conversations(parent, args, context, info) {
+      let start = Date.now()
+      try{
+        let { req } = context
+
+        let { current_user } =  await Utils.checkAuth(req);
+
+        // let authorization = await checkAuthorization(req);
+        // let { status, code, current_user } =  authorization
+
+      
+        // if( status && code == 1 ){
+        let data=  await Model.Conversation.find({
+          "members.userId": { $all: [ current_user?._id ] }
+        });
+
+        console.log("conversations # : ", current_user, data)
+
+        return {
+          status:true,
+          data,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+        // }
+        // console.log("conversations #2")
+        // return {
+        //   status:false,
+        //   data: [],
+        //   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        // }
+      } catch(err) {
+        logger.error(err.toString());
+        
+        return {
+          status:false,
+          message: err.toString(),
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }
+    },
   },
   Upload: GraphQLUpload,
   Mutation: {
@@ -1712,7 +1775,8 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY!')
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED &&
+          Utils.checkRole(current_user) !== Constants.SELLER  ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -1770,7 +1834,7 @@ export default {
       let { req } = context
 
       let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -1826,7 +1890,7 @@ export default {
 
       let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && 
-          Utils.checkRole(current_user) != Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
+          Utils.checkRole(current_user) != Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       if(input.test){
         let supplier = await Model.Supplier.create(input);
@@ -1958,7 +2022,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED OR SELLER ONLY')
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const { createReadStream, filename, encoding, mimetype } = (await input.file).file
 
@@ -2024,7 +2088,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -2105,7 +2169,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED OR SELLER ONLY')
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       cache.ca_delete(_id)
 
@@ -2167,7 +2231,7 @@ export default {
       console.log("notification :", _id)
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied!')
 
       // let supplier = await Model.Supplier.findOne({_id})
       // if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
@@ -2200,7 +2264,7 @@ export default {
       let { input } = args
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let comment = await Model.Comment.findOne({ _id: input?._id })
 
@@ -2284,7 +2348,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'AUTHENTICATED ONLY')
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let { subscriber } = await Utils.getUserFull({ _id })
       if( _.find(subscriber, (item)=> _.isEqual(item.userId, current_user?._id)) ) {
@@ -2519,26 +2583,6 @@ export default {
       let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
-      /*
-      db.getCollection("supplier").aggregate([
-                                              { 
-                                                $match: { 
-                                                          manageLottery : ObjectId("65030b38dbfc10000799cfaf"),
-                                                          publish: true,
-                                                          type: 0,      //  0: bon, 1: lang
-                                                          kind: 0,      //  0: thai, 1: laos, 2: vietnam
-                                                          buys:{
-                                                                  $elemMatch: {
-                                                                    selected: 1, 
-                                                                    itemId: 2,
-                                                                    //  quantity: { $gt: 1 } // Quantity greater than 1
-                                                                  }
-                                                                }
-                                                        }
-                                              }
-                                              ])
-                                              */
-
       let manageL = await Model.ManageLottery.findOne({_id: mongoose.Types.ObjectId(input?._id)})
 
       console.log("Calculate lottery manageL :", manageL)
@@ -2564,6 +2608,7 @@ export default {
                                                               }
                                                     }
                                                     ]);
+
         let langs = await Model.Supplier.aggregate([
                                                     { 
                                                       $match: { 
@@ -2721,6 +2766,7 @@ export default {
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }   
     },
+
     async crypto(parent, args, context, info) {
       let start = Date.now()
       let { input } = args
@@ -2731,7 +2777,448 @@ export default {
         data: cryptojs.AES.decrypt(input?.encrypt, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8),
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }   
-    }
+    },
+
+    /*
+      async createConversation(parent, args, context, info) {
+      try{
+        let {input} = args
+        
+        let currentUser = await User.findById(input.userId);
+        let friend = await User.findById(input.friendId);
+
+        let result =  await Conversation.findOne({ "members.userId": { $all: [ currentUser._id.toString(), input.friendId ] } });
+                        
+        if(result === null){
+          result = await Conversation.create({
+            // name: friend.displayName,
+            lastSenderName: currentUser.displayName,
+            info:"",
+            // avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
+            // avatarName: friend.displayName,
+            senderId: currentUser._id.toString(),
+            status: "available",
+            // unreadCnt: 0,
+            sentTime: Date.now(),
+            // userId: input.friendId,
+            // members: [input.userId, input.friendId],
+            // members: {[input.userId]:{ 
+            //                           name: currentUser.displayName, 
+            //                           avatarSrc: _.isEmpty(currentUser.image) ? "" :  currentUser.image[0].base64,
+            //                           unreadCnt: 0 
+            //                         }, 
+            //           [input.friendId]:{ 
+            //                           name: friend.displayName, 
+            //                           avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
+            //                           unreadCnt: 0 
+            //                         }},
+            members:[
+              { 
+                userId: currentUser._id.toString(),
+                name: currentUser.displayName, 
+                avatarSrc: _.isEmpty(currentUser.image) ? "" :  currentUser.image[0].url,
+                unreadCnt: 0 
+              },
+              {
+                userId: input.friendId,
+                name: friend.displayName, 
+                avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].url,
+                unreadCnt: 0 
+              }
+            ]
+          });
+
+          pubsub.publish("CONVERSATION", {
+            conversation: {
+              mutation: "CREATED",
+              data: result,
+            },
+          });
+        }else{
+          pubsub.publish("CONVERSATION", {
+            conversation: {
+              mutation: "UPDATED",
+              data: result,
+            },
+          });
+        }
+        
+        return result;
+
+      } catch(err) {
+        logger.error(err.toString());
+        return;
+      }
+    },
+    async updateConversation(parent, args, context, info) {
+      try{
+        let {_id, input} = args
+
+        let result = await Conversation.findOneAndUpdate({
+          _id
+        }, input, {
+          new: true
+        })
+
+        pubsub.publish("CONVERSATION", {
+          conversation: {
+            mutation: "UPDATED",
+            data: result,
+          },
+        });
+
+        console.log("updateConversation friend : ", result)
+
+        return result;
+      } catch(err) {
+        logger.error(err.toString());
+        return;
+      }
+    },
+    */
+
+    async conversation(parent, args, context, info) {
+      try{
+        let start = Date.now()
+        let { mode, _id } = args
+        let { req } = context
+
+        let { current_user } =  await Utils.checkAuth(req);
+
+        switch(mode){
+          case "NEW":{
+            break;
+          }
+
+          case "EDIT":{
+            break;
+          }
+
+          case "DELETE":{
+            break;
+          }
+        }
+
+        let friend = await Model.User.findById(mongoose.Types.ObjectId(_id))
+        let conv =  await Model.Conversation.findOne({ "members.userId": { $all: [ current_user._id, mongoose.Types.ObjectId(_id) ] } });            
+              
+        if( _.isNull(conv) ){
+          let input = {
+                        // name: friend.displayName,
+                        lastSenderName: current_user.displayName,
+                        info:"",
+                        // avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
+                        // avatarName: friend.displayName,
+                        senderId: current_user._id,
+                        status: "available",
+                        // unreadCnt: 0,
+                        sentTime: Date.now(),
+                        // userId: input.friendId,
+                        // members: [input.userId, input.friendId],
+                        // members: {[input.userId]:{ 
+                        //                           name: currentUser.displayName, 
+                        //                           avatarSrc: _.isEmpty(currentUser.image) ? "" :  currentUser.image[0].base64,
+                        //                           unreadCnt: 0 
+                        //                         }, 
+                        //           [input.friendId]:{ 
+                        //                           name: friend.displayName, 
+                        //                           avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
+                        //                           unreadCnt: 0 
+                        //                         }},
+                        members:[
+                          { 
+                            userId: current_user._id,
+                            name: current_user.displayName, 
+                            avatarSrc: _.isEmpty(current_user.avatar) ? "" :  current_user.avatar.url,
+                            unreadCnt: 0 
+                          },
+                          {
+                            userId: mongoose.Types.ObjectId(_id),
+                            name: friend.displayName, 
+                            avatarSrc: _.isEmpty(friend.avatar) ? "" :  friend.avatar.url,
+                            unreadCnt: 0 
+                          }
+                        ]
+                      }
+          conv = await Model.Conversation.create(input);
+        }
+
+        console.log("args :", args, friend, conv)
+        return {
+          status: true,
+          data: conv,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }   
+
+      } catch(err) {
+        logger.error(err.toString());
+
+        throw new AppError(Constants.ERROR, err.toString())
+      }
+    },
+
+    async message(parent, args, context, info) {
+      let start = Date.now()
+      let { mode, input } = args
+      let { req } = context
+
+      let { current_user } =  await Utils.checkAuth(req);
+
+      console.log("message :", args, current_user)
+
+      if(input.type === "image"){
+        let {payload, files} = input
+
+        let url = [];
+        for (let i = 0; i < files.length; i++) {
+          const { createReadStream, filename, encoding, mimetype } = await files[i];
+          const stream = createReadStream();
+          const assetUniqName = fileRenamer(filename);
+          let pathName = `/app/uploads/${assetUniqName}`;
+          
+          const output = fs.createWriteStream(pathName)
+          stream.pipe(output);
+
+          await new Promise(function (resolve, reject) {
+            output.on('close', () => {
+              resolve();
+            });
+      
+            output.on('error', (err) => {
+              logger.error(err.toString());
+
+              reject(err);
+            });
+          });
+
+          const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+          url.push({ url: urlForArray });
+        }
+
+        input = {...input, payload: _.map(payload, (p, index)=>{ return {...p, src: url[index].url} })}
+        input = _.omit(input, ['files'])
+      }
+
+      let message = await Model.Message.findById(input._id);
+
+      // if(_.isEmpty(result)){
+      input = { ...input, 
+                senderId: current_user?._id, 
+                senderName: current_user?.displayName, 
+                sentTime: Date.now(), 
+                status: "sent",
+                reads: []}
+        
+      message = await Model.Message.create(input);
+      try {
+        let conversation = await Model.Conversation.findById(input.conversationId);
+        if(!_.isEmpty(conversation)){
+          await Model.Conversation.updateOne({ _id: input.conversationId }, { 
+                                                                              senderId: current_user._id,
+                                                                              lastSenderName: current_user.displayName,
+                                                                              info:input.message,
+                                                                              status: "available",
+                                                                              sentTime: Date.now(),
+                                                                            });
+          /*
+          conversation = _.omit({...conversation._doc}, ["_id", "__v"])
+
+          let newMember = _.find(conversation.members, member => member.userId != current_user?._id);
+
+
+          // หาจำนวน unread total = (await Post.find().lean().exec()).length; 
+          // https://www.educative.io/answers/what-is-the-ne-operator-in-mongodb
+          let unreadCnt = (await Model.Message.find({ conversationId: input.conversationId, 
+                                                      senderId: {$all : current_user?._id.toString()}, 
+                                                      status: 'sent',
+                                                      reads: { $nin: [ newMember.userId ] }
+                                                    }).lean().exec()).length; 
+          // หาจำนวน unread
+
+          newMember = {...newMember, unreadCnt}
+          
+          let newMembers = _.map(conversation.members, (member)=>member.userId == newMember.userId ? newMember : member)
+
+          conversation = {...conversation, lastSenderName:current_user?.displayName, info:input.message, sentTime: Date.now(), members: newMembers }
+
+          await Model.Conversation.findOneAndUpdate({ _id : input.conversationId }, conversation, { new: true })
+
+          // let p = pubsub.publish("CONVERSATION", {
+          //   conversation: {
+          //     mutation: "UPDATED",
+          //     data: conversat,
+          //   },
+          // });
+          */
+        }else{
+
+          let newMember = _.find(conversation.members, member => member.userId != current_user?._id);
+          let friend = await Model.User.findById(mongoose.Types.ObjectId(newMember.userId))
+          let input = {
+            senderId: current_user._id,
+            lastSenderName: current_user.displayName,
+            info:input.message,
+            status: "available",
+            sentTime: Date.now(),
+            members:[
+              { 
+                userId: current_user._id,
+                name: current_user.displayName, 
+                avatarSrc: _.isEmpty(current_user.avatar) ? "" :  current_user.avatar?.url,
+                unreadCnt: 0 
+              },
+              {
+                userId: mongoose.Types.ObjectId(_id),
+                name: friend.displayName, 
+                avatarSrc: _.isEmpty(friend.avatar) ? "" :  friend.avatar?.url,
+                unreadCnt: 0 
+              }
+            ]
+          }
+          await Model.Conversation.create(input);
+        }
+      } catch (err) {
+        console.log("conversation err:" , err)
+      }
+
+        // pubsub.publish('MESSAGE', {
+        //   message:{
+        //     mutation: 'CREATED',
+        //     data: result
+        //   }
+        // });
+      // }
+
+      // mode: MessageMode!, conversationId: ID!
+      // console.log("message : ", input)
+      // let { currentUser } = context
+
+      // if(_.isEmpty(currentUser)){
+      //   return;
+      // }
+
+      /*
+      console.log("addMessage : ", args)
+
+      let { userId, conversationId, input } = args
+
+
+      let { req } = context
+
+      let authorization = await checkAuthorization(req);
+      let { status, code, current_user } =  authorization
+
+
+      ///////////////////////
+      if(input.type === "image"){
+        let {payload, files} = input
+
+        let url = [];
+        for (let i = 0; i < files.length; i++) {
+          const { createReadStream, filename, encoding, mimetype } = await files[i];
+          const stream = createReadStream();
+          const assetUniqName = fileRenamer(filename);
+          let pathName = `/app/uploads/${assetUniqName}`;
+          
+
+          const output = fs.createWriteStream(pathName)
+          stream.pipe(output);
+
+          await new Promise(function (resolve, reject) {
+            output.on('close', () => {
+              resolve();
+            });
+      
+            output.on('error', (err) => {
+              logger.error(err.toString());
+
+              reject(err);
+            });
+          });
+
+          const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+          url.push({ url: urlForArray });
+        }
+
+        input = {...input, payload: _.map(payload, (p, index)=>{ return {...p, src: url[index].url} })}
+        input = _.omit(input, ['files'])
+      }
+
+      /////////////////////////
+
+      let result = await Message.findById(input._id);
+
+      
+      // let currentUser = await User.findById(userId);
+      
+      if(_.isEmpty(result)){
+        input = { ...input, 
+                  conversationId, 
+                  senderId: current_user?._id.toString(), 
+                  senderName: current_user?.displayName, 
+                  sentTime: Date.now(), 
+                  status: "sent",
+                  reads: []}
+         
+        result = await Message.create(input);
+
+        try {
+          let conversation = await Conversation.findById(conversationId);
+  
+          if(!_.isEmpty(conversation)){
+            conversation = _.omit({...conversation._doc}, ["_id", "__v"])
+  
+            let newMember = _.find(conversation.members, member => member.userId != current_user?._id.toString());
+  
+  
+            // หาจำนวน unread total = (await Post.find().lean().exec()).length; 
+            // https://www.educative.io/answers/what-is-the-ne-operator-in-mongodb
+            let unreadCnt = (await Message.find({ conversationId, 
+                                                  senderId: {$all : current_user?._id.toString()}, 
+                                                  status: 'sent',
+                                                  reads: { $nin: [ newMember.userId ] }}).lean().exec()).length; 
+            // หาจำนวน unread
+  
+            newMember = {...newMember, unreadCnt}
+            
+            let newMembers = _.map(conversation.members, (member)=>member.userId == newMember.userId ? newMember : member)
+  
+            conversation = {...conversation, lastSenderName:current_user?.displayName, info:input.message, sentTime: Date.now(), members: newMembers }
+  
+            let conversat = await Conversation.findOneAndUpdate({ _id : conversationId }, conversation, { new: true })
+  
+            let p = pubsub.publish("CONVERSATION", {
+              conversation: {
+                mutation: "UPDATED",
+                data: conversat,
+              },
+            });
+          }
+        } catch (err) {
+          console.log("conversation err:" , err)
+        }
+
+        pubsub.publish('MESSAGE', {
+          message:{
+            mutation: 'CREATED',
+            data: result
+          }
+        });
+      }
+      */
+
+      let conversation = await Model.Conversation.findById(input.conversationId);
+
+      pubsub.publish('MESSAGE', { message:{ mutation: 'CREATED', data: message } });
+      pubsub.publish("CONVERSATION", { conversation: { mutation: "UPDATED", data: conversation } });
+
+      return {
+        status: true,
+        data: message,
+        conversation,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }   
+    },
   },
   Subscription:{
     subscriptionMe: {
@@ -2869,6 +3356,85 @@ export default {
             default:
               return false;
           }
+        }
+      )
+    },
+    subConversation: {
+      resolve: (payload) =>{
+        return payload.conversation
+      },
+      subscribe: withFilter((parent, args, context, info) => {
+          return pubsub.asyncIterator(["CONVERSATION"])
+        }, (payload, variables, context) => {
+          let {mutation, data} = payload.conversation
+          
+          // let {currentUser} = context
+          // if(_.isEmpty(currentUser)){
+          //   return false;
+          // }
+          // console.log("CONVERSATION: ", payload)
+          switch(mutation){
+            case "CREATED":
+            case "UPDATED":
+            case "DELETED":
+              {
+                return _.findIndex(data.members, (o) => o.userId == variables.userId ) > -1
+              }
+            case "CONNECTED":
+            case "DISCONNECTED":{
+              // console.log("CONVERSATION :::: ", mutation, data)
+            }
+          }
+
+          return false;
+          
+        }
+      )
+    },
+    subMessage: {
+      resolve: (payload) =>{
+        return payload.message
+      },
+      subscribe: withFilter((parent, args, context, info) => {
+          return pubsub.asyncIterator(["MESSAGE"])
+        }, async (payload, variables, context) => {
+          let {mutation, data} = payload.message
+
+          // if(variables.conversationId === data.conversationId &&  variables.userId !== data.senderId) {
+            
+          //   let conversation = await Model.Conversation.findById(variables.conversationId);
+
+          //   // console.log("MESSAGE ::", variables, data)
+
+          //   if(!_.isEmpty(conversation)){
+
+          //     // update all message to read
+          //     await Message.updateMany({
+          //         conversationId: variables.conversationId, 
+          //         senderId: { $nin: [ variables.userId ] },
+          //         status: 'sent',
+          //         reads: { $nin: [ variables.userId ] }
+          //       }, 
+          //       // {$set: {reads: [ userId ] }}
+          //       { $push: {reads: variables.userId } }
+          //     )
+
+          //     // update conversation  unreadCnt = 0
+          //     // conversation = _.omit({...conversation._doc}, ["_id", "__v"])
+          
+          //     // conversation = {...conversation, members: _.map(conversation.members, (member)=>member.userId == variables.userId ? {...member, unreadCnt:0} : member) }
+
+          //     // let newConversation = await Model.Conversation.findOneAndUpdate({ _id : variables.conversationId }, conversation, { new: true })
+
+          //     // pubsub.publish("CONVERSATION", {
+          //     //   conversation: {
+          //     //     mutation: "UPDATED",
+          //     //     data: newConversation,
+          //     //   }
+          //     // });
+          //   }
+          // }
+          return data.conversationId === variables.conversationId && data.senderId !== variables.userId
         }
       )
     },

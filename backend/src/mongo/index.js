@@ -138,7 +138,7 @@ const modelExists =()=>{
     if (result.length > 0) {
       // console.log('Found Model.Conversation');
     } else {
-      let newConversation = new Model.Conversation({});
+      let newConversation = new Model.Conversation({senderId: mongoose.Types.ObjectId()});
       await newConversation.save();
       await Model.Conversation.deleteMany({})
     }

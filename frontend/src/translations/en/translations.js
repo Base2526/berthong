@@ -84,4 +84,6 @@ export const TRANSLATIONS_EN = {
     deposit: "Deposit",
 
     subscribes: "Subscribes",
+
+    all_message: "All messages",
 };

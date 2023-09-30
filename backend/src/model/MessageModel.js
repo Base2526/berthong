@@ -8,8 +8,8 @@ var payloadSchema  = new Schema({
 })
 
 const messageSchema = new Schema({
-    _id: { type: String },
-    conversationId: { type: String },
+    _id: { type: Schema.Types.ObjectId },
+    conversationId: { type: Schema.Types.ObjectId },
     type: { type: String },
     message: { type: String },
     sentTime: { type: String },

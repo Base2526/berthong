@@ -71,8 +71,8 @@ import {
   MenuItem
 } from "@mui/material";
 import {
-  GrContactInfo as GrContactInfoIcon
-} from "react-icons/gr"
+  HiChatBubbleLeftRight as HiChatBubbleLeftRightIcon
+} from "react-icons/hi2"
 import {
   SlUserFollowing
 } from "react-icons/sl"
@@ -121,6 +121,9 @@ import AutoGenerationContent from "./AutoGenerationContent"
 import ProducersPage from "./ProducersPage"
 import DepositsPage from "./DepositsPage"
 import WithdrawsPage from "./WithdrawsPage"
+
+import MessagePage from "./message/MessagePage";
+
  
 import { queryNotifications, 
           mutationFollow, 
@@ -149,7 +152,12 @@ import { queryNotifications,
           queryDateLotteryById,
           mutationAdminDeposit,
           mutationAdminWithdraw,
-          queryBookBuyTransitions
+          queryBookBuyTransitions,
+
+
+          queryConversations,
+
+          mutationConversation
         } from "./gqlQuery"
           
 import * as Constants from "./constants"
@@ -258,6 +266,7 @@ const App =(props) =>{
   let [lightbox, setLightbox]           = useState({ isOpen: false, photoIndex: 0, images: [] });
   let [notifications, setNotifications] = useState([])
   let [search, setSearch]               = useState(Constants.INIT_SEARCH)
+  let [conversations, setConversations] = useState([])
 
   let { ws, user, updateProfile, logout } = props
 
@@ -269,6 +278,14 @@ const App =(props) =>{
                                                         fetchPolicy: 'cache-first', 
                                                         nextFetchPolicy: 'network-only', 
                                                         notifyOnNetworkStatusChange: true});
+
+  let { loading: loadingConversations, 
+        data: dataConversations, 
+        error: errorConversations  } =  useQuery( queryConversations, { 
+                                                  context: { headers: getHeaders(location) }, 
+                                                  fetchPolicy: 'cache-first', 
+                                                  nextFetchPolicy: 'network-only', 
+                                                  notifyOnNetworkStatusChange: true});
 
   const [onMutationFollow, resultMutationFollow] = useMutation(mutationFollow,{
     context: { headers: getHeaders(location) },
@@ -868,6 +885,38 @@ const App =(props) =>{
       }
   );
 
+  const [onMutationConversation, resultMutationConversation] = useMutation(mutationConversation
+    , {
+        context: { headers: getHeaders(location) },
+        update: (cache, {data: {conversation}}) => {
+          let { data, status } = conversation
+          if(status){
+            let conv = cache.readQuery({ query: queryConversations });
+            if(!_.isEmpty(conv)){
+              let check = _.find(conv.conversations.data, (d)=>_.isEqual(d?._id, data?._id))//
+              if(_.isEmpty(check)){
+                cache.writeQuery({ query: queryConversations, 
+                  data: { conversations: { ...conv.conversations, data: [...conv.conversations.data, data] } } 
+                 }); 
+              }else{
+                let newData = _.map(conv.conversations.data, (d)=>_.isEqual(d?._id, data?._id) ? data : d)//
+                cache.writeQuery({ query: queryConversations, 
+                  data: { conversations: { ...conv.conversations, data: newData } } 
+                 }); 
+              }
+             
+            }
+          }
+        },
+        onCompleted(data) {
+          navigate("/messages")
+        },
+        onError(error){
+          return handlerErrorApollo( props, error )
+        }
+      }
+  );
+
   useEffect(()=>{
     if(!_.isEmpty(user)){
       refetchNotifications();
@@ -886,6 +935,17 @@ const App =(props) =>{
       }
     }
   }, [dataNotifications, loadingNotifications])
+
+  useEffect(() => {
+    if (!loadingConversations) {
+      if(dataConversations?.conversations){
+        let { status, data } = dataConversations?.conversations
+        if(status){
+          setConversations(data)
+        }
+      }
+    }
+  }, [dataConversations, loadingConversations])
 
   useEffect(()=>{
     console.log("location?.pathname :", location?.pathname)
@@ -1082,8 +1142,11 @@ const App =(props) =>{
                       <IconButton size={'small'} onClick={()=> navigate("/subscribes")}>
                         <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
                       </IconButton>
+                      <IconButton disabled={_.isEmpty(conversations) ? true : false}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
+                        <HiChatBubbleLeftRightIcon alt="chat" color={ _.isEmpty(conversations) ? "gray" : _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                      </IconButton>
                       <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
-                        <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }/>
+                        <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } size="1.2em"/>
                       </IconButton>
                     </div>
                   </Stack>
@@ -1098,6 +1161,7 @@ const App =(props) =>{
                         <Avatar 
                           src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
                           alt="profile"
+                          size="1.2em"
                         />
                       </IconButton>
                     </div>
@@ -1123,11 +1187,14 @@ const App =(props) =>{
                       <IconButton size={'small'} onClick={()=> navigate("/subscribes")}>
                         <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
                       </IconButton>
+                      <IconButton disabled={_.isEmpty(conversations) ? true : false}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
+                        <HiChatBubbleLeftRightIcon alt="chat" color={ _.isEmpty(conversations) ? "gray" :  _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                      </IconButton>
                       <IconButton size={'small'} onClick={()=> navigate("/lotterys")}>
                         <BiStoreAlt color={ _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1.2em"/>
                       </IconButton>
                       <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
-                        <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }/>
+                        <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } size="1.2em"/>
                       </IconButton>
                     </div>
                   </Stack>
@@ -1305,7 +1372,8 @@ const App =(props) =>{
                                         {...props} 
                                         onLogin={()=>setDialogLogin(true)}
                                         onLightbox={(value)=>setLightbox(value)} 
-                                        onMutationSubscribe={(evt)=>{ onMutationSubscribe(evt) }} />}/>
+                                        onMutationSubscribe={(evt)=>onMutationSubscribe(evt)}
+                                        onMutationConversation={(evt)=>onMutationConversation(evt)} />}/>
             <Route path="/login-with-line" element={<LoginWithLine />}  />
             <Route path="/contact-us" element={<ContactUsPage {...props} onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
             <Route path="/register" element={<RegisterPage />}  />
@@ -1325,6 +1393,7 @@ const App =(props) =>{
               <Route path="/bookmarks" element={<BookMarksPage {...props} onMutationFollow={(evt)=>onMutationFollow(evt) } />} />
               <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />} />
               <Route path="/producers" element={<ProducersPage {...props}  onLightbox={(evt)=>setLightbox(evt)}  />} />
+              <Route path="/messages" element={<MessagePage {...props} conversations={conversations}  onLightbox={(evt)=>setLightbox(evt)}  />} />
             </Route>
             <Route element={<ProtectedSellerRoute user={user} />}>
               <Route path="/lotterys" element={<LotterysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />

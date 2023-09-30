@@ -112,4 +112,6 @@ export const TRANSLATIONS_TH = {
 
     deposit: "ฝากเงิน",
     subscribes: "ติดตาม",
+
+    all_message: "ข้อความทั้งหมด",
 };
