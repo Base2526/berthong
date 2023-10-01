@@ -5,19 +5,18 @@ import {
   Menu,
   MenuItem
 } from "@mui/material";
-import {
-  ContentCopy as ContentCopyIcon,
-  Share as ShareIcon
-} from "@mui/icons-material"
 import _ from "lodash"
 import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
 import {
   MdOutlineBookmarkAdd as MdOutlineBookmarkAddIcon,
   MdOutlineBookmarkAdded as MdOutlineBookmarkAddedIcon
 } from "react-icons/md"
+import { AiOutlineShareAlt, AiOutlineCopy } from "react-icons/ai"
+
+import CommentItem from "./CommentItem"
 
 const HomeItem = (props) => {
-  const navigate = useNavigate();
+  let navigate = useNavigate();
   let { user, index, item, onMutationFollow } = props;
   let [openMenu, setOpenMenu] = useState(null);
 
@@ -65,14 +64,14 @@ const HomeItem = (props) => {
               </MenuItem>
               <MenuItem 
                 onClick={async(e)=>{
-                  let text = window.location.href + "p/?id=" + item._id
+                  let text = window.location.href + "d?id=" + item._id
                   if ('clipboard' in navigator) {
                     await navigator.clipboard.writeText(text);
                   } else {
                     document.execCommand('copy', true, text);
                   }
                   setOpenMenu(null)
-                }}><ContentCopyIcon size={20} round /> Copy link</MenuItem>
+                }}><AiOutlineCopy size={28} round /> Copy link</MenuItem>
               {/* <MenuItem onClick={(e)=>{setOpenMenu(null)}}><BugReportIcon size={20} round />Report</MenuItem> */}
             </Menu>
   }
@@ -104,10 +103,9 @@ const HomeItem = (props) => {
                     <img
                       className="img-fluid"
                       onClick={(e)=>{
-                        navigate({
-                          pathname: `/p`,
-                          search: `?${createSearchParams({ id: item.ownerId})}`
-                        })
+                        _.isEqual(user?._id, item?.ownerId)
+                        ? navigate("/me")
+                        : navigate({ pathname: `/p`, search: `?${createSearchParams({ id: item.ownerId})}` })
                       }}
                       src={
                         !_.isEmpty(item?.owner?.avatar)
@@ -116,12 +114,23 @@ const HomeItem = (props) => {
                       }
                       alt="Avatar"
                     />
-                    <h4 className="card-title icon-card-share" 
-                        style={{ float: "right" }}>
+                    <h4 className="card-title icon-card-share" style={{ float: "right" }}>
+                        {/* <IconButton onClick={()=>{
+                            navigate({
+                            pathname: "/d",
+                            search: `?${createSearchParams({ id: item._id})}`,
+                            state: { id: item._id }
+                          })
+                        }}> 
+                          <Badge badgeContent={10} color="primary">
+                            <AiOutlineComment />
+                          </Badge>
+                        </IconButton> */}
+                        <CommentItem item={item}/>
                         <IconButton onClick={(e) =>onMutationFollow({ variables: { id: item._id } })}> 
                           { _.isEmpty(isFollow) ? <MdOutlineBookmarkAddIcon /> : <MdOutlineBookmarkAddedIcon style={{ color: "blue" }} /> }
                         </IconButton>
-                        <IconButton onClick={(e) => { setOpenMenu({ [index]: e.currentTarget }); }}><ShareIcon /></IconButton>
+                        <IconButton onClick={(e) => { setOpenMenu({ [index]: e.currentTarget }); }}><AiOutlineShareAlt /></IconButton>
                     </h4>
                     <div className="row text-jong">
                       <div className="font12">ยอดจอง {  _.filter(item.buys, (buy)=> buy.selected == 0 )?.length }, ขายไปแล้ว { _.filter(item.buys, (buy)=> buy.selected == 1 )?.length }</div>
@@ -135,10 +144,11 @@ const HomeItem = (props) => {
                           style={{ float: "left" }}
                           onClick={()=>{
                             navigate({
-                            pathname: "/d",
-                            search: `?${createSearchParams({ id: item._id})}`,
-                            state: { id: item._id }
-                          })}}>
+                              pathname: "/d",
+                              search: `?${createSearchParams({ id: item._id})}`,
+                              state: { id: item._id }
+                            })
+                          }}>
                           <b>{item?.title}</b>
                         </span>
                         {/* <h4 className="card-title" 

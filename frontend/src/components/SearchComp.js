@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { ExpandMore as ExpandMoreIcon } from "@material-ui/icons";
 import {
   Button,
@@ -6,30 +6,35 @@ import {
   AccordionSummary,
   AccordionDetails,
   Accordion,
-  Input,
   Typography,
-  Slider,
   TextField
 } from "@material-ui/core";
 import Box from "@mui/joy/Box";
 import Checkbox, { checkboxClasses } from "@mui/joy/Checkbox";
 import { Stack } from '@mui/material';
 import _ from "lodash"
+import { useTranslation } from "react-i18next";
 
 import * as Constants from "../constants"
 
 const SearchComp = (props) => {
-  const { classes, search, onSearch, onReset } = props
+  let { t } = useTranslation();
 
-  const [data, setData] = useState(search)
+  let { classes, search, onSearch, onReset } = props
 
-  const handleSliderChange = (event, newValue) => {
-    setData({...data, PRICE: newValue})
-  };
+  let [expanded, setExpanded] = useState( _.isNull(localStorage.getItem('expanded')) ? false : localStorage.getItem('expanded') === 'true' ? true : false )
+  let [data, setData] = useState(search)
 
-  const handleInputChange = (event) => {
-    setData({...data, PRICE: _.isEmpty(event.target.value) ? "" : Number(event.target.value)})
-  };
+
+  useEffect(()=>{
+    console.log( "SearchComp expanded :", localStorage.getItem('expanded'), typeof expanded, expanded )
+  }, [expanded])
+  // const handleSliderChange = (event, newValue) => {
+  //   setData({...data, PRICE: newValue})
+  // };
+  // const handleInputChange = (event) => {
+  //   setData({...data, PRICE: _.isEmpty(event.target.value) ? "" : Number(event.target.value)})
+  // };
 
   const handleCheckbox = (event) => {
     setData({...data, [event.target.name]: event.target.checked})
@@ -38,27 +43,30 @@ const SearchComp = (props) => {
   return  useMemo(() => {
             return  <div className={classes.root}>
                       <form >
-                        <Accordion>
+                        <Accordion expanded={expanded}  onChange={()=>{
+                          setExpanded(!expanded)
+                          localStorage.setItem('expanded', !expanded);
+                        }}>
                           <AccordionSummary
                             expandIcon={<ExpandMoreIcon />}
                             aria-controls="panel1a-content"
                             id="panel1a-header">
                             <Typography>
-                              <i className="icon icon-search far fas fa-search"></i> Advance search
+                              <i className="icon icon-search far fas fa-search"></i> {t("advance_search")}
                             </Typography>
                           </AccordionSummary>
                           <AccordionDetails>
                             <Typography>
                               <div className="row m-1">
-                                <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
+                                <div className="col-lg-6 col-md-6 col-sm-6 col-12 p-3">
                                   <TextField
                                     id="standard-basic"
                                     label="ตัวเลขต้องการซื้อ"
                                     variant="filled"
+                                    placeholder=""
                                     name={"number"}
                                     value={data.NUMBER}
-                                    onChange={(evt) => setData({...data, NUMBER: evt.target.value}) }
-                                  />
+                                    onChange={(evt) => setData({...data, NUMBER: evt.target.value}) } />
                                 </div>
                                 <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
                                   <TextField
@@ -66,9 +74,9 @@ const SearchComp = (props) => {
                                     label="ชื่อ"
                                     variant="filled"
                                     value={data.TITLE}
-                                    onChange={(evt) => setData({...data, TITLE: evt.target.value}) }
-                                  />
+                                    onChange={(evt) => setData({...data, TITLE: evt.target.value}) } />
                                 </div>
+                                {/* 
                                 <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
                                   <TextField
                                     id="standard-basic"
@@ -105,9 +113,22 @@ const SearchComp = (props) => {
                                     />
                                     บาท
                                   </div>
-                                </div>
+                                </div> 
+                                */}
                                 <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1 m-1">
                                   <Box sx={{ display: "flex", gap: 2 }}>
+                                    {/* <FormControl>
+                                      <FormLabel id="demo-controlled-radio-buttons-group">Gender</FormLabel>
+                                      <RadioGroup
+                                        aria-labelledby="demo-controlled-radio-buttons-group"
+                                        name="controlled-radio-buttons-group"
+                                        // value={value}
+                                        // onChange={handleChange}
+                                      >
+                                        <FormControlLabel value="female" control={<Radio />} label="Female" />
+                                        <FormControlLabel value="male" control={<Radio />} label="Male" />
+                                      </RadioGroup>
+                                    </FormControl> */}
                                     <Checkbox
                                       name="CHK_BON"
                                       label="บน"
@@ -213,7 +234,7 @@ const SearchComp = (props) => {
                           </AccordionDetails>
                           
                             {
-                              _.isEqual(data, Constants.INIT_SEARCH)
+                              data.NUMBER === "" && data.TITLE === "" && !data.CHK_BON &&  !data.CHK_LAND && !data.CHK_MONEY && !data.CHK_GOLD
                               ? <div />
                               : <AccordionActions className={classes.details}>
                                   <Stack direction="row" spacing={2} alignItems="flex-end">
@@ -221,9 +242,9 @@ const SearchComp = (props) => {
                                     <Button
                                       className={classes.containedBlueGrey}
                                       size="small"
-                                      onClick={() =>{
+                                      onClick={() =>{ 
                                         setData(Constants.INIT_SEARCH)
-                                        onReset(true)
+                                        onReset()
                                       }}>
                                       RESET
                                     </Button>
@@ -239,8 +260,7 @@ const SearchComp = (props) => {
                         </Accordion>
                       </form>
                     </div>
-          }, [data]);
-
+          }, [data.NUMBER, data.TITLE, data.CHK_BON, data.CHK_LAND, data.CHK_MONEY, data.CHK_GOLD , expanded]);
 }
 
 export default SearchComp;

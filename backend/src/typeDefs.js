@@ -93,7 +93,7 @@ export default gql`
   }
 
   input LoginWithSocialInput{
-    authType: AuthType!     # 
+    authType: AuthType!    # 
     data: JSON!            # for github
     deviceAgent: JSON
   }
@@ -455,21 +455,19 @@ export default gql`
   }
 
   type Query {
-    check_db: JSON
+    checkWalletByUserId(_id: ID): JSON
     ping: JSON
     checkCacheById(_id: ID): JSON
     checkUser: JSON 
     users(input: PagingInput): JSON
     userById(_id: ID): JSON
-    # roles: JSON
     roleByIds(input: [String]): JSON
     homes: JSON
     suppliers( input:SearchInput ): JSON
     supplierById(_id: ID!): JSON
-    # depositById(_id: ID!): JSON
-    # withdrawById(_id: ID!): JSON
     banks: JSON
     bankById(_id: ID!): JSON
+    bankByIds(input: [ID]!): JSON
     bookBuyTransitions: JSON
     historyTransitions: JSON
     friendProfile(_id: ID): JSON
@@ -481,10 +479,19 @@ export default gql`
     dblog: JSON
     dateLotterys: JSON
     dateLotteryById(_id: ID!): JSON
+    producers: JSON
+    manageLotterys: JSON
+    manageLotteryById(_id: ID!): JSON
+    deposits( input: JSON ): JSON
+    withdraws( input: JSON ): JSON
     adminHome: JSON
     adminBanks: JSON
     adminDeposits: JSON
     adminWithdraws: JSON
+    manageSuppliers( input:SearchInput ): JSON
+
+    message(_id: ID!): JSON
+    conversations: JSON
   }  
   
   input RoomInput {
@@ -649,9 +656,8 @@ export default gql`
   }
 
   input BookInput{
-    supplierId: ID!
+    id: ID!
     itemId: Long!
-    selected: Int!
   }
 
   enum SupplierModeType {
@@ -666,7 +672,7 @@ export default gql`
     price: Int!
     priceUnit: Int!
     description: String
-    dateLottery: ID!
+    manageLottery: ID!
     files: [JSON]
     condition: Int!
     category: Int!
@@ -725,6 +731,18 @@ export default gql`
     DELETE
   }
 
+  enum MessageMode {
+    NEW
+    EDIT
+    DELETE
+  }
+
+  enum ConversationMode {
+    NEW
+    EDIT
+    DELETE
+  }
+
   input DatesLotteryInput{
     mode: DatesLotteryModeType!
     _id: ID
@@ -739,7 +757,27 @@ export default gql`
     files: [JSON]
   }
 
+  input SearchInput{
+    CHK_BON: Boolean
+    CHK_GOLD: Boolean
+    CHK_LAND: Boolean
+    CHK_MONEY: Boolean
+    PAGE: Int
+    TITLE: String
+  }
+
+  input ManageLotteryInput{
+    mode: String!
+    _id: ID
+    title: String!
+    start_date_time: Date!
+    end_date_time: Date!
+    bon: String
+    lang: String
+  }
+
   type Mutation {
+    check_db: JSON
     login(input: LoginInput): JSON
     loginWithSocial(input: LoginWithSocialInput): JSON
     loginWithGithub(code: String!): JSON
@@ -760,9 +798,22 @@ export default gql`
     subscribe(_id: ID!): JSON 
     adminDeposit(input: JSON): JSON 
     adminWithdraw(input: JSON): JSON 
+
+    manageLottery(input: ManageLotteryInput): JSON
+    forceLogout(input: JSON): JSON
+
+    calculateLottery(input: JSON): JSON
+
     testNodeCacheSave(id: String): JSON
     testNodeCacheGet(id: String): JSON
     testNodeCacheDelete(id: String): JSON
+
+    search(input: SearchInput): JSON
+
+    crypto(input: JSON):JSON
+
+    conversation( mode: ConversationMode!, _id: ID! ): JSON
+    message( mode: MessageMode!, input: MessageInput ): JSON
   }
 
   type Subscription {
@@ -771,6 +822,9 @@ export default gql`
     subscriptionSuppliers(supplierIds: String!): JSON
     subscriptionAdmin(supplierIds: String!): JSON
     subscriptionCommentById(_id: ID!): JSON
+
+    subConversation(userId: ID): JSON
+    subMessage(userId: ID!, conversationId: ID!): JSON
   }
 
   type PostSubscriptionPayload {

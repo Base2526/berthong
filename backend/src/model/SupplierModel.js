@@ -11,6 +11,7 @@ var File = new Schema({
 
 var BuyInput = new Schema({
     userId: { type: Schema.Types.ObjectId, required:[true, "User-ID is a required field"]},
+    transitionId: { type: Schema.Types.ObjectId, required:[true, "Transition-ID is a required field"]},
     itemId: Number,
     selected:{
         type: Number,
@@ -32,7 +33,8 @@ const SupplierSchema = new Schema({
     price: { type: Number, required:[true, "Price is a required field"] },
     priceUnit: { type: Number, required:[true, "Price-Unit is a required field"] },
     description: { type: String },
-    dateLottery: { type: Schema.Types.ObjectId, required:[true, "Date-Lottery is a required field"] },
+    // dateLottery: { type: Schema.Types.ObjectId, required:[true, "Date-Lottery is a required field"] },
+    manageLottery: { type: Schema.Types.ObjectId, required:[true, "Date-Lottery is a required field"] },
     files: [File],
     condition: { type: Number, required:[true, "Condition is a required field"] },       // 11-100
     category:{
@@ -42,13 +44,19 @@ const SupplierSchema = new Schema({
     },   
     type:{
         type: Number,
-        enum : [0, 1], // 0: bon, 1 : lang
+        enum : [0, 1], // 0: bon, 1: lang
         default: 0
     },         
+    kind:{
+        type: Number,
+        enum : [0, 1, 2], // 0: thai, 1: laos, 2: vietnam
+        default: 0
+    },
     buys: [BuyInput],
     publish: { type: Boolean, default: false },
     ownerId: { type: Schema.Types.ObjectId, required:[true, "OwnerId is a required field"] },
     follows: [FollowInput],
+    expire: { type: Boolean, default: false },
     test: { type: Boolean, default: false },
 },
 {

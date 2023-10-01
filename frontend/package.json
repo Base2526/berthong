@@ -5,8 +5,8 @@
   "dependencies": {
     "@apollo/client": "3.6.5",
     "@apollo/react-hooks": "^4.0.0",
-    "@chatscope/chat-ui-kit-react": "^1.9.7",
-    "@chatscope/chat-ui-kit-styles": "^1.2.3",
+    "@chatscope/chat-ui-kit-react": "^1.10.1",
+    "@chatscope/chat-ui-kit-styles": "^1.4.0",
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "11.8.1",
     "@faker-js/faker": "7.1.0",
@@ -98,12 +98,13 @@
     "styled-components": "^5.3.1",
     "subscriptions-transport-ws": "^0.11.0",
     "truncate-html": "^1.0.4",
+    "universal-cookie": "^6.1.1",
     "utf8": "^3.0.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "export NODE_OPTIONS=--max_old_space_size=4096 && react-scripts build",
     "test": "jest",
     "eject": "react-scripts eject"
   },
@@ -133,6 +134,7 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "jest": "^27.5.1"
   }
 }

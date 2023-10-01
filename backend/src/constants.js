@@ -1,6 +1,7 @@
-export const AMDINISTRATOR = "62a2ccfbcf7946010d3c74a2";
-export const AUTHENTICATED = "62a2ccfbcf7946010d3c74a6";
-export const ANONYMOUS     = "62a2ccfbcf7946010d3c74a4";
+export const ANONYMOUS     = 0;
+export const AMDINISTRATOR = 1;
+export const AUTHENTICATED = 2;
+export const SELLER        = 3;
 
 export const SUCCESS        = "SUCCESS";
 export const ERROR          = "ERROR";
@@ -12,8 +13,6 @@ export const PASSWORD_WRONG = "PASSWORD_WRONG";
 export const UNAUTHENTICATED= "UNAUTHENTICATED";
 export const BAD_USER_INPUT = "BAD_USER_INPUT";
 export const NOT_ENOUGH_BALANCE = "NOT_ENOUGH_BALANCE";
-
-export const _ID_AMDINISTRATOR = "62a2f633cf7946010d3c74fc";
 
 export const CANCEL       = 0;
 export const OK           = 1;

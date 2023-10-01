@@ -1,21 +1,8 @@
 import React, { useContext, useState } from 'react'
-
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-
-// import IconButton from "@mui/material/IconButton";
-// import Menu from "@mui/material/Menu";
-// import MenuItem from "@mui/material/MenuItem";
-// import Button from '@mui/material/Button';
-// import Dialog from '@mui/material/Dialog';
-// import DialogActions from '@mui/material/DialogActions';
-// import DialogContent from '@mui/material/DialogContent';
-// import DialogContentText from '@mui/material/DialogContentText';
-// import DialogTitle from '@mui/material/DialogTitle';
-
 import ReplyIcon from '@mui/icons-material/Reply';
 import DeleteIcon from '@mui/icons-material/Delete';
-// import Typography from '@mui/material/Typography';
-// import Avatar from '@mui/material/Avatar'
+import { createSearchParams, useNavigate } from "react-router-dom";
 import { 
         IconButton,
         Menu,
@@ -30,15 +17,13 @@ import {
         Avatar,
         LinearProgress
       } from '@mui/material'
-
 import { makeStyles } from '@material-ui/core/styles';
 import { useQuery } from "@apollo/client";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
 
 import { ActionContext } from './ActionContext'
-
-import { queryUserById } from "../../gqlQuery"
+import { queryUserById } from "../../apollo/gqlQuery"
 import { getHeaders } from "../../util"
 import { useLocation } from "react-router-dom";
 
@@ -74,20 +59,18 @@ const useStyles = makeStyles({
 });
 
 const CommentStructure = (props) => {
-  const location = useLocation();
+  let navigate = useNavigate();
+  let location = useLocation();
+  let { t } = useTranslation();
+  let classes = useStyles();
+  let actions = useContext(ActionContext)
+  let edit = true
+  let [anchorEl, setAnchorEl] = useState(null);
+  let [openDialog, setOpenDialog] = React.useState(false);
 
-  let { i, reply, parentId } = props
+  let { user:currentUser, i, reply, parentId } = props
 
-  const { t } = useTranslation();
-
-  const classes = useStyles();
-
-  const actions = useContext(ActionContext)
-  const edit = true
-
-  const [anchorEl, setAnchorEl] = useState(null);
-
-  const [openDialog, setOpenDialog] = React.useState(false);
+  console.log("CommentStructure props :", props, currentUser)
 
   const handleClickOpenDialog = () => {
     setOpenDialog(true);
@@ -158,13 +141,24 @@ const CommentStructure = (props) => {
               </div>
     }
   
-    let {status, data}  = dataUserById?.userById
-
+    let {status, data:user}  = dataUserById?.userById
     if(status){
       return  <div className='d-flex avartar-comment'>
-                  <Avatar className={classes.link + " p-1 m-1"} src={data?.avatar?.url} sx={{ width: 24, height: 24 }} alt="userIcon" />
+                  <Avatar className={classes.link + " p-1 m-1"} src={user?.avatar?.url} sx={{ width: 24, height: 24 }} alt="userIcon" />
                   <div>
-                     <Typography className={classes.link} variant="subtitle2" gutterBottom component="div"><b>{ data?.displayName }</b></Typography>
+                     <Typography 
+                      className={classes.link} 
+                      variant="subtitle2" 
+                      gutterBottom 
+                      component="div"
+                      onClick={(evt)=>{
+                        if(!_.isEqual(currentUser._id, user._id)){
+                          navigate({
+                            pathname: `/p`,
+                            search: `?${createSearchParams({ id: user._id})}`
+                          })
+                        }
+                      }}><b>{ user?.displayName }</b></Typography>
                      {
                       actions.user 
                       ? <div className='days'>

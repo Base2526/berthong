@@ -12,10 +12,14 @@ services:
       args:
         REACT_APP_HOST_GRAPHAL: banlist.info
         REACT_APP_NODE_ENV: production
-        REACT_APP_GOOGLE_CLIENT_ID: 1094203865843-jqaj9am4tevtocg75tdirmtkh95k27cb.apps.googleusercontent.com
+        REACT_APP_GOOGLE_CLIENT_ID: 480041338383-2nq6gjs7jqbov4b0ed1hd7tgkedh6l4r.apps.googleusercontent.com
         REACT_APP_FACEBOOK_APPID: 1227094848056324 
         REACT_APP_GITHUB_CLIENT_ID: 04e44718d32d5ddbec4c
         REACT_APP_GOOGLE_ANALYTICS4: G-M8LZ0N9TRY
+        REACT_APP_SITE_TITLE: BERTHONG
+        # REACT_APP_XXXX: ${REACT_APP_XXXX}
+        REACT_APP_ENCRYPT_PASS: b9be11166d72e9e3ae7fd407165e4bd2
+        REACT_APP_USER_ROLES: 62a2ccfbcf7946010d3c74a2,62a2ccfbcf7946010d3c74a6,62a2ccfbcf7946010d3c74a4
     ports:
       - "8011:80"
       - "443:443"
@@ -64,6 +68,8 @@ services:
       - 29102
     ports:
       - 29102:29102
+    environment:
+      - MONGO_MAX_CONNECTIONS=100
     volumes:
       - ./mongo-single/data:/data/db
       - ./mongo-single/restore:/mongo-single/restore

@@ -24,7 +24,7 @@ const DisplayComments = (props) => {
                 <div className='inputfield-level-1'><InputField cancellor={i.comId} value={i.text} edit /></div>
               )
             ) : (
-              <CommentStructure i={i} handleEdit={() => actions.handleAction} />
+              <CommentStructure {...props} i={i} handleEdit={() => actions.handleAction} />
             )}
             {actions.replies.filter((id) => id === i.comId).length !== 0 &&
               (actions.customInput ? (
@@ -58,6 +58,7 @@ const DisplayComments = (props) => {
                       )
                     ) : (
                       <CommentStructure
+                        {...props}
                         i={a}
                         reply
                         parentId={i.comId}

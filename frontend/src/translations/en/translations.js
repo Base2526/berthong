@@ -40,7 +40,10 @@ export const TRANSLATIONS_EN = {
     email: "Email",
     name: "Name",
     username: "Username",
+    username_or_email: "Username OR Email",
     password: "Password",
+    confirm_password: "Confirm password",
+
     confirm_delete: "Confirm delete",
     close: "Close",
     login_or_sign_up_to_leave_a_comment : "Log in or sign up to leave a comment",
@@ -62,5 +65,25 @@ export const TRANSLATIONS_EN = {
     things: "Things",
     etc: "Etc",
 
-    all_result: "All result"
+    all_result: "All result",
+
+    advance_search: "Advance search",
+
+    all_products: "All products",
+
+    balance: "Balance",
+
+    NOT_ENOUGH_BALANCE: "Not enough balance",
+
+    USER_NOT_FOUND: "Not found username or email.",
+    PASSWORD_WRONG: "Password wrong.",
+    FORCE_LOGOUT: "Login again",
+
+    wallet: "Wallet",
+
+    deposit: "Deposit",
+
+    subscribes: "Subscribes",
+
+    all_message: "All messages",
 };

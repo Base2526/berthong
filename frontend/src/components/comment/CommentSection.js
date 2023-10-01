@@ -40,7 +40,9 @@ export const CommentSection = (props) => {
           _.isEmpty(comments) 
           ? <></> 
           : <div className={"displayComments"}>
-              <DisplayComments comments={comments} />
+              <DisplayComments 
+                {...props} 
+                comments={comments} />
             </div>
         }
       </div>

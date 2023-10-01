@@ -8,6 +8,7 @@ import * as fs from "fs";
 import mongoose from 'mongoose';
 import fetch from "node-fetch";
 import { GraphQLUpload } from 'graphql-upload';
+import moment from "moment";
 
 import pubsub from './pubsub'
 import AppError from "./utils/AppError"
@@ -20,33 +21,145 @@ import connection from './mongo'
 
 export default {
   Query: {
-
-    async check_db(parent, args, context, info){
+    async checkWalletByUserId(parent, args, context, info){
+      let start = Date.now()
       let { req } = context
+      let { _id } = args
 
-      let { readyState } = connection
-      let mongo_db_state = "Empty"
-      if (readyState === 0) {
-        mongo_db_state = "Disconnected"
-      } else if (readyState === 1) {
-        mongo_db_state = "Connected"
-      } else if (readyState === 2) {
-        mongo_db_state = "Connecting"
-      } else if (readyState === 3) {
-        mongo_db_state = "Disconnecting"
-      }
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
-      let text = "1234"
-      let encrypt = cryptojs.AES.encrypt(text, process.env.JWT_SECRET).toString()
-      encrypt = "U2FsdGVkX18wIs5DOBhZOddShspHwri5Z8KFIXtyHzU="
-      let decrypt = cryptojs.AES.decrypt(encrypt, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8);
-      console.log("encrypt :", encrypt, decrypt)
-  
-      return { status:true, "mongo db state" : mongo_db_state }
+      console.log(`####################### checkWalletByUserId Start ${ _id } ##############################`)
+
+      // let aggregate = [
+      //                   { 
+      //                       $match: { userId: mongoose.Types.ObjectId(_id), 
+      //                                 status: {$in: [Constants.WAIT, Constants.APPROVED]},
+      //                                 // status: Constants.APPROVED,
+      //                                 type: {$in: [Constants.SUPPLIER, Constants.DEPOSIT, Constants.WITHDRAW]}  } 
+      //                   },
+      //                   {
+      //                       $lookup: {
+      //                           localField: "refId",
+      //                           from: "supplier",
+      //                           foreignField: "_id",
+      //                           pipeline: [{ $match: { buys: { $elemMatch : { userId: mongoose.Types.ObjectId(_id) }} }}],
+      //                           as: "supplier"
+      //                       }                 
+      //                   },
+      //                   {
+      //                       $lookup: {
+      //                           localField: "refId",
+      //                           from: "deposit",
+      //                           foreignField: "_id",
+      //                           as: "deposit"
+      //                       }
+      //                   },
+      //                   {
+      //                       $lookup: {
+      //                           localField: "refId",
+      //                           from: "withdraw",
+      //                           foreignField: "_id",
+      //                           as: "withdraw"
+      //                       }
+      //                   },
+      //                   {
+      //                       $unwind: {
+      //                           path: "$supplier",
+      //                           preserveNullAndEmptyArrays: true
+      //                       }
+      //                   },
+      //                   {
+      //                       $unwind: {
+      //                           path: "$deposit",
+      //                           preserveNullAndEmptyArrays: true
+      //                       }
+      //                   },
+      //                   {
+      //                       $unwind: {
+      //                           path: "$withdraw",
+      //                           preserveNullAndEmptyArrays: true
+      //                       }
+      //                   }
+      //                 ];
+
+      // let transitions = await Model.Transition.aggregate(aggregate);
+
+      // let money_use       = 0;
+      // let money_lock      = 0;
+      // let money_deposit   = 0;
+      // let money_withdraw  = 0;
+      // let in_carts        = [];
+      // _.map(transitions, (transition) =>{
+      //   switch(transition.type){
+      //     case Constants.SUPPLIER:{
+      //       let { supplier } = transition
+      //       if(transition.status === Constants.WAIT){
+      //         let { price, buys } = supplier
+
+      //         let filter = _.filter(buys, (buy)=> _.isEqual(buy.transitionId, transition._id) )
+
+      //         let itemIds = _.map(filter, (f)=>f.itemId)
+
+      //         console.log("SUPPLIER #WAIT :", transition._id, supplier._id, supplier.title, price, itemIds)
+
+      //         money_lock += filter.length * price
+      //       }else if(transition.status === Constants.APPROVED){
+      //         let { price, buys } = supplier
+
+      //         let filter = _.filter(buys, (buy)=> _.isEqual(buy.transitionId, transition._id) )
+
+      //         let itemIds = _.map(filter, (f)=>f.itemId)
+
+      //         console.log("SUPPLIER #APPROVED :", transition._id, supplier._id, supplier.title, price, itemIds)
+
+      //         money_use += filter.length * price
+      //       }
+
+      //       in_carts = [...in_carts, transition]
+      //       break
+      //     } 
+      //     case Constants.DEPOSIT:{
+      //       let { status, deposit } = transition
+      //       if(status === Constants.APPROVED){
+      //         let { balance } = deposit
+      //         money_deposit += balance;
+      //       }
+      //       break
+      //     } 
+      //     case Constants.WITHDRAW:{
+      //       let { status, withdraw } = transition
+      //       if(status === Constants.APPROVED){
+      //         let { balance } = withdraw
+      //         money_withdraw += balance;
+      //       }
+      //       break
+      //     }
+      //   }
+      // })  
+
+
+      let { transitions, money_balance, money_use, money_lock, money_deposit, money_withdraw, in_carts } = await Utils.getBalance(_id)
+      
+      console.log(`####################### checkWalletByUserId End ${ _id } ##############################`)
+      return {  status:true, 
+                userId: _id,  
+
+                transitions, 
+                money_balance,
+                money_use, 
+                money_lock,
+                money_deposit, 
+                money_withdraw,
+                in_carts,
+
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
     async ping(parent, args, context, info){
       let { req } = context
+
+      await Utils.checkAuth(req);
 
       const session = await mongoose.startSession();
       session.startTransaction()
@@ -99,6 +212,8 @@ export default {
       let { req } = context
       let { _id } = args
 
+      await Utils.checkAuth(req);
+
       let ca_get = cache.ca_get(_id)
       console.log("ca_get :", ca_get)
       // let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
@@ -108,7 +223,7 @@ export default {
 
     async checkUser(parent, args, context, info){
       let { req } = context
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
       console.log("checkUser :", current_user, req?.headers?.authorization)
       return { status:true }
     },
@@ -117,17 +232,97 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Administrator only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let { OFF_SET, LIMIT } = args?.input
-      let users = await Model.User.find({roles: {$nin:[Constants.AMDINISTRATOR]}}, 
-                                  { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 })
-                                  .limit(LIMIT)
-                                  .skip(OFF_SET); 
+      // let users = await Model.User.find({roles: {$nin:[Constants.AMDINISTRATOR]}}, 
+      //                             { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 })
+      //                             .limit(LIMIT)
+      //                             .skip(OFF_SET); 
+      
+      let users = await Model.User.aggregate([
+                                                {
+                                                  $match: {
+                                                    roles: {$nin:[Constants.AMDINISTRATOR]}
+                                                  }
+                                                },
+                                                { $skip: OFF_SET }, 
+                                                { $limit: LIMIT }, 
+                                                {
+                                                  $lookup: {
+                                                    localField: "_id",
+                                                    from: "session",
+                                                    foreignField: "userId",
+                                                    as: "session"
+                                                  }
+                                                },
+                                                {
+                                                  $unwind: {
+                                                    path: "$session",
+                                                    preserveNullAndEmptyArrays: true
+                                                  }
+                                                },
+                                              ])
+     
+      let transitions = await Promise.all(_.map(users, async(user)=>{
+                          let transition =  await Model.Transition.aggregate([
+                                        { 
+                                          $match: { 
+                                                    userId: mongoose.Types.ObjectId(user?._id), 
+                                                    status: { $in: [ 13, 14 ] }, //  0 Constants.WAIT, Constants.APPROVED 
+                                                    type:{ $in: [ 10, 11, 12]}       //  Constants.SUPPLIER = 10, Constants.DEPOSIT = 11, Constants.WITHDRAW = 12 
+                                                  } 
+                                        },
+                                        {
+                                          $lookup: {
+                                              localField: "refId",
+                                              from: "supplier",
+                                              foreignField: "_id",
+                                              pipeline: [{ $match: { buys: { $elemMatch : { userId: mongoose.Types.ObjectId(user?._id) }} }}],
+                                              as: "supplier"
+                                          }                 
+                                        },
+                                        {
+                                          $lookup: {
+                                            localField: "refId",
+                                            from: "deposit",
+                                            foreignField: "_id",
+                                            as: "deposit"
+                                          }
+                                        },
+                                        {
+                                          $lookup: {
+                                            localField: "refId",
+                                            from: "withdraw",
+                                            foreignField: "_id",
+                                            as: "withdraw"
+                                          }
+                                        },
+                                        {
+                                          $unwind: {
+                                            "path": "$supplier",
+                                            "preserveNullAndEmptyArrays": true
+                                          }
+                                        },
+                                        {
+                                          $unwind: {
+                                            "path": "$deposit",
+                                            "preserveNullAndEmptyArrays": true
+                                          }
+                                        },
+                                        {
+                                          $unwind: {
+                                            "path": "$withdraw",
+                                            "preserveNullAndEmptyArrays": true
+                                            }
+                                        }
+                                      ])
+                          return {...user, transition}
+                        }))
       return { 
               status: true,
-              data: users,
+              data: transitions,
               total: ( await Utils.getUserFull({roles: {$nin:[Constants.AMDINISTRATOR]}}) )?.length,
               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
             }
@@ -138,11 +333,9 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-
+      await Utils.checkAuth(req);
       let user = await Utils.getUserFull({_id})
       if(_.isNull(user)) throw new AppError(Constants.USER_NOT_FOUND, 'Model.User not found.')
-
       return {  status: true,
                 data: user,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
@@ -152,8 +345,8 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Admin only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let data = await Model.Role.find({_id: {$in: args?.input }})
       return {
@@ -166,39 +359,99 @@ export default {
     async suppliers(parent, args, context, info){
       let start = Date.now()
       let { req } = context
-      console.log("suppliers : #0 ", args?.input)
       await Utils.checkAuth(req);
 
-      let { PAGE, LIMIT } = args?.input
+      let { TITLE, NUMBER, PAGE, LIMIT } = args?.input
       let SKIP = (PAGE - 1) * LIMIT
 
-      console.log("suppliers : #1 ", args?.input)
-      let suppliers = await Model.Supplier.aggregate([
-                      { $skip: SKIP }, 
-                      { $limit: LIMIT }, 
-                      {
-                          $lookup: {
-                              localField: "ownerId",
-                              from: "user",
-                              foreignField: "_id",
-                              pipeline: [
-                                { $project:{ username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }}
-                              ],
-                              as: "owner"
-                          }
-                      },
-                      {
-                          $unwind: {
-                                  "path": "$owner",
-                                  "preserveNullAndEmptyArrays": false
-                          }
-                      }
-                    ])
+      let aggregate = []
 
+      let match     = {publish: true}
+      if(!_.isEmpty(TITLE)){
+        match = {...match,  title: { $regex: TITLE, $options: "i" } }
+      }
+
+      if(!_.isEmpty(match)){
+        aggregate = [ { $match: match } ]
+      }
+
+      aggregate = [ ...aggregate,
+                    { $skip: SKIP }, 
+                    { $limit: LIMIT }, 
+                    {
+                      $lookup: {
+                          localField: "ownerId",
+                          from: "user",
+                          foreignField: "_id",
+                          pipeline: [
+                            { $project:{ username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }}
+                          ],
+                          as: "owner"
+                      }
+                    },
+                    {
+                      $lookup: {
+                          localField: "manageLottery",
+                          from: "manageLottery",
+                          foreignField: "_id",
+                          // pipeline: [
+                          //   { $project:{ date: 1 }}
+                          // ],
+                          as: "manageLottery"
+                      }
+                    },
+                    {
+                      $unwind: {
+                        path: "$owner",
+                        preserveNullAndEmptyArrays: false
+                      }
+                    },
+                    {
+                      $unwind: {
+                        path: "$manageLottery",
+                        preserveNullAndEmptyArrays: false
+                      }
+                    }
+                  ]
+
+      if(!_.isEmpty(NUMBER)){
+        let q = _.map(NUMBER.split(","), (v, i)=>{
+          return {
+                    "buys":{
+                      $not:{ $elemMatch : {itemId: parseInt(v)} } 
+                    }
+                  }
+        })
+
+        aggregate = [...aggregate, { $match: { "$and" : q  } }]
+
+        
+
+        let suppliers = await Model.Supplier.aggregate(aggregate)
+
+        aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
+        let total     = await Model.Supplier.aggregate(aggregate)
+
+        suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
+
+        return {  
+          status: true,
+          data: suppliers,
+          total: total.length,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+        }
+      }
+
+      let suppliers = await Model.Supplier.aggregate(aggregate)
+
+      aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
+
+      let total     = await Model.Supplier.aggregate(aggregate)
+      suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
       return {  
         status: true,
         data: suppliers,
-        total: await Utils.getTotalSupplier(),
+        total: total.length,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
       }
     },
@@ -209,7 +462,6 @@ export default {
       let { req } = context
 
       await Utils.checkAuth(req);
-
       return {  status: true,
                 data: await Utils.getSupplier({_id}),
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
@@ -220,7 +472,6 @@ export default {
       let { req } = context
 
       await Utils.checkAuth(req);
-
       let banks = await Model.Bank.find({})
       if(_.isNull(banks)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
       return {  status: true,
@@ -234,7 +485,6 @@ export default {
       let { req } = context
 
       await Utils.checkAuth(req);
-
       let bank = await Model.Bank.findById(_id)
       if(_.isNull(bank)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
 
@@ -243,48 +493,46 @@ export default {
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
+    async bankByIds(parent, args, context, info){
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      await Utils.checkAuth(req);
+      let banks = await Model.Bank.find({ _id : { $in : input } });
+      if(_.isNull(banks)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
+
+      return {  status:true,
+                data: banks,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    },
+
     async bookBuyTransitions(parent, args, context, info){
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-
-      // let transitions = await Model.Transition.find({ userId: current_user?._id, type: Constants.SUPPLIER });
-
-      // transitions = _.filter( await Promise.all(_.map(transitions, async(transition)=>{
-      //                 let supplier = await Model.Supplier.findOne( {_id: transition.refId} );//await Utils.getSupplier({_id: transition.refId}) 
-
-      //                 if(supplier){
-      //                   let { buys } = supplier
-      //                   let book  = _.filter(buys, buy=> _.isEqual(buy.userId, current_user?._id)  && (buy.selected == 0 || buy.selected == 1))
-  
-      //                   return book?.length > 0 /*|| buy.length > 0*/  ? {...transition._doc, ...supplier._doc } : null
-      //                 }
-      //                 return null                
-      //               })), item=>!_.isNull(item) ) 
-
+      let { current_user } =  await Utils.checkAuth(req);
       let userId = current_user?._id;
-
       let transitions = await Model.Transition.aggregate([
-        { 
-            $match: { userId, type: Constants.SUPPLIER  } 
-        },
-        {
-          $lookup: {
-              localField: "refId",
-              from: "supplier",
-              foreignField: "_id",
-              pipeline: [{ $match: { buys: { $elemMatch : { userId }} }}],
-              as: "supplier"
-          }                 
-        },
-        {
-          $unwind: {
-              "path": "$supplier",
-              "preserveNullAndEmptyArrays": false
-          }
-        }
-      ])
+                              { 
+                                  $match: { userId: mongoose.Types.ObjectId(userId), type: Constants.SUPPLIER  } 
+                              },
+                              {
+                                $lookup: {
+                                    localField: "refId",
+                                    from: "supplier",
+                                    foreignField: "_id",
+                                    pipeline: [{ $match: { buys: { $elemMatch : { userId: mongoose.Types.ObjectId(userId) }} }}],
+                                    as: "supplier"
+                                }                 
+                              },
+                              {
+                                $unwind: {
+                                    "path": "$supplier",
+                                    "preserveNullAndEmptyArrays": false
+                                }
+                              }
+                            ])
 
       return {  status: true,
                 data: transitions,
@@ -295,88 +543,47 @@ export default {
     async historyTransitions(parent, args, context, info){
       let start = Date.now()
       let { req } = context
-
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-
-      let userId = current_user?._id
-      // let transitions = await Model.Transition.find({ userId });
-      // transitions = await Promise.all(_.map(transitions, async(transition)=>{
-      //     // export const SUPPLIER       = 10;
-      //     // export const DEPOSIT        = 11;
-      //     // export const WITHDRAW       = 12;
-      //     switch(transition.type){ 
-      //       case Constants.SUPPLIER:{
-      //           let supplier = await Utils.getSupplier({_id: transition?.refId}) 
-      //           let buys = _.filter(supplier?.buys, (buy)=> _.isEqual(buy?.userId, userId))
-                
-      //           if(_.isEmpty(buys)){
-      //             return {};
-      //           }
-                
-      //           let balance = buys?.length * supplier?.price
-      //           return {...transition?._doc, 
-      //                   title: supplier?.title, 
-      //                   balance, 
-      //                   description: supplier?.description, 
-      //                   dateLottery: supplier?.dateLottery}
-      //       }
-      //       case Constants.DEPOSIT:{
-      //           let deposit = await Model.Deposit.findById(transition.refId)
-      //           return {...transition?._doc, ...deposit?._doc}
-      //       }
-      //       case Constants.WITHDRAW:{
-      //           let withdraw = await Model.Withdraw.findById(transition.refId)
-      //           return {...transition?._doc, 
-      //                   title: "title", 
-      //                   balance: withdraw.balance, 
-      //                   description: "description", 
-      //                   dateLottery: "dateLottery"}
-      //       }
-      //     }
-      // }).filter(i=>!_.isNull(i)))
-
-      let deposit = await Model.Transition.aggregate([
-                      { 
-                          $match: {userId, status: { $in: [ 13, 14 /*, 0 Constants.WAIT, Constants.APPROVED*/ ] }, type: 11 /* Constants.DEPOSIT = 11 */ } 
-                      },
-                      {
-                          $lookup: {
-                              localField: "refId",
-                              from: "deposit",
-                              foreignField: "_id",
-                              as: "deposit"
-                          }
-                      },
-                      {
-                        $unwind: {
-                          "path": "$deposit",
-                          "preserveNullAndEmptyArrays": false
-                        }
-                      }
-                    ])
-
-      let withdraw =  await Model.Transition.aggregate([
-                        { 
-                            $match: {userId, status: { $in: [ 13, 14 /*, 0 Constants.WAIT, Constants.APPROVED*/ ] }, type: 12 /* Constants.WITHDRAW = 12 */ } 
-                        },
-                        {
-                            $lookup: {
-                                localField: "refId",
-                                from: "withdraw",
-                                foreignField: "_id",
-                                as: "withdraw"
-                            }
-                        },
-                        {
-                          $unwind: {
-                            "path": "$withdraw",
-                            "preserveNullAndEmptyArrays": false
-                            }
-                        }
-                      ])
+      let { current_user } =  await Utils.checkAuth(req);
+      let data = await Model.Transition.aggregate([
+                                                      { 
+                                                        $match: { 
+                                                                  userId: mongoose.Types.ObjectId(current_user?._id), 
+                                                                  status: { $in: [ 13, 14 ] }, //  0 Constants.WAIT, Constants.APPROVED 
+                                                                  type:{ $in: [ 11, 12]}       //  Constants.DEPOSIT = 11, Constants.WITHDRAW = 12 
+                                                                } 
+                                                      },
+                                                      {
+                                                        $lookup: {
+                                                          localField: "refId",
+                                                          from: "deposit",
+                                                          foreignField: "_id",
+                                                          as: "deposit"
+                                                        }
+                                                      },
+                                                      {
+                                                        $lookup: {
+                                                          localField: "refId",
+                                                          from: "withdraw",
+                                                          foreignField: "_id",
+                                                          as: "withdraw"
+                                                        }
+                                                      },
+                                                      {
+                                                        $unwind: {
+                                                          "path": "$deposit",
+                                                          "preserveNullAndEmptyArrays": true
+                                                        }
+                                                      },
+                                                      {
+                                                        $unwind: {
+                                                          "path": "$withdraw",
+                                                          "preserveNullAndEmptyArrays": true
+                                                          }
+                                                      }
+                                                    ])
 
       return {  status: true,
-                data: [...deposit, ...withdraw],
+                data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
@@ -385,8 +592,7 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-
+      await Utils.checkAuth(req);
       let user = await Utils.getUserFull({_id})
       if(_.isNull(user)) throw new AppError(Constants.USER_NOT_FOUND, 'Model.User not found.')
 
@@ -403,12 +609,10 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      // if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
-
+      let { current_user } =  await Utils.checkAuth(req);
       let transitions = await Model.Transition.find({userId: current_user?._id, type: Constants.SUPPLIER, status: Constants.OK });
       transitions = await Promise.all(_.map(transitions, async(transition)=>{
-                          switch(transition.type){ // 'supplier', 'deposit', 'withdraw'
+                          switch(transition.type){
                             case Constants.SUPPLIER:{
 
                               let supplier = await Utils.getSupplier({_id: transition?.refId}) 
@@ -416,8 +620,6 @@ export default {
                               // price, buys
 
                               let balance = buys.length * supplier.price
-
-                              // console.log("transitions > supplier :", supplier)
 
                               return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
                             }
@@ -432,27 +634,28 @@ export default {
     async notifications(parent, args, context, info){
       let start = Date.now()
       let { req } = context
+      let { current_user } =  await Utils.checkAuth(req);
+      let aggregate = [
+                        { 
+                          $match: { user_to_notify: mongoose.Types.ObjectId(current_user?._id), delete: 0 } 
+                        },
+                        {
+                          $lookup: {
+                            localField: "user_id_approve",
+                            from: "user",
+                            foreignField: "_id",
+                            as: "user"
+                          }
+                        },
+                        {
+                          $unwind: {
+                              path: "$user",
+                              preserveNullAndEmptyArrays: false
+                          }
+                        },
+                      ]
 
-      console.log("notifications: ")
-
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      // if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
-
-      let data = [{ user_to_notify: '63ff3c0c6637e303283bc40f', 
-                    type: "system",
-                    data: "test [system]",
-                    status: "unread"
-                  },
-                  { user_to_notify: '63ff3c0c6637e303283bc40f', 
-                    type: "withdraw",
-                    data: "test [withdraw]",
-                    status: "unread"
-                  },
-                  { user_to_notify: '63ff3c0c6637e303283bc40f', 
-                    type: "deposit",
-                    data: "test [deposit]",
-                    status: "unread"
-                  }]
+      let data = await Model.Notification.aggregate(aggregate);
       return {  status: true,
                 data,
                 total: data.length,
@@ -461,23 +664,16 @@ export default {
     },
 
     async commentById(parent, args, context, info){
-      try{
-        let start = Date.now()
-        let { _id } = args
-        let { req } = context
+      let start = Date.now()
+      let { _id } = args
+      let { req } = context
 
-        let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      await Utils.checkAuth(req);
 
-        let comm = await Model.Comment.findOne({_id});
-        return {  status: true,
-                  data: _.isNull(comm) ? [] : comm,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }catch(error){
-        console.log("commentById error :", error)
-        return {  status: false,
-                  error: error?.message,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }
+      let comm = await Model.Comment.findOne({_id});
+      return {  status: true,
+                data: _.isNull(comm) ? [] : comm,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
     async bookmarks(parent, args, context, info){
@@ -485,25 +681,25 @@ export default {
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
 
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
+    
       let suppliers = await Model.Supplier.aggregate([
-        { 
-            $match: { follows: {$elemMatch: {userId: current_user?._id} }  } 
-        },
-        {
-          $lookup: {
-              localField: "ownerId",
-              from: "user",
-              foreignField: "_id",
-              as: "owner"
-          }                 
-        },
-        {
-          $unwind: {
-              "path": "$owner",
-              "preserveNullAndEmptyArrays": false
-          }
-        }
-      ])
+                      {  $match: { follows: {$elemMatch: {userId: current_user?._id} }  } },
+                      {
+                        $lookup: {
+                            localField: "ownerId",
+                            from: "user",
+                            foreignField: "_id",
+                            as: "owner"
+                        }                 
+                      },
+                      {
+                        $unwind: {
+                            "path": "$owner",
+                            "preserveNullAndEmptyArrays": false
+                        }
+                      }
+                    ])
 
       return {  status: true,
                 data: suppliers,
@@ -512,32 +708,23 @@ export default {
     },
 
     async subscribes(parent, args, context, info){
-      try{
-        let start = Date.now()
-        let { req } = context
-
-        let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-
-        let users = await Utils.getUsers({subscriber: { $elemMatch : {userId: current_user?._id }}})
-        
-        return {  status: true,
-                  data: users,
-                  total: users.length,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }catch(error){
-        console.log("commentById error :", error)
-        return {  status: false,
-                  error: error?.message,
-                  executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-      }
+      let start = Date.now()
+      let { req } = context
+      let { current_user } =  await Utils.checkAuth(req);
+      let users = await Utils.getUsers({subscriber: { $elemMatch : {userId: current_user?._id }}})
+      
+      return {  status: true,
+                data: users,
+                total: users.length,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
     async dblog(parent, args, context, info){
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let dblogs = await Model.Dblog.find({})
       
@@ -550,34 +737,7 @@ export default {
     async dateLotterys(parent, args, context, info){
       let start = Date.now()
       let { req } = context
-
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      // if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
-
       let dateLotterys = await Model.DateLottery.find({})
-
-      // if(_.isNull(dateLotterys)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
-      // dateLotterys = await Promise.all( _.map(dateLotterys, async(lo)=>{
-      //   let suppliers = await Model.Supplier.find({ dateLottery: lo?._id });
-      //   return  {...lo._doc, suppliers }
-      // }) )
-      // let dateLotterys = await Model.DateLottery.aggregate([
-      //   {
-      //       $lookup: {
-      //           localField: "_id",
-      //           from: "supplier",
-      //           foreignField: "dateLottery",
-      //           as: "suppliers"
-      //       }
-      //   },
-      //   {
-      //       $unwind: {
-      //               "path": "$suppliers",
-      //               "preserveNullAndEmptyArrays": false
-      //       }
-      //   }
-      // ])
-      // console.log("dateLotterys :", dateLotterys)
       
       return {  status: true,
                 data: dateLotterys,
@@ -590,7 +750,7 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
 
       let dateLottery = await Model.DateLottery.findById(_id)
@@ -602,99 +762,159 @@ export default {
 
     },
 
+    async producers(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+
+      let { current_user } =  await Utils.checkAuth(req);
+      let producers = await Model.Supplier.find({ ownerId: current_user?._id })
+      return {  status: true,
+                data: producers,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
+    async manageLotterys(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+      let { current_user } =  await Utils.checkAuth(req);
+      // if( Utils.checkRole(current_user) == Constants.AMDINISTRATOR || Utils.checkRole(current_user) == Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
+      let data = await Model.ManageLottery.find({})
+      return {  status: true,
+                data,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
+    async manageLotteryById(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+      let { _id } = args
+      let { current_user } =  await Utils.checkAuth(req);
+      // if( Utils.checkRole(current_user) == Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      let data = await Model.ManageLottery.findOne({_id})
+      return {  status: true,
+                data,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
+    async deposits(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      let data = await Model.Transition.aggregate([
+                  { $match: { type: Constants.DEPOSIT } },
+                  {
+                    $lookup: {
+                      localField: "refId",
+                      from: "deposit",
+                      foreignField: "_id",
+                      as: "deposit"
+                    }
+                  },
+                  {
+                    $unwind: {
+                      path: "$deposit",
+                      preserveNullAndEmptyArrays: false
+                    }
+                  }
+                ])
+      return {  status: true,
+                data,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
+    async withdraws(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      let data = await Model.Transition.aggregate([
+                          { $match: { type: Constants.WITHDRAW } },
+                          {
+                            $lookup: {
+                              localField: "refId",
+                              from: "withdraw",
+                              foreignField: "_id",
+                              as: "withdraw"
+                            }
+                          },
+                          {
+                            $unwind: {
+                              path: "$withdraw",
+                              preserveNullAndEmptyArrays: false
+                            }
+                          }
+                        ])
+
+      return {  status: true,
+                data,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
     async adminHome(parent, args, context, info){
       let start = Date.now()
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
-      /*
-      try{
-
-      }catch(error){
-        console
-      }
-      console.log("adminHome: ", current_user)
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Administrator only!')
-
-      // 0: 'wait', 1: 'approved',  2: 'approved'
-      let deposits = await Model.Deposit.find({status: Constants.WAIT})
-      deposits  = _.filter(await Promise.all(_.map(deposits, async(deposit)=>{
-                                    let f = await Model.Bank.findById(deposit.bank.bankId)
-                                    if(_.isNull(f)) return null
-                                    return {...deposit._doc, bank: {...deposit.bank, bankName: f?.name}}
-                                  })), i=>!_.isEmpty(i))
-
-      let withdraws = await Model.Withdraw.find({status: Constants.WAIT})
-      withdraws = _.filter(await Promise.all(_.map(withdraws, async(i)=>{
-                                            let user = await Model.User.findById(i.userIdRequest)
-                                            return _.isEmpty(user) ? null : {...i._doc, userNameRequest: user?.displayName}
-                                          }), i=>!_.isEmpty(i)))
-
-      let suppliers = await Model.Supplier.find({}); 
-
-
-      let users = await Model.User.find({})
-      users = _.filter( await Promise.all(_.map(users, async(user)=>{
-                if(_.isEqual(user._id, current_user?._id)) return null
-
-                let roles = await Promise.all(_.map(user.roles, async(_id)=>{     
-                  return (await Model.Role.findById({_id: mongoose.Types.ObjectId(_id)}))?.name
-                }))            
-                
-                let newUser = {...user._doc, roles: _.filter(roles, (role)=>role!=undefined)};
-                return _.omit(newUser, ['password']);
-              })), i => !_.isEmpty(i))
-              */
-
-      let deposits = await Model.Transition.aggregate([
+      let transitions = await Model.Transition.aggregate([
         { 
-            $match: { status: Constants.WAIT /* 13 */, type: Constants.DEPOSIT /* 11 */ } 
+            $match: { 
+              status: Constants.WAIT, 
+              type: {$in: [Constants.DEPOSIT, Constants.WITHDRAW]},
+            } 
         },
         {
-            $lookup: {
-                localField: "refId",
-                from: "deposit",
-                foreignField: "_id",
-                as: "deposit"
-            }
-        },
-        {
-          $unwind: {
-            "path": "$deposit",
-            "preserveNullAndEmptyArrays": false
+          $lookup: {
+            localField: "refId",
+            from: "deposit",
+            foreignField: "_id",
+            as: "deposit"
           }
-        }
-      ])
-
-      let withdraws = await Model.Transition.aggregate([
-        { 
-            $match: { status: Constants.WAIT /* 13 */, type: Constants.WITHDRAW /* 11 */ } 
         },
         {
-            $lookup: {
-                localField: "refId",
-                from: "withdraw",
-                foreignField: "_id",
-                as: "withdraw"
-            }
+          $lookup: {
+            localField: "refId",
+            from: "withdraw",
+            foreignField: "_id",
+            as: "withdraw"
+          }
         },
         {
           $unwind: {
-            "path": "$withdraw",
-            "preserveNullAndEmptyArrays": false
+            path: "$deposit",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $unwind: {
+            path: "$withdraw",
+            preserveNullAndEmptyArrays: true
           }
         }
       ])
 
       let suppliers = Array.from({ length: await Utils.getTotalSupplier() }, (_, i) => i);
+      let users     = await Model.User.find({ roles: {$nin:[Constants.AMDINISTRATOR]} }, 
+                                            { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 }); 
 
-      let users = await Model.User.find({roles: {$nin:[Constants.AMDINISTRATOR]}}, 
-                  { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 }); 
+      let withdraws = _.filter(transitions, (transition)=>transition?.withdraw)
+      let deposits  = _.filter(transitions, (transition)=>transition?.deposit)
 
       let data =  [ 
-                    { title: "รายการ ฝากเงินรออนุมัติ", data: deposits },
-                    { title: "รายการ ถอดเงินรออนุมัติ", data: withdraws }, 
+                    { title: "รายการ ฝากเงิน รออนุมัติ", data: deposits },
+                    { title: "รายการ ถอดเงิน รออนุมัติ", data: withdraws },
                     { title: "รายการ สินค้าทั้งหมด", data: suppliers },
                     { title: "รายชื่อบุคคลทั้งหมด", data: users } 
                   ]
@@ -721,39 +941,29 @@ export default {
       let start = Date.now()
         
       let { req } = context
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
 
-      // let transitions = await Model.Transition.find({ type: Constants.DEPOSIT, status: Constants.WAIT });
-
-      // transitions = await Promise.all(_.map(transitions, async(transition)=>{
-      //                       let deposit = await Model.Deposit.findOne({_id: transition?.refId})
-      //                       let user    = await Utils.getUser({_id: transition?.userId}) 
-      //                       return {...deposit?._doc, ...transition?._doc, user}
-      //                     }))
-
-      let transitions = await Model.Transition.aggregate([
-        { 
-            $match: { status: Constants.WAIT /* 13 */, type: Constants.DEPOSIT /* 11 */ } 
-        },
-        {
-            $lookup: {
-                localField: "refId",
-                from: "deposit",
-                foreignField: "_id",
-                as: "deposit"
-            }
-        },
-        {
-          $unwind: {
-            "path": "$deposit",
-            "preserveNullAndEmptyArrays": false
-          }
-        }
-      ])
+      let data = await Model.Transition.aggregate([
+                              { $match: { status: Constants.WAIT, type: Constants.DEPOSIT } },
+                              {
+                                  $lookup: {
+                                      localField: "refId",
+                                      from: "deposit",
+                                      foreignField: "_id",
+                                      as: "deposit"
+                                  }
+                              },
+                              {
+                                $unwind: {
+                                  "path": "$deposit",
+                                  "preserveNullAndEmptyArrays": false
+                                }
+                              }
+                            ])
 
       return {  status:true,
-                data: transitions,
+                data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
@@ -761,45 +971,234 @@ export default {
       let start = Date.now()
         
       let { req } = context
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
-      // let transitions = await Model.Transition.find({ type: Constants.WITHDRAW, status: Constants.WAIT });
-
-      // transitions = await Promise.all(_.map(transitions, async(transition)=>{
-      //                       let withdraw = await Model.Withdraw.findOne({_id: transition?.refId})
-      //                       let user    = await Utils.getUser({_id: transition?.userId}) 
-      //                       return {...withdraw?._doc, ...transition?._doc, user}
-      //                     }))
-
-      let transitions = await Model.Transition.aggregate([
-        { 
-            $match: { status: Constants.WAIT /* 13 */, type: Constants.WITHDRAW /* 11 */ } 
-        },
-        {
-            $lookup: {
-                localField: "refId",
-                from: "withdraw",
-                foreignField: "_id",
-                as: "withdraw"
-            }
-        },
-        {
-          $unwind: {
-            "path": "$withdraw",
-            "preserveNullAndEmptyArrays": false
-          }
-        }
-      ])
+      let data = await Model.Transition.aggregate([
+                  { $match: { status: Constants.WAIT, type: Constants.WITHDRAW } },
+                  {
+                    $lookup: {
+                      localField: "refId",
+                      from: "withdraw",
+                      foreignField: "_id",
+                      as: "withdraw"
+                    }
+                  },
+                  {
+                    $unwind: {
+                      path: "$withdraw",
+                      preserveNullAndEmptyArrays: false
+                    }
+                  }
+                ])
 
       return {  status:true,
-                data: transitions,
+                data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+    },
+
+    async manageSuppliers(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+      let { current_user } =   await Utils.checkAuth(req);
+      let role = Utils.checkRole(current_user)
+      if( role !== Constants.AMDINISTRATOR && role !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
+
+      let { TITLE, NUMBER, PAGE, LIMIT } = args?.input
+      let SKIP = (PAGE - 1) * LIMIT
+
+      let aggregate = []
+      let match     = {}
+      if(!_.isEmpty(TITLE)){
+        match = { title: { $regex: TITLE, $options: "i" } }
+      }
+
+      if( role === Constants.SELLER ){
+        match = {...match, ownerId: mongoose.Types.ObjectId(current_user?._id)}
+      }
+
+      if(!_.isEmpty(match)){
+        aggregate = [ { $match: match } ]
+      }
+
+      aggregate = [ ...aggregate,
+                    { $skip: SKIP }, 
+                    { $limit: LIMIT }, 
+                    {
+                      $lookup: {
+                          localField: "ownerId",
+                          from: "user",
+                          foreignField: "_id",
+                          pipeline: [
+                            { $project:{ username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }}
+                          ],
+                          as: "owner"
+                      }
+                    },
+                    {
+                      $lookup: {
+                          localField: "manageLottery",
+                          from: "manageLottery",
+                          foreignField: "_id",
+                          // pipeline: [
+                          //   { $project:{ date: 1 }}
+                          // ],
+                          as: "manageLottery"
+                      }
+                    },
+                    {
+                      $unwind: {
+                        path: "$owner",
+                        preserveNullAndEmptyArrays: true
+                      }
+                    },
+                    {
+                      $unwind: {
+                        path: "$manageLottery",
+                        preserveNullAndEmptyArrays: true
+                      }
+                    }
+                  ]
+
+      if(!_.isEmpty(NUMBER)){
+        let q = _.map(NUMBER.split(","), (v, i)=>{
+          return {
+                    "buys":{
+                      $not:{ $elemMatch : {itemId: parseInt(v)} } 
+                    }
+                  }
+        })
+
+        aggregate = [...aggregate, { $match: { "$and" : q  } }]
+
+        let suppliers = await Model.Supplier.aggregate(aggregate)
+
+        aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
+        let total     = await Model.Supplier.aggregate(aggregate)
+
+        suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
+
+        console.log( "suppliers : #2 q >> :", JSON.stringify(q), JSON.stringify(aggregate), suppliers.length )
+        return {  
+          status: true,
+          data: suppliers,
+          total: total.length,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+        }
+      }
+
+      console.log("manageSuppliers :", aggregate)
+      let suppliers = await Model.Supplier.aggregate(aggregate)
+
+      aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
+
+      let total     = await Model.Supplier.aggregate(aggregate)
+      suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
+      return {  
+        status: true,
+        data: suppliers,
+        total: total.length,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+      }
+    },
+
+    async message(parent, args, context, info) {
+      let start = Date.now()
+      let { req } = context
+      let { _id } = args
+
+      let { current_user } =  await Utils.checkAuth(req);
+
+      console.log("message :", args)
+
+      // if(_.isEmpty(_id)){
+      //   return ;
+      // }
+
+      let data = await Model.Message.find({ conversationId: _id });
+
+      return {
+        status:true,
+        data,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+    },
+
+    async conversations(parent, args, context, info) {
+      let start = Date.now()
+      try{
+        let { req } = context
+
+        let { current_user } =  await Utils.checkAuth(req);
+
+        // let authorization = await checkAuthorization(req);
+        // let { status, code, current_user } =  authorization
+
+      
+        // if( status && code == 1 ){
+        let data=  await Model.Conversation.find({
+          "members.userId": { $all: [ current_user?._id ] }
+        });
+
+        console.log("conversations # : ", current_user, data)
+
+        return {
+          status:true,
+          data,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+        // }
+        // console.log("conversations #2")
+        // return {
+        //   status:false,
+        //   data: [],
+        //   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        // }
+      } catch(err) {
+        logger.error(err.toString());
+        
+        return {
+          status:false,
+          message: err.toString(),
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
+      }
     },
   },
   Upload: GraphQLUpload,
   Mutation: {
+    async check_db(parent, args, context, info){
+      let { req } = context
 
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      console.log("check_db :", connection)
+      let { readyState } = connection
+      let mongo_db_state = "Empty"
+      if (readyState === 0) {
+        mongo_db_state = "Disconnected"
+      } else if (readyState === 1) {
+        mongo_db_state = "Connected"
+      } else if (readyState === 2) {
+        mongo_db_state = "Connecting"
+      } else if (readyState === 3) {
+        mongo_db_state = "Disconnecting"
+      }
+      // mongoose.connection.poolSize
+
+      console.log("process.env :", process.env)
+
+      logger.error(JSON.stringify(process.env));
+
+      let text = "1234"
+      let encrypt = cryptojs.AES.encrypt(text, process.env.JWT_SECRET).toString()
+      // encrypt = "U2FsdGVkX18wIs5DOBhZOddShspHwri5Z8KFIXtyHzU="
+      let decrypt = cryptojs.AES.decrypt(encrypt, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8);
+      console.log("encrypt ++ :", encrypt, decrypt)
+  
+      return { status:true, "mongo db state" : mongo_db_state }
+    },
     async login(parent, args, context, info) {
       let start = Date.now()
       let {input} = args
@@ -829,7 +1228,7 @@ export default {
       return {
         status: true,
         data: user,
-        sessionId: await Utils.getSessionId(user?._id, input),
+        sessionId: await Utils.getSession(user?._id, input),
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
@@ -889,7 +1288,7 @@ export default {
 
           let { data } = input
 
-          let user = await Utils.getUserFull({socialId: data.profileObj.googleId, socialType: 'google'});
+          let user = await Utils.getUser({socialId: data.profileObj.googleId, socialType: 'google'});
           if(_.isEmpty(user)){
 
             /*
@@ -906,8 +1305,9 @@ export default {
               password: cryptojs.AES.encrypt( data.profileObj.googleId, process.env.JWT_SECRET).toString(),
               email: data.profileObj.email,
               displayName: data.profileObj.givenName +" " + data.profileObj.familyName ,
-              roles: ['62a2ccfbcf7946010d3c74a4', '62a2ccfbcf7946010d3c74a6'], // anonymous, authenticated
+              roles: [ Constants.AUTHENTICATED ], // authenticated
               isActive: 'active',
+              banks: [],
               image :[{
                 url: data.profileObj.imageUrl,
                 filename: data.profileObj.googleId +".jpeg",
@@ -920,14 +1320,18 @@ export default {
               socialId: data.profileObj.googleId,
               socialObject: JSON.stringify(data)
             }
+
+            console.log("Presave GOOGLE :", newInput)
+            
             user = await Model.User.create(newInput);
           }
-          console.log("GOOGLE :", user)
 
+          user = await Utils.getUserFull({_id: user?._id})
+          console.log("getUserFull #GOOGLE :", user)
           return {
-            status:true,
+            status: true,
             data: user,
-            sessionId: await Utils.getSessionId(user?._id, input),
+            sessionId: await Utils.getSession(user?._id, input),
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }
@@ -1037,7 +1441,7 @@ export default {
               password: cryptojs.AES.encrypt(data.code, process.env.JWT_SECRET).toString(),
               email: github_user.email,
               displayName: github_user.name,
-              roles: ['62a2ccfbcf7946010d3c74a4', '62a2ccfbcf7946010d3c74a6'], // anonymous, authenticated
+              roles: [ Constants.AUTHENTICATED ], // authenticated
               isActive: 'active',
               image :[{
                 url: github_user.avatar_url,
@@ -1059,7 +1463,7 @@ export default {
           return {
             status:true,
             data: user,
-            sessionId: await Utils.getSessionId(user?._id, input),
+            sessionId: await Utils.getSession(user?._id, input),
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }
@@ -1098,7 +1502,7 @@ export default {
               password: cryptojs.AES.encrypt(data.id, process.env.JWT_SECRET).toString(),
               email: data.email,
               displayName: data.name,
-              roles: ['62a2ccfbcf7946010d3c74a4', '62a2ccfbcf7946010d3c74a6'], // anonymous, authenticated
+              roles: [ Constants.AUTHENTICATED ], // authenticated
               isActive: 'active',
               image :[{
                 url: _.isEmpty(data.picture.data) ? "" : data.picture.data.url,
@@ -1140,7 +1544,7 @@ export default {
           return {
             status:true,
             data: user,
-            sessionId: await Utils.getSessionId(user?._id, input),
+            sessionId: await Utils.getSession(user?._id, input),
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }
@@ -1197,8 +1601,8 @@ export default {
     },
 
     async register(parent, args, context, info) {
-      let start = Date.now()
-      let {input} = args
+      let start     = Date.now()
+      let { input } = args
 
       let user = await Utils.getUser({ email: input.email } ) 
       if(!_.isNull(user)) throw new AppError(Constants.ERROR, "EXITING EMAIL")
@@ -1282,8 +1686,6 @@ export default {
 
       return {
         status: true,
-        type,
-        mode,
         data: user,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
@@ -1293,22 +1695,12 @@ export default {
       let start = Date.now()
       let { input } = args        
       let { req } = context
+      let { id, itemId } = input
       
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      let { current_user } =  await Utils.checkAuth(req);
 
-      let { supplierId, itemId, selected } = input
-
-      let supplier = await Utils.getSupplier({ _id: supplierId })
+      let supplier = await Model.Supplier.findById(id);
       if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
-
-      let price       = supplier?.price
-      let balance     = await Utils.getBalance(current_user?._id)
-      let balanceBook = await Utils.getBalanceBook(current_user?._id)
-      if(price > (balance - balanceBook)){
-        console.log("book #[NOT_ENOUGH_BALANCE] : ", price, balance, balanceBook)
-        throw new AppError(Constants.NOT_ENOUGH_BALANCE, 'NOT ENOUGH BALANCE')
-      }
 
       cache.ca_delete(current_user?._id.toString())
       
@@ -1316,75 +1708,56 @@ export default {
       // Start the transaction
       session.startTransaction()
       try {
-        if(_.isNull(await Model.Transition.findOne({ refId: supplier?._id, userId: current_user?._id}))){
-          await Model.Transition.create( { refId: supplier?._id, userId: current_user?._id } )
+        /*
+        ใช้ในกรณี user ต้องการซื้อ ร้านเดิน แต่ต้องการ ซื้อหลายครั้ง
+        เช่น ร้าน A ขายหวย ชุด A1 แล้ว user z ซื้อหวย ชุด A1 ไปแล้วต้องการซื้อ หวยเพิ่มเราจะมองว่าเป็นคนละ Transition เพือให้ง่ายต้องการ manage
+        */
+        let tran = await Model.Transition.findOne({ refId: supplier?._id, userId: current_user?._id, status: Constants.WAIT });
+        if(_.isNull( tran )){
+          tran =  await Model.Transition.create( { refId: supplier?._id, userId: current_user?._id } )
         }
 
-        let { buys } = supplier
-        if(selected == 0){
-          let check =  _.find(buys, (buy)=> buy.itemId == itemId )
-          if(check == undefined){
+        let check =  _.find(supplier?.buys, (buy)=> buy.itemId == itemId && buy.userId.toString() === current_user?._id.toString() )
+        if(check === undefined){
+          let { money_balance } = await Utils.getBalance(current_user?._id)
 
-            await Utils.updateSupplier({ _id: supplierId }, {...supplier._doc, buys: [...buys, {userId: current_user?._id, itemId, selected}] })
-              
-            let newSupplier = await Utils.getSupplier({ _id: supplierId }) 
-
-            // Case current open multi browser
-            pubsub.publish("SUPPLIER_BY_ID", {
-              supplierById: { mutation: "BOOK", data: newSupplier },
-            });
-
-            // Case other people open home page
-            pubsub.publish("SUPPLIERS", {
-              suppliers: { mutation: "BOOK", data: newSupplier },
-            });
-
-            let user = await Utils.getUserFull({_id: current_user?._id}) 
-
-            pubsub.publish("ME", {
-              me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } },
-            });
-
-            // Commit the transaction
-            await session.commitTransaction();
-
-            return {
-              status: true,
-              action: {mode: "BOOK", itemId},
-              data: newSupplier,
-              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-            }
+          if(supplier?.price > money_balance){
+            throw new AppError(Constants.NOT_ENOUGH_BALANCE, 'NOT ENOUGH BALANCE')
           }
-          throw new Error('ALREADY BOOK')
+
+          await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: [...supplier?.buys, {userId: current_user?._id, itemId, transitionId: tran?._id, selected: 0 }] })   
         }else{
-          await Utils.updateSupplier({ _id: supplierId }, {...supplier._doc, buys: _.filter(buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id ) })
+          let buys = _.filter(supplier?.buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id )
+          await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys })   
+        }
+     
+        let newSupplier = await Utils.getSupplier({ _id: id })
 
-          let newSupplier = await Utils.getSupplier({ _id: supplierId })
-          
-          pubsub.publish("SUPPLIER_BY_ID", {
-            supplierById: { mutation: "UNBOOK", data: newSupplier },
-          });
+        // Case current open multi browser
+        pubsub.publish("SUPPLIER_BY_ID", {
+          supplierById: { mutation: "BOOK", data: newSupplier },
+        });
 
-          pubsub.publish("SUPPLIERS", {
-            suppliers: { mutation: "UNBOOK", data: newSupplier },
-          });
+        // Case other people open home page
+        pubsub.publish("SUPPLIERS", {
+          suppliers: { mutation: "BOOK", data: newSupplier },
+        });
 
-          let user = await Utils.getUserFull({_id: current_user?._id }) 
-          pubsub.publish("ME", {
-              me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } 
-            },
-          });
+        let user = await Utils.getUserFull({_id: current_user?._id}) 
 
-          // Commit the transaction
-          await session.commitTransaction();
+        // pubsub.publish("ME", {
+        //   me: { mutation: "BOOK", data: { userId: current_user?._id, data: user } },
+        // });
 
-          return {
-            status: true,
-            action: {mode: "UNBOOK", itemId},
-            data: newSupplier,
-            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          }
-        }  
+        // Commit the transaction
+        await session.commitTransaction();
+
+        return {
+          status: true,
+          user,
+          data: newSupplier,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }
       }catch(error){
         await session.abortTransaction();
         console.log(`book #error : ${error}`)
@@ -1401,37 +1774,21 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
-
-      // let supplier = await Model.Supplier.findById(_id);
-      // if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
-
-      // let buys =  _.map(supplier.buys, (buy)=> buy.userId == current_user?._id.toString() ? {...buy._doc, selected: 1} : buy )
-      // console.log(">>>> buy", buys)
-      // await Model.Supplier.updateOne({ _id }, { buys });
-      // let user = await Utils.getUser({_id: current_user?._id}) 
-      // user =  { ...user, ...await checkBalance(current_user?._id) }
-      // pubsub.publish("ME", {
-      //   me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
-      // });
-      // 
-
-      // let price       = supplier?.price
-      // let balance     = await Utils.getBalance(current_user?._id)
-      // let balanceBook = await Utils.getBalanceBook(current_user?._id)
-      // if(price > (balance - balanceBook)){
-      //   console.log("book #[NOT_ENOUGH_BALANCE] : ", price, balance, balanceBook)
-      //   throw new AppError(Constants.NOT_ENOUGH_BALANCE, 'NOT ENOUGH BALANCE')
-      // }
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED &&
+          Utils.checkRole(current_user) !== Constants.SELLER  ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const session = await mongoose.startSession();
       // Start the transaction
       session.startTransaction()
       try {
-        await Utils.updateSupplier({ _id }, { "$set": { "buys.$[].selected": 1 } }, { arrayFilters: [{ 'buys.$[].userId': current_user?._id }], timestamps: true })
-        await Model.Transition.updateOne( { refId: _id, userId: current_user?._id }, { status: Constants.APPROVED } )
+        let tran = await Model.Transition.findOne({ refId: _id, userId: current_user?._id, status:  Constants.WAIT});
+
+        await Utils.updateSupplier({ _id }, { "$set": { "buys.$[].selected": 1 } }, { arrayFilters: [{ $and: [{'buys.$[].transitionId': tran._id}, { 'buys.$[].userId': current_user?._id }] }], timestamps: true })
+        await Model.Transition.updateOne( { _id: tran._id }, { status: Constants.APPROVED } )
   
+        console.log("buy #process ", tran, _id)
+
         // Commit the transaction
         await session.commitTransaction();
 
@@ -1448,19 +1805,21 @@ export default {
         });
   
         let user = await Utils.getUserFull( {_id: current_user?._id} ) 
-        pubsub.publish("ME", {
-          me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
-        });
+        // pubsub.publish("ME", {
+        //   me: { mutation: "BUY", data: { userId: current_user?._id, data: user } },
+        // });
   
         return {
           status: true,
+          transitionId: tran._id,
           data: supplier,
+          user,
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
 
       }catch(error){
         await session.abortTransaction();
-        console.log(`buy #error : ${error}`)
+        console.log(`buy #error : ${error} - ${ Utils.dumpError(error) }`)
         
         throw new AppError(Constants.SYSTEM_ERROR, error)
       } finally {
@@ -1475,7 +1834,7 @@ export default {
       let { req } = context
 
       let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -1527,16 +1886,16 @@ export default {
       let { input } = args
       let { req } = context
 
-      console.log("supplier :", input)
+      // console.log("supplier :", input)
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated and Authenticated only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && 
+          Utils.checkRole(current_user) != Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       if(input.test){
         let supplier = await Model.Supplier.create(input);
         return {
           status: true,
-          mode: input.mode.toLowerCase(),
           data: supplier,
           executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         }
@@ -1544,9 +1903,7 @@ export default {
 
       switch(input.mode.toLowerCase()){
         case "new":{
-
           cache.ca_delete("length")
-
           let newFiles = [];
           if(!_.isEmpty(input.files)){
         
@@ -1581,7 +1938,6 @@ export default {
         
           return {
             status: true,
-            mode: input.mode.toLowerCase(),
             data: supplier,
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
@@ -1649,7 +2005,6 @@ export default {
 
           return {
             status: true,
-            mode: input.mode.toLowerCase(),
             data: await Utils.getSupplier({ _id: input._id }),
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
@@ -1666,8 +2021,8 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const { createReadStream, filename, encoding, mimetype } = (await input.file).file
 
@@ -1732,7 +2087,8 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -1812,15 +2168,13 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       cache.ca_delete(_id)
 
       let supplier = await Utils.getSupplier({_id})
       if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
-
-      let mode = "follow";
 
       let {follows} = supplier  
       if(!_.isEmpty(follows)){
@@ -1829,19 +2183,16 @@ export default {
           follows = [...follows, {userId: current_user?._id}]
         }else{
           follows = _.filter(follows, (follow)=>!_.isEqual(follow.userId, current_user?._id))
-
-          mode = "unfollow";
         }
       }else{
         follows = [{userId: current_user?._id}]
       }
 
       await Utils.updateSupplier({ _id }, { follows });
-      
+      let data  = await Utils.getSupplier({_id});
       return {
         status: true,
-        mode,
-        data: await Utils.getSupplier({_id}),
+        data,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
@@ -1851,9 +2202,8 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-
-      if( !_.isEqual(Utils.checkRole(current_user), Constants.AMDINISTRATOR) ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( !_.isEqual(Utils.checkRole(current_user), Constants.AMDINISTRATOR) ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       await Promise.all( _.map(input, async(date, weight)=>{
                           let dateLottery =  await Model.DateLottery.findOne({date})
@@ -1871,43 +2221,6 @@ export default {
         data: dateLottery,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
-
-      /*
-      switch(input.mode.toLowerCase()){
-        case "new":{
-          input = {...input, weight: 1}
-
-          console.log("input : ", input )
-
-          let dateLottery = await Model.DateLottery.create(input);
-          
-          return {
-            status: true,
-            mode: input.mode.toLowerCase(),
-            data: dateLottery,
-            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          }
-        }
-
-        case "edit":{
-          let { input } = args
-
-          console.log("edit dateLottery : ", input)
-  
-          let dateLottery = await Model.DateLottery.findOneAndUpdate({ _id: input._id }, input, { new: true });
-          return {
-            status: true,
-            mode: input.mode.toLowerCase(),
-            data: dateLottery,
-            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-          }
-        }
-
-        default:{
-          throw new AppError(Constants.ERROR, 'Other case')
-        }
-      }
-      */
     },
 
     async notification(parent, args, context, info) {
@@ -1917,8 +2230,8 @@ export default {
 
       console.log("notification :", _id)
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied!')
 
       // let supplier = await Model.Supplier.findOne({_id})
       // if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
@@ -1950,8 +2263,8 @@ export default {
       let { req } = context
       let { input } = args
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let comment = await Model.Comment.findOne({ _id: input?._id })
 
@@ -1989,8 +2302,7 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      // if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      await Utils.checkAuth(req);
 
       let newFiles = [];
       if(!_.isEmpty(input.files)){
@@ -2035,8 +2347,8 @@ export default {
       let { _id } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'Authenticated only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let { subscriber } = await Utils.getUserFull({ _id })
       if( _.find(subscriber, (item)=> _.isEqual(item.userId, current_user?._id)) ) {
@@ -2056,10 +2368,41 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
-      let transition = await Model.Transition.findOne({ _id: input?._id })
+      let aggregate = [
+                        { 
+                          $match: { _id: mongoose.Types.ObjectId(input?._id) } 
+                        },
+                        {
+                          $lookup: {
+                            localField: "refId",
+                            from: "deposit",
+                            foreignField: "_id",
+                            as: "deposit"
+                          }
+                        },
+                        {
+                          $unwind: {
+                              path: "$deposit",
+                              preserveNullAndEmptyArrays: false
+                          }
+                        },
+                      ]
+
+      let transition = await Model.Transition.aggregate(aggregate);
+      console.log("adminDeposit #2 ", transition)
+
+      if(_.isEmpty(transition)){
+        return {
+          status: false,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }      
+      }
+
+      transition = transition[0]
+      console.log("adminDeposit #3 ", transition)
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -2067,6 +2410,22 @@ export default {
       try {
         await Model.Transition.updateOne({ _id: input?._id }, { status : input?.status });
 
+        switch(input?.status){
+          case Constants.APPROVED:
+          case Constants.REJECT:{
+            let newInput =  {
+                              user_to_notify: transition.userId,
+                              user_id_approve: current_user?._id,
+                              type: 1,
+                              status: input?.status,
+                              data: transition,
+                              message: input?.message
+                            }
+                            
+            await Model.Notification.create(newInput);
+          }
+        }
+        
         // Commit the transaction
         await session.commitTransaction();
       }catch(error){
@@ -2096,8 +2455,8 @@ export default {
       let { input } = args
       let { req } = context
 
-      let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
 
       let transition = await Model.Transition.findOne({ _id: input?._id })
       
@@ -2127,6 +2486,155 @@ export default {
         mode: input?.status,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }      
+    },
+
+    async manageLottery(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      let result = {input}
+
+      switch(input?.mode.toLowerCase()){
+        case "new":
+        case "edit":{
+          const startDateTime = moment(input.start_date_time);
+          const endDateTime   = moment(input.end_date_time);
+          const diff          = endDateTime.diff(startDateTime);
+          const diffDuration  = moment.duration(diff);
+    
+          if(diffDuration.days() < 5) throw new AppError(Constants.ERROR, 'Date start - end > 5 day')
+          
+          if(input?._id){
+            let newInput =  _.omit(input, ['_id', 'mode']);
+            await Model.ManageLottery.updateOne({ _id: input?._id }, newInput);
+    
+            let data = await Model.ManageLottery.findOne({ _id: input?._id });
+    
+            return  { ...result, 
+                      status: true,
+                      data,
+                      executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+                    }   
+          }else{
+            let newInput  =  _.omit(input, ['mode']);
+            let data      = await Model.ManageLottery.create(newInput);
+    
+            return  {
+                      ...result, 
+                      status: true,
+                      data,
+                      executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+                    }   
+          }
+        }
+        case "delete":{
+          await Model.ManageLottery.deleteOne({_id: mongoose.Types.ObjectId(input?._id)});
+          return  {
+                    ...result, 
+                    status: true,
+                    executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+                  }   
+        }
+      }
+    },
+
+    async forceLogout(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      switch(input?.mode.toLowerCase()){
+        case "all":{
+          await Model.Session.deleteMany({})
+          return  { 
+            status: true,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }  
+        }
+
+        case "id":{
+          await Model.Session.deleteOne({_id: mongoose.Types.ObjectId(input?._id)});
+          return  { 
+            status: true,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }  
+        }
+      }
+      return  { 
+        status: false,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }   
+    },
+
+    async calculateLottery(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      console.log("Calculate lottery :", input)
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+
+      let manageL = await Model.ManageLottery.findOne({_id: mongoose.Types.ObjectId(input?._id)})
+
+      console.log("Calculate lottery manageL :", manageL)
+      if(!_.isNull(manageL)){
+        let _id  =  manageL._id
+        let bon  =  manageL.bon
+        let lang =  manageL.lang
+
+        let bons  = await Model.Supplier.aggregate([
+                                                    { 
+                                                      $match: { 
+                                                                manageLottery: _id,
+                                                                publish: true,
+                                                                type: 0,      //  0: bon, 1: lang
+                                                                kind: 0,      //  0: thai, 1: laos, 2: vietnam
+                                                                buys:{
+                                                                        $elemMatch: {
+                                                                          selected: 1, 
+                                                                          itemId: parseInt(bon),
+                                                                          //  quantity: { $gt: 1 } // Quantity greater than 1
+                                                                        }
+                                                                      }
+                                                              }
+                                                    }
+                                                    ]);
+
+        let langs = await Model.Supplier.aggregate([
+                                                    { 
+                                                      $match: { 
+                                                                manageLottery: _id,
+                                                                publish: true,
+                                                                type: 1,      //  0: bon, 1: lang
+                                                                kind: 0,      //  0: thai, 1: laos, 2: vietnam
+                                                                buys:{
+                                                                        $elemMatch: {
+                                                                          selected: 1, 
+                                                                          itemId: parseInt(lang),
+                                                                          //  quantity: { $gt: 1 } // Quantity greater than 1
+                                                                        }
+                                                                      }
+                                                              }
+                                                    }
+                                                    ]);
+
+        console.log("result all :", bons, langs)
+      }
+     
+      return  { 
+        status: true,
+        data: manageL,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }   
     },
 
     async testNodeCacheSave(parent, args, context, info) {
@@ -2209,7 +2717,508 @@ export default {
         status: true,
         executionTime: `seconds`
       }   
-    }
+    },
+
+    // search(input: SearchInput): JSON
+    async search(parent, args, context, info) {
+      let start = Date.now()
+
+      let { input } = args
+      let { req } = context
+
+      let { TITLE, NUMBER } = input
+
+      let q = _.map(NUMBER.split(","), (v, i)=>{
+                return {
+                          "buys":{
+                            $not:{ $elemMatch : {itemId: parseInt(v)} } 
+                          }
+                        }
+              })
+
+      let suppliers  = await Model.Supplier.aggregate([
+                        { 
+                            $match: { "$and" : q }
+                        },
+                        {
+                          $lookup: {
+                              localField: "ownerId",
+                              from: "user",
+                              foreignField: "_id",
+                              pipeline: [
+                                { $project:{ username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, lastAccess: 1 }}
+                              ],
+                              as: "owner"
+                          }
+                      },
+                      {
+                          $unwind: {
+                                  "path": "$owner",
+                                  "preserveNullAndEmptyArrays": false
+                          }
+                      }
+                      ])
+
+      return {
+        status: true,
+        data: suppliers,
+        total: suppliers?.length,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }   
+    },
+
+    async crypto(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      return {
+        status: true,
+        data: cryptojs.AES.decrypt(input?.encrypt, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8),
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }   
+    },
+
+    /*
+      async createConversation(parent, args, context, info) {
+      try{
+        let {input} = args
+        
+        let currentUser = await User.findById(input.userId);
+        let friend = await User.findById(input.friendId);
+
+        let result =  await Conversation.findOne({ "members.userId": { $all: [ currentUser._id.toString(), input.friendId ] } });
+                        
+        if(result === null){
+          result = await Conversation.create({
+            // name: friend.displayName,
+            lastSenderName: currentUser.displayName,
+            info:"",
+            // avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
+            // avatarName: friend.displayName,
+            senderId: currentUser._id.toString(),
+            status: "available",
+            // unreadCnt: 0,
+            sentTime: Date.now(),
+            // userId: input.friendId,
+            // members: [input.userId, input.friendId],
+            // members: {[input.userId]:{ 
+            //                           name: currentUser.displayName, 
+            //                           avatarSrc: _.isEmpty(currentUser.image) ? "" :  currentUser.image[0].base64,
+            //                           unreadCnt: 0 
+            //                         }, 
+            //           [input.friendId]:{ 
+            //                           name: friend.displayName, 
+            //                           avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
+            //                           unreadCnt: 0 
+            //                         }},
+            members:[
+              { 
+                userId: currentUser._id.toString(),
+                name: currentUser.displayName, 
+                avatarSrc: _.isEmpty(currentUser.image) ? "" :  currentUser.image[0].url,
+                unreadCnt: 0 
+              },
+              {
+                userId: input.friendId,
+                name: friend.displayName, 
+                avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].url,
+                unreadCnt: 0 
+              }
+            ]
+          });
+
+          pubsub.publish("CONVERSATION", {
+            conversation: {
+              mutation: "CREATED",
+              data: result,
+            },
+          });
+        }else{
+          pubsub.publish("CONVERSATION", {
+            conversation: {
+              mutation: "UPDATED",
+              data: result,
+            },
+          });
+        }
+        
+        return result;
+
+      } catch(err) {
+        logger.error(err.toString());
+        return;
+      }
+    },
+    async updateConversation(parent, args, context, info) {
+      try{
+        let {_id, input} = args
+
+        let result = await Conversation.findOneAndUpdate({
+          _id
+        }, input, {
+          new: true
+        })
+
+        pubsub.publish("CONVERSATION", {
+          conversation: {
+            mutation: "UPDATED",
+            data: result,
+          },
+        });
+
+        console.log("updateConversation friend : ", result)
+
+        return result;
+      } catch(err) {
+        logger.error(err.toString());
+        return;
+      }
+    },
+    */
+
+    async conversation(parent, args, context, info) {
+      try{
+        let start = Date.now()
+        let { mode, _id } = args
+        let { req } = context
+
+        let { current_user } =  await Utils.checkAuth(req);
+
+        switch(mode){
+          case "NEW":{
+            break;
+          }
+
+          case "EDIT":{
+            break;
+          }
+
+          case "DELETE":{
+            break;
+          }
+        }
+
+        let friend = await Model.User.findById(mongoose.Types.ObjectId(_id))
+        let conv =  await Model.Conversation.findOne({ "members.userId": { $all: [ current_user._id, mongoose.Types.ObjectId(_id) ] } });            
+              
+        if( _.isNull(conv) ){
+          let input = {
+                        // name: friend.displayName,
+                        lastSenderName: current_user.displayName,
+                        info:"",
+                        // avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
+                        // avatarName: friend.displayName,
+                        senderId: current_user._id,
+                        status: "available",
+                        // unreadCnt: 0,
+                        sentTime: Date.now(),
+                        // userId: input.friendId,
+                        // members: [input.userId, input.friendId],
+                        // members: {[input.userId]:{ 
+                        //                           name: currentUser.displayName, 
+                        //                           avatarSrc: _.isEmpty(currentUser.image) ? "" :  currentUser.image[0].base64,
+                        //                           unreadCnt: 0 
+                        //                         }, 
+                        //           [input.friendId]:{ 
+                        //                           name: friend.displayName, 
+                        //                           avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
+                        //                           unreadCnt: 0 
+                        //                         }},
+                        members:[
+                          { 
+                            userId: current_user._id,
+                            name: current_user.displayName, 
+                            avatarSrc: _.isEmpty(current_user.avatar) ? "" :  current_user.avatar.url,
+                            unreadCnt: 0 
+                          },
+                          {
+                            userId: mongoose.Types.ObjectId(_id),
+                            name: friend.displayName, 
+                            avatarSrc: _.isEmpty(friend.avatar) ? "" :  friend.avatar.url,
+                            unreadCnt: 0 
+                          }
+                        ]
+                      }
+          conv = await Model.Conversation.create(input);
+        }
+
+        console.log("args :", args, friend, conv)
+        return {
+          status: true,
+          data: conv,
+          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+        }   
+
+      } catch(err) {
+        logger.error(err.toString());
+
+        throw new AppError(Constants.ERROR, err.toString())
+      }
+    },
+
+    async message(parent, args, context, info) {
+      let start = Date.now()
+      let { mode, input } = args
+      let { req } = context
+
+      let { current_user } =  await Utils.checkAuth(req);
+
+      console.log("message :", args, current_user)
+
+      if(input.type === "image"){
+        let {payload, files} = input
+
+        let url = [];
+        for (let i = 0; i < files.length; i++) {
+          const { createReadStream, filename, encoding, mimetype } = await files[i];
+          const stream = createReadStream();
+          const assetUniqName = fileRenamer(filename);
+          let pathName = `/app/uploads/${assetUniqName}`;
+          
+          const output = fs.createWriteStream(pathName)
+          stream.pipe(output);
+
+          await new Promise(function (resolve, reject) {
+            output.on('close', () => {
+              resolve();
+            });
+      
+            output.on('error', (err) => {
+              logger.error(err.toString());
+
+              reject(err);
+            });
+          });
+
+          const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+          url.push({ url: urlForArray });
+        }
+
+        input = {...input, payload: _.map(payload, (p, index)=>{ return {...p, src: url[index].url} })}
+        input = _.omit(input, ['files'])
+      }
+
+      let message = await Model.Message.findById(input._id);
+
+      // if(_.isEmpty(result)){
+      input = { ...input, 
+                senderId: current_user?._id, 
+                senderName: current_user?.displayName, 
+                sentTime: Date.now(), 
+                status: "sent",
+                reads: []}
+        
+      message = await Model.Message.create(input);
+      try {
+        let conversation = await Model.Conversation.findById(input.conversationId);
+        if(!_.isEmpty(conversation)){
+          await Model.Conversation.updateOne({ _id: input.conversationId }, { 
+                                                                              senderId: current_user._id,
+                                                                              lastSenderName: current_user.displayName,
+                                                                              info:input.message,
+                                                                              status: "available",
+                                                                              sentTime: Date.now(),
+                                                                            });
+          /*
+          conversation = _.omit({...conversation._doc}, ["_id", "__v"])
+
+          let newMember = _.find(conversation.members, member => member.userId != current_user?._id);
+
+
+          // หาจำนวน unread total = (await Post.find().lean().exec()).length; 
+          // https://www.educative.io/answers/what-is-the-ne-operator-in-mongodb
+          let unreadCnt = (await Model.Message.find({ conversationId: input.conversationId, 
+                                                      senderId: {$all : current_user?._id.toString()}, 
+                                                      status: 'sent',
+                                                      reads: { $nin: [ newMember.userId ] }
+                                                    }).lean().exec()).length; 
+          // หาจำนวน unread
+
+          newMember = {...newMember, unreadCnt}
+          
+          let newMembers = _.map(conversation.members, (member)=>member.userId == newMember.userId ? newMember : member)
+
+          conversation = {...conversation, lastSenderName:current_user?.displayName, info:input.message, sentTime: Date.now(), members: newMembers }
+
+          await Model.Conversation.findOneAndUpdate({ _id : input.conversationId }, conversation, { new: true })
+
+          // let p = pubsub.publish("CONVERSATION", {
+          //   conversation: {
+          //     mutation: "UPDATED",
+          //     data: conversat,
+          //   },
+          // });
+          */
+        }else{
+
+          let newMember = _.find(conversation.members, member => member.userId != current_user?._id);
+          let friend = await Model.User.findById(mongoose.Types.ObjectId(newMember.userId))
+          let input = {
+            senderId: current_user._id,
+            lastSenderName: current_user.displayName,
+            info:input.message,
+            status: "available",
+            sentTime: Date.now(),
+            members:[
+              { 
+                userId: current_user._id,
+                name: current_user.displayName, 
+                avatarSrc: _.isEmpty(current_user.avatar) ? "" :  current_user.avatar?.url,
+                unreadCnt: 0 
+              },
+              {
+                userId: mongoose.Types.ObjectId(_id),
+                name: friend.displayName, 
+                avatarSrc: _.isEmpty(friend.avatar) ? "" :  friend.avatar?.url,
+                unreadCnt: 0 
+              }
+            ]
+          }
+          await Model.Conversation.create(input);
+        }
+      } catch (err) {
+        console.log("conversation err:" , err)
+      }
+
+        // pubsub.publish('MESSAGE', {
+        //   message:{
+        //     mutation: 'CREATED',
+        //     data: result
+        //   }
+        // });
+      // }
+
+      // mode: MessageMode!, conversationId: ID!
+      // console.log("message : ", input)
+      // let { currentUser } = context
+
+      // if(_.isEmpty(currentUser)){
+      //   return;
+      // }
+
+      /*
+      console.log("addMessage : ", args)
+
+      let { userId, conversationId, input } = args
+
+
+      let { req } = context
+
+      let authorization = await checkAuthorization(req);
+      let { status, code, current_user } =  authorization
+
+
+      ///////////////////////
+      if(input.type === "image"){
+        let {payload, files} = input
+
+        let url = [];
+        for (let i = 0; i < files.length; i++) {
+          const { createReadStream, filename, encoding, mimetype } = await files[i];
+          const stream = createReadStream();
+          const assetUniqName = fileRenamer(filename);
+          let pathName = `/app/uploads/${assetUniqName}`;
+          
+
+          const output = fs.createWriteStream(pathName)
+          stream.pipe(output);
+
+          await new Promise(function (resolve, reject) {
+            output.on('close', () => {
+              resolve();
+            });
+      
+            output.on('error', (err) => {
+              logger.error(err.toString());
+
+              reject(err);
+            });
+          });
+
+          const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+          url.push({ url: urlForArray });
+        }
+
+        input = {...input, payload: _.map(payload, (p, index)=>{ return {...p, src: url[index].url} })}
+        input = _.omit(input, ['files'])
+      }
+
+      /////////////////////////
+
+      let result = await Message.findById(input._id);
+
+      
+      // let currentUser = await User.findById(userId);
+      
+      if(_.isEmpty(result)){
+        input = { ...input, 
+                  conversationId, 
+                  senderId: current_user?._id.toString(), 
+                  senderName: current_user?.displayName, 
+                  sentTime: Date.now(), 
+                  status: "sent",
+                  reads: []}
+         
+        result = await Message.create(input);
+
+        try {
+          let conversation = await Conversation.findById(conversationId);
+  
+          if(!_.isEmpty(conversation)){
+            conversation = _.omit({...conversation._doc}, ["_id", "__v"])
+  
+            let newMember = _.find(conversation.members, member => member.userId != current_user?._id.toString());
+  
+  
+            // หาจำนวน unread total = (await Post.find().lean().exec()).length; 
+            // https://www.educative.io/answers/what-is-the-ne-operator-in-mongodb
+            let unreadCnt = (await Message.find({ conversationId, 
+                                                  senderId: {$all : current_user?._id.toString()}, 
+                                                  status: 'sent',
+                                                  reads: { $nin: [ newMember.userId ] }}).lean().exec()).length; 
+            // หาจำนวน unread
+  
+            newMember = {...newMember, unreadCnt}
+            
+            let newMembers = _.map(conversation.members, (member)=>member.userId == newMember.userId ? newMember : member)
+  
+            conversation = {...conversation, lastSenderName:current_user?.displayName, info:input.message, sentTime: Date.now(), members: newMembers }
+  
+            let conversat = await Conversation.findOneAndUpdate({ _id : conversationId }, conversation, { new: true })
+  
+            let p = pubsub.publish("CONVERSATION", {
+              conversation: {
+                mutation: "UPDATED",
+                data: conversat,
+              },
+            });
+          }
+        } catch (err) {
+          console.log("conversation err:" , err)
+        }
+
+        pubsub.publish('MESSAGE', {
+          message:{
+            mutation: 'CREATED',
+            data: result
+          }
+        });
+      }
+      */
+
+      let conversation = await Model.Conversation.findById(input.conversationId);
+
+      pubsub.publish('MESSAGE', { message:{ mutation: 'CREATED', data: message } });
+      pubsub.publish("CONVERSATION", { conversation: { mutation: "UPDATED", data: conversation } });
+
+      return {
+        status: true,
+        data: message,
+        conversation,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }   
+    },
   },
   Subscription:{
     subscriptionMe: {
@@ -2347,6 +3356,85 @@ export default {
             default:
               return false;
           }
+        }
+      )
+    },
+    subConversation: {
+      resolve: (payload) =>{
+        return payload.conversation
+      },
+      subscribe: withFilter((parent, args, context, info) => {
+          return pubsub.asyncIterator(["CONVERSATION"])
+        }, (payload, variables, context) => {
+          let {mutation, data} = payload.conversation
+          
+          // let {currentUser} = context
+          // if(_.isEmpty(currentUser)){
+          //   return false;
+          // }
+          // console.log("CONVERSATION: ", payload)
+          switch(mutation){
+            case "CREATED":
+            case "UPDATED":
+            case "DELETED":
+              {
+                return _.findIndex(data.members, (o) => o.userId == variables.userId ) > -1
+              }
+            case "CONNECTED":
+            case "DISCONNECTED":{
+              // console.log("CONVERSATION :::: ", mutation, data)
+            }
+          }
+
+          return false;
+          
+        }
+      )
+    },
+    subMessage: {
+      resolve: (payload) =>{
+        return payload.message
+      },
+      subscribe: withFilter((parent, args, context, info) => {
+          return pubsub.asyncIterator(["MESSAGE"])
+        }, async (payload, variables, context) => {
+          let {mutation, data} = payload.message
+
+          // if(variables.conversationId === data.conversationId &&  variables.userId !== data.senderId) {
+            
+          //   let conversation = await Model.Conversation.findById(variables.conversationId);
+
+          //   // console.log("MESSAGE ::", variables, data)
+
+          //   if(!_.isEmpty(conversation)){
+
+          //     // update all message to read
+          //     await Message.updateMany({
+          //         conversationId: variables.conversationId, 
+          //         senderId: { $nin: [ variables.userId ] },
+          //         status: 'sent',
+          //         reads: { $nin: [ variables.userId ] }
+          //       }, 
+          //       // {$set: {reads: [ userId ] }}
+          //       { $push: {reads: variables.userId } }
+          //     )
+
+          //     // update conversation  unreadCnt = 0
+          //     // conversation = _.omit({...conversation._doc}, ["_id", "__v"])
+          
+          //     // conversation = {...conversation, members: _.map(conversation.members, (member)=>member.userId == variables.userId ? {...member, unreadCnt:0} : member) }
+
+          //     // let newConversation = await Model.Conversation.findOneAndUpdate({ _id : variables.conversationId }, conversation, { new: true })
+
+          //     // pubsub.publish("CONVERSATION", {
+          //     //   conversation: {
+          //     //     mutation: "UPDATED",
+          //     //     data: newConversation,
+          //     //   }
+          //     // });
+          //   }
+          // }
+          return data.conversationId === variables.conversationId && data.senderId !== variables.userId
         }
       )
     },

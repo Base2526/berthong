@@ -1,7 +1,7 @@
 export const TRANSLATIONS_TH = {
     welcome:"สวัสดีชาวโลก",
 
-    welcome_to_berthong: "เข้าสู่ระบบ Berthong",
+    welcome_to_berthong: "ยินดีต้อนรับเข้าสู่ระบบ Berthong",
     label_keyword_search: "คำค้น",
 
     home: "หน้าหลัก",
@@ -67,7 +67,9 @@ export const TRANSLATIONS_TH = {
 
     name: "ชื่อ",
     username: "ชื่อผู้ใช้งาน",
+    username_or_email: "ชื่อผู้ใช้งาน หรือ อีเมลล์",
     password: "รหัสผ่าน",
+    confirm_password: "ยืนยันรหัสผ่าน",
 
     confirm_delete: "ยืนยันการลบ",
     close: "ปิด",
@@ -92,5 +94,24 @@ export const TRANSLATIONS_TH = {
     things: "สิ่งของ",
     etc: "อื่นๆ",
 
-    all_result: "ผลลัพธ์ทั้งหมด"
+    all_result: "ผลลัพธ์ทั้งหมด",
+
+    advance_search: "ค้นหา",
+
+    all_products: "สินค้าทั้งหมด",
+
+    balance: "ยอดเงิน",
+
+    NOT_ENOUGH_BALANCE: "ยอดเงินไม่พอ",
+
+    USER_NOT_FOUND: "ไม่พบ ชื่อผู้ใช้งาน หรือ อีเมลล์ อยู่ในระบบ",
+    PASSWORD_WRONG: "รหัสผ่านไม่ถูกต้อง",
+    FORCE_LOGOUT: "กรุณาเข้าสู่ระบบใหม่อีกครั้ง",
+
+    wallet: "กระเป๋าเงิน",
+
+    deposit: "ฝากเงิน",
+    subscribes: "ติดตาม",
+
+    all_message: "ข้อความทั้งหมด",
 };

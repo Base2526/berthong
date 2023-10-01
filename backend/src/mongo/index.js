@@ -138,7 +138,7 @@ const modelExists =()=>{
     if (result.length > 0) {
       // console.log('Found Model.Conversation');
     } else {
-      let newConversation = new Model.Conversation({});
+      let newConversation = new Model.Conversation({senderId: mongoose.Types.ObjectId()});
       await newConversation.save();
       await Model.Conversation.deleteMany({})
     }
@@ -177,7 +177,7 @@ const modelExists =()=>{
   Model.Notification.find({}, async(err, result)=> {
     if (result.length > 0) {
     } else {
-      let newNotification = new Model.Notification({ user_to_notify: new mongoose.Types.ObjectId() });
+      let newNotification = new Model.Notification({ user_to_notify: new mongoose.Types.ObjectId(), user_id_approve: new mongoose.Types.ObjectId() });
       await newNotification.save();
       await Model.Notification.deleteMany({})
     }
@@ -185,7 +185,6 @@ const modelExists =()=>{
 
   Model.Phone.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Model.Phone');
     } else {
       let newPhone = new Model.Phone({});
       await newPhone.save();
@@ -195,7 +194,6 @@ const modelExists =()=>{
 
   Model.BasicContent.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Model.BasicContent');
     } else {
       let newBasicContent = new Model.BasicContent({});
       await newBasicContent.save();
@@ -205,14 +203,13 @@ const modelExists =()=>{
 
   Model.Supplier.find({}, async(err, result)=> {
     if (result.length > 0) {
-      // console.log('Found Model.BasicContent');
     } else {
       let newSupplier = new Model.Supplier({title: "title", 
-                                      price: 0, 
-                                      priceUnit: 0, 
-                                      condition: 1,
-                                      dateLottery: new mongoose.Types.ObjectId(),
-                                      ownerId: new mongoose.Types.ObjectId() });
+                                            price: 0, 
+                                            priceUnit: 0, 
+                                            condition: 1,
+                                            manageLottery: new mongoose.Types.ObjectId(),
+                                            ownerId: new mongoose.Types.ObjectId() });
       await newSupplier.save();
       await Model.Supplier.deleteMany({})
     }
@@ -283,6 +280,16 @@ const modelExists =()=>{
       await Model.Test.deleteMany({})
     }
   });
+
+
+  Model.ManageLottery.find({}, async(err, result)=> {
+    if (result.length > 0) {
+    } else {
+      let newManageLottery = new Model.ManageLottery({ title: "xxx", start_date_time: new Date(), end_date_time: new Date() });
+      await newManageLottery.save();
+      await Model.ManageLottery.deleteMany({})
+    }
+  });
 }
 
 // TODO: initial and connect to MongoDB
@@ -300,6 +307,7 @@ mongoose.connect(
     useCreateIndex: true,
     useUnifiedTopology: true,
     serverSelectionTimeoutMS: 100000, // Defaults to 30000 (30 seconds)
+    poolSize: 100, // Set the maximum number of connections in the connection pool
   }
 );
 

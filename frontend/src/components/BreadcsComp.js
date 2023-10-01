@@ -14,7 +14,7 @@ import {
 } from 'react-icons/md';
 
 import { getHeaders, checkRole } from "../util"
-import { queryFriendProfile } from "../gqlQuery"
+import { queryFriendProfile } from "../apollo/gqlQuery"
 import * as Constants from "../constants"
 
 const BreadcsComp = (props) => {
@@ -60,6 +60,13 @@ const BreadcsComp = (props) => {
         return [<Typography key="0" color="text.primary"><HomeIcon size={18}/>{t("home")}</Typography>]
       }
 
+      case "/register":{
+        return [  
+                  <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18}/> {t("home")}</MuiLink>,
+                  <Typography key="1" color="text.primary">สมัครสมาชิก</Typography>
+                ]
+      }
+
       case "/d":{
         return [  
                   <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18}/> {t("home")}</MuiLink>,
@@ -67,38 +74,38 @@ const BreadcsComp = (props) => {
                 ]
       }
 
-      case "/admin-withdraws":{
+      case "/withdraws":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายการถอดเงินรออนุมัติ</Typography>
         ]
       }
 
-      case "/admin-deposits":{
+      case "/deposits":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายการฝากเงินรออนุมัติ</Typography>
         ]
       }
 
-      case "/suppliers":{
-        switch(checkRole(user)){
-          case Constants.AMDINISTRATOR:{
+      case "/lotterys":{
+        // switch(checkRole(user)){
+        //   case Constants.AMDINISTRATOR:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">รายการสินค้าทั้งหมด</Typography>
+              <Typography key="1" color="text.primary">รายการหวยทั้งหมด</Typography>
             ]
-          }
-          case Constants.AUTHENTICATED:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">รายการสินค้า</Typography>
-            ]
-          }
-        }
+        //   }
+        //   case Constants.AUTHENTICATED:{
+        //     return [  
+        //       <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+        //       <Typography key="1" color="text.primary">รายการหวยทั้งหมด</Typography>
+        //     ]
+        //   }
+        // }
       }
 
-      case "/admin-users":{
+      case "/users":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">รายชื่อบุคคลทั้งหมด</Typography>
@@ -108,12 +115,10 @@ const BreadcsComp = (props) => {
       case "/user":{
         switch(checkRole(user)){
           case Constants.AMDINISTRATOR:{
-
             const { mode, id } = location.state
-
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/users">{t("รายชื่อบุคคลทั้งหมด")}</MuiLink>,
+              // <MuiLink key="1" component={Link} to="/users">{t("รายชื่อบุคคลทั้งหมด")}</MuiLink>,
               <Typography key="2" color="text.primary">{ _.isEqual(mode, "edit") ? "แก้ไข" : "" } โปรไฟล์</Typography>
             ]
           }
@@ -133,22 +138,20 @@ const BreadcsComp = (props) => {
         ]
       }
 
-      case "/supplier":{
+      case "/lottery":{
         let { state } = location
         switch(state?.mode){
           case "new":{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/suppliers">{t("รายการสินค้าทั้งหมด")}</MuiLink>,
-              <Typography key="2" color="text.primary">เพิ่มสินค้าใหม่</Typography>
+              <Typography key="2" color="text.primary">เพิ่มหวยใหม่</Typography>
             ]
           }
 
           case "edit":{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon /> {t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/suppliers"> {t("รายการสินค้าทั้งหมด")}</MuiLink>,
-              <Typography key="2" color="text.primary">แก้ไขสินค้า</Typography>
+              <Typography key="2" color="text.primary">แก้ไขหวย</Typography>
             ]
           }
         }
@@ -169,63 +172,60 @@ const BreadcsComp = (props) => {
       }
 
       case "/p":{
-        switch(checkRole(user)){
-          case Constants.AMDINISTRATOR:{
+        // switch(checkRole(user)){
+        //   case Constants.AMDINISTRATOR:{
             return [  
               <MuiLink key="0" component={Link} to="/"><HomeIcon size={18}/>{t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/users">รายชื่อบุคคลทั้งหมด</MuiLink>,
               <Typography key="2" color="text.primary">โปรไฟล์ {loadingProfile ? <LinearProgress/> : profile?.displayName}</Typography>
             ]
-          }
-          case Constants.AUTHENTICATED:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">โปรไฟล์ {loadingProfile ? <LinearProgress/> : profile?.displayName}</Typography>
-            ]
-          }
-        }
+          // }
+        //   case Constants.AUTHENTICATED:{
+        //     return [  
+        //       <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+        //       <Typography key="1" color="text.primary">โปรไฟล์ {loadingProfile ? <LinearProgress/> : profile?.displayName}</Typography>
+        //     ]
+        //   }
+        // }
+      }
+      case "/all-deposits":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="2" color="text.primary">แจ้งฝากเงินทั้งหมด</Typography>
+        ]
       }
 
       case "/deposit":{
-        switch(checkRole(user)){
-          case Constants.AMDINISTRATOR:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/deposits">{t("รายการ แจ้งฝากเงิน")}</MuiLink>,
-              <Typography key="2" color="text.primary">แจ้งฝากเงิน</Typography>
-            ]
-          }
-          case Constants.AUTHENTICATED:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">แจ้งฝากเงิน</Typography>
-            ]
-          }
-        }
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">แจ้งฝากเงิน</Typography>
+        ]
+      }
+
+      case "/all-withdraws":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="2" color="text.primary">แจ้งถอดเงินทั้งหมด</Typography>
+        ]
       }
 
       case "/withdraw":{
-        switch(checkRole(user)){
-          case Constants.AMDINISTRATOR:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <MuiLink key="1" component={Link} to="/withdraws">{t("รายการ แจ้งถอดเงิน")}</MuiLink>,
-              <Typography key="2" color="text.primary">แจ้งถอดเงิน</Typography>
-            ]
-          }
-          case Constants.AUTHENTICATED:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">แจ้งถอดเงิน</Typography>
-            ]
-          }
-        }
-      }
-
-      case "/admin-date-lotterys":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-          <Typography key="1" color="text.primary">วันออกหวยทั้งหมด</Typography>
+          <Typography key="1" color="text.primary">แจ้งถอดเงิน</Typography>
+        ]
+      }
+
+      case "/manage-lottery":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">จัดการหวย</Typography>
+        ]
+      }
+
+      case "/manage-lotterys":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">จัดการหวยทั้งหมด</Typography>
         ]
       }
 
@@ -267,7 +267,6 @@ const BreadcsComp = (props) => {
       case "/bank":{
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-          // <MuiLink key="0" component={Link} to="/banks">รายการ บัญชีธนาคาร</MuiLink>,
           <Typography key="1" color="text.primary">เพิ่ม บัญชีธนาคาร</Typography>
         ]
       }
@@ -276,6 +275,20 @@ const BreadcsComp = (props) => {
         return [  
           <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
           <Typography key="1" color="text.primary">{t("profile")}</Typography>
+        ]
+      }
+
+      case "/messages":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">{t("all_message")}</Typography>
+        ]
+      }
+
+      case "/dblog":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">{t("DB Log")}</Typography>
         ]
       }
    

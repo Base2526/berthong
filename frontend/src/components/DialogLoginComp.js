@@ -27,7 +27,8 @@ import {
   TextField,
   Button
 } from "@material-ui/core";
-import line from '../line.svg';
+import line from '../images/line.svg';
+import logo from "../images/logo_4.png";
 
 const DialogLoginComp = (props) => {
   const { t } = useTranslation();
@@ -38,7 +39,7 @@ const DialogLoginComp = (props) => {
 
   let { onComplete, onClose, open, updateProfile, onMutationLogin, onMutationLoginWithSocial } = props;
   let [input, setInput]   = useState({ username: "",  password: ""});
-
+  
   useEffect(()=>{
     const initClient = () =>{
       gapi.client.init({
@@ -50,14 +51,20 @@ const DialogLoginComp = (props) => {
   }, [])
 
   const callbackFacebook = (response) => {
-    if(!_.has(response, "status")){
-      onMutationLoginWithSocial({ variables: { input: { authType: "FACEBOOK",  data: response, deviceAgent: JSON.stringify(deviceData)  }} })
-    }
+
+    console.log("callbackFacebook :", response)
+    // if(!_.has(response, "status")){
+    //   onMutationLoginWithSocial({ variables: { input: { authType: "FACEBOOK",  data: response, deviceAgent: JSON.stringify(deviceData)  }} })
+    // }
   }
 
   // https://github.com/Sivanesh-S/react-google-authentication/blob/master/src/utils/refreshToken.js
   const onGoogleSuccess = async(response) => {
-    onMutationLoginWithSocial({ variables: { input: { authType: "GOOGLE",  data: {...response, ...await response.reloadAuthResponse()}, deviceAgent: JSON.stringify(deviceData)  }} })
+    let authResponse = await response.reloadAuthResponse()
+    let data = {...response, ...authResponse}
+
+    console.log("onGoogleSuccess :", response, authResponse);
+    onMutationLoginWithSocial({ variables: { input: { authType: "GOOGLE",  data, deviceAgent: JSON.stringify(deviceData)  }} })
   };
 
   const onGoogleFailure = (response) =>{
@@ -95,11 +102,10 @@ const DialogLoginComp = (props) => {
               <Dialog open={open}>
                 <DialogTitle className="text-center">
                   <img
-                    style={{width:"160px",height:"130px",borderRadius:"50%"}}
-                    src={"https://dynamic.brandcrowd.com/asset/logo/a673c079-5c9d-45b2-bd75-e739acca30aa/logo-search-grid-1x?logoTemplateVersion=1&v=637637394778200000&text=Berthong"}
+                    className="logo1"
+                    src={logo}
                     alt="Avatar"
                   />
-                  {/* <div className="fnt text-center">{t("welcome_to_berthong")}</div>   */}
                   <IconButton className="login-button-close" onClick={(e)=>onClose(false)}>
                     <AiOutlineCloseCircle />
                   </IconButton> 
@@ -110,14 +116,14 @@ const DialogLoginComp = (props) => {
                       <div className="row">
                         <div className="col-12">
                           <div className="row">
-                              <div className="col-12 pl-2 pr-2 pb-2">
-                                <TextField
-                                  id="standard-basic"
-                                  label={t("username")}
-                                  variant="filled"
-                                  name="username" value={input.username} onChange={onInputChange} required
-                                />
-                              </div>
+                            <div className="col-12 pl-2 pr-2 pb-2">
+                              <TextField
+                                id="standard-basic"
+                                label={t("username_or_email")}
+                                variant="filled"
+                                name="username" value={input.username} onChange={onInputChange} required
+                              />
+                            </div>
                           </div>
                           <div className="row">
                               <div className="col-12 pl-2 pr-2 pb-2">
@@ -134,58 +140,58 @@ const DialogLoginComp = (props) => {
                             <div className="col-12 pb-2 text-center">
                               <div className="row">
                               <div className="col-6 text-center">
-                                <Button variant="contained" className="btn-confirm" type="submit" style={{width:"100%"}}>
-                                {t("login")}
-                                </Button>
+                                <Button variant="contained" className="btn-confirm" type="submit" style={{width:"100%"}}>{t("login")}</Button>
                               </div>
                               <div className="col-6 text-center">
-                                <Button disabled variant="contained" className="btn-dis" style={{width:"100%"}}>
-                                    สมัครสมาชิก
-                                </Button>
+                                <Button disabled={false} variant="contained" className="btn-dis" style={{width:"100%"}} 
+                                  onClick={(evt)=>{
+                                    onClose(false)
+                                    navigate("/register")
+                                  }}>สมัครสมาชิก</Button>
                               </div>
                               </div>
                             </div>
                           </div>
                           <div className="row">
                             <div className="col-lg-12 col-12 pb-2 text-center" style={{justifyContent:"center"}}>
-                              <a class="d-flex btn btn-social btn-facebook" >
-                              <FacebookIcon/>
-                              <span className="font14" style={{marginLeft:"20px"}}>Sign in with Facebook</span>
-                              </a>
+                            
+                              <FacebookLogin
+                                appId={facebookAppId}
+                                autoLoad={false}
+                                callback={callbackFacebook}
+                                render={renderProps => (
+                                  // <button onClick={renderProps.onClick}>This is my custom FB button</button>
+                                  <a onClick={renderProps.onClick} class="d-flex btn btn-social btn-facebook" >
+                                    <FacebookIcon/>
+                                    <span className="font14" style={{marginLeft:"20px"}}>Sign in with Facebook</span>
+                                  </a>
+                                )}
+                              />
                             </div>
                             <div className="col-lg-12 col-12 pb-2 text-center" style={{justifyContent:"center"}}>
-                              <a class="d-flex btn btn-social btn-google" >
-                              <GoogleIcon/>
-                              <span className="font14" style={{marginLeft:"20px"}}>Sign in with Google</span>
-                              </a>
+                              <GoogleLogin
+                                clientId={googleClientId}
+                                render={renderProps => (
+                                  <a class="d-flex btn btn-social btn-google" onClick={renderProps.onClick} >
+                                    <GoogleIcon/>
+                                    <span className="font14" style={{marginLeft:"20px"}}>Sign in with Google</span>
+                                  </a>
+                                )}
+                                buttonText="Login"
+                                onSuccess={onGoogleSuccess}
+                                onFailure={onGoogleFailure}
+                              />
                             </div>
+                            
+                            {/* 
                             <div className="col-lg-12 col-12pb-2 text-center" style={{justifyContent:"center"}}>
                               <a class="d-flex btn btn-social btn-line" >
                               <img style={{width:"24px"}} src={line} />
                               <span className="font14" style={{marginLeft:"20px"}}>Sign in with Line</span>
                               </a>
-                            </div>
+                            </div>  
+                            */}
                           </div>
-
-
-
-
-                          {/* <div className="d-flex form-input">
-                            <label>{t("username")}</label>
-                            <div className="position-relative wrapper-form">
-                              <input type="text" className="input-bl-form" name="username" value={input.username} onChange={onInputChange} required/>
-                              <AccountCircle />
-                            </div>
-                          
-                          </div>
-                          <div className="d-flex form-input">
-                            <label>{t("password")}</label>
-                            <div className="position-relative wrapper-form">
-                              <input type="password" className="input-bl-form" name="password" value={input.password} onChange={onInputChange} required />
-                              <LockIcon />
-                            </div>
-                          </div>
-                          <button type="submit">{t("login")}</button> */}
                         </div>
                       </div>
                     </form>

@@ -15,7 +15,7 @@ import { useTranslation } from "react-i18next";
 import _ from "lodash"
 
 import { getHeaders } from "../util"
-import { queryBanks } from "../gqlQuery"
+import { queryBanks } from "../apollo/gqlQuery"
 
 const BankInputField = (props) => {
   const location = useLocation();

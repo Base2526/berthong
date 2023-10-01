@@ -6,6 +6,7 @@ import { ToastContainer } from 'react-toastify';
 import { CDBSidebar } from "cdbreact";
 import clsx from "clsx";
 import { makeStyles, useTheme, withStyles } from "@material-ui/core/styles";
+import { useTranslation } from "react-i18next";
 import {
   ListItemText,
   ListItemIcon,
@@ -29,8 +30,10 @@ import {
   Adjust as AdjustIcon,
   AlternateEmail as AlternateEmailIcon,
   AllOut as AllOutIcon,
-  Assistant as AssistantIcon
+  Assistant as AssistantIcon,
+  AddTask as AddTaskIcon
 } from '@mui/icons-material';
+import LinearProgress from '@mui/material/LinearProgress';
 import {
   FiLogOut as LogoutIcon,
 } from 'react-icons/fi';
@@ -68,52 +71,60 @@ import {
   MenuItem
 } from "@mui/material";
 import {
-  GrContactInfo as GrContactInfoIcon
-} from "react-icons/gr"
+  HiChatBubbleLeftRight as HiChatBubbleLeftRightIcon
+} from "react-icons/hi2"
 import {
   SlUserFollowing
 } from "react-icons/sl"
+import {
+  BiStoreAlt
+} from "react-icons/bi"
 import _ from "lodash"
-import LoadingOverlay from 'react-loading-overlay';
 
-import TaxonomyBankPage from "./TaxonomyBankPage";
-import TaxonomyBanksPage from "./TaxonomyBanksPage";
-import BookBuysPage from "./BookBuysPage";
-import DateLotteryPage from "./DateLotteryPage";
-import DateLotterysPage from "./DateLotterysPage";
-import DepositPage from "./DepositPage";
-import AdminDepositsPage from "./AdminDepositsPage";
-import AdminWithdrawsPage from "./AdminWithdrawsPage";
+import TaxonomyBankPage from "./pages/TaxonomyBankPage";
+import TaxonomyBanksPage from "./pages/TaxonomyBanksPage";
+import BookBuysPage from "./pages/BookBuysPage";
+import ManageLotteryPage from "./pages/ManageLotteryPage";
+import ManageLotterysPage from "./pages/ManageLotterysPage";
+import DepositPage from "./pages/DepositPage";
+import AdminDepositsPage from "./pages/AdminDepositsPage";
+import AdminWithdrawsPage from "./pages/AdminWithdrawsPage";
 import DetailPage from "./pages/detail/Detail";
-import HistoryTransitionsPage from "./HistoryTransitionsPage";
-import HomePage from "./HomePage";
-import AdminHomePage from "./AdminHomePage";
-import LoginPage from "./LoginPage";
-import MePage from "./MePage";
-import BankPage from "./BankPage";
-import BanksPage from "./BanksPage";
+import HistoryTransitionsPage from "./pages/HistoryTransitionsPage";
+import HomePage from "./pages/HomePage";
+import AdminHomePage from "./pages/AdminHomePage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import MePage from "./pages/MePage";
+import BankPage from "./pages/BankPage";
+import BanksPage from "./pages/BanksPage";
 import { editedUserBalace, editedUserBalaceBook } from "./redux/actions/auth";
-import SupplierPage from "./SupplierPage";
-import FriendPage from "./FriendPage";
-import SuppliersPage from "./SuppliersPage";
-import UserPage from "./UserPage";
-import UsersPage from "./UsersPage";
-import { checkRole, getHeaders, handlerErrorApollo, showToast} from "./util";
-import WithdrawPage from "./WithdrawPage";
+import LotteryPage from "./pages/LotteryPage";
+import FriendPage from "./pages/FriendPage";
+import LotterysPage from "./pages/LotterysPage";
+import UserPage from "./pages/UserPage";
+import UsersPage from "./pages/UsersPage";
+import { checkRole, getHeaders, handlerErrorApollo, showToast, setCookie, getCookie} from "./util";
+import WithdrawPage from "./pages/WithdrawPage";
 import BreadcsComp from "./components/BreadcsComp";
 import DialogLogoutComp from "./components/DialogLogoutComp";
 import DialogDeleteBankComp from "./components/DialogDeleteBankComp";
-import NotificationsPage from "./NotificationsPage";
-import LoginWithLine from "./LoginWithLine";
+import NotificationsPage from "./pages/NotificationsPage";
+import LoginWithLinePage from "./pages/LoginWithLinePage";
 import LightboxComp from "./components/LightboxComp";
 import DialogLoginComp from "./components/DialogLoginComp";
-import BookMarksPage from "./BookMarksPage";
-import ContactUsPage from "./ContactUsPage";
-import SubscribesPage from "./SubscribesPage";
-import Footer from "./Footer";
-import DblogPage from "./DblogPage";
-import AutoGenerationContent from "./AutoGenerationContent"
+import BookMarksPage from "./pages/BookMarksPage";
+import ContactUsPage from "./pages/ContactUsPage";
+import SubscribesPage from "./pages/SubscribesPage";
+import Footer from "./pages/FooterPage";
+import DblogPage from "./pages/DblogPage";
+import AutoGenerationContent from "./auto/AutoGenerationContent"
+import ProducersPage from "./pages/ProducersPage"
+import DepositsPage from "./pages/DepositsPage"
+import WithdrawsPage from "./pages/WithdrawsPage"
+import MessagePage from "./message/MessagePage";
 
+ 
 import { queryNotifications, 
           mutationFollow, 
           querySuppliers, 
@@ -128,7 +139,7 @@ import { queryNotifications,
           mutationLoginWithSocial,
           mutationWithdraw,
           mutationBank,
-          mutationSupplier,
+          mutationLottery,
           mutationNotification,
           mutationDeposit,
           queryBanks,
@@ -140,11 +151,19 @@ import { queryNotifications,
           queryDateLotterys, 
           queryDateLotteryById,
           mutationAdminDeposit,
-          mutationAdminWithdraw
-        } from "./gqlQuery"
+          mutationAdminWithdraw,
+          queryBookBuyTransitions,
+
+
+          queryConversations,
+
+          mutationConversation
+        } from "./apollo/gqlQuery"
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
+
+import logo from "./images/logo_4.png";
 
 let { REACT_APP_SITE_TITLE } = process.env
 
@@ -234,50 +253,45 @@ const ListItem = withStyles({
 })(MuiListItem);
 
 const App =(props) =>{
-  const client = useApolloClient();
-  const location = useLocation();
-  const navigate = useNavigate();
-  let intervalPing = useRef(null);
+  let { t } = useTranslation();
+  let location = useLocation();
+  let navigate = useNavigate();
   let [openMenuProfile, setOpenMenuProfile] = useState(null);
-  const classes = useStyles();
-  const theme = useTheme();
-  const [open, setOpen] = useState(false);
-  const [openDialogLogout, setOpenDialogLogout] = useState(false);
-  const [openDialogDeleteBank, setOpenDialogDeleteBank] = useState({ open: false, id: 0});
-  const [dialogLogin, setDialogLogin] = useState(false);
-  const [lightbox, setLightbox]       = useState({ isOpen: false, photoIndex: 0, images: [] });
-  let [notifications, setNotifications] =useState([])
-  let [search, setSearch] = useState(Constants.INIT_SEARCH)
-  let { ws, user, updateProfile, editedUserBalace, editedUserBalaceBook, logout } = props
+  let classes = useStyles();
+  let theme = useTheme();
+  let [open, setOpen] = useState(false);
+  let [openDialogLogout, setOpenDialogLogout] = useState(false);
+  let [openDialogDeleteBank, setOpenDialogDeleteBank] = useState({ open: false, id: 0});
+  let [dialogLogin, setDialogLogin]     = useState(false);
+  let [lightbox, setLightbox]           = useState({ isOpen: false, photoIndex: 0, images: [] });
+  let [notifications, setNotifications] = useState([])
+  let [search, setSearch]               = useState(Constants.INIT_SEARCH)
+  let [conversations, setConversations] = useState([])
 
-  const { loading: loadingNotifications, 
+  let { ws, user, updateProfile, logout } = props
+
+  let { loading: loadingNotifications, 
           data: dataNotifications, 
           error: errorNotifications,
           refetch: refetchNotifications, } =  useQuery( queryNotifications, { 
-                                              context: { headers: getHeaders(location) }, 
-                                              fetchPolicy: 'cache-first', 
-                                              nextFetchPolicy: 'network-only', 
-                                              notifyOnNetworkStatusChange: true});
+                                                        context: { headers: getHeaders(location) }, 
+                                                        fetchPolicy: 'cache-first', 
+                                                        nextFetchPolicy: 'network-only', 
+                                                        notifyOnNetworkStatusChange: true});
+
+  let { loading: loadingConversations, 
+        data: dataConversations, 
+        error: errorConversations  } =  useQuery( queryConversations, { 
+                                                  context: { headers: getHeaders(location) }, 
+                                                  fetchPolicy: 'cache-first', 
+                                                  nextFetchPolicy: 'network-only', 
+                                                  notifyOnNetworkStatusChange: true});
 
   const [onMutationFollow, resultMutationFollow] = useMutation(mutationFollow,{
     context: { headers: getHeaders(location) },
     update: (cache, {data: {follow}}) => {
-
-      let { data, mode, status } = follow
+      let { data, status } = follow
       if(status){
-
-        switch(mode?.toUpperCase()){
-          case "FOLLOW":{
-            showToast("info", `Bookmark`)
-            break
-          }
-  
-          case "UNFOLLOW":{
-            showToast("info", `Un-Bookmark`)
-            break
-          }
-        }
-
         let querySuppliersValue = cache.readQuery({ query: querySuppliers, variables: { input: search } });
         if(!_.isEmpty(querySuppliersValue)){
           cache.writeQuery({
@@ -295,98 +309,56 @@ const App =(props) =>{
             variables: { id: data._id }
           }); 
         }
+
+        if(_.find(data?.follows, (follow)=> _.isEqual(follow.userId, user._id) )){
+          showToast("info", `Bookmark`)
+        }else{
+          showToast("info", `Un-Bookmark`)
+        }
       }
     },
-    onCompleted(data) {
-      console.log("onCompleted")
-    },
-    onError: (error) => {
-      return handlerErrorApollo( props, error )
-    }
+    onCompleted(data) { },
+    onError: (error) => handlerErrorApollo( props, error ) 
   });
 
   const [onMutationBook, resultMutationBook] = useMutation(mutationBook,{
     context: { headers: getHeaders(location) },
-    update: (cache, {data: {book}}) => {
-      let { status, action, data } = book
+    update: (cache, {data: {book}}, context) => {
+      let { status, action, data, user } = book
+      if(status){
+        updateProfile(user)
 
-      let {mode, itemId} = action
-      switch(mode?.toUpperCase()){
-        case "BOOK":{
+        let supplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
+        if(status && supplierByIdValue){
+          cache.writeQuery({ 
+            query: querySupplierById, 
+            variables: { id: data._id },
+            data: { supplierById: { ...supplierByIdValue.supplierById, data } }, 
+          }); 
+        }
+  
+        ////////// update cache querySuppliers ///////////
+        let suppliersValue = cache.readQuery({ query: querySuppliers });
+        if(!_.isNull(suppliersValue)){
+          let { suppliers } = suppliersValue
+          let newData = _.map(suppliers.data, (supplier) => supplier._id == data._id ? data : supplier)
+          cache.writeQuery({
+            query: querySuppliers,
+            data: { suppliers: { ...suppliersValue.suppliers, data: newData } }
+          });
+        }
+        ////////// update cache querySuppliers ///////////
+
+        let { itemId } = context?.variables?.input
+        if(_.find(data?.buys, buy=>buy.itemId === itemId && _.isEqual(buy.userId, user._id) && buy.selected === 0 )){
           showToast("success", `จองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
-          break
-        }
-
-        case "UNBOOK":{
+        }else{
           showToast("error", `ยกเลิกการจองเบอร์ ${itemId > 9 ? "" + itemId: "0" + itemId }`)
-          break
         }
       }
-      
-      let supplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
-      if(status && supplierByIdValue){
-        cache.writeQuery({ 
-          query: querySupplierById, 
-          variables: { id: data._id },
-          data: { supplierById: { ...supplierByIdValue.supplierById, data } }, 
-        }); 
-      }
-
-      ////////// update cache querySuppliers ///////////
-      let suppliersValue = cache.readQuery({ query: querySuppliers });
-      if(!_.isNull(suppliersValue)){
-        let { suppliers } = suppliersValue
-        let newData = _.map(suppliers.data, (supplier) => supplier._id == data._id ? data : supplier)
-        cache.writeQuery({
-          query: querySuppliers,
-          data: { suppliers: { ...suppliersValue.suppliers, data: newData } }
-        });
-      }
-      ////////// update cache querySuppliers ///////////
     },
-    onCompleted(data) {
-      console.log("onCompleted")
-    },
-    onError: (error) => {
-      return handlerErrorApollo( props, error )
-    }
-  });
-
-  const [onMutationBuy, resultMutationBuy] = useMutation(mutationBuy,{
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {buy}}) => {
-      let { status, data } = buy
-
-      console.log("update : ", buy)
-
-      showToast("success", `การส่งซื้อ complete`)
-         
-      // ////////// update cache queryUserById ///////////
-      // let querySupplierByIdValue = cache.readQuery({ query: querySupplierById, variables: {id: data._id}});
-      // if(querySupplierByIdValue){
-      //   cache.writeQuery({
-      //     query: querySupplierById,
-      //     data: { supplierById: {...querySupplierByIdValue.supplierById, data} },
-      //     variables: {id: data._id}
-      //   });
-      // }
-      // ////////// update cache queryUserById ///////////    
-
-      // ////////// update cache querySuppliers ///////////
-      // let suppliersValue = cache.readQuery({ query: querySuppliers });
-      // if(!_.isNull(suppliersValue)){
-      //   console.log("suppliersValue :", suppliersValue)
-      // }
-      // ////////// update cache querySuppliers ///////////
-    },
-    onCompleted(data) {
-      console.log("onCompleted :", data)
-    },
-    onError: (err) => {
-      console.log("onError :", err)
-
-      showToast("error", `เกิดปัญหาในการสั่งซื้อ`)
-    }
+    onCompleted(data) {},
+    onError: (error) => handlerErrorApollo( props, error )
   });
 
   const [onMutationComment, resultMutationComment] = useMutation(mutationComment,{
@@ -418,9 +390,7 @@ const App =(props) =>{
     onCompleted(data) {
       console.log("onCompleted")
     },
-    onError: (error) => {
-      return handlerErrorApollo( props, error ) 
-    }
+    onError: (error) => handlerErrorApollo( props, error ) 
   });
 
   const [onMutationContactUs, resultMutationContactUs] = useMutation(mutationContactUs,{
@@ -473,17 +443,19 @@ const App =(props) =>{
   });
 
   const [onMutationLogin, resultMutationLogin] = useMutation(mutationLogin, {
+    context: { headers: getHeaders(location) },
     update: (cache, {data:{login}}) => {
       let {status, data, sessionId} = login
       if(status){
-        localStorage.setItem('token', sessionId)
-
+        console.log("onMutationLogin :", data, sessionId)
+        // localStorage.setItem('token', sessionId)
+        setCookie('token', sessionId)
         updateProfile(data)
-
         setDialogLogin(false);
       }
     },
     onCompleted(data) {
+      showToast("success", t("welcome_to_berthong"))
       window.location.reload();
     },
     onError(error){
@@ -493,32 +465,20 @@ const App =(props) =>{
 
   const [onMutationLoginWithSocial, resultMutationLoginWithSocial] = useMutation(mutationLoginWithSocial, 
     {
+      context: { headers: getHeaders(location) },
       update: (cache, {data: {loginWithSocial}}) => {
-
-        // console.log("loginWithSocial :", loginWithSocial)
-        // const data1 = cache.readQuery({ query: gqlBanks });
-
         let {status, data, sessionId} = loginWithSocial
-
         if(status){
-          localStorage.setItem('token', sessionId)
+          // localStorage.setItem('token', sessionId)
 
-          // onComplete(data)
+          setCookie('token', sessionId)
 
+          updateProfile(data)
           setDialogLogin(false);
         }
-
-        // let newBanks = {...data1.banks}
-        // let newData  = _.map(newBanks.data, bank=>bank._id == updateBank._id ? updateBank : bank)
-
-        // newBanks = {...newBanks, data: newData}
-        // cache.writeQuery({
-        //   query: gqlBanks,
-        //   data: { banks: newBanks },
-        // });
       },
       onCompleted(data) {
-        // history.push("/");
+        showToast("success", t("welcome_to_berthong"))
         navigate("/")
       },
       onError(error){
@@ -561,6 +521,7 @@ const App =(props) =>{
 
   const [onMutationBank, resultMutationBankValues] = useMutation(mutationBank
     , {
+        context: { headers: getHeaders(location) },
         update: (cache, {data: {bank}}) => {
 
           ////////// udpate cache Banks ///////////
@@ -605,7 +566,7 @@ const App =(props) =>{
       }
   );
 
-  const [onMutationSupplier, resultSupplier] = useMutation(mutationSupplier, {
+  const [onMutationSupplier, resultSupplier] = useMutation(mutationLottery, {
     context: { headers: getHeaders(location) },
     update: (cache, {data: {supplier}}) => {
       let { data, mode, status } = supplier
@@ -740,83 +701,44 @@ const App =(props) =>{
 
   const [onMutationMe, resultMutationMe] = useMutation(mutationMe, {
     context: { headers: getHeaders(location) },
-    update: (cache, {data:{ me }}) => {
+    update: (cache, {data:{ me }}, context) => {
       let { status, data } = me
       if(status){
         updateProfile(data)
-      }
-    },
-    onCompleted(data) {
-      let {type, mode} = data?.me
-      switch(type){
-        case "bank":{
-          switch(mode){
-            case "new":{
-              showToast("success", `Add bank success`)
-              navigate(-1)
-              break;
+
+        let { type, mode } = context?.variables?.input
+        switch(type){
+          case "bank":{
+            switch(mode){
+              case "new":{
+                showToast("success", `Add bank success`)
+                navigate(-1)
+                break;
+              }
+              case "delete":{
+                showToast("success", `Delete bank success`)
+                setOpenDialogDeleteBank({ open: false, id: ""})  
+                break;
+              }
             }
-            case "delete":{
-              showToast("success", `Delete bank success`)
-              setOpenDialogDeleteBank({ open: false, id: ""})  
-              break;
-            }
+  
+            break;
           }
-
-          break;
-        }
-
-        case "avatar":{
-          showToast("success", `Update profile success`)
-          break;
+  
+          case "avatar":{
+            showToast("success", `Update profile success`)
+            break;
+          }
         }
       }
     },
-    onError(error){
-      return handlerErrorApollo( props, error )
-    }
+    onCompleted: (data) => {},
+    onError: (error) => handlerErrorApollo( props, error )
   });
-
-  // const [onMutationMe_bank, resultonMutationMe_bank] = useMutation(mutationMe_bank, {
-  //   context: { headers: getHeaders(location) },
-  //   update: (cache, {data: {me_bank}}) => {
-  //     let { status, data } = me_bank
-  //     if(status){
-  //       updateProfile(data)
-  //     }
-  //   },
-  //   onCompleted(data) {
-  //     if(data?.me_bank?.mode === "new"){
-  //       showToast("success", `Add bank success`)
-  //       navigate(-1)
-  //     }else{
-  //       showToast("success", `Delete bank success`)
-  //       setOpenDialogDeleteBank({ open: false, id: ""})  
-  //     } 
-  //   },
-  //   onError(error){
-  //     return handlerErrorApollo( props, error )
-  //   }
-  // });
-
-  // const [onMutationMe_profile, resultonMutationMe_profile] = useMutation(mutationMe_profile, {
-  //   context: { headers: getHeaders(location) },
-  //   update: (cache, {data: {me_profile}}) => {
-  //     let { status, data } = me_profile
-  //     if(status){
-  //       updateProfile(data)
-  //     }
-  //   },
-  //   onCompleted(data) {
-  //     showToast("success", `Update profile success`)
-  //   },
-  //   onError(error){
-  //     return handlerErrorApollo( props, error )
-  //   }
-  // });
 
   const [onMutationDateLottery, resultMutationDateLotteryValues] = useMutation(mutationDatesLottery
     , {
+        context: { headers: getHeaders(location) },
         update: (cache, {data: {dateLottery}}) => {
 
           console.log("DateLottery :", dateLottery)
@@ -871,6 +793,7 @@ const App =(props) =>{
 
   const [onMutationDatesLottery, resultMutationDatesLottery] = useMutation(mutationDatesLottery
     , {
+        context: { headers: getHeaders(location) },
         update: (cache, {data: {datesLottery}}) => {
 
           console.log("datesLottery :", datesLottery)
@@ -926,6 +849,7 @@ const App =(props) =>{
 
   const [onMutationAdminDeposit, resultMutationAdminDeposit] = useMutation(mutationAdminDeposit
     , {
+        context: { headers: getHeaders(location) },
         update: (cache, {data: {adminDeposit}}) => {
           console.log("adminDeposit :", adminDeposit)
         },
@@ -944,6 +868,7 @@ const App =(props) =>{
 
   const [onMutationAdminWithdraw, resultMutationAdminWithdraw] = useMutation(mutationAdminWithdraw
     , {
+        context: { headers: getHeaders(location) },
         update: (cache, {data: {adminWithdraw}}) => {
           console.log("adminWithdraw :", adminWithdraw)
         },
@@ -960,24 +885,37 @@ const App =(props) =>{
       }
   );
 
-  // useLayoutEffect(() => {
-  //   // if (isLoading) {
-  //     document.body.style.overflow = "hidden";
-  //     document.body.style.height = "100%";
-  //   // }
-  //   // if (!isLoading) {
-  //   //   document.body.style.overflow = "auto";
-  //   //   document.body.style.height = "auto";
-  //   // }
-  // }, []);
-
-  useEffect(()=>{
-    console.log("+++++++++++++++++++APP+++++++++++++++++++")
-  }, [])
-
-  useEffect(()=>{
-    console.log("search :", search)
-  }, [search])
+  const [onMutationConversation, resultMutationConversation] = useMutation(mutationConversation
+    , {
+        context: { headers: getHeaders(location) },
+        update: (cache, {data: {conversation}}) => {
+          let { data, status } = conversation
+          if(status){
+            let conv = cache.readQuery({ query: queryConversations });
+            if(!_.isEmpty(conv)){
+              let check = _.find(conv.conversations.data, (d)=>_.isEqual(d?._id, data?._id))//
+              if(_.isEmpty(check)){
+                cache.writeQuery({ query: queryConversations, 
+                  data: { conversations: { ...conv.conversations, data: [...conv.conversations.data, data] } } 
+                 }); 
+              }else{
+                let newData = _.map(conv.conversations.data, (d)=>_.isEqual(d?._id, data?._id) ? data : d)//
+                cache.writeQuery({ query: queryConversations, 
+                  data: { conversations: { ...conv.conversations, data: newData } } 
+                 }); 
+              }
+             
+            }
+          }
+        },
+        onCompleted(data) {
+          navigate("/messages")
+        },
+        onError(error){
+          return handlerErrorApollo( props, error )
+        }
+      }
+  );
 
   useEffect(()=>{
     if(!_.isEmpty(user)){
@@ -997,6 +935,17 @@ const App =(props) =>{
       }
     }
   }, [dataNotifications, loadingNotifications])
+
+  useEffect(() => {
+    if (!loadingConversations) {
+      if(dataConversations?.conversations){
+        let { status, data } = dataConversations?.conversations
+        if(status){
+          setConversations(data)
+        }
+      }
+    }
+  }, [dataConversations, loadingConversations])
 
   useEffect(()=>{
     console.log("location?.pathname :", location?.pathname)
@@ -1027,29 +976,36 @@ const App =(props) =>{
     onError: useCallback((err) => {
       console.log("subscriptionMe :", err)
     }, []),
-    variables: {sessionId: localStorage.getItem('token')},
+    variables: {sessionId: /*localStorage.getItem('token')*/ getCookie('token') }, // setCookie('token', sessionId, {})
   });
  
   const ProtectedAuthenticatedRoute = ({ user, redirectPath = '/' }) => {
     switch(checkRole(user)){
       case Constants.AMDINISTRATOR:
-      case Constants.AUTHENTICATED:{
+      case Constants.AUTHENTICATED:
+      case Constants.SELLER: 
         return <Outlet />;
-      }
-      default:{
+      default:
         return <Navigate to={redirectPath} replace />;
-      }
+    }
+  };
+
+  const ProtectedSellerRoute = ({ user, redirectPath = '/' }) => {
+    switch(checkRole(user)){
+      case Constants.AMDINISTRATOR:
+      case Constants.SELLER:
+        return <Outlet />;
+      default:
+        return <Navigate to={redirectPath} replace />;
     }
   };
 
   const ProtectedAdministratorRoute = ({ user, redirectPath = '/' }) => {
     switch(checkRole(user)){
-      case Constants.AMDINISTRATOR:{
+      case Constants.AMDINISTRATOR:
         return <Outlet />;
-      }
-      default:{
+      default:
         return <Navigate to={redirectPath} replace />;
-      }
     }
   };
 
@@ -1060,12 +1016,26 @@ const App =(props) =>{
       // }
       case Constants.WS_CONNECTION :
       case Constants.WS_SHOULD_RETRY: {
-        return <div className="ws">server กำลังทำการเชื่อมต่อ <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
+        // return <div className="ws">server กำลังทำการเชื่อมต่อ <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
+        return  <Stack position="fixed" sx={{ width: '100%', zIndex: 10000 }}>
+                  <LinearProgress 
+                  sx={{
+                    // backgroundColor: 'white',
+                    '& .MuiLinearProgress-bar': { backgroundColor: 'yellow' }
+                  }} />
+                </Stack>
       }
 
-      case Constants.WS_CLOSED:{
-        return <div className="ws">server มีปัญหา <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
-      }
+      // case Constants.WS_CLOSED:{
+      //   // return <div className="ws">server มีปัญหา <button onClick={(evt)=>navigate(0)}>Refresh</button></div>
+      //   return  <Stack position="fixed" sx={{ width: '100%', zIndex: 10000 }}>
+      //             <LinearProgress 
+      //             sx={{
+      //               // backgroundColor: 'white',
+      //               '& .MuiLinearProgress-bar': { backgroundColor: 'red' }
+      //             }} />
+      //           </Stack>
+      // }
 
       default:{
         return <div /> 
@@ -1085,31 +1055,36 @@ const App =(props) =>{
     switch(checkRole(user)){
       case Constants.AMDINISTRATOR:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em"/>, path: "/"},
-                {id: 1, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/admin-withdraws"},
-                {id: 2, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/admin-deposits"},
-                {id: 3, title:"รายการสินค้าทั้งหมด", icon: <AdjustIcon />, path: "/suppliers"},
-                {id: 4, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/admin-users"},
-                {id: 5, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
-                {id: 6, title:"วันออกหวยทั้งหมด", icon: <AssistantIcon />, path: "/admin-date-lotterys"},
-                {id: 7, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
-                // {id: 8, title:"Logout", icon: <LogoutIcon size="1.5em"/>, path: "/logout"}
+                {id: 1, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/withdraws"},
+                {id: 2, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/deposits"},
+                {id: 3, title:"รายการถอดเงินทั้งหมด", icon: <AccountTreeIcon />, path: "/all-withdraws"},
+                {id: 4, title:"รายการฝากเงินทั้งหมด", icon: <AddRoadIcon />, path: "/all-deposits"},
+                {id: 5, title:"รายการหวยทั้งหมด", icon: <AddTaskIcon />, path: "/lotterys"},
+                {id: 6, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
+                {id: 7, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
+                {id: 8, title:"จัดการหวยทั้งหมด", icon: <AssistantIcon />, path: "/manage-lotterys"},
+                {id: 9, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"}
               ]
       }
       case Constants.AUTHENTICATED:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
-                // {id: 1, title:"รายการ จอง-ซื้อ", icon: <AssistantIcon />, path: "/book-buy"},
+                {id: 1, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
+                {id: 2, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
+                {id: 3, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"}
+              ]
+      }
+
+      case Constants.SELLER:{
+        return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
+                {id: 1, title:"รายการหวยทั้งหมด", icon: <AddTaskIcon />, path: "/lotterys"},
                 {id: 2, title:"แจ้งฝากเงิน", icon: <AdjustIcon />, path: "/deposit"},
                 {id: 3, title:"แจ้งถอนเงิน", icon: <AlternateEmailIcon />, path: "/withdraw"},
-                {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"},
-                // {id: 5, title:"บัญชีธนาคาร", icon: <AccountBalanceWalletIcon size="1.5em" />, path: "/bank"},
-                // {id: 6, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
-                // {id: 7, title:"Logout", icon: <LogoutIcon  size="1.5em"/>, path: "/logout"}
+                {id: 4, title:"ประวัติการ ฝาก-ถอน", icon: <AiOutlineHistory size="1.5em" />, path: "/history-transitions"}
               ]
       }
       default:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em" />, path: "/"},
-                {id: 1, title:"ติดต่อเรา", icon: <GrContactInfoIcon size="1.5em" />, path: "/contact-us"},
-                {id: 2, title:"Login", icon: <LoginIcon size="1.5em"  />, path: "/login"}]
+                {id: 1, title:"Login", icon: <LoginIcon size="1.5em"  />, path: "/login"}]
       }
     }
   }
@@ -1145,13 +1120,98 @@ const App =(props) =>{
             </Menu>
   }
 
+  const toolbarMenu = () =>{
+    if(!_.isEmpty(user)){
+      switch(checkRole(user)){
+        case Constants.AUTHENTICATED:{
+          return  <Stack direction={"row"} spacing={2} alignItems="center">
+                    <div className="border-login">
+                      <IconButton size={'small'} onClick={()=> navigate("/notifications") }>
+                        <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
+                          <MdCircleNotificationsIcon color={ _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
+                        </Badge>
+                      </IconButton>
+                      <IconButton size={'small'} onClick={()=> navigate("/book-buy")}>
+                        <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
+                          <FiShoppingCart color={ _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
+                        </Badge>
+                      </IconButton>
+                      <IconButton size={'small'} onClick={()=> navigate("/bookmarks")}>
+                        <MdOutlineBookmarkAddedIcon color={ _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
+                      </IconButton>
+                      <IconButton size={'small'} onClick={()=> navigate("/subscribes")}>
+                        <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
+                      </IconButton>
+                      <IconButton disabled={_.isEmpty(conversations) ? true : false}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
+                        <HiChatBubbleLeftRightIcon alt="chat" color={ _.isEmpty(conversations) ? "gray" : _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                      </IconButton>
+                      <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
+                        <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } size="1.2em"/>
+                      </IconButton>
+                    </div>
+                  </Stack>
+        }
+
+        case Constants.AMDINISTRATOR:{
+          return  <Stack direction={"row"} spacing={2} alignItems="center">
+                    <div className="border-login">
+                      <IconButton 
+                        size={'small'}
+                        onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
+                        <Avatar 
+                          src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
+                          alt="profile"
+                          size="1.2em"
+                        />
+                      </IconButton>
+                    </div>
+                  </Stack>
+        }
+
+        case Constants.SELLER:{
+          return  <Stack direction={"row"} spacing={2} alignItems="center">
+                    <div className="border-login">
+                      <IconButton size={'small'} onClick={()=> navigate("/notifications") }>
+                        <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
+                          <MdCircleNotificationsIcon color={ _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
+                        </Badge>
+                      </IconButton>
+                      <IconButton size={'small'} onClick={()=> navigate("/book-buy")}>
+                        <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
+                          <FiShoppingCart color={ _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
+                        </Badge>
+                      </IconButton>
+                      <IconButton size={'small'} onClick={()=> navigate("/bookmarks")}>
+                        <MdOutlineBookmarkAddedIcon color={ _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
+                      </IconButton>
+                      <IconButton size={'small'} onClick={()=> navigate("/subscribes")}>
+                        <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
+                      </IconButton>
+                      <IconButton disabled={_.isEmpty(conversations) ? true : false}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
+                        <HiChatBubbleLeftRightIcon alt="chat" color={ _.isEmpty(conversations) ? "gray" :  _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                      </IconButton>
+                      <IconButton size={'small'} onClick={()=> navigate("/lotterys")}>
+                        <BiStoreAlt color={ _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1.2em"/>
+                      </IconButton>
+                      <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
+                        <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } size="1.2em"/>
+                      </IconButton>
+                    </div>
+                  </Stack>
+        }
+      }
+    }
+
+    return  <Stack direction={"row"} spacing={2} alignItems="center">
+              <IconButton size={'small'} onClick={()=>{ setDialogLogin(true) }}>
+                <LoginIcon color="white" size="1.2em"/>
+              </IconButton>
+            </Stack>
+  }
+
   return (
     <div className="App page-container">
-      {/* <LoadingOverlay
-        active={true}
-        spinner
-        text='Loading your content...'> */}
-      <div className="content-wrap">
+      <div className="content-wrap" >
       {lightbox.isOpen  && <LightboxComp datas={lightbox} onLightbox={(v)=>setLightbox(v)}/> }
       <ToastContainer />
       {
@@ -1189,6 +1249,7 @@ const App =(props) =>{
 
       {statusView()}
       {menuProfile()}
+      
       <div className="container-fluid">
         <div className={classes.root}>
           <CssBaseline />
@@ -1207,70 +1268,8 @@ const App =(props) =>{
                     edge="start"
                     className={clsx(classes.menuButton, open && classes.hide)}
                   ><MenuIcon /></IconButton>
-                  <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">{ REACT_APP_SITE_TITLE }</div></Typography>
-                  {
-                    !_.isEmpty(user)
-                    ? _.isEqual(checkRole(user), Constants.AUTHENTICATED ) 
-                        ? <Stack direction={"row"} spacing={2} alignItems="center">
-                            <div className="border-login">
-                              <IconButton 
-                                size={'small'}
-                                onClick={()=> navigate("/notifications") }>
-                                <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
-                                  <MdCircleNotificationsIcon color={ _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
-                                </Badge>
-                              </IconButton>
-                              <IconButton 
-                                size={'small'}
-                                onClick={()=> navigate("/book-buy")}>
-                                <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
-                                  <FiShoppingCart color={ _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
-                                </Badge>
-                              </IconButton>
-                              <IconButton 
-                                size={'small'}
-                                onClick={()=> navigate("/bookmarks")}>
-                                <MdOutlineBookmarkAddedIcon color={ _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
-                              </IconButton>
-                              <IconButton 
-                                size={'small'}
-                                onClick={()=> navigate("/subscribes")}>
-                                <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
-                              </IconButton>
-                              <IconButton 
-                                size={'small'}
-                                onClick={(evt)=>{
-                                  setOpenMenuProfile(evt.currentTarget)
-                                }  }>
-                                <Avatar 
-                                  src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
-                                  alt="profile"
-                                />
-                              </IconButton>
-                            </div>
-                          </Stack>
-                        : _.isEqual(checkRole(user), Constants.AMDINISTRATOR ) 
-                           ?  <Stack direction={"row"} spacing={2} alignItems="center">
-                                <div className="border-login">
-                                  <IconButton 
-                                    size={'small'}
-                                    onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
-                                    <Avatar 
-                                      src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
-                                      alt="profile"
-                                    />
-                                  </IconButton>
-                                </div>
-                              </Stack>
-                            : ""
-                    : <Stack direction={"row"} spacing={2} alignItems="center">
-                         <IconButton 
-                          size={'small'}
-                          onClick={()=>{ setDialogLogin(true) }}>
-                          <LoginIcon color="white" size="1.2em"/>
-                        </IconButton>
-                      </Stack>
-                  }
+                  <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">{ REACT_APP_SITE_TITLE } { checkRole(user) === Constants.SELLER ? "(Seller)" : ""}</div></Typography>
+                  {toolbarMenu()}
                 </>
               }
             </Toolbar>
@@ -1320,6 +1319,10 @@ const App =(props) =>{
                                     break;
                                   }
 
+                                  case "/contact-us":{
+                                    navigate(item.path)
+                                    break;
+                                  }
                                   default:{
                                     navigate(item.path)
                                   }
@@ -1328,26 +1331,23 @@ const App =(props) =>{
                                 handleDrawerClose();
                               }}>
                               <ListItemIcon>{item.icon}</ListItemIcon>
-                              <ListItemText 
-                                primary={item.title} />
+                              <ListItemText primary={item.title} />
                             </ListItem>
                   })
                   }
                 </List>
               <Divider />
               <div className="text-center">
-              <img
-                    style={{width:"160px",height:"130px",borderRadius:"50%"}}
-                    src={"https://dynamic.brandcrowd.com/asset/logo/a673c079-5c9d-45b2-bd75-e739acca30aa/logo-search-grid-1x?logoTemplateVersion=1&v=637637394778200000&text=Berthong"}
-                    alt="Avatar"
-                  />
+                <img
+                  className="logo1"
+                  src={logo}
+                  alt="Avatar"
+                />
               </div>
               <Typography variant="caption" display="block" gutterBottom><div className="text-center p-1">© 2023 BERTHONG LLC</div></Typography>
             </Drawer>
           </ClickAwayListener>
-          <main className={clsx(classes.content, { [classes.contentShift]: open })} >
-            { <div className={classes.drawerHeader} /> }
-          </main>
+          <main className={clsx(classes.content, { [classes.contentShift]: open })}>{ <div className={classes.drawerHeader} /> } </main>
         </div>
         <div className="container">
           <BreadcsComp {...props}/>
@@ -1372,9 +1372,11 @@ const App =(props) =>{
                                         {...props} 
                                         onLogin={()=>setDialogLogin(true)}
                                         onLightbox={(value)=>setLightbox(value)} 
-                                        onMutationSubscribe={(evt)=>{ onMutationSubscribe(evt) }} />}/>
-            <Route path="/login-with-line" element={<LoginWithLine />}  />
-            <Route path="/contact-us" element={<ContactUsPage onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
+                                        onMutationSubscribe={(evt)=>onMutationSubscribe(evt)}
+                                        onMutationConversation={(evt)=>onMutationConversation(evt)} />}/>
+            <Route path="/login-with-line" element={<LoginWithLinePage />}  />
+            <Route path="/contact-us" element={<ContactUsPage {...props} onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
+            <Route path="/register" element={<RegisterPage />}  />
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
               <Route path="/me" element={<MePage 
                                           {...props} 
@@ -1390,29 +1392,33 @@ const App =(props) =>{
               <Route path="/notifications" element={<NotificationsPage {...props} onMutationNotification={(evt)=>onMutationNotification(evt)} />} />
               <Route path="/bookmarks" element={<BookMarksPage {...props} onMutationFollow={(evt)=>onMutationFollow(evt) } />} />
               <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />} />
+              <Route path="/producers" element={<ProducersPage {...props}  onLightbox={(evt)=>setLightbox(evt)}  />} />
+              <Route path="/messages" element={<MessagePage {...props} conversations={conversations}  onLightbox={(evt)=>setLightbox(evt)}  />} />
+            </Route>
+            <Route element={<ProtectedSellerRoute user={user} />}>
+              <Route path="/lotterys" element={<LotterysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/lottery" element={<LotteryPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
-
-              <Route path="/suppliers" element={<SuppliersPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/supplier" element={<SupplierPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
-
-              <Route path="/admin-deposits" element={<AdminDepositsPage 
+              <Route path="/deposits" element={<AdminDepositsPage 
                                                       {...props} 
                                                       onLightbox={(value)=>setLightbox(value)} 
                                                       onMutationAdminDeposit={(evt)=>onMutationAdminDeposit(evt)} />} />
-              <Route path="/admin-withdraws" element={<AdminWithdrawsPage 
+              <Route path="/withdraws" element={<AdminWithdrawsPage 
                                                       {...props} 
                                                       onMutationAdminWithdraw={(evt)=>onMutationAdminWithdraw(evt)} 
                                                       onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/admin-date-lotterys" element={<DateLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
-              <Route path="/admin-date-lottery" element={<DateLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
-              <Route path="/admin-users" element={<UsersPage />} />
-              <Route path="/user" element={<UserPage />} />
+              <Route path="/manage-lotterys" element={<ManageLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
+              <Route path="/manage-lottery" element={<ManageLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
+              <Route path="/users" element={<UsersPage {...props} />} />
+              <Route path="/user" element={<UserPage {...props} />} />
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
               <Route path="/taxonomy-bank" element={<TaxonomyBankPage  {...props} onMutationBank={(evt)=>onMutationBank(evt)}/>} />
               <Route path="/dblog" element={<DblogPage  {...props} />} />
-              {/*  */}
               <Route path="/auto-generation-content" element={<AutoGenerationContent  {...props} />} />
+
+              <Route path="/all-deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/all-withdraws" element={<WithdrawsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
             </Route>
             <Route path="*" element={<p>There's nothing here: 404!</p>} />
           </Routes>
@@ -1421,7 +1427,6 @@ const App =(props) =>{
       {/* Footer */}
       <Footer />
       </div>
-      {/* </LoadingOverlay> */}
     </div>
   )
 }
