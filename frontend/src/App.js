@@ -80,48 +80,48 @@ import {
   BiStoreAlt
 } from "react-icons/bi"
 import _ from "lodash"
-import TaxonomyBankPage from "./TaxonomyBankPage";
-import TaxonomyBanksPage from "./TaxonomyBanksPage";
-import BookBuysPage from "./BookBuysPage";
-import ManageLotteryPage from "./ManageLotteryPage";
-import ManageLotterysPage from "./ManageLotterysPage";
-import DepositPage from "./DepositPage";
-import AdminDepositsPage from "./AdminDepositsPage";
-import AdminWithdrawsPage from "./AdminWithdrawsPage";
+
+import TaxonomyBankPage from "./pages/TaxonomyBankPage";
+import TaxonomyBanksPage from "./pages/TaxonomyBanksPage";
+import BookBuysPage from "./pages/BookBuysPage";
+import ManageLotteryPage from "./pages/ManageLotteryPage";
+import ManageLotterysPage from "./pages/ManageLotterysPage";
+import DepositPage from "./pages/DepositPage";
+import AdminDepositsPage from "./pages/AdminDepositsPage";
+import AdminWithdrawsPage from "./pages/AdminWithdrawsPage";
 import DetailPage from "./pages/detail/Detail";
-import HistoryTransitionsPage from "./HistoryTransitionsPage";
-import HomePage from "./HomePage";
-import AdminHomePage from "./AdminHomePage";
-import LoginPage from "./LoginPage";
-import RegisterPage from "./RegisterPage";
-import MePage from "./MePage";
-import BankPage from "./BankPage";
-import BanksPage from "./BanksPage";
+import HistoryTransitionsPage from "./pages/HistoryTransitionsPage";
+import HomePage from "./pages/HomePage";
+import AdminHomePage from "./pages/AdminHomePage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import MePage from "./pages/MePage";
+import BankPage from "./pages/BankPage";
+import BanksPage from "./pages/BanksPage";
 import { editedUserBalace, editedUserBalaceBook } from "./redux/actions/auth";
-import LotteryPage from "./LotteryPage";
-import FriendPage from "./FriendPage";
-import LotterysPage from "./LotterysPage";
-import UserPage from "./UserPage";
-import UsersPage from "./UsersPage";
+import LotteryPage from "./pages/LotteryPage";
+import FriendPage from "./pages/FriendPage";
+import LotterysPage from "./pages/LotterysPage";
+import UserPage from "./pages/UserPage";
+import UsersPage from "./pages/UsersPage";
 import { checkRole, getHeaders, handlerErrorApollo, showToast, setCookie, getCookie} from "./util";
-import WithdrawPage from "./WithdrawPage";
+import WithdrawPage from "./pages/WithdrawPage";
 import BreadcsComp from "./components/BreadcsComp";
 import DialogLogoutComp from "./components/DialogLogoutComp";
 import DialogDeleteBankComp from "./components/DialogDeleteBankComp";
-import NotificationsPage from "./NotificationsPage";
-import LoginWithLine from "./LoginWithLine";
+import NotificationsPage from "./pages/NotificationsPage";
+import LoginWithLinePage from "./pages/LoginWithLinePage";
 import LightboxComp from "./components/LightboxComp";
 import DialogLoginComp from "./components/DialogLoginComp";
-import BookMarksPage from "./BookMarksPage";
-import ContactUsPage from "./ContactUsPage";
-import SubscribesPage from "./SubscribesPage";
-import Footer from "./Footer";
-import DblogPage from "./DblogPage";
-import AutoGenerationContent from "./AutoGenerationContent"
-import ProducersPage from "./ProducersPage"
-import DepositsPage from "./DepositsPage"
-import WithdrawsPage from "./WithdrawsPage"
-
+import BookMarksPage from "./pages/BookMarksPage";
+import ContactUsPage from "./pages/ContactUsPage";
+import SubscribesPage from "./pages/SubscribesPage";
+import Footer from "./pages/FooterPage";
+import DblogPage from "./pages/DblogPage";
+import AutoGenerationContent from "./auto/AutoGenerationContent"
+import ProducersPage from "./pages/ProducersPage"
+import DepositsPage from "./pages/DepositsPage"
+import WithdrawsPage from "./pages/WithdrawsPage"
 import MessagePage from "./message/MessagePage";
 
  
@@ -1374,7 +1374,7 @@ const App =(props) =>{
                                         onLightbox={(value)=>setLightbox(value)} 
                                         onMutationSubscribe={(evt)=>onMutationSubscribe(evt)}
                                         onMutationConversation={(evt)=>onMutationConversation(evt)} />}/>
-            <Route path="/login-with-line" element={<LoginWithLine />}  />
+            <Route path="/login-with-line" element={<LoginWithLinePage />}  />
             <Route path="/contact-us" element={<ContactUsPage {...props} onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
             <Route path="/register" element={<RegisterPage />}  />
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
