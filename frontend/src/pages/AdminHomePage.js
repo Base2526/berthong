@@ -2,9 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { useQuery } from "@apollo/client";
 import _ from "lodash";
 import { useLocation, useNavigate } from "react-router-dom";
-import { makeStyles } from "@material-ui/core/styles";
-// color
-import { lightGreen, blueGrey } from "@material-ui/core/colors";
 import {
   Stack,
   IconButton,
@@ -14,72 +11,17 @@ import {
   FiRefreshCcw
 } from "react-icons/fi"
 import { queryAdminHome } from "../apollo/gqlQuery";
-import { getHeaders, showToast, handlerErrorApollo } from "../util";
+import { getHeaders, handlerErrorApollo } from "../util";
 import * as Constants from "../constants"
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: "100%",
-    transform: "rotate(0deg)",
-    backgroundColor: "rgb(245, 240, 237)",
-    "& .Mui-expanded": {
-      backgroundColor: "rgb(245, 240, 237)",
-      "& .MuiFilledInput-input": {
-        backgroundColor: "rgb(248, 250, 252)"
-        // backgroundColor: "rgb(250, 241, 232)"
-      }
-    }
-  },
-  accordion: {
-    minHeight: 150, //ugly but works
-    height: "100%"
-  },
-  heading: {
-    fontSize: theme.typography.pxToRem(15)
-  },
-  secondaryHeading: {
-    fontSize: theme.typography.pxToRem(15),
-    color: theme.palette.text.secondary
-  },
-  details: {
-    alignItems: "center",
-    border: "1px solid rgba(0,0,0,0.1)",
-    borderRadius: 4
-  },
-  column: {
-    flexBasis: "33.33%"
-  },
-  helper: {
-    padding: theme.spacing(1, 2)
-  },
-  containedLightGreen: {
-    color: theme.palette.getContrastText(lightGreen[500]),
-    backgroundColor: lightGreen[500],
-    "&:hover": {
-      backgroundColor: lightGreen[700],
-      "@media (hover: none)": {
-        backgroundColor: lightGreen[500]
-      }
-    }
-  },
-  containedBlueGrey: {
-    color: theme.palette.getContrastText(blueGrey[500]),
-    backgroundColor: blueGrey[500],
-    "&:hover": {
-      backgroundColor: blueGrey[700],
-      "@media (hover: none)": {
-        backgroundColor: blueGrey[500]
-      }
-    }
-  }
-}));
+import { adminHomeStyles } from "../styles"
 
 let unsubscribeSuppliers = null;
 const AdminHomePage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const toastIdRef = useRef(null)
-  const classes = useStyles();
+  const classes = adminHomeStyles();
   let [datas, setDatas] = useState([]);
   let [total, setTotal] = useState(0);
 

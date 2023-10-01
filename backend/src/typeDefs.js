@@ -467,7 +467,7 @@ export default gql`
     supplierById(_id: ID!): JSON
     banks: JSON
     bankById(_id: ID!): JSON
-    bankByIds(input: [ID]!): JSON
+    bankByIds(_ids: [ID]!): JSON
     bookBuyTransitions: JSON
     historyTransitions: JSON
     friendProfile(_id: ID): JSON

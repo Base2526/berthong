@@ -1,6 +1,6 @@
 import React, {useState, useCallback, useEffect} from 'react';
 import truncate from "truncate-html";
-import { IconButton, Typography, makeStyles } from "@material-ui/core";
+import { Typography } from "@material-ui/core";
 import { useTranslation } from "react-i18next";
 
 // refer : https://stackoverflow.com/questions/71472309/read-show-more-or-less-of-html-content-or-normal-text-using-single-reusable-reac

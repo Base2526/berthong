@@ -1,16 +1,15 @@
-import React, { useState, useCallback, useEffect, useRef, useLayoutEffect } from "react";
-import { useApolloClient, useQuery, useMutation, useSubscription } from "@apollo/client";
+import React, { useState, useCallback, useEffect } from "react";
+import { useQuery, useMutation, useSubscription } from "@apollo/client";
 import { connect } from "react-redux";
 import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
 import { CDBSidebar } from "cdbreact";
 import clsx from "clsx";
-import { makeStyles, useTheme, withStyles } from "@material-ui/core/styles";
+import { useTheme } from "@material-ui/core/styles";
 import { useTranslation } from "react-i18next";
 import {
   ListItemText,
   ListItemIcon,
-  ListItem as MuiListItem,
   List,
   Divider,
   Typography,
@@ -34,9 +33,6 @@ import {
   AddTask as AddTaskIcon
 } from '@mui/icons-material';
 import LinearProgress from '@mui/material/LinearProgress';
-import {
-  FiLogOut as LogoutIcon,
-} from 'react-icons/fi';
 import {
   HiOutlineHome as HomeIcon,
 } from 'react-icons/hi';
@@ -124,7 +120,6 @@ import DepositsPage from "./pages/DepositsPage"
 import WithdrawsPage from "./pages/WithdrawsPage"
 import MessagePage from "./pages/message/MessagePage";
 
- 
 import { queryNotifications, 
           mutationFollow, 
           querySuppliers, 
@@ -132,7 +127,6 @@ import { queryNotifications,
           mutationBook,
           mutationComment,
           queryCommentById,
-          mutationBuy,
           subscriptionMe,
           mutationContactUs,
           mutationLogin,
@@ -152,112 +146,23 @@ import { queryNotifications,
           queryDateLotteryById,
           mutationAdminDeposit,
           mutationAdminWithdraw,
-          queryBookBuyTransitions,
-
-
           queryConversations,
-
           mutationConversation
         } from "./apollo/gqlQuery"
           
 import * as Constants from "./constants"
 import { update_profile as updateProfile, logout } from "./redux/actions/auth";
-
 import logo from "./images/logo_4.png";
+import { appStyles, ListItem } from "./styles"
 
 let { REACT_APP_SITE_TITLE } = process.env
-
-const drawerWidth = 240;
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: "flex"
-  },
-  appBar: {
-    transition: theme.transitions.create(["margin", "width"], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen
-    })
-  },
-  appBarShift: {
-    width: `calc(100% - ${drawerWidth}px)`,
-    marginLeft: drawerWidth,
-    transition: theme.transitions.create(["margin", "width"], {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen
-    })
-  },
-  menuButton: {
-    marginRight: theme.spacing(2)
-  },
-  hide: {
-    display: "none"
-  },
-  drawer: {
-    width: drawerWidth,
-    flexShrink: 0
-  },
-  drawerPaper: {
-    width: drawerWidth
-  },
-  drawerHeader: {
-    display: "flex",
-    alignItems: "center",
-    padding: theme.spacing(0, 1),
-    // necessary for content to be below app bar
-    ...theme.mixins.toolbar,
-    justifyContent: "flex-end"
-  },
-  content: {
-    flexGrow: 1,
-    padding: theme.spacing(2),
-    transition: theme.transitions.create("margin", {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen
-    }),
-    marginLeft: -drawerWidth
-  },
-  contentShift: {
-    transition: theme.transitions.create("margin", {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen
-    }),
-    marginLeft: 0
-  }
-}));
-
-const ListItem = withStyles({
-  root: {
-    "&$selected": {
-      backgroundColor: "#264360",
-      color: "#fff",
-      "& .MuiListItemIcon-root": {
-        color: "#fff"
-      }
-    },
-    "&$selected:hover": {
-      backgroundColor: "#264360",
-      color: "#fff",
-      "& .MuiListItemIcon-root": {
-        color: "#fff"
-      }
-    },
-    "&:hover": {
-      backgroundColor: "#EBECF4",
-      color: "black",
-      "& .MuiListItemIcon-root": {
-        color: "#000"
-      }
-    }
-  },
-  selected: {}
-})(MuiListItem);
 
 const App =(props) =>{
   let { t } = useTranslation();
   let location = useLocation();
   let navigate = useNavigate();
   let [openMenuProfile, setOpenMenuProfile] = useState(null);
-  let classes = useStyles();
+  let classes = appStyles();
   let theme = useTheme();
   let [open, setOpen] = useState(false);
   let [openDialogLogout, setOpenDialogLogout] = useState(false);
