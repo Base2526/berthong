@@ -39,9 +39,8 @@ import {
 } from "@chatscope/chat-ui-kit-react";
 import LinearProgress from '@mui/material/LinearProgress';
 
-import { queryUserById } from "../apollo/gqlQuery"
-
-import { getHeaders } from "../util";
+import { queryUserById } from "../../apollo/gqlQuery"
+import { getHeaders } from "../../util";
 
 const MessageItem = (props) => {
     let location = useLocation();

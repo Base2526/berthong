@@ -118,11 +118,11 @@ import ContactUsPage from "./pages/ContactUsPage";
 import SubscribesPage from "./pages/SubscribesPage";
 import Footer from "./pages/FooterPage";
 import DblogPage from "./pages/DblogPage";
-import AutoGenerationContent from "./auto/AutoGenerationContent"
+import AutoGenerationContent from "./pages/auto/AutoGenerationContentPage"
 import ProducersPage from "./pages/ProducersPage"
 import DepositsPage from "./pages/DepositsPage"
 import WithdrawsPage from "./pages/WithdrawsPage"
-import MessagePage from "./message/MessagePage";
+import MessagePage from "./pages/message/MessagePage";
 
  
 import { queryNotifications, 
