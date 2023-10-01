@@ -27,8 +27,7 @@ import {
   TextField,
   Button
 } from "@material-ui/core";
-import line from '../line.svg';
-
+import line from '../images/line.svg';
 import logo from "../images/logo_4.png";
 
 const DialogLoginComp = (props) => {
