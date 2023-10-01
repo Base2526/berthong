@@ -495,11 +495,11 @@ export default {
 
     async bankByIds(parent, args, context, info){
       let start = Date.now()
-      let { input } = args
+      let { _ids } = args
       let { req } = context
 
       await Utils.checkAuth(req);
-      let banks = await Model.Bank.find({ _id : { $in : input } });
+      let banks = await Model.Bank.find({ _id : { $in : _ids } });
       if(_.isNull(banks)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
 
       return {  status:true,

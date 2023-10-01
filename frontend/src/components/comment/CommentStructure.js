@@ -17,52 +17,23 @@ import {
         Avatar,
         LinearProgress
       } from '@mui/material'
-import { makeStyles } from '@material-ui/core/styles';
 import { useQuery } from "@apollo/client";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
+import _ from 'lodash';
+import { t } from 'i18next';
 
 import { ActionContext } from './ActionContext'
 import { queryUserById } from "../../apollo/gqlQuery"
 import { getHeaders } from "../../util"
-import { useLocation } from "react-router-dom";
-
-import _ from 'lodash';
-import { t } from 'i18next';
-
-const useStyles = makeStyles({
-  link: {
-    // color: 'white',
-    position: 'relative',
-    "&:hover:not(.Mui-disabled)": {
-      cursor: "pointer",
-      border: "none",
-      color: "gray"
-    },
-    '&:before': {
-      content: "''",
-      position: 'absolute',
-      width: '0',
-      height: '2px',
-      bottom: '-3px',
-      left: '50%',
-      transform: 'translate(-50%,0%)',
-      // backgroundColor: 'red',
-      visibility: 'hidden',
-      transition: 'all 0.3s ease-in-out',
-    },
-    '&:hover:before': {
-      visibility: 'visible',
-      width: '100%',
-    },
-  },
-});
+import { commentStyles } from "../../styles"
 
 const CommentStructure = (props) => {
   let navigate = useNavigate();
   let location = useLocation();
   let { t } = useTranslation();
-  let classes = useStyles();
+  let classes = commentStyles();
   let actions = useContext(ActionContext)
   let edit = true
   let [anchorEl, setAnchorEl] = useState(null);

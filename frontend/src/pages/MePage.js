@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@apollo/client";
-import queryString from 'query-string';
 import { useTranslation } from "react-i18next";
-import { createSearchParams, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
     Avatar,
     Typography,
@@ -36,14 +35,13 @@ import _ from "lodash"
 import { styled } from "@mui/material/styles";
 
 import { queryBankByIds } from "../apollo/gqlQuery"
-import { checkRole, getHeaders, handlerErrorApollo, showToast} from "../util";
+import { getHeaders, handlerErrorApollo } from "../util";
 
 const Input = styled("input")({ display: "none" });
 const MePage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useTranslation();
-    const params = queryString.parse(location.search)
     const { user, onMutationMe, onDialogDeleteBank, onLightbox } = props
     const [expanded, setExpanded] = useState(localStorage.getItem('expanded') ? localStorage.getItem('expanded') : false)
     let [banks, setBanks] = useState([]);
@@ -57,10 +55,14 @@ const MePage = (props) => {
                                                 nextFetchPolicy: 'network-only', 
                                                 notifyOnNetworkStatusChange: true});
 
+    if(!_.isEmpty(errorBankByIds)){
+        handlerErrorApollo( props, errorBankByIds )
+    }
+
     useEffect(() => {
         let bankIds = _.map(user?.banks, (bank)=>bank.bankId)
         if(!_.isEmpty(bankIds)){
-            refetchBankByIds({input: bankIds});
+            refetchBankByIds({ids: bankIds});
         }
     }, [])
 
@@ -74,88 +76,6 @@ const MePage = (props) => {
             }
         }
     }, [dataBankByIds, loadingBankByIds])
-
-    // const managementView = () =>{
-    //     switch(checkRole(user)){
-    //         case AMDINISTRATOR:{
-    //             return  <div>
-    //                         <div className="div-management">
-    //                             <div>Management</div>
-    //                             <div>
-    //                                 <button onClick={()=>{ 
-    //                                     navigate("/withdraws");
-    //                                 }}>รายการถอดเงิน รออนุมัติ</button>
-    //                             </div>
-    //                             <div>
-    //                                 <button onClick={()=>{ 
-    //                                     navigate("/deposits");
-    //                                 }}>รายการฝากเงิน รออนุมัติ</button>
-    //                             </div>
-    //                             <div>
-    //                                 <button onClick={()=>{ 
-    //                                     navigate("/suppliers");
-    //                                 }}>จัดการ Suppliers ทั้งหมด</button>
-    //                             </div>
-    //                             <div>
-    //                                 <button onClick={()=>{ 
-    //                                     navigate("/users");
-    //                                 }}>จัดการ รายชือบุคคลทั้งหมด</button>
-    //                             </div>
-    //                             <div>
-    //                                 <button onClick={()=>{ 
-    //                                     navigate("/banks");
-    //                                 }}>จัดการ รายชือธนาคารทั้งหมด</button>
-    //                             </div>
-    //                             <div>
-    //                                 <button onClick={()=>{
-    //                                     navigate("/date-lotterys");
-    //                                 }}>จัดการ วันออกหวยทั้งหมด</button>
-    //                             </div>
-    //                             <div>
-    //                                 <button onClick={()=>{ 
-    //                                     navigate("/bank");
-    //                                 }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
-    //                             </div>
-    //                         </div>
-    //                         <AutoGenerationContent />
-    //                     </div>
-    //         }
-    //         case AUTHENTICATED:{
-    //             return  <div>
-    //                         <div>
-    //                             <button onClick={()=>{ 
-    //                                 navigate("/book+buys");
-    //                             }}>รายการ จอง-ซื้อ</button>
-    //                         </div>
-    //                         <div>
-    //                             <button onClick={()=>{ 
-    //                                 navigate("/deposit", {state: {from: "/", mode: "new"}} )
-    //                             }}>รายการ แจ้งฝากเงิน</button>
-    //                         </div>
-    //                         <div>
-    //                             <button onClick={()=>{ 
-    //                                 navigate("/withdraw", {state: {from: "/", mode: "new"}} )
-    //                             }}>รายการ แจ้งถอนเงิน</button>
-    //                         </div>
-    //                         <div>
-    //                             <button onClick={()=>{ 
-    //                                 navigate("/bank"); 
-    //                             }}>รายการ บัญชีธนาคาร ({user.banks.length})</button>
-    //                         </div>
-    //                         <div>
-    //                             <button onClick={()=>{
-    //                                 navigate("/suppliers"); 
-    //                             }}>Supplier list</button>
-    //                         </div>
-    //                         <div>
-    //                             <button onClick={()=>{
-    //                                 navigate("/history-transitions"); 
-    //                             }}>History-Transitions</button>
-    //                         </div>
-    //                     </div>
-    //         }
-    //     }
-    // }
 
     return  useMemo(() => {
             return (<div className="content-bottom">
@@ -221,7 +141,7 @@ const MePage = (props) => {
                                                     loadingBankByIds 
                                                     ?  <LinearProgress />
                                                     :  _.map( _.sortBy(user?.banks, "createdAt").reverse(), (value, index)=>{
-                                                        let bank = _.find(banks, (item)=>item._id == value.bankId)
+                                                        let bank = _.find(banks, (item)=>item._id === value.bankId)
                                                         return  <ListItem
                                                                     key={index}
                                                                     secondaryAction={

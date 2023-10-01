@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import _ from "lodash"
 import { useQuery, useMutation } from "@apollo/client";
-import { getHeaders, handlerErrorApollo } from "../util"
-import { mutationLottery, queryManageLotterys, mutationRegister, queryUsers } from "../apollo/gqlQuery"
+import { getHeaders, handlerErrorApollo } from "../../util"
+import { mutationLottery, queryManageLotterys, mutationRegister, queryUsers } from "../../apollo/gqlQuery"
 
 const { faker } = require("@faker-js/faker");
 
-const AutoGenerationContent = (props) => {
+const AutoGenerationContentPage = (props) => {
     const location              = useLocation();
     const [users, setUsers]     = useState([]); 
     const [manageLotterys, setManageLotterys] = useState([]); 
@@ -152,4 +152,4 @@ const AutoGenerationContent = (props) => {
             </div>)
 }
 
-export default AutoGenerationContent;
+export default AutoGenerationContentPage;

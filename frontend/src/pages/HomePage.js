@@ -4,9 +4,7 @@ import _ from "lodash";
 import { useLocation } from "react-router-dom";
 import { toast } from 'react-toastify';
 import InfiniteScroll from "react-infinite-scroll-component";
-import { makeStyles } from "@material-ui/core/styles";
 import { ErrorOutline as ErrorOutlineIcon } from "@material-ui/icons";
-import { lightGreen, blueGrey } from "@material-ui/core/colors";
 import { useTranslation } from "react-i18next";
 import { FaAngleUp } from 'react-icons/fa';
 import { IoReloadCircle } from 'react-icons/io5'
@@ -18,69 +16,13 @@ import HomeItem from "../item/HomeItem"
 import SearchComp from "../components/SearchComp"
 import SkeletonComp from "../components/SkeletonComp"
 import * as Constants from "../constants"
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: "100%",
-    transform: "rotate(0deg)",
-    backgroundColor: "rgb(245, 240, 237)",
-    "& .Mui-expanded": {
-      backgroundColor: "rgb(245, 240, 237)",
-      "& .MuiFilledInput-input": {
-        backgroundColor: "rgb(248, 250, 252)"
-        // backgroundColor: "rgb(250, 241, 232)"
-      }
-    }
-  },
-  accordion: {
-    minHeight: 150, //ugly but works
-    height: "100%"
-  },
-  heading: {
-    fontSize: theme.typography.pxToRem(15)
-  },
-  secondaryHeading: {
-    fontSize: theme.typography.pxToRem(15),
-    color: theme.palette.text.secondary
-  },
-  details: {
-    alignItems: "center",
-    border: "1px solid rgba(0,0,0,0.1)",
-    borderRadius: 4
-  },
-  column: {
-    flexBasis: "33.33%"
-  },
-  helper: {
-    padding: theme.spacing(1, 2)
-  },
-  containedLightGreen: {
-    color: theme.palette.getContrastText(lightGreen[500]),
-    backgroundColor: lightGreen[500],
-    "&:hover": {
-      backgroundColor: lightGreen[700],
-      "@media (hover: none)": {
-        backgroundColor: lightGreen[500]
-      }
-    }
-  },
-  containedBlueGrey: {
-    color: theme.palette.getContrastText(blueGrey[500]),
-    backgroundColor: blueGrey[500],
-    "&:hover": {
-      backgroundColor: blueGrey[700],
-      "@media (hover: none)": {
-        backgroundColor: blueGrey[500]
-      }
-    }
-  }
-}));
+import { homeStyles } from "../styles"
 
 let unsubscribeSuppliers = null;
 const HomePage = (props) => {
   let location = useLocation();
   let toastIdRef = useRef(null)
-  let classes = useStyles();
+  let classes = homeStyles();
   let { t } = useTranslation();
 
   let [datas, setDatas]       = useState([]);
