@@ -1088,3 +1088,6 @@ background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/s
 
 /* ._loading_overlay_overlay {  position: fixed; } */
 
+.not-found{
+  width: 500px;
+}

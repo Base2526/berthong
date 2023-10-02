@@ -111,23 +111,23 @@ const logger = winston.createLogger({
     }),
 
     new winston.transports.MongoDB({
-        level: 'info',
-        // mongo database connection link
-        db: process.env.MONGO_URI,
-        options: {
-          useUnifiedTopology: true,
-          useNewUrlParser: true,
-        },
-        // A collection to save json formatted logs
-        collection: 'dblog',
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          // Convert logs to a json format
-          winston.format.json(),
-          winston.format.errors({ stack: true }),
-          winston.format.metadata()
-        ),
-      }),
+      level: 'info',
+      // mongo database connection link
+      db: process.env.MONGO_URI,
+      options: {
+        useUnifiedTopology: true,
+        useNewUrlParser: true,
+      },
+      // A collection to save json formatted logs
+      collection: 'dblog',
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        // Convert logs to a json format
+        winston.format.json(),
+        winston.format.errors({ stack: true }),
+        winston.format.metadata()
+      ),
+    }),
   ],
   exitOnError: false,
 });
@@ -179,7 +179,7 @@ function formatLogArguments(args) {
     if (typeof args[0] === 'string') {
       // console.log(calleeStrHl, args[0]);
       // args[0] = calleeStr + ' ' + args[0];
-      args[0] = `log${arrow} ${args[0]}`;
+      // args[0] = `log ${arrow} ${args[0]}`;
     } else {
       const logging = highlight('Logging below\u2B07 ');
       // console.log(calleeStrHl, logging);

@@ -29,9 +29,8 @@ import {
   ExpansionPanel
 } from "@chatscope/chat-ui-kit-react";
 import LinearProgress from '@mui/material/LinearProgress';
-import { connect } from "react-redux";
 import _ from "lodash"
-import { useQuery, useMutation, useSubscription } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import moment from "moment";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -72,14 +71,6 @@ const MessagePage = (props) => {
                                     nextFetchPolicy: 'network-only', 
                                     notifyOnNetworkStatusChange: true
                                   });  
-
-  // let { loading: loadingConversations, 
-  //       data: dataConversations, 
-  //       error: errorConversations  } =  useQuery( queryConversations, { 
-  //                                                 context: { headers: getHeaders(location) }, 
-  //                                                 fetchPolicy: 'cache-first', 
-  //                                                 nextFetchPolicy: 'network-only', 
-  //                                                 notifyOnNetworkStatusChange: true});
 
   const [onMessage, resultMessage] = useMutation(mutationMessage
     , {
@@ -152,40 +143,11 @@ const MessagePage = (props) => {
     };
   }, [])
 
-  // useEffect(()=>{
-  //   if(!_.isEmpty(state)){
-  //     let index = _.findIndex(conversations, (conversation)=>conversation._id === state.conversationId )
-  //     setCurrentConversation(conversations[index === -1 ? 0 : index])
-  //   }
-  // }, [state])
-
   useEffect(()=>{
-    // let mfriend = _.find(conversation.members, (member)=>member.userId !== user._id)
-    // console.log("mfriend :", mfriend)
-    // _.map(conversationList, (conversation)=>{
-    // })
-    // console.log("new_data :", new_data)
-    // setConversationList(conversations)
-    // setPreConversationList(conversations)
-    // console.log("conversations :", currentConversation)
-
     let newConversations = _.sortBy(conversations, "updatedAt").reverse()
     setConversationList(newConversations)
     if(!_.isEmpty(newConversations)) setCurrentConversation(newConversations[0])
   }, [conversations])
-
-  // useEffect(()=>{
-  //   if(!loadingConversations){
-  //     if(!_.isEmpty(dataConversations?.conversations)){
-  //       let { status, data } = dataConversations?.conversations
-  //       if(status){
-  //         let newData = _.sortBy(data, "updatedAt").reverse()
-  //         setConversationList(newData)
-  //         if(!_.isEmpty(newData)) setCurrentConversation(newData[0])
-  //       }
-  //     }
-  //   }
-  // }, [dataConversations, loadingConversations])
 
   useEffect(()=>{
     if(!_.isEmpty(currentConversation)){

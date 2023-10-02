@@ -11,11 +11,10 @@ import {
 import matchSorter from 'match-sorter'
 
 // Define a default UI for filtering
-function DefaultColumnFilter({
+const DefaultColumnFilter = ({
     column: { filterValue, preFilteredRows, setFilter },
-  }) {
+  }) => {
     const count = preFilteredRows.length
-  
     return (
       <input
         value={filterValue || ''}
@@ -34,7 +33,6 @@ function fuzzyTextFilterFn(rows, id, filterValue) {
 // Let the table remove the filter if the string is empty
 fuzzyTextFilterFn.autoRemove = val => !val
 
-
 const IndeterminateCheckbox = React.forwardRef(
 ({ indeterminate, ...rest }, ref) => {
     const defaultRef = React.useRef()
@@ -51,7 +49,6 @@ const IndeterminateCheckbox = React.forwardRef(
     )
 })
 
-  
 // Be sure to pass our updateMyData and the skipReset option
 const TableComp = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipReset, isDebug = false }) => {
     const filterTypes = React.useMemo(
@@ -128,9 +125,9 @@ const TableComp = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipRe
                     // when we edit the data.
                     autoResetPage: !skipReset,
                     autoResetSelectedRows: !skipReset,
-                    disableMultiSort: true,
+                    // disableMultiSort: true,
                   },
-                  // useFilters,
+                  useFilters,
                   useGroupBy,
                   useSortBy,
                   useExpanded,
@@ -184,29 +181,40 @@ const TableComp = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipRe
             {headerGroups.map(headerGroup => (
               <tr {...headerGroup.getHeaderGroupProps()}>
                 {headerGroup.headers.map((column, index) => 
-                    {
-                        return <th {...column.getHeaderProps()}>
-                                    <div>
-                                    {column.canGroupBy ? (
-                                        // If the column can be grouped, let's add a toggle
-                                        <span {...column.getGroupByToggleProps()}>
-                                        {column.isGrouped ? '🛑 ' : '👊 '}
-                                        </span>
-                                    ) : null}
-                                    <span {...column.getSortByToggleProps()}>
-                                        {column.render('Header')}
-                                        {/* Add a sort direction indicator */}
-                                        {column.isSorted
-                                        ? column.isSortedDesc
-                                            ? ' 🔽'
-                                            : ' 🔼'
-                                        : ''}
+                  {
+                    console.log("column :", column)
+                    return <th {...column.getHeaderProps(
+                      {
+                        style: { minWidth: column.minWidth, width: column.width },
+                      }
+                    )}>
+                                <div>
+                                {column.canGroupBy ? (
+                                    // If the column can be grouped, let's add a toggle
+                                    <span {...column.getGroupByToggleProps()}>
+                                    {column.isGrouped ? '🛑 ' : '👊 '}
                                     </span>
-                                    </div>
-                                    {/* Render the columns filter UI */}
-                                    <div>{column.canFilter ? column.render('Filter') : null}</div>
-                                </th>
-                    }
+                                ) : null}
+                                <span {...column.getSortByToggleProps()}>
+                                    {column.render('Header')}
+                                    {/* Add a sort direction indicator */}
+                                    {column.isSorted
+                                    ? column.isSortedDesc
+                                        ? ' 🔽'
+                                        : ' 🔼'
+                                    : ''}
+                                </span>
+                                </div>
+                                {/* Render the columns filter UI */}
+                                <div>{column.canFilter ? column.render('Filter') : null}</div>
+                            </th>
+
+                    // return  <th {...column.getHeaderProps()}>
+                    //           {column.render("Header")}
+                    //           {/* Render the columns filter UI */}
+                    //           <div>{column.canFilter ? column.render("Filter") : null}</div>
+                    //         </th>
+                  }
                 )}
               </tr>
             ))}
@@ -221,7 +229,13 @@ const TableComp = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipRe
                 <tr {...row.getRowProps()}>
                   {row.cells.map(cell => {
                     return (
-                      <td {...cell.getCellProps()}>
+                      <td {...cell.getCellProps({
+                        style: {
+                          minWidth: cell.column.minWidth,
+                          width: cell.column.width,
+                        },
+                      })}
+                      >
                         {cell.isGrouped ? (
                           // If it's a grouped cell, add an expander and row count
                           <>

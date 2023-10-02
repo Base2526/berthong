@@ -55,6 +55,7 @@ const BreadcsComp = (props) => {
   }, [dataProfile, loadingProfile])
 
   const BreadcrumbsView = () =>{
+    console.log("location?.pathname :", location)
     switch(location?.pathname){
       case "/":{
         return [<Typography key="0" color="text.primary"><HomeIcon size={18}/>{t("home")}</Typography>]
@@ -291,9 +292,16 @@ const BreadcsComp = (props) => {
           <Typography key="1" color="text.primary">{t("DB Log")}</Typography>
         ]
       }
+
+      case "/development":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">{t("Development")}</Typography>
+        ]
+      }
    
       default: 
-        return []
+        return [ <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink> ]
     }
   }
 
