@@ -11,6 +11,32 @@ import * as Model from "../model"
 import * as Constants from "../constants"
 import * as cache from "../cache"
 
+import logger from "./logger";
+
+export const loggerError = async(req, message) =>{
+   let { current_user } = await checkAuth(req);
+   let user_agent = userAgent(req)
+   logger.error( JSON.stringify(message), 
+                    {
+                      username: JSON.stringify(current_user),
+                      ipAddress: "127.0.0.1",
+                      userAgent: user_agent
+                    }
+                )
+}
+
+export const loggerInfo = async(req, message) =>{
+    let { current_user } = await checkAuth(req);
+    let user_agent = userAgent(req)
+    logger.info( JSON.stringify(message), 
+                    {
+                        username: JSON.stringify(current_user),
+                        ipAddress: "127.0.0.1",
+                        userAgent: user_agent
+                    }
+                )
+ }
+
 export const emailValidate = () =>{
     return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 }
@@ -102,7 +128,7 @@ export const checkAuth = async(req) => {
                 //  1 : OK
                 if(expiredDays >= 0){
                     let userId  = jwt.verify(session.token, process.env.JWT_SECRET);
-                    let current_user = await Model.User.findOne({_id: userId});
+                    let current_user = await getUser({_id: userId}) //await Model.User.findOne({_id: userId});
 
                     if(!_.isNull(current_user)){
                         return {
@@ -134,6 +160,13 @@ export const checkAuth = async(req) => {
         code: Constants.USER_NOT_FOUND,
         message: "without user - anonymous user"
     }
+}
+
+export const userAgent = (req) => {
+    if (req.headers && req.headers["user-agent"]) {
+        return req.headers["user-agent"];
+    }
+    return "no-user-agent";
 }
 
 export const checkAuthorizationWithSessionId = async(sessionId) => {

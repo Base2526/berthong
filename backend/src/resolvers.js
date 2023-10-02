@@ -27,7 +27,7 @@ export default {
       let { _id } = args
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       console.log(`####################### checkWalletByUserId Start ${ _id } ##############################`)
 
@@ -233,7 +233,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let { OFF_SET, LIMIT } = args?.input
       // let users = await Model.User.find({roles: {$nin:[Constants.AMDINISTRATOR]}}, 
@@ -346,7 +346,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let data = await Model.Role.find({_id: {$in: args?.input }})
       return {
@@ -681,7 +681,7 @@ export default {
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
 
-      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
     
       let suppliers = await Model.Supplier.aggregate([
                       {  $match: { follows: {$elemMatch: {userId: current_user?._id} }  } },
@@ -724,7 +724,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let dblogs = await Model.Dblog.find({})
       
@@ -737,6 +737,10 @@ export default {
     async dateLotterys(parent, args, context, info){
       let start = Date.now()
       let { req } = context
+      
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+
       let dateLotterys = await Model.DateLottery.find({})
       
       return {  status: true,
@@ -751,7 +755,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let dateLottery = await Model.DateLottery.findById(_id)
       if(_.isNull(dateLottery)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
@@ -778,7 +782,7 @@ export default {
       let start = Date.now()
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
-      // if( Utils.checkRole(current_user) == Constants.AMDINISTRATOR || Utils.checkRole(current_user) == Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
+      // if( Utils.checkRole(current_user) == Constants.AMDINISTRATOR || Utils.checkRole(current_user) == Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
       let data = await Model.ManageLottery.find({})
       return {  status: true,
                 data,
@@ -791,7 +795,7 @@ export default {
       let { req } = context
       let { _id } = args
       let { current_user } =  await Utils.checkAuth(req);
-      // if( Utils.checkRole(current_user) == Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      // if( Utils.checkRole(current_user) == Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let data = await Model.ManageLottery.findOne({_id})
       return {  status: true,
@@ -805,7 +809,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let data = await Model.Transition.aggregate([
                   { $match: { type: Constants.DEPOSIT } },
@@ -835,7 +839,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let data = await Model.Transition.aggregate([
                           { $match: { type: Constants.WITHDRAW } },
@@ -866,7 +870,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let transitions = await Model.Transition.aggregate([
         { 
@@ -942,7 +946,7 @@ export default {
         
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'Constants.AMDINISTRATOR only!')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let data = await Model.Transition.aggregate([
                               { $match: { status: Constants.WAIT, type: Constants.DEPOSIT } },
@@ -972,7 +976,7 @@ export default {
         
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let data = await Model.Transition.aggregate([
                   { $match: { status: Constants.WAIT, type: Constants.WITHDRAW } },
@@ -1002,7 +1006,7 @@ export default {
       let { req } = context
       let { current_user } =   await Utils.checkAuth(req);
       let role = Utils.checkRole(current_user)
-      if( role !== Constants.AMDINISTRATOR && role !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR OR SELLER ONLY')
+      if( role !== Constants.AMDINISTRATOR && role !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let { TITLE, NUMBER, PAGE, LIMIT } = args?.input
       let SKIP = (PAGE - 1) * LIMIT
@@ -1155,7 +1159,7 @@ export default {
         //   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
         // }
       } catch(err) {
-        logger.error(err.toString());
+        await Utils.loggerError(req, err.toString());
         
         return {
           status:false,
@@ -1171,7 +1175,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       console.log("check_db :", connection)
       let { readyState } = connection
@@ -1187,9 +1191,16 @@ export default {
       }
       // mongoose.connection.poolSize
 
-      console.log("process.env :", process.env)
+      console.log("context :", context)
 
-      logger.error(JSON.stringify(process.env));
+      // await Utils.loggerError(req,  JSON.stringify(process.env), 
+      //               {
+      //                 username: JSON.stringify(current_user), // Replace with actual user info
+      //                 ipAddress: "127.0.0.1",
+      //                 userAgent: Utils.userAgent(req)
+      //               }
+      //             );
+      await Utils.loggerError(req, process.env)
 
       let text = "1234"
       let encrypt = cryptojs.AES.encrypt(text, process.env.JWT_SECRET).toString()
@@ -1197,7 +1208,10 @@ export default {
       let decrypt = cryptojs.AES.decrypt(encrypt, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8);
       console.log("encrypt ++ :", encrypt, decrypt)
   
-      return { status:true, "mongo db state" : mongo_db_state }
+      return {  status:true, 
+                mongo_db_state,
+                env: process.env
+              }
     },
     async login(parent, args, context, info) {
       let start = Date.now()
@@ -1351,12 +1365,12 @@ export default {
             // Request to exchange code for an access token
             github_user = await fetch(process.env.GITHUB_URL_OAUTH_ACCESS_TOKEN, { method: "POST", body: formData })
                                       .then((response) => response.text())
-                                      .then((paramsString) => {
+                                      .then(async(paramsString) => {
                                         let params = new URLSearchParams(paramsString);
 
                                         console.log("params :", params)
 
-                                        logger.error(JSON.stringify(params));
+                                        await Utils.loggerError(req, JSON.stringify(params));
                                         
                                         let access_token = params.get("access_token");
                                   
@@ -1573,12 +1587,12 @@ export default {
         // Request to exchange code for an access token
         let github_user = await fetch(`https://github.com/login/oauth/access_token`, { method: "POST", body: data })
                                     .then((response) => response.text())
-                                    .then((paramsString) => {
+                                    .then(async(paramsString) => {
                                       let params = new URLSearchParams(paramsString);
 
                                       console.log("params :", params)
 
-                                      logger.error(JSON.stringify(params));
+                                      await Utils.loggerError(req, JSON.stringify(params));
                                       
                                       let access_token = params.get("access_token");
                                 
@@ -1595,7 +1609,7 @@ export default {
         console.log(`Time to execute = ${ (Date.now() - start) / 1000 } seconds`)
 
       } catch(err) {
-        logger.error(err.toString());
+        await Utils.loggerError(req, err.toString());
         return;
       }
     },
@@ -1665,8 +1679,8 @@ export default {
               resolve();
             });
       
-            output.on('error', (err) => {
-              logger.error(err.toString());
+            output.on('error', async(err) => {
+              await Utils.loggerError(req, err.toString());
   
               reject(err);
             });
@@ -1922,8 +1936,8 @@ export default {
                   resolve();
                 });
           
-                output.on('error', (err) => {
-                  logger.error(err.toString());
+                output.on('error', async(err) => {
+                  await Utils.loggerError(req, err.toString());
     
                   reject(err);
                 });
@@ -1968,8 +1982,8 @@ export default {
                       resolve();
                     });
               
-                    output.on('error', (err) => {
-                      logger.error(err.toString());
+                    output.on('error', async(err) => {
+                      await Utils.loggerError(req, err.toString());
         
                       reject(err);
                     });
@@ -1980,9 +1994,9 @@ export default {
                 }else{
                   if(input.files[i].delete){
                     let pathUnlink = '/app/uploads/' + input.files[i].url.split('/').pop()
-                    fs.unlink(pathUnlink, (err)=>{
+                    fs.unlink(pathUnlink, async(err)=>{
                         if (err) {
-                          logger.error(err);
+                          await Utils.loggerError(req, err);
                         }else{
                           // if no error, file has been deleted successfully
                           console.log('File has been deleted successfully ', pathUnlink);
@@ -1994,7 +2008,7 @@ export default {
                 }
                 // console.log("updatePost #6:", newFiles)
               } catch(err) {
-                logger.error(err.toString());
+                await Utils.loggerError(req, err.toString());
               }
             }
           }
@@ -2038,8 +2052,8 @@ export default {
           resolve();
         });
   
-        output.on('error', (err) => {
-          logger.error(err.toString());
+        output.on('error', async(err) => {
+          await Utils.loggerError(req, err.toString());
 
           reject(err);
         });
@@ -2203,7 +2217,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( !_.isEqual(Utils.checkRole(current_user), Constants.AMDINISTRATOR) ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( !_.isEqual(Utils.checkRole(current_user), Constants.AMDINISTRATOR) ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       await Promise.all( _.map(input, async(date, weight)=>{
                           let dateLottery =  await Model.DateLottery.findOne({date})
@@ -2321,8 +2335,8 @@ export default {
               resolve();
             });
       
-            output.on('error', (err) => {
-              logger.error(err.toString());
+            output.on('error', async(err) => {
+              await Utils.loggerError(req, err.toString());
 
               reject(err);
             });
@@ -2369,7 +2383,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let aggregate = [
                         { 
@@ -2456,7 +2470,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let transition = await Model.Transition.findOne({ _id: input?._id })
       
@@ -2494,7 +2508,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let result = {input}
 
@@ -2548,7 +2562,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       switch(input?.mode.toLowerCase()){
         case "all":{
@@ -2581,7 +2595,7 @@ export default {
       console.log("Calculate lottery :", input)
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'AMDINISTRATOR ONLY')
+      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let manageL = await Model.ManageLottery.findOne({_id: mongoose.Types.ObjectId(input?._id)})
 
@@ -2846,7 +2860,7 @@ export default {
         return result;
 
       } catch(err) {
-        logger.error(err.toString());
+        await Utils.loggerError(req, err.toString());
         return;
       }
     },
@@ -2871,7 +2885,7 @@ export default {
 
         return result;
       } catch(err) {
-        logger.error(err.toString());
+        await Utils.loggerError(req, err.toString());
         return;
       }
     },
@@ -2951,7 +2965,7 @@ export default {
         }   
 
       } catch(err) {
-        logger.error(err.toString());
+        await Utils.loggerError(req, err.toString());
 
         throw new AppError(Constants.ERROR, err.toString())
       }
@@ -2984,8 +2998,8 @@ export default {
               resolve();
             });
       
-            output.on('error', (err) => {
-              logger.error(err.toString());
+            output.on('error', async(err) => {
+              await Utils.loggerError(req, err.toString());
 
               reject(err);
             });
@@ -3130,7 +3144,7 @@ export default {
             });
       
             output.on('error', (err) => {
-              logger.error(err.toString());
+              await Utils.loggerError(req, err.toString());
 
               reject(err);
             });

@@ -58,6 +58,9 @@ import {
   VscDebug as VscDebugIcon
 } from "react-icons/vsc"
 import {
+  FaDev as FaDevIcon
+} from "react-icons/fa"
+import {
   Avatar,
   IconButton,
   ClickAwayListener,
@@ -119,6 +122,8 @@ import ProducersPage from "./pages/ProducersPage"
 import DepositsPage from "./pages/DepositsPage"
 import WithdrawsPage from "./pages/WithdrawsPage"
 import MessagePage from "./pages/message/MessagePage";
+import DevelopmentPage from "./pages/DevelopmentPage"
+import NotFound404Page from "./pages/NotFound404Page"
 
 import { queryNotifications, 
           mutationFollow, 
@@ -968,7 +973,8 @@ const App =(props) =>{
                 {id: 6, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
                 {id: 7, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
                 {id: 8, title:"จัดการหวยทั้งหมด", icon: <AssistantIcon />, path: "/manage-lotterys"},
-                {id: 9, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"}
+                {id: 9, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
+                {id: 10, title:"Development", icon: <FaDevIcon size="1.5em" />, path: "/development"}
               ]
       }
       case Constants.AUTHENTICATED:{
@@ -1324,8 +1330,9 @@ const App =(props) =>{
 
               <Route path="/all-deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/all-withdraws" element={<WithdrawsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
+              <Route path="/development" element={<DevelopmentPage {...props} />} />
             </Route>
-            <Route path="*" element={<p>There's nothing here: 404!</p>} />
+            <Route path="*" element={<NotFound404Page />} />
           </Routes>
         </div>
       </div>

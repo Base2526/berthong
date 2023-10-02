@@ -1,17 +1,6 @@
 import { makeStyles, withStyles } from "@material-ui/core/styles";
 import { lightGreen, blueGrey } from "@material-ui/core/colors";
-import {
-  ListItemText,
-  ListItemIcon,
-  ListItem as MuiListItem,
-  List,
-  Divider,
-  Typography,
-  Toolbar,
-  AppBar,
-  CssBaseline,
-  Drawer
-} from "@material-ui/core";
+import { ListItem as MuiListItem } from "@material-ui/core";
 
 const drawerWidth = 240;
 export const appStyles = makeStyles((theme) => ({
