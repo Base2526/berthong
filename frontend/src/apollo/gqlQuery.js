@@ -97,5 +97,8 @@ export const gqlUpdateMessageRead = gql`
             updateMessageRead( conversationId: $conversationId)
         }`;
 
+// gql`query bankByIds($ids: [ID]!) { bankByIds(_ids: $ids) }`;
+export const subConversations = gql`subscription conversations( $userId: ID! ){ conversations(userId: $userId) }`;
+
 export const gqlUser = gql`query User($id: ID){ user(_id: $id) }`;
 export const gqlUsers = gql`query users($page: Int, $perPage: Int){ users( page: $page perPage: $perPage ) }`;

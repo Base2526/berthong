@@ -45,17 +45,17 @@ const CommentComp = (props) => {
               document: subscriptionCommentById,
               variables: { id },
               updateQuery: (prev, {subscriptionData}) => {
-                  if (!subscriptionData.data) return prev;
+                if (!subscriptionData.data) return prev;
 
-                  let { mutation, commentId, data } = subscriptionData?.data?.subscriptionCommentById;
-                  switch(mutation){
-                      case "CREATED":
-                      case "UPDATED":{
-                          return {commentById: {...prev.commentById, data}}; 
-                      }
-                      default:
-                          return prev;
+                let { mutation, commentId, data } = subscriptionData?.data?.subscriptionCommentById;
+                switch(mutation){
+                  case "CREATED":
+                  case "UPDATED":{
+                      return {commentById: {...prev.commentById, data}}; 
                   }
+                  default:
+                      return prev;
+                }
               }
           });
         }  

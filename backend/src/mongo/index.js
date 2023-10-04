@@ -313,7 +313,7 @@ mongoose.connect(
 
 const connection = mongoose.connection;
 connection.on("error", (err)=>{
-  console.error.bind(console, "Error : Connection to database")
+  // console.error.bind(console, "Error : Connection to database")
 
   logger.error("Error : Connection to database :", err.toString() )
 });

@@ -152,7 +152,8 @@ import { queryNotifications,
           mutationAdminDeposit,
           mutationAdminWithdraw,
           queryConversations,
-          mutationConversation
+          mutationConversation,
+          subConversations
         } from "./apollo/gqlQuery"
           
 import * as Constants from "./constants"
@@ -161,6 +162,8 @@ import logo from "./images/logo_4.png";
 import { appStyles, ListItem } from "./styles"
 
 let { REACT_APP_SITE_TITLE } = process.env
+
+let unsubscribeSubConversations =  null
 
 const App =(props) =>{
   let { t } = useTranslation();
@@ -191,6 +194,7 @@ const App =(props) =>{
 
   let { loading: loadingConversations, 
         data: dataConversations, 
+        subscribeToMore: subscribeToMoreConversations, 
         error: errorConversations  } =  useQuery( queryConversations, { 
                                                   context: { headers: getHeaders(location) }, 
                                                   fetchPolicy: 'cache-first', 
@@ -828,8 +832,30 @@ const App =(props) =>{
   );
 
   useEffect(()=>{
+    if(unsubscribeSubConversations) unsubscribeSubConversations()
+
     if(!_.isEmpty(user)){
       refetchNotifications();
+
+      unsubscribeSubConversations =  subscribeToMoreConversations({
+        document: subConversations,
+        context: { headers: getHeaders(location) },
+        variables: { userId: user?._id },
+        updateQuery: (prev, value, context) => {
+          let { subscriptionData } = value
+          if (!subscriptionData?.data) return prev;
+
+          let { mutation, data } = subscriptionData?.data?.conversations;
+          switch(mutation){
+            case "CREATED":
+            case "UPDATED":{
+              return {conversations: {...prev.conversations, data: _.map(prev.conversations.data, (d)=>_.isEqual(d._id, data._id) ? data : d)}}; 
+            }
+            default:
+                return prev;
+          }
+        }
+      })
     }
 
     console.log("user :", user)
@@ -1054,8 +1080,11 @@ const App =(props) =>{
                         <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
                       </IconButton>
                       <IconButton disabled={_.isEmpty(conversations) ? true : false}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
-                        <HiChatBubbleLeftRightIcon alt="chat" color={ _.isEmpty(conversations) ? "gray" : _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                        <Badge badgeContent={conversations.length} color="primary">
+                          <HiChatBubbleLeftRightIcon alt="chat" color={ _.isEmpty(conversations) ? "gray" : _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                        </Badge>
                       </IconButton>
+                      {/* .length */}
                       <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
                         <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } size="1.2em"/>
                       </IconButton>
@@ -1099,7 +1128,9 @@ const App =(props) =>{
                         <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
                       </IconButton>
                       <IconButton disabled={_.isEmpty(conversations) ? true : false}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
-                        <HiChatBubbleLeftRightIcon alt="chat" color={ _.isEmpty(conversations) ? "gray" :  _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                        <Badge badgeContent={conversations.length} color="primary">
+                          <HiChatBubbleLeftRightIcon alt="chat" color={ _.isEmpty(conversations) ? "gray" :  _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                        </Badge>
                       </IconButton>
                       <IconButton size={'small'} onClick={()=> navigate("/lotterys")}>
                         <BiStoreAlt color={ _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1.2em"/>

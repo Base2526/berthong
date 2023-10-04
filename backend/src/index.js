@@ -87,7 +87,7 @@ async function startApolloServer(typeDefs, resolvers) {
             return getDynamicContext(ctx, msg, args);
         },
         onConnect: async (ctx) => {
-            console.log("onConnect :", ctx.connectionParams)
+            // console.log("onConnect :", ctx.connectionParams)
         //     // Check authentication every time a client connects.
         //     // if (tokenIsNotValid(ctx.connectionParams)) {
         //     //   // You can return false to close the connection  or throw an explicit error
@@ -171,14 +171,14 @@ async function startApolloServer(typeDefs, resolvers) {
                         // console.log("requestDidStart > didResolveOperation #2:", requestContext)
                         let { operation, operationName } = context
                         const operationType = operation.operation;
-                        console.log(`${operationType} recieved: ${operationName}`)
+                        // console.log(`${operationType} recieved: ${operationName}`)
                        
                         if (context?.context?.req?.headers && context?.context?.req?.headers?.authorization) {
                             var auth    = context?.context?.req?.headers.authorization;
                             var parts   = auth.split(" ");
                             var bearer  = parts[0];
                             var sessionId   = parts[1];
-                            console.log("requestDidStart > header :", auth, sessionId )
+                            // console.log("requestDidStart > header :", auth, sessionId )
                         }
                       },
                       willSendResponse(context) {
@@ -266,6 +266,15 @@ async function startApolloServer(typeDefs, resolvers) {
         //       console.log('disconnect...');
         //     },
         // },
+        subscriptions: {
+            onConnect: (connectionParams, webSocket) => {
+                console.log('Websocket CONNECTED');
+                return {
+                    hello: 'world'
+                }
+            },
+            onDisconnect: () => console.log('Websocket CONNECTED'),
+        }
 
         // formatError: (err) => {
         //     // This function formats errors returned by your resolvers

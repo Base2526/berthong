@@ -825,6 +825,8 @@ export default gql`
 
     subConversation(userId: ID): JSON
     subMessage(userId: ID!, conversationId: ID!): JSON
+
+    conversations(userId: ID!): JSON
   }
 
   type PostSubscriptionPayload {
