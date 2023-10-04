@@ -1,46 +1,14 @@
 import React, { useEffect } from "react";
-
 import _ from "lodash"
-import ListItemButton from '@mui/material/ListItemButton';
-import Typography from '@mui/material/Typography';
-// import Avatar from '@mui/material/Avatar';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
 import moment from "moment";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { useLocation } from "react-router-dom";
 import styles from "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-import {
-  MainContainer,
-  ChatContainer,
-  MessageList,
-  Message,
-  MessageInput,
-  Avatar,
-  AvatarGroup,
-  Button,
-  Conversation,
-  ConversationHeader,
-  StarButton,
-  VoiceCallButton,
-  VideoCallButton,
-  InfoButton,
-  ConversationList,
-  InputToolbox,
-  Loader,
-  TypingIndicator,
-  StatusList,
-  Status,
-  Sidebar,
-  Search,
-  MessageSeparator,
-  action,
-  ExpansionPanel
-} from "@chatscope/chat-ui-kit-react";
+import { Message, Avatar } from "@chatscope/chat-ui-kit-react";
 import LinearProgress from '@mui/material/LinearProgress';
 
 import { queryUserById } from "../../apollo/gqlQuery"
-import { getHeaders } from "../../util";
+import { getHeaders, handlerErrorApollo } from "../../util";
 
 const MessageItem = (props) => {
     let location = useLocation();
@@ -51,19 +19,20 @@ const MessageItem = (props) => {
             data: dataUserById, 
             error: errorUserById, 
             refetch: refetchUserById,
-            subscribeToMore: subscribeToMoreUserById, 
             networkStatus }   =   useQuery(queryUserById, 
                                     { 
-                                    context: { headers: getHeaders(location) }, 
-                                    variables: {id: senderId}, 
-                                    fetchPolicy: 'cache-first', 
-                                    nextFetchPolicy: 'network-only', 
-                                    notifyOnNetworkStatusChange: true
+                                        context: { headers: getHeaders(location) }, 
+                                        variables: {id: senderId}, 
+                                        fetchPolicy: 'cache-first', 
+                                        nextFetchPolicy: 'network-only', 
+                                        notifyOnNetworkStatusChange: true
                                     });  
 
-    if(loadingUserById) return <div />;
+    if(errorUserById) return handlerErrorApollo( props, errorUserById );
 
-    console.log("dataUserById :", dataUserById)
+    useEffect(()=>{
+        if(!_.isEmpty(senderId)) refetchUserById({id: senderId})
+    }, [senderId])
 
     let direction = senderId == user._id  ? "outgoing" : "incoming"
     

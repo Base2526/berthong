@@ -1,6 +1,4 @@
 const cron = require('node-cron');
-// import _ from "lodash";
-// import moment from "moment"
 import { Supplier, Transition} from './model'
 import pubsub from './pubsub'
 import { checkBalance, checkBalanceBook } from './utils'

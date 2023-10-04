@@ -1191,7 +1191,7 @@ export default {
       }
       // mongoose.connection.poolSize
 
-      console.log("context :", context)
+      // console.log("context :", context)
 
       // await Utils.loggerError(req,  JSON.stringify(process.env), 
       //               {
@@ -1200,7 +1200,14 @@ export default {
       //                 userAgent: Utils.userAgent(req)
       //               }
       //             );
-      await Utils.loggerError(req, process.env)
+      // await Utils.loggerError(req, process.env)
+
+      pubsub.publish("CONVERSATION", {
+        conversation: {
+          mutation: "CREATED",
+          data: {"A": "AA", "B": "BB"},
+        },
+      });
 
       let text = "1234"
       let encrypt = cryptojs.AES.encrypt(text, process.env.JWT_SECRET).toString()
@@ -2898,6 +2905,9 @@ export default {
         let { req } = context
 
         let { current_user } =  await Utils.checkAuth(req);
+        if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR &&
+            Utils.checkRole(current_user) !== Constants.AUTHENTICATED &&
+            Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
         switch(mode){
           case "NEW":{
@@ -2977,6 +2987,9 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR &&
+          Utils.checkRole(current_user) !== Constants.AUTHENTICATED &&
+          Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       console.log("message :", args, current_user)
 
@@ -3064,6 +3077,14 @@ export default {
           //   },
           // });
           */
+
+          conversation = await Model.Conversation.findById(input.conversationId);
+          pubsub.publish("CONVERSATION", {
+            conversation: {
+              mutation: "UPDATED",
+              data: conversation,
+            },
+          });
         }else{
 
           let newMember = _.find(conversation.members, member => member.userId != current_user?._id);
@@ -3373,38 +3394,38 @@ export default {
         }
       )
     },
-    subConversation: {
-      resolve: (payload) =>{
-        return payload.conversation
-      },
-      subscribe: withFilter((parent, args, context, info) => {
-          return pubsub.asyncIterator(["CONVERSATION"])
-        }, (payload, variables, context) => {
-          let {mutation, data} = payload.conversation
+    // subConversation: {
+    //   resolve: (payload) =>{
+    //     return payload.conversation
+    //   },
+    //   subscribe: withFilter((parent, args, context, info) => {
+    //       return pubsub.asyncIterator(["CONVERSATION"])
+    //     }, (payload, variables, context) => {
+    //       let {mutation, data} = payload.conversation
           
-          // let {currentUser} = context
-          // if(_.isEmpty(currentUser)){
-          //   return false;
-          // }
-          // console.log("CONVERSATION: ", payload)
-          switch(mutation){
-            case "CREATED":
-            case "UPDATED":
-            case "DELETED":
-              {
-                return _.findIndex(data.members, (o) => o.userId == variables.userId ) > -1
-              }
-            case "CONNECTED":
-            case "DISCONNECTED":{
-              // console.log("CONVERSATION :::: ", mutation, data)
-            }
-          }
+    //       // let {currentUser} = context
+    //       // if(_.isEmpty(currentUser)){
+    //       //   return false;
+    //       // }
+    //       // console.log("CONVERSATION: ", payload)
+    //       switch(mutation){
+    //         case "CREATED":
+    //         case "UPDATED":
+    //         case "DELETED":
+    //           {
+    //             return _.findIndex(data.members, (o) => o.userId == variables.userId ) > -1
+    //           }
+    //         case "CONNECTED":
+    //         case "DISCONNECTED":{
+    //           // console.log("CONVERSATION :::: ", mutation, data)
+    //         }
+    //       }
 
-          return false;
+    //       return false;
           
-        }
-      )
-    },
+    //     }
+    //   )
+    // },
     subMessage: {
       resolve: (payload) =>{
         return payload.message
@@ -3449,6 +3470,25 @@ export default {
           //   }
           // }
           return data.conversationId === variables.conversationId && data.senderId !== variables.userId
+        }
+      )
+    },
+    conversations: {
+      resolve: (payload) =>{
+        return payload.conversation
+      },
+      subscribe: withFilter((parent, args, context, info) => {
+          return pubsub.asyncIterator(["CONVERSATION"])
+        }, async (payload, variables, context, info) => {
+          let { userId } = variables
+          let { mutation, data } = payload.conversation
+          switch(mutation){
+            case "CREATED":
+            case "UPDATED":
+              return _.find( data?.members, m=> _.isEqual(m.userId.toString(), userId.toString()) ) ? true : false
+          }
+
+          return false;
         }
       )
     },

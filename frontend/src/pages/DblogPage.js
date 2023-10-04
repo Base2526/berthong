@@ -118,8 +118,8 @@ const DblogPage = (props) => {
           accessor: 'meta',
           Cell: props => {
             let {meta} = props.row.values 
-            console.log( "meta :", JSON.parse(meta?.username) )
-            return  <div>{JSON.parse(meta?.username)?.displayName}</div>
+            // console.log( "meta :", JSON.parse(meta?.username) )
+            return  <div>{meta?.username ? JSON.parse(meta?.username)?.displayName : ""}</div>
           }
         },
         {
