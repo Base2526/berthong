@@ -86,4 +86,6 @@ export const TRANSLATIONS_EN = {
     subscribes: "Subscribes",
 
     all_message: "All messages",
+
+    search: "Search",
 };

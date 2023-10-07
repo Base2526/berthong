@@ -182,7 +182,6 @@ const TableComp = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipRe
               <tr {...headerGroup.getHeaderGroupProps()}>
                 {headerGroup.headers.map((column, index) => 
                   {
-                    console.log("column :", column)
                     return <th {...column.getHeaderProps(
                       {
                         style: { minWidth: column.minWidth, width: column.width },

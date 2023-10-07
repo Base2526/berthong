@@ -46,8 +46,55 @@ const UsersPage = (props) => {
   const [onMutationForceLogout, resultMutationForceLogout] = useMutation(mutationForceLogout,
     {
       context: { headers: getHeaders(location) },
-      update: (cache, {data: {forceLogout}} ) => {
+      update: (cache, {data: {forceLogout}}, context ) => {
         console.log("forceLogout :", forceLogout)
+        let { status } = forceLogout
+
+        if(status){
+          switch(context?.variables?.input?.mode.toLowerCase()){
+            case "all":{
+              let { _id } = context?.variables?.input
+              let queryUsersValue = cache.readQuery({ query: queryUsers, variables: { input } });
+              if(!_.isEmpty(queryUsersValue)){
+
+                let newData = _.map(queryUsersValue.users.data, (v)=>{
+                                if(v?.session){
+                                  return  _.omit(v, ['session'])
+                                }
+                                return v
+                              }) 
+
+                cache.writeQuery({
+                  query: queryUsers,
+                  variables: { input },
+                  data: Object.assign({}, queryUsersValue, { users: {...queryUsersValue.users, data: newData } } )
+                });
+              }
+              break;
+            }
+    
+            case "id":{
+              let { _id } = context?.variables?.input
+              let queryUsersValue = cache.readQuery({ query: queryUsers, variables: { input } });
+              if(!_.isEmpty(queryUsersValue)){
+
+                let newData = _.map(queryUsersValue.users.data, (v)=>{
+                                if(v?.session && _.isEqual(v?.session?._id.toString(), _id.toString())){
+                                  return  _.omit(v, ['session'])
+                                }
+                                return v
+                              }) 
+
+                cache.writeQuery({
+                  query: queryUsers,
+                  variables: { input },
+                  data: Object.assign({}, queryUsersValue, { users: {...queryUsersValue.users, data: newData } } )
+                });
+              }
+              break;
+            }
+          }
+        }
         
         // let { status, input } = manageLottery
         // if(status){
@@ -139,7 +186,7 @@ const UsersPage = (props) => {
                         loader={<h4>Loading...</h4>}>
                         { 
                         _.map(datas, (item, index) => {            
-                          let { _id,  avatar, displayName, username, email, roles, lastAccess, transition } = item
+                          let { _id,  avatar, displayName, username, email, roles, lastAccess, transition, session } = item
 
                           let money_deposit = 0
                           let money_withdraw = 0
@@ -194,9 +241,9 @@ const UsersPage = (props) => {
                                     <Box sx={{ width: '5%' }}>{ (moment(lastAccess, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</Box>
                                     <Box sx={{ width: '20%' }}>
                                       {
-                                        item?.session 
-                                        ? <button onClick={(e)=>{ onMutationForceLogout({ variables: { input: { mode: "id", _id } } }) }}><ExitToAppIcon />Force logout</button>
-                                        : <></>
+                                        !_.isUndefined(session)
+                                        ? <button onClick={(e)=>{ onMutationForceLogout({ variables: { input: { mode: "id", _id: session._id } } }) }}><ExitToAppIcon />Force logout</button>
+                                        : <div />
                                       }
                                       <button onClick={()=>{ navigate("/user", {state: {from: "/", mode: "edit", id: _id}}) }}><EditIcon/>{t("edit")}</button>
                                       <button onClick={(e)=>{ setOpenDialogDelete({ isOpen: true, id: _id, description: displayName }) }}><DeleteForeverIcon/>{t("delete")}</button>

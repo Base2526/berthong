@@ -34,10 +34,10 @@ const DblogPage = (props) => {
   const { loading: loadingDblog, 
           data: dataDblog, 
           error: errorDblog  } =  useQuery( queryDblog, {
-                                              context: { headers: getHeaders(location) },
-                                              fetchPolicy: 'cache-first', 
-                                              nextFetchPolicy: 'network-only', 
-                                              notifyOnNetworkStatusChange: false,
+                                            context: { headers: getHeaders(location) },
+                                            fetchPolicy: 'cache-first', 
+                                            nextFetchPolicy: 'network-only', 
+                                            notifyOnNetworkStatusChange: false,
                                             });
 
   useEffect(() => {
@@ -45,7 +45,7 @@ const DblogPage = (props) => {
       if(!_.isEmpty(dataDblog?.dblog)){
         let { status, data: newData } = dataDblog.dblog
         if(status && !_.isEqual(datas, newData)){
-          setDatas(newData)
+          setDatas(_.sortBy(newData, "timestamp").reverse())
         }
       }
     }
@@ -99,9 +99,9 @@ const DblogPage = (props) => {
         {
           Header: 'ข้อความ',
           accessor: "message",
-          maxWidth: 70,
-          minWidth: 50,
-          width: 60,
+          // maxWidth: 70,
+          // minWidth: 50,
+          // width: 60,
           Cell: props =>{
             let {message} = props.row.values 
             try {

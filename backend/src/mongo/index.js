@@ -148,7 +148,14 @@ const modelExists =()=>{
     if (result.length > 0) {
       // console.log('Found Model.Message');
     } else {
-      let newMessage = new Model.Message({_id: mongoose.Types.ObjectId()});
+      /*
+      _id: { type: Schema.Types.ObjectId, required:[true, "_id is a required field"] },
+    conversationId: { type: Schema.Types.ObjectId, required:[true, "Conversation-Id is a required field"] },
+      */
+      let newMessage = new Model.Message({_id: mongoose.Types.ObjectId(), 
+                                          conversationId: mongoose.Types.ObjectId(),
+                                          senderId: mongoose.Types.ObjectId(),
+                                        });
       await newMessage.save();
       await Model.Message.deleteMany({})
     }

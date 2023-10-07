@@ -9,6 +9,7 @@ import mongoose from 'mongoose';
 import fetch from "node-fetch";
 import { GraphQLUpload } from 'graphql-upload';
 import moment from "moment";
+import jwt from 'jsonwebtoken';
 
 import pubsub from './pubsub'
 import AppError from "./utils/AppError"
@@ -21,13 +22,35 @@ import connection from './mongo'
 
 export default {
   Query: {
+    async me(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+      let { _id } = args
+
+      let { current_user } =  await Utils.checkAuth(req);
+      let role = Utils.checkRole(current_user)
+      if( role !== Constants.AMDINISTRATOR  &&
+          role !== Constants.AUTHENTICATED &&
+          role !== Constants.SELLER
+          ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+
+      let user = await Utils.getUserFull({username: current_user.username})
+
+      await Model.User.updateOne({ _id: user?._id }, { lastAccess : Date.now() });
+      return {
+        status: true,
+        data: user,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+    },
+    
     async checkWalletByUserId(parent, args, context, info){
       let start = Date.now()
       let { req } = context
       let { _id } = args
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       console.log(`####################### checkWalletByUserId Start ${ _id } ##############################`)
 
@@ -233,13 +256,9 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let { OFF_SET, LIMIT } = args?.input
-      // let users = await Model.User.find({roles: {$nin:[Constants.AMDINISTRATOR]}}, 
-      //                             { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 })
-      //                             .limit(LIMIT)
-      //                             .skip(OFF_SET); 
       
       let users = await Model.User.aggregate([
                                                 {
@@ -336,6 +355,7 @@ export default {
       await Utils.checkAuth(req);
       let user = await Utils.getUserFull({_id})
       if(_.isNull(user)) throw new AppError(Constants.USER_NOT_FOUND, 'Model.User not found.')
+
       return {  status: true,
                 data: user,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
@@ -346,7 +366,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let data = await Model.Role.find({_id: {$in: args?.input }})
       return {
@@ -424,8 +444,6 @@ export default {
         })
 
         aggregate = [...aggregate, { $match: { "$and" : q  } }]
-
-        
 
         let suppliers = await Model.Supplier.aggregate(aggregate)
 
@@ -727,7 +745,6 @@ export default {
       if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let dblogs = await Model.Dblog.find({})
-      
       return {  status: true,
                 data:dblogs,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
@@ -739,14 +756,13 @@ export default {
       let { req } = context
       
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let dateLotterys = await Model.DateLottery.find({})
       
       return {  status: true,
                 data: dateLotterys,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
-
     },
 
     async dateLotteryById(parent, args, context, info){
@@ -755,7 +771,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let dateLottery = await Model.DateLottery.findById(_id)
       if(_.isNull(dateLottery)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
@@ -809,7 +825,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let data = await Model.Transition.aggregate([
                   { $match: { type: Constants.DEPOSIT } },
@@ -839,7 +855,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let data = await Model.Transition.aggregate([
                           { $match: { type: Constants.WITHDRAW } },
@@ -870,7 +886,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let transitions = await Model.Transition.aggregate([
         { 
@@ -946,7 +962,7 @@ export default {
         
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let data = await Model.Transition.aggregate([
                               { $match: { status: Constants.WAIT, type: Constants.DEPOSIT } },
@@ -973,10 +989,9 @@ export default {
 
     async adminWithdraws(parent, args, context, info){
       let start = Date.now()
-        
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let data = await Model.Transition.aggregate([
                   { $match: { status: Constants.WAIT, type: Constants.WITHDRAW } },
@@ -1006,7 +1021,8 @@ export default {
       let { req } = context
       let { current_user } =   await Utils.checkAuth(req);
       let role = Utils.checkRole(current_user)
-      if( role !== Constants.AMDINISTRATOR && role !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( role !== Constants.AMDINISTRATOR && 
+          role !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let { TITLE, NUMBER, PAGE, LIMIT } = args?.input
       let SKIP = (PAGE - 1) * LIMIT
@@ -1082,7 +1098,6 @@ export default {
 
         suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
 
-        console.log( "suppliers : #2 q >> :", JSON.stringify(q), JSON.stringify(aggregate), suppliers.length )
         return {  
           status: true,
           data: suppliers,
@@ -1091,7 +1106,6 @@ export default {
         }
       }
 
-      console.log("manageSuppliers :", aggregate)
       let suppliers = await Model.Supplier.aggregate(aggregate)
 
       aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
@@ -1106,21 +1120,17 @@ export default {
       }
     },
 
-    async message(parent, args, context, info) {
+    async conversations(parent, args, context, info) {
       let start = Date.now()
       let { req } = context
-      let { _id } = args
 
       let { current_user } =  await Utils.checkAuth(req);
+      let role = Utils.checkRole(current_user)
+      if( role !== Constants.AMDINISTRATOR &&
+          role !== Constants.AUTHENTICATED && 
+          role !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
-      console.log("message :", args)
-
-      // if(_.isEmpty(_id)){
-      //   return ;
-      // }
-
-      let data = await Model.Message.find({ conversationId: _id });
-
+      let data=  await Model.Conversation.find({ "members.userId": { $all: [ current_user?._id ] } });
       return {
         status:true,
         data,
@@ -1128,46 +1138,25 @@ export default {
       }
     },
 
-    async conversations(parent, args, context, info) {
+    async message(parent, args, context, info) {
       let start = Date.now()
-      try{
-        let { req } = context
+      let { req } = context
+      let { _id } = args
 
-        let { current_user } =  await Utils.checkAuth(req);
+      let { current_user } =  await Utils.checkAuth(req);
+      let role = Utils.checkRole(current_user)
+      if( role !== Constants.AMDINISTRATOR &&
+          role !== Constants.AUTHENTICATED && 
+          role !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
-        // let authorization = await checkAuthorization(req);
-        // let { status, code, current_user } =  authorization
-
-      
-        // if( status && code == 1 ){
-        let data=  await Model.Conversation.find({
-          "members.userId": { $all: [ current_user?._id ] }
-        });
-
-        console.log("conversations # : ", current_user, data)
-
-        return {
-          status:true,
-          data,
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-        }
-        // }
-        // console.log("conversations #2")
-        // return {
-        //   status:false,
-        //   data: [],
-        //   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-        // }
-      } catch(err) {
-        await Utils.loggerError(req, err.toString());
-        
-        return {
-          status:false,
-          message: err.toString(),
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-        }
+      let data = await Model.Message.find({ conversationId: _id });
+      return {
+        status:true,
+        data,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
+
   },
   Upload: GraphQLUpload,
   Mutation: {
@@ -1175,7 +1164,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       console.log("check_db :", connection)
       let { readyState } = connection
@@ -1748,7 +1737,7 @@ export default {
 
           await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys: [...supplier?.buys, {userId: current_user?._id, itemId, transitionId: tran?._id, selected: 0 }] })   
         }else{
-          let buys = _.filter(supplier?.buys, (buy)=> buy.itemId != itemId && buy.userId != current_user?._id )
+          let buys = _.filter(supplier?.buys, (buy)=> buy.itemId !==itemId && buy.userId !==current_user?._id )
           await Utils.updateSupplier({ _id: id }, {...supplier._doc, buys })   
         }
      
@@ -1855,7 +1844,7 @@ export default {
       let { req } = context
 
       let { status, code, pathname, current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -1910,8 +1899,8 @@ export default {
       // console.log("supplier :", input)
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR && 
-          Utils.checkRole(current_user) != Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR && 
+          Utils.checkRole(current_user) !==Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       if(input.test){
         let supplier = await Model.Supplier.create(input);
@@ -2109,7 +2098,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const session = await mongoose.startSession();
       // Start the transaction
@@ -2252,7 +2241,7 @@ export default {
       console.log("notification :", _id)
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied!')
+      if( Utils.checkRole(current_user) !==Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied!')
 
       // let supplier = await Model.Supplier.findOne({_id})
       // if(_.isNull(supplier)) throw new AppError(Constants.DATA_NOT_FOUND, 'Data not found.')
@@ -2285,7 +2274,7 @@ export default {
       let { input } = args
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let comment = await Model.Comment.findOne({ _id: input?._id })
 
@@ -2369,7 +2358,8 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED &&
+          Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let { subscriber } = await Utils.getUserFull({ _id })
       if( _.find(subscriber, (item)=> _.isEqual(item.userId, current_user?._id)) ) {
@@ -2390,7 +2380,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let aggregate = [
                         { 
@@ -2477,7 +2467,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let transition = await Model.Transition.findOne({ _id: input?._id })
       
@@ -2515,7 +2505,7 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let result = {input}
 
@@ -2568,11 +2558,19 @@ export default {
       let { input } = args
       let { req } = context
 
+      console.log("forceLogout :", input)
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       switch(input?.mode.toLowerCase()){
         case "all":{
+          let sessions = await Model.Session.find()
+          _.map(sessions, async(session)=>{
+            let userId  = jwt.verify(session.token, process.env.JWT_SECRET);
+            let current_user = await Utils.getUser({_id: userId}) 
+            pubsub.publish("ME", { me: { mutation: "FORCE_LOGOUT", data: { userId: current_user?._id } } });
+          })
+
           await Model.Session.deleteMany({})
           return  { 
             status: true,
@@ -2581,7 +2579,14 @@ export default {
         }
 
         case "id":{
+          let session = await Model.Session.findOne({_id: mongoose.Types.ObjectId(input?._id)});
+          let userId  = jwt.verify(session.token, process.env.JWT_SECRET);
+          let current_user = await Utils.getUser({_id: userId}) 
+          
+          pubsub.publish("ME", { me: { mutation: "FORCE_LOGOUT", data: { userId: current_user?._id } } });
+
           await Model.Session.deleteOne({_id: mongoose.Types.ObjectId(input?._id)});
+
           return  { 
             status: true,
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
@@ -2602,7 +2607,7 @@ export default {
       console.log("Calculate lottery :", input)
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) != Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let manageL = await Model.ManageLottery.findOne({_id: mongoose.Types.ObjectId(input?._id)})
 
@@ -2991,7 +2996,7 @@ export default {
           Utils.checkRole(current_user) !== Constants.AUTHENTICATED &&
           Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
-      console.log("message :", args, current_user)
+      // console.log("message :", args, current_user)
 
       if(input.type === "image"){
         let {payload, files} = input
@@ -3033,7 +3038,7 @@ export default {
                 senderId: current_user?._id, 
                 senderName: current_user?.displayName, 
                 sentTime: Date.now(), 
-                status: "sent",
+                status: Constants.STATUS_DELIVERED,
                 reads: []}
         
       message = await Model.Message.create(input);
@@ -3044,13 +3049,13 @@ export default {
                                                                               senderId: current_user._id,
                                                                               lastSenderName: current_user.displayName,
                                                                               info:input.message,
-                                                                              status: "available",
+                                                                              status: Constants.STATUS_DELIVERED,
                                                                               sentTime: Date.now(),
                                                                             });
           /*
           conversation = _.omit({...conversation._doc}, ["_id", "__v"])
 
-          let newMember = _.find(conversation.members, member => member.userId != current_user?._id);
+          let newMember = _.find(conversation.members, member => member.userId !==current_user?._id);
 
 
           // หาจำนวน unread total = (await Post.find().lean().exec()).length; 
@@ -3087,13 +3092,13 @@ export default {
           });
         }else{
 
-          let newMember = _.find(conversation.members, member => member.userId != current_user?._id);
+          let newMember = _.find(conversation.members, member => member.userId !==current_user?._id);
           let friend = await Model.User.findById(mongoose.Types.ObjectId(newMember.userId))
           let input = {
             senderId: current_user._id,
             lastSenderName: current_user.displayName,
             info:input.message,
-            status: "available",
+            status: Constants.STATUS_DELIVERED,
             sentTime: Date.now(),
             members:[
               { 
@@ -3203,7 +3208,7 @@ export default {
           if(!_.isEmpty(conversation)){
             conversation = _.omit({...conversation._doc}, ["_id", "__v"])
   
-            let newMember = _.find(conversation.members, member => member.userId != current_user?._id.toString());
+            let newMember = _.find(conversation.members, member => member.userId !==current_user?._id.toString());
   
   
             // หาจำนวน unread total = (await Post.find().lean().exec()).length; 
@@ -3256,7 +3261,7 @@ export default {
     },
   },
   Subscription:{
-    subscriptionMe: {
+    me: {
       resolve: (payload) =>{
         return payload.me
       },
@@ -3265,32 +3270,36 @@ export default {
         }, async(payload, variables) => {
           try{
 
-            let { sessionId } = variables
-            if(_.isEmpty(sessionId)){
-              return false;
-            }
+            console.log("sub ME @1 :", variables)
+            let { userId } = variables
+            // if(_.isEmpty(userId)){
+            //   return false;
+            // }
 
             let {mutation, data} = payload.me
 
             // userId
-            let authorization = await Utils.checkAuthorizationWithSessionId(sessionId);
-            let { status, code, current_user } =  authorization
+            // let authorization = await Utils.checkAuthorizationWithSessionId(sessionId);
+            // let { current_user } =  authorization
 
+            console.log( "sub ME @2 :", payload )
             switch(mutation){
               case "DEPOSIT":
               case "WITHDRAW":
               case "BOOK":
               case "BUY":
               case "CANCEL":{
-                return _.isEqual(data?.userId, current_user?._id) ? true : false;
+                return _.isEqual(data?.userId.toString(), userId.toString()) ? true : false;
               }
-
               case "UPDATE":{
-                return _.isEqual(data?._id, current_user?._id) ? true : false;
+                return _.isEqual(data?._id.toString(), userId.toString()) ? true : false;
+              }
+              case "FORCE_LOGOUT":{
+                return _.isEqual(data?.userId.toString(), userId.toString()) ? true : false;
               }
             }
 
-            console.log( "Subscription : ME ", data?.userId, current_user?._id, _.isEqual(data?.userId, current_user?._id) )  
+            console.log( "Subscription : ME @3 :", data?.userId, userId, _.isEqual(data?.userId, userId) )  
 
             return false;
           } catch(err) {

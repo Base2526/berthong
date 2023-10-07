@@ -118,7 +118,7 @@ export const checkAuth = async(req) => {
         // console.log("checkAuth # ", auth, req.headers)
         if (bearer == "Bearer") {
             let session = await Model.Session.findOne({_id: sessionId});
-            // console.log("checkAuth #  session ", session)
+            // console.log("checkAuth #  session @1 : ", session)
             if(!_.isEmpty(session)){
                 var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));
 
@@ -140,7 +140,7 @@ export const checkAuth = async(req) => {
                     }
                 }
             }
-            await Model.Session.deleteOne( {"_id": sessionId} )
+            throw new AppError(Constants.FORCE_LOGOUT, 'Expired!')
         }else if(bearer == "Basic"){
             // checkAuth #  Basic YmFubGlzdDpiYW5saXN0MTIzNA==
             return {
@@ -172,7 +172,9 @@ export const userAgent = (req) => {
 export const checkAuthorizationWithSessionId = async(sessionId) => {
     // let decode = jwt.verify(token, process.env.JWT_SECRET);
     // console.log("sessionId > ", sessionId)
-    let session = await Model.Session.findById(sessionId)   
+    var sId   = cryptojs.AES.decrypt(sessionId, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8);
+       
+    let session = await Model.Session.findById(sId)   
 
     if(!_.isEmpty(session)){
         var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));

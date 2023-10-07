@@ -125,7 +125,8 @@ import MessagePage from "./pages/message/MessagePage";
 import DevelopmentPage from "./pages/DevelopmentPage"
 import NotFound404Page from "./pages/NotFound404Page"
 
-import { queryNotifications, 
+import {  queryMe,
+          queryNotifications, 
           mutationFollow, 
           querySuppliers, 
           querySupplierById, 
@@ -164,6 +165,7 @@ import { appStyles, ListItem } from "./styles"
 let { REACT_APP_SITE_TITLE } = process.env
 
 let unsubscribeSubConversations =  null
+let unsubscribeSubMe = null
 
 const App =(props) =>{
   let { t } = useTranslation();
@@ -182,6 +184,16 @@ const App =(props) =>{
   let [conversations, setConversations] = useState([])
 
   let { ws, user, updateProfile, logout } = props
+
+  let { loading: loadingMe, 
+        data: dataMe, 
+        subscribeToMore: subscribeToMoreMe, 
+        error: errorMe, } =  useQuery( queryMe, { 
+                                                  context: { headers: getHeaders(location) }, 
+                                                  fetchPolicy: 'cache-first', 
+                                                  nextFetchPolicy: 'network-only', 
+                                                  notifyOnNetworkStatusChange: true
+                                                });
 
   let { loading: loadingNotifications, 
           data: dataNotifications, 
@@ -833,6 +845,7 @@ const App =(props) =>{
 
   useEffect(()=>{
     if(unsubscribeSubConversations) unsubscribeSubConversations()
+    if(unsubscribeSubMe) unsubscribeSubMe()
 
     if(!_.isEmpty(user)){
       refetchNotifications();
@@ -854,6 +867,52 @@ const App =(props) =>{
             default:
                 return prev;
           }
+        }
+      })
+
+      unsubscribeSubMe =  subscribeToMoreMe({
+        document: subscriptionMe,
+        context: { headers: getHeaders(location) },
+        variables: { userId: user?._id },
+        updateQuery: (prev, value, context) => {
+          let { subscriptionData } = value
+          if (!subscriptionData?.data) return prev;
+
+          console.log("")
+
+          // let { mutation, data } = subscriptionData?.data?.conversations;
+          // switch(mutation){
+          //   case "CREATED":
+          //   case "UPDATED":{
+          //     return {conversations: {...prev.conversations, data: _.map(prev.conversations.data, (d)=>_.isEqual(d._id, data._id) ? data : d)}}; 
+          //   }
+          //   default:
+          //       return prev;
+          // }
+          
+          // if(!res.subscriptionData.loading){
+          let { mutation, data } = subscriptionData.data.me
+
+          switch(mutation){
+            case "BOOK":
+            case "BUY":
+            case "DEPOSIT":
+            case "WITHDRAW":
+            case "CANCEL":{
+              updateProfile(data?.data)
+              break;
+            }
+            case "UPDATE":{
+              updateProfile(data)
+              break;
+            }
+            case "FORCE_LOGOUT":{
+              logout()
+              break;
+            }
+          }
+
+          return prev;
         }
       })
     }
@@ -883,37 +942,41 @@ const App =(props) =>{
     }
   }, [dataConversations, loadingConversations])
 
-  useEffect(()=>{
-    console.log("location?.pathname :", location?.pathname)
-  }, [location?.pathname])
+  // useEffect(()=>{
+  //   console.log("location?.pathname :", location?.pathname)
+  // }, [location?.pathname])
   
-  useSubscription(subscriptionMe, {
-    onSubscriptionData: useCallback((res) => {
-      console.log("subscriptionMe :", res)
-      if(!res.subscriptionData.loading){
-        let { mutation, data } = res.subscriptionData.data.subscriptionMe
+  // useSubscription(subscriptionMe, {
+  //   onSubscriptionData: useCallback((res) => {
+  //     console.log("subscriptionMe :", res)
+  //     if(!res.subscriptionData.loading){
+  //       let { mutation, data } = res.subscriptionData.data.me
 
-        switch(mutation){
-          case "BOOK":
-          case "BUY":
-          case "DEPOSIT":
-          case "WITHDRAW":
-          case "CANCEL":{
-            updateProfile(data?.data)
-            break;
-          }
-          case "UPDATE":{
-            updateProfile(data)
-            break;
-          }
-        }
-      }
-    }, []),
-    onError: useCallback((err) => {
-      console.log("subscriptionMe :", err)
-    }, []),
-    variables: {sessionId: /*localStorage.getItem('token')*/ getCookie('token') }, // setCookie('token', sessionId, {})
-  });
+  //       switch(mutation){
+  //         case "BOOK":
+  //         case "BUY":
+  //         case "DEPOSIT":
+  //         case "WITHDRAW":
+  //         case "CANCEL":{
+  //           updateProfile(data?.data)
+  //           break;
+  //         }
+  //         case "UPDATE":{
+  //           updateProfile(data)
+  //           break;
+  //         }
+  //         case "FORCE_LOGOUT":{
+  //           console.log("FORCE_LOGOUT")
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }, []),
+  //   onError: useCallback((err) => {
+  //     console.log("subscriptionMe :", err)
+  //   }, []),
+  //   variables: {sessionId: /*localStorage.getItem('token')*/ getCookie('token') }, // setCookie('token', sessionId, {})
+  // });
  
   const ProtectedAuthenticatedRoute = ({ user, redirectPath = '/' }) => {
     switch(checkRole(user)){

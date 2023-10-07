@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
+import * as Constants from "../constants"
+
 const Schema = mongoose.Schema
+
 
 var MemberSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, required:[true, "User-ID is a required field"]},
@@ -14,7 +17,11 @@ const conversationSchema = new Schema({
     info: { type: String },
     avatarSrc: { type: String },
     avatarName: { type: String },
-    status: { type: String },
+    status: {
+        type: Number,
+        enum : [0, Constants.STATUS_SENT, Constants.STATUS_DELIVERED, Constants.STATUS_FAILED], // 50: STATUS_SENT, 51: STATUS_DELIVERED, 52: STATUS_FAILED
+        default: 0
+    },
     unreadCnt: { type: Number },
     sentTime: { type: Date },
     senderId: { type: Schema.Types.ObjectId, required:[true, "Sender-ID is a required field"]},
