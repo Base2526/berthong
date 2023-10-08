@@ -129,7 +129,7 @@ const DblogPage = (props) => {
             let {timestamp} = props.row.values 
             // let date = new Date(timestamp).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
             // return <div>{moment(date).format('DD MMM, YYYY h:mm:ss a')}</div>
-            return <div>{(moment(timestamp, 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')}</div>
+            return <div>{(moment(new Date(timestamp), 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')}</div>
           },
           disableFilters:true
         },

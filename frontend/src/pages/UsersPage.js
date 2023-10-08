@@ -238,7 +238,7 @@ const UsersPage = (props) => {
                                     <Box sx={{width: '10%'}}>{money_deposit}</Box>
                                     <Box sx={{width: '10%'}}>{money_withdraw}</Box>
                                     <Box sx={{ width: '15%' }}> {/*{roles.join(',')}*/} <RolesComp Ids={roles}/> </Box>
-                                    <Box sx={{ width: '5%' }}>{ (moment(lastAccess, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</Box>
+                                    <Box sx={{ width: '5%' }}>{ (moment(new Date(lastAccess), 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</Box>
                                     <Box sx={{ width: '20%' }}>
                                       {
                                         !_.isUndefined(session)

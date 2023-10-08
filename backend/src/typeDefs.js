@@ -491,7 +491,7 @@ export default gql`
     adminWithdraws: JSON
     manageSuppliers( input:SearchInput ): JSON
 
-    message(_id: ID!): JSON
+    message(conversationId: ID!, startId: ID): JSON
     conversations: JSON
   }  
   

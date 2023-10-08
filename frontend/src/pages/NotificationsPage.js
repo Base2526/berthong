@@ -93,7 +93,7 @@ const NotificationsPage = (props) => {
                                                                 onClick={(evt)=>{
                                                                     console.log("info")
                                                                 }
-                                                            } key={index}>{(moment(i?.createdAt, 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')}  </div>
+                                                            } key={index}>{(moment(new Date(i?.createdAt) , 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')}  </div>
                                                         </Stack>
                                                     </div>
                                         }
@@ -106,7 +106,7 @@ const NotificationsPage = (props) => {
 
                                                                 // onMutationNotification({ variables: { id:"63ff3c0c6637e303283bc40f" } })
                                                             }
-                                                        } key={index}>{(moment(i?.createdAt, 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')}  </div>
+                                                        } key={index}>{(moment(new Date(i?.createdAt), 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')}  </div>
                                                     </Stack>
                                                     </div>
                                         }
@@ -119,7 +119,7 @@ const NotificationsPage = (props) => {
                                                             <div>ยอดฝากเงิน : {i?.data?.deposit?.balance} </div>
                                                             <div>{i?.status === Constants.APPROVED ? "APPROVED" : "REJECT"}</div>
                                                             {/* <div>{i?.flag === 0 ? "UNREAD" : "READ"}</div> */}
-                                                            <div key={index}>{(moment(i?.createdAt, 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')}  </div>
+                                                            <div key={index}>{(moment(new Date(i?.createdAt), 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')}  </div>
                                                         </Stack>
                                                     </div>
                                         }
@@ -127,7 +127,7 @@ const NotificationsPage = (props) => {
                                             return  <div class="alert alert-success p-1 m-1" role="alert">
                                                         <Stack direction="row" spacing={2}>
                                                             <WithdrawIcon />
-                                                            <div key={index}>{(moment(i?.createdAt, 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')} </div>
+                                                            <div key={index}>{(moment(new Date(i?.createdAt) , 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')} </div>
                                                         </Stack>
                                                     </div>
                                         }

@@ -80,9 +80,9 @@ export const subscriptionAdmin         = gql`subscription subscriptionAdmin($ses
 export const subscriptionCommentById   = gql`subscription subscriptionCommentById($id:ID!){ subscriptionCommentById(_id:$id) }`;
 
 
-////// conversation  conversation
+////// conversation  conversation  conversationId: ID!, startId: ID
 export const queryConversations = gql`query conversations{ conversations }`;
-export const queryMessage       = gql`query message($id: ID!){ message(_id: $id) }`;
+export const queryMessage       = gql`query message($conversationId: ID!, $startId: ID){ message(conversationId: $conversationId, startId: $startId) }`;
 
 // export const gqlAddMessage = gql`
 //     mutation AddMessage( $conversationId: ID! , $input: MessageInput ) {

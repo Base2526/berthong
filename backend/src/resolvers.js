@@ -1141,7 +1141,9 @@ export default {
     async message(parent, args, context, info) {
       let start = Date.now()
       let { req } = context
-      let { _id } = args
+      let { conversationId, startId } = args
+
+      console.log("query, message :", args)
 
       let { current_user } =  await Utils.checkAuth(req);
       let role = Utils.checkRole(current_user)
@@ -1149,10 +1151,29 @@ export default {
           role !== Constants.AUTHENTICATED && 
           role !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
-      let data = await Model.Message.find({ conversationId: _id });
+      // let {PAGE, LIMIT} = pagination
+      // if( _.isUndefined(PAGE) || _.isUndefined(LIMIT) ) throw new AppError(Constants.ERROR, 'parameter missing')
+
+
+      // Define the starting _id for the page
+      // const startId = 'your-starting-id';
+
+      // Create a query to fetch documents starting after the specified _id
+
+      let query = { _id: { $gt: mongoose.Types.ObjectId(startId) }, conversationId: mongoose.Types.ObjectId(conversationId) };
+      if(_.isUndefined(startId)){
+        query = { conversationId: mongoose.Types.ObjectId(conversationId) };
+      }
+      
+      let data = await Model.Message.find(query).skip(0).limit(100)
+                  // .skip((PAGE - 1) * LIMIT)
+                  // .limit(LIMIT);
+                  // db.collection.find({ /* your query */ }, { fieldName: 1 });
+      let total = (await Model.Message.find({conversationId: mongoose.Types.ObjectId(conversationId)}, {_id: 1}))?.length
       return {
         status:true,
         data,
+        total,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },

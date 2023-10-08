@@ -60,13 +60,13 @@ const MessagePage = (props) => {
   const [currentConversation, setCurrentConversation] = useState([]);
   const [messageList, setMessageList] = useState([]);
 
-  console.log("+MessagePage+")
+
 
   // const [loadingMore, setLoadingMore] = useState(true);
   // const [loadedMessages, setLoadedMessages] = useState([]);
   // const [counter, setCounter] = useState(0);
 
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(true);
   const [loadedMessages, setLoadedMessages] = useState([]);
   const [counter, setCounter] = useState(0);
 
@@ -84,6 +84,10 @@ const MessagePage = (props) => {
                                     nextFetchPolicy: 'network-only', 
                                     notifyOnNetworkStatusChange: true
                                   });  
+
+  if(!_.isEmpty(errorMessage)){
+    handlerErrorApollo( props, errorMessage )
+  }
 
   const [onMessage, resultMessage] = useMutation(mutationMessage
     , {
@@ -170,7 +174,8 @@ const MessagePage = (props) => {
 
   useEffect(()=>{
     if(!_.isEmpty(currentConversation)){
-      refetchMessage({id: currentConversation._id});
+      // conversationId: ID!, startId: ID
+      refetchMessage({conversationId: currentConversation._id, startId: "65176b27e16453620358ac9c"});
       // onUpdateMessageRead({ variables: {conversationId: currentConversation._id} });
     }
   }, [currentConversation])
@@ -178,11 +183,12 @@ const MessagePage = (props) => {
   useEffect(()=>{
     if(!loadingMessage){
       if(!_.isEmpty(dataMessage?.message)){
-        let { status, data } = dataMessage?.message
+        let { status, data, total } = dataMessage?.message
 
         // moment(item.created_at, 'YYYY-MM-DD').format('MMM')
         let groupedData = _.groupBy(data, "createdAt");
 
+        //
         // 
         groupedData =  _(data)
                       .groupBy(v => moment(v.createdAt).format('MM/DD/YYYY') )
@@ -198,6 +204,23 @@ const MessagePage = (props) => {
       console.log("+MessagePage++")
     }
   }, [dataMessage, loadingMessage])
+
+  useEffect(()=>{
+    if(loadingMore){
+      console.log("loadingMore")
+
+      // refetchMessage({id: currentConversation._id, , pagination: {PAGE: page, LIMIT: limit}});
+
+      /*
+      PAGE: 1,
+    LIMIT: 12,
+
+    pagination: {PAGE, LIMIT}
+      */
+
+      setLoadingMore(false)
+    }
+  }, [loadingMore])
   
   // status, waiting, sent, received, read
   const onSidebarLeft = () =>{
@@ -364,10 +387,7 @@ const MessagePage = (props) => {
                 >
                 {/* { _.map( messageList, item=>{ return <MessageItem {...props} item={item} /> }) }   */}
                 {
-                  _.map(messageList, (v)=>{
-                    // console.log("")
-                    return v
-                  })
+                  _.map(messageList, (v)=> v )
                 }
               </MessageList>  
     }
@@ -434,36 +454,36 @@ const MessagePage = (props) => {
             />
   }
 
-  const onYReachStart_bak = () => {
-    if (!loadingMore) {
-      return;
-    }
+  // const onYReachStart_bak = () => {
+  //   if (!loadingMore) {
+  //     return;
+  //   }
 
-    setLoadingMore(false);
-    /* Fake fetch from API */
+  //   setLoadingMore(false);
+  //   /* Fake fetch from API */
 
   
-    setTimeout(() => {
-      // const messages = [];
+  //   setTimeout(() => {
+  //     // const messages = [];
 
-      const maxCounter = counter + 10;
-      let i = counter;
+  //     const maxCounter = counter + 10;
+  //     let i = counter;
 
-      for (; i < maxCounter; i++) {
-        // messages.push(<Message key={i} model={{
-        //   message: `Message ${i}`,
-        //   sender: "Zoe"
-        // }} />);
-        let newMessage  = <Message key={i} model={{ message: `Message +++ ${i}`, sender: "Zox" }} />
+  //     for (; i < maxCounter; i++) {
+  //       // messages.push(<Message key={i} model={{
+  //       //   message: `Message ${i}`,
+  //       //   sender: "Zoe"
+  //       // }} />);
+  //       let newMessage  = <Message key={i} model={{ message: `Message +++ ${i}`, sender: "Zox" }} />
 
-        setMessageList([...messageList, newMessage])
-      }
+  //       setMessageList([...messageList, newMessage])
+  //     }
 
-      setLoadedMessages(messageList.reverse().concat(loadedMessages));
-      setCounter(i);
-      setLoadingMore(false);
-    }, 1500);
-  };
+  //     setLoadedMessages(messageList.reverse().concat(loadedMessages));
+  //     setCounter(i);
+  //     setLoadingMore(false);
+  //   }, 1500);
+  // };
 
   const onChangeFile = (event) =>{
     event.stopPropagation();
@@ -494,47 +514,47 @@ const MessagePage = (props) => {
       return;
     }
 
-    setLoadingMore(true);
+    // setLoadingMore(true);
     /* Fake fetch from API */
 
-    setTimeout(() => {
-      const messages = [];
-      /* Add 10 messages */
+    // setTimeout(() => {
+    //   const messages = [];
+    //   /* Add 10 messages */
 
-      const maxCounter = counter + 2;
-      let i = counter;
+    //   const maxCounter = counter + 2;
+    //   let i = counter;
 
-      for (; i < maxCounter; i++) {
-        // messages.push(<Message key={i} model={{
-        //   message: `Message ****${i}`,
-        //   sender: "Zoe"
-        // }} />);
+    //   for (; i < maxCounter; i++) {
+    //     // messages.push(<Message key={i} model={{
+    //     //   message: `Message ****${i}`,
+    //     //   sender: "Zoe"
+    //     // }} />);
 
-        let input = {
-                      _id: new mongoose.Types.ObjectId(), 
-                      conversationId: currentConversation._id, 
-                      status: Constants.STATUS_SENT,
-                      message: `Message ****${i}`,
-                      sentTime: Date.now(),
-                      senderName: user.displayName,
-                      senderId: user._id, 
-                      direction: "outgoing",
-                      position: "single"
-                    }
+    //     let input = {
+    //                   _id: new mongoose.Types.ObjectId(), 
+    //                   conversationId: currentConversation._id, 
+    //                   status: Constants.STATUS_SENT,
+    //                   message: `Message ****${i}`,
+    //                   sentTime: Date.now(),
+    //                   senderName: user.displayName,
+    //                   senderId: user._id, 
+    //                   direction: "outgoing",
+    //                   position: "single"
+    //                 }
 
-        if(/<\/?[a-z][\s\S]*>/i.test(`Message ****${i}`)){
-          input = { ...input, type: "html" }
-        }else{
-          input = { ...input, type: "text" }
-        }
+    //     if(/<\/?[a-z][\s\S]*>/i.test(`Message ****${i}`)){
+    //       input = { ...input, type: "html" }
+    //     }else{
+    //       input = { ...input, type: "text" }
+    //     }
 
-        messages.push(input)
-      }
+    //     messages.push(input)
+    //   }
 
-      // setLoadedMessages([...messages, ...loadedMessages]/*messages.reverse().concat(loadedMessages)*/ );
-      // setCounter(i);
-      setLoadingMore(false);
-    }, 1500);
+    //   // setLoadedMessages([...messages, ...loadedMessages]/*messages.reverse().concat(loadedMessages)*/ );
+    //   // setCounter(i);
+    //   setLoadingMore(false);
+    // }, 1500);
   };
 
   return (
@@ -548,20 +568,17 @@ const MessagePage = (props) => {
                 {onConversationHeader()}
                 {/* {onMessageList()} */}
 
-                {/*  */}
-
                 {
                   loadingMessage
                   ? <LinearProgress />
-                  : <MessageList loadingMore={false} onYReachStart={onYReachStart}>
-                  {/* <MessageSeparator content="Saturday, 30 November 2019" /> */}
+                  : <MessageList loadingMore={loadingMore} onYReachStart={onYReachStart}>
                         {
                           _.map(loadedMessages, (v, k)=>{
                             let xx = []
                             let count = 0
                             if(count === 0){
                               count++
-                              xx.push(<MessageSeparator content={`${ k }`}/> ) 
+                              xx.push(<MessageSeparator content={`${ (moment(new Date(k), 'MM/DD/YYYY')).format('MMMM Do YYYY') }`}/> ) 
                             }
 
                             _.map(v, vv=>{
