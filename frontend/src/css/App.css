@@ -1091,3 +1091,7 @@ background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/s
 .not-found{
   width: 500px;
 }
+
+.main-border-login{
+  margin-left: auto !important;
+}

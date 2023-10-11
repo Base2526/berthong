@@ -70,12 +70,12 @@ const LotteryPage = (props) => {
         let { variables } = context
         switch(variables?.input?.mode.toUpperCase()){
           case "NEW":{
-            const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers, variables: { input: search } });
+            const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers /*, variables: { input: search } */ });
             if(!_.isNull(manageSuppliersValue)){
               let newData = [...manageSuppliersValue.manageSuppliers.data, data];
               cache.writeQuery({
                 query: queryManageSuppliers,
-                variables: { input: search },
+                // variables: { input: search },
                 data: { manageSuppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
               });
             }
@@ -83,12 +83,12 @@ const LotteryPage = (props) => {
           }
 
           case "EDIT":{
-            const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers, variables: { input: search } });
+            const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers /*, variables: { input: search } */  });
             if(!_.isNull(manageSuppliersValue)){
               let newData = _.map(manageSuppliersValue.manageSuppliers.data, (item)=> item._id == data._id ? data : item ) 
               cache.writeQuery({
                 query: queryManageSuppliers,
-                variables: { input: search },
+                // variables: { input: search },
                 data: { manageSuppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
               });
             }

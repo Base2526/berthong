@@ -1024,14 +1024,14 @@ export default {
       if( role !== Constants.AMDINISTRATOR && 
           role !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
-      let { TITLE, NUMBER, PAGE, LIMIT } = args?.input
-      let SKIP = (PAGE - 1) * LIMIT
+      // let { TITLE, NUMBER, PAGE, LIMIT } = args?.input
+      // let SKIP = (PAGE - 1) * LIMIT
 
       let aggregate = []
       let match     = {}
-      if(!_.isEmpty(TITLE)){
-        match = { title: { $regex: TITLE, $options: "i" } }
-      }
+      // if(!_.isEmpty(TITLE)){
+      //   match = { title: { $regex: TITLE, $options: "i" } }
+      // }
 
       if( role === Constants.SELLER ){
         match = {...match, ownerId: mongoose.Types.ObjectId(current_user?._id)}
@@ -1042,8 +1042,8 @@ export default {
       }
 
       aggregate = [ ...aggregate,
-                    { $skip: SKIP }, 
-                    { $limit: LIMIT }, 
+                    // { $skip: SKIP }, 
+                    // { $limit: LIMIT }, 
                     {
                       $lookup: {
                           localField: "ownerId",
@@ -1080,38 +1080,32 @@ export default {
                     }
                   ]
 
-      if(!_.isEmpty(NUMBER)){
-        let q = _.map(NUMBER.split(","), (v, i)=>{
-          return {
-                    "buys":{
-                      $not:{ $elemMatch : {itemId: parseInt(v)} } 
-                    }
-                  }
-        })
+      // if(!_.isEmpty(NUMBER)){
+      //   let q = _.map(NUMBER.split(","), (v, i)=>{ return { "buys":{ $not:{ $elemMatch : {itemId: parseInt(v)} } } } })
 
-        aggregate = [...aggregate, { $match: { "$and" : q  } }]
+      //   aggregate = [...aggregate, { $match: { "$and" : q  } }]
 
-        let suppliers = await Model.Supplier.aggregate(aggregate)
+      //   let suppliers = await Model.Supplier.aggregate(aggregate)
 
-        aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
-        let total     = await Model.Supplier.aggregate(aggregate)
+      //   aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
+      //   let total     = await Model.Supplier.aggregate(aggregate)
 
-        suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
+      //   suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
 
-        return {  
-          status: true,
-          data: suppliers,
-          total: total.length,
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
-        }
-      }
+      //   return {  
+      //     status: true,
+      //     data: suppliers,
+      //     total: total.length,
+      //     executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
+      //   }
+      // }
 
       let suppliers = await Model.Supplier.aggregate(aggregate)
 
       aggregate = _.filter(aggregate, (v) => !v?.$skip && !v?.$limit )
 
       let total     = await Model.Supplier.aggregate(aggregate)
-      suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
+      // suppliers = _.map(suppliers, (v)=>{ return {...v, PAGE} })
       return {  
         status: true,
         data: suppliers,
@@ -1143,7 +1137,7 @@ export default {
       let { req } = context
       let { conversationId, startId } = args
 
-      console.log("query, message :", args)
+      console.log("query, message :", args, startId)
 
       let { current_user } =  await Utils.checkAuth(req);
       let role = Utils.checkRole(current_user)
@@ -1160,15 +1154,12 @@ export default {
 
       // Create a query to fetch documents starting after the specified _id
 
-      let query = { _id: { $gt: mongoose.Types.ObjectId(startId) }, conversationId: mongoose.Types.ObjectId(conversationId) };
-      if(_.isUndefined(startId)){
-        query = { conversationId: mongoose.Types.ObjectId(conversationId) };
+      let query =  { conversationId: mongoose.Types.ObjectId(conversationId) } 
+      if(!_.isUndefined(startId)){
+        query ={ _id: { $gt: mongoose.Types.ObjectId(startId) }, conversationId: mongoose.Types.ObjectId(conversationId) };;
       }
       
-      let data = await Model.Message.find(query).skip(0).limit(100)
-                  // .skip((PAGE - 1) * LIMIT)
-                  // .limit(LIMIT);
-                  // db.collection.find({ /* your query */ }, { fieldName: 1 });
+      let data = await Model.Message.find(query).skip(0).limit(100);
       let total = (await Model.Message.find({conversationId: mongoose.Types.ObjectId(conversationId)}, {_id: 1}))?.length
       return {
         status:true,

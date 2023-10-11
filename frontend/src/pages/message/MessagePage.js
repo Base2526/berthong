@@ -161,9 +161,9 @@ const MessagePage = (props) => {
   }, [])
 
   // 
-  useEffect(()=>{
-    console.log("loadedMessages :", loadedMessages, messageList)
-  }, [loadedMessages, messageList])
+  // useEffect(()=>{
+  //   console.log("loadedMessages :", loadedMessages, messageList)
+  // }, [loadedMessages, messageList])
 
   useEffect(()=>{
     let newConvs = _.sortBy(conversations, "updatedAt").reverse()
@@ -174,9 +174,9 @@ const MessagePage = (props) => {
 
   useEffect(()=>{
     if(!_.isEmpty(currentConversation)){
-      // conversationId: ID!, startId: ID
-      refetchMessage({conversationId: currentConversation._id, startId: "65176b27e16453620358ac9c"});
-      // onUpdateMessageRead({ variables: {conversationId: currentConversation._id} });
+      setLoadedMessages([])
+      setLoadingMore(true)
+      refetchMessage({conversationId: currentConversation._id});
     }
   }, [currentConversation])
 
@@ -185,43 +185,18 @@ const MessagePage = (props) => {
       if(!_.isEmpty(dataMessage?.message)){
         let { status, data, total } = dataMessage?.message
 
-        // moment(item.created_at, 'YYYY-MM-DD').format('MMM')
-        let groupedData = _.groupBy(data, "createdAt");
-
-        //
-        // 
-        groupedData =  _(data)
+        // let groupedData = _.groupBy(data, "createdAt");
+        let groupedData =  _(data)
                       .groupBy(v => moment(v.createdAt).format('MM/DD/YYYY') )
-                      // .mapValues(v => _.map(v, 'name'))
                       .value();
 
-        
-        // let xxx = _.find(groupedData, (v, k)=>console.log("vvv :", v, k, k === moment(new Date()).format('MM/DD/YYYY'))) 
+        if(total === data.length) setLoadingMore(false)
 
         if(status) setLoadedMessages(groupedData)
       }
-
-      console.log("+MessagePage++")
     }
   }, [dataMessage, loadingMessage])
 
-  useEffect(()=>{
-    if(loadingMore){
-      console.log("loadingMore")
-
-      // refetchMessage({id: currentConversation._id, , pagination: {PAGE: page, LIMIT: limit}});
-
-      /*
-      PAGE: 1,
-    LIMIT: 12,
-
-    pagination: {PAGE, LIMIT}
-      */
-
-      setLoadingMore(false)
-    }
-  }, [loadingMore])
-  
   // status, waiting, sent, received, read
   const onSidebarLeft = () =>{
     return  <Sidebar position="left" scrollable={false}>
@@ -514,6 +489,13 @@ const MessagePage = (props) => {
       return;
     }
 
+    let firstElement = Object.values(loadedMessages)[0]; // Get the first element
+    // console.log("loadedMessages :", loadedMessages, !_.isEmpty(firstElement) ? firstElement[0] : firstElement)
+    if(!_.isEmpty(firstElement)){
+      refetchMessage({id: currentConversation._id, startId: (firstElement[0])?._id });
+    }
+
+    // 
     // setLoadingMore(true);
     /* Fake fetch from API */
 
@@ -558,7 +540,7 @@ const MessagePage = (props) => {
   };
 
   return (
-    <div style={{ height: "500px", overflow: "hidden" }}>
+    <div style={{ height: "600px", overflow: "hidden" }}>
       <div className="pl-2 pr-2">
         <div className="table-responsive MuiBox-root page-message">
           <div style={{  position: "relative", width: "100%" }} className="Mui-submess-root" >

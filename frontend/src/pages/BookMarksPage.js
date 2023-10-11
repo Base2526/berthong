@@ -1,8 +1,8 @@
-import React, { useState,  useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import _ from "lodash"
-import { useQuery } from "@apollo/client";
+// import { useQuery } from "@apollo/client";
 import InfiniteScroll from "react-infinite-scroll-component";
 import {
     Stack,
@@ -17,37 +17,37 @@ import {
     MdOutlineBookmarkAdded as MdOutlineBookmarkAddedIcon
 } from "react-icons/md"
 
-import { getHeaders } from "../util"
-import { queryBookmarks } from "../apollo/gqlQuery"
+// import { getHeaders } from "../util"
+// import { queryBookmarks } from "../apollo/gqlQuery"
 
-const initialValue = { data: [], slice: 20, total: 0, hasMore: true}
+const initialValue = { slice: 20, hasMore: true}
 const BookMarksPage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useTranslation();
     let [input, setInput] = useState(initialValue)
 
-    let { user, onMutationFollow } = props
+    let { onMutationFollow, data, total } = props
 
-    const { loading: loadingBookmarks, 
-            data: dataBookmarks, 
-            error: errorBookmarks,
-            fetchMore: fetchMoreBookmarks } = useQuery( queryBookmarks, { 
-                                                        context: { headers: getHeaders(location) }, 
-                                                        fetchPolicy: 'network-only', 
-                                                        nextFetchPolicy: 'cache-first',
-                                                        notifyOnNetworkStatusChange: true});
+    // const { loading: loadingBookmarks, 
+    //         data: dataBookmarks, 
+    //         error: errorBookmarks,
+    //         fetchMore: fetchMoreBookmarks } = useQuery( queryBookmarks, { 
+    //                                                     context: { headers: getHeaders(location) }, 
+    //                                                     fetchPolicy: 'network-only', 
+    //                                                     nextFetchPolicy: 'cache-first',
+    //                                                     notifyOnNetworkStatusChange: true});
 
-    useEffect(() => {
-        if (!loadingBookmarks) {
-            if(dataBookmarks?.bookmarks){
-                let { status, data, total } = dataBookmarks?.bookmarks
-                if(status){
-                    setInput({...input, data, total})
-                }
-            }
-        }
-    }, [dataBookmarks, loadingBookmarks])
+    // useEffect(() => {
+    //     if (!loadingBookmarks) {
+    //         if(dataBookmarks?.bookmarks){
+    //             let { status, data, total } = dataBookmarks?.bookmarks
+    //             if(status){
+    //                 setInput({...input, data, total})
+    //             }
+    //         }
+    //     }
+    // }, [dataBookmarks, loadingBookmarks])
       
     const fetchMoreData = async() =>{
 
@@ -55,7 +55,7 @@ const BookMarksPage = (props) => {
         // let {status, data} =  mores.data.suppliers
         // console.log("status, data :", status, data)
        
-        if(_.isEqual( input.slice, input.total )){
+        if(_.isEqual( input.slice, total )){
             // setHasMore(false);
             setInput({...input, hasMore: false})
         }else{
@@ -70,10 +70,8 @@ const BookMarksPage = (props) => {
     return (<div className="content-bottom">
             <div className="content-page border">   
                 <div className="row">
-                    {
-                    loadingBookmarks 
-                    ?   <LinearProgress />
-                    :   input.data.length == 0 
+                    {   
+                        data.length == 0 
                         ?   <div>Empty data</div>
                         :   <InfiniteScroll
                                 dataLength={input.slice}
@@ -81,7 +79,7 @@ const BookMarksPage = (props) => {
                                 hasMore={input.hasMore}
                                 loader={<h4>Loading...</h4>}>
                                 { 
-                                    _.map(input.data, (item, index) => {
+                                    _.map(data, (item, index) => {
                                         return  <div className="row p-2"><Stack direction="row" spacing={2}>
                                                     <Box className="pointer">
                                                         <Avatar

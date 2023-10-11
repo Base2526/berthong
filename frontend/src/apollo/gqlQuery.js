@@ -37,7 +37,7 @@ export const queryAdminHome       = gql`query adminHome { adminHome }`;
 export const queryAdminBanks      = gql`query adminBanks { adminBanks }`;
 export const queryAdminDeposits   = gql`query adminDeposits{ adminDeposits }`;
 export const queryAdminWithdraws  = gql`query adminWithdraws{ adminWithdraws }`;
-export const queryManageSuppliers  = gql`query manageSuppliers($input: SearchInput){ manageSuppliers( input: $input) }`;
+export const queryManageSuppliers  = gql`query manageSuppliers{ manageSuppliers }`;
 
 
 // mutation

@@ -489,7 +489,7 @@ export default gql`
     adminBanks: JSON
     adminDeposits: JSON
     adminWithdraws: JSON
-    manageSuppliers( input:SearchInput ): JSON
+    manageSuppliers: JSON
 
     message(conversationId: ID!, startId: ID): JSON
     conversations: JSON
