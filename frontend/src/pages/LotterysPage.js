@@ -48,7 +48,7 @@ const LotterysPage = (props) => {
   const { t } = useTranslation();
   let { user, onLightbox } = props
 
-  let [search, setSearch] = useState(INIT_SEARCH)
+  // let [search, setSearch] = useState(INIT_SEARCH)
 
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
@@ -69,7 +69,7 @@ const LotterysPage = (props) => {
           fetchMore: fetchMoreSuppliers,
           networkStatus: networkStatusSuppliers } = useQuery( queryManageSuppliers, { 
                                                               context: { headers: getHeaders(location) }, 
-                                                              variables: { input: search },
+                                                              // variables: { input: search },
                                                               fetchPolicy: 'cache-first' , 
                                                               nextFetchPolicy: 'network-only' , 
                                                               notifyOnNetworkStatusChange: true
@@ -100,9 +100,9 @@ const LotterysPage = (props) => {
 
   const handleLoadMore = () => {
     fetchMoreSuppliers({
-      variables: {
-        input: {...search, PAGE: search.PAGE + 1}
-      },
+      // variables: {
+      //   input: {...search, PAGE: search.PAGE + 1}
+      // },
       updateQuery: (prev, {fetchMoreResult}) => {
         if (!fetchMoreResult?.suppliers?.data?.length) {
           return prev;

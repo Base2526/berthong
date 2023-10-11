@@ -15,7 +15,7 @@ import {
 import { getHeaders } from "../util"
 import { querySubscribes } from "../apollo/gqlQuery"
 
-const initialValue = { data: [], slice: 20, total: 0, hasMore: true}
+const initialValue = {slice: 20, hasMore: true}
 
 const SubscribesPage = (props) => {
     const navigate = useNavigate();
@@ -23,27 +23,27 @@ const SubscribesPage = (props) => {
     const { t } = useTranslation();
     let [input, setInput] = useState(initialValue)
 
-    let { user, onMutationSubscribe } = props
+    let { user, onMutationSubscribe, data, total } = props
 
-    const { loading: loadingSubscribes, 
-            data: dataSubscribes, 
-            error: errorSubscribes,
-            fetchMore: fetchMoreSubscribes } = useQuery( querySubscribes, { 
-                                                        context: { headers: getHeaders(location) }, 
-                                                        fetchPolicy: 'network-only',  
-                                                        nextFetchPolicy: 'cache-first', 
-                                                        notifyOnNetworkStatusChange: true});
+    // const { loading: loadingSubscribes, 
+    //         data: dataSubscribes, 
+    //         error: errorSubscribes,
+    //         fetchMore: fetchMoreSubscribes } = useQuery( querySubscribes, { 
+    //                                                     context: { headers: getHeaders(location) }, 
+    //                                                     fetchPolicy: 'cache-first',  
+    //                                                     nextFetchPolicy: 'network-only', 
+    //                                                     notifyOnNetworkStatusChange: true});
 
-    useEffect(() => {
-        if (!loadingSubscribes) {
-            if(dataSubscribes?.subscribes){
-                let { status, data, total } = dataSubscribes?.subscribes
-                if(status){
-                    setInput({...input, data, total})
-                }
-            }
-        }
-    }, [dataSubscribes, loadingSubscribes])
+    // useEffect(() => {
+    //     if (!loadingSubscribes) {
+    //         if(dataSubscribes?.subscribes){
+    //             let { status, data, total } = dataSubscribes?.subscribes
+    //             if(status){
+    //                 setInput({...input, data, total})
+    //             }
+    //         }
+    //     }
+    // }, [dataSubscribes, loadingSubscribes])
       
     const fetchMoreData = async() =>{
 
@@ -51,7 +51,7 @@ const SubscribesPage = (props) => {
         // let {status, data} =  mores.data.suppliers
         // console.log("status, data :", status, data)
        
-        if(_.isEqual( input.slice, input.total )){
+        if(_.isEqual( input.slice, total )){
             // setHasMore(false);
             setInput({...input, hasMore: false})
         }else{
@@ -66,10 +66,8 @@ const SubscribesPage = (props) => {
     return (<div className="content-bottom">
             <div className="content-page border">   
             <div className="row">
-                {
-                loadingSubscribes
-                ?   <LinearProgress />
-                :   input.data.length == 0 
+                {   
+                    data.length == 0 
                     ?   <div>Empty data</div>
                     :   <InfiniteScroll
                             dataLength={input.slice}
@@ -77,7 +75,7 @@ const SubscribesPage = (props) => {
                             hasMore={input.hasMore}
                             loader={<h4>Loading...</h4>}>
                             { 
-                                _.map(input.data, (item, index) => {                                
+                                _.map( data, (item, index) => {                                
                                     return  <div className="row p-2">
                                             <Stack direction="row" spacing={2}>
                                                 <Box className="pointer">

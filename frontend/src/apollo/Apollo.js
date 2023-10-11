@@ -8,6 +8,7 @@ import _ from "lodash"
 import { store } from "../redux/Redux";
 import { ws_status } from "../redux/actions/ws";
 import * as Constants from "../constants"
+import { getCookie } from "../util"
 
 /////////////////////////
 
@@ -72,7 +73,7 @@ const wsLink = new GraphQLWsLink(createClient({
     // },
 
     connectionParams: () => ({
-        authToken: localStorage.getItem('token'),
+        authToken: getCookie('token') /*localStorage.getItem('token')*/ ,
     }),
     on: {
         // 
@@ -155,9 +156,10 @@ const wsLink = new GraphQLWsLink(createClient({
     },
 }));
   
+// 
 const uploadLink =  createUploadLink({  
                                           uri: (process.env.REACT_APP_NODE_ENV === "development" ? "http://" : "https://") + process.env.REACT_APP_HOST_GRAPHAL +"/graphql", 
-                                          headers:{ authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : "", } 
+                                          headers:{ authorization: getCookie('token') /*localStorage.getItem('token')*/ ? `Bearer ${ getCookie('token') /*localStorage.getItem('token')*/ }` : "", } 
                                         })
   
 // The split function takes three parameters:
@@ -178,7 +180,7 @@ const splitLink = split(
   
 const authLink = new ApolloLink((operation, forward) => {
     // Retrieve the authorization token from local storage.
-    const token = localStorage.getItem('token');
+    const token = getCookie('token') //localStorage.getItem('token');
 
     // Use the setContext method to set the HTTP headers.
     operation.setContext({

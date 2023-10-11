@@ -55,7 +55,7 @@ const BreadcsComp = (props) => {
   }, [dataProfile, loadingProfile])
 
   const BreadcrumbsView = () =>{
-    console.log("location?.pathname :", location)
+    // console.log("location?.pathname :", location)
     switch(location?.pathname){
       case "/":{
         return [<Typography key="0" color="text.primary"><HomeIcon size={18}/>{t("home")}</Typography>]

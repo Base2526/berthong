@@ -26,7 +26,8 @@ import {
   Search,
   MessageSeparator,
   action,
-  ExpansionPanel
+  ExpansionPanel,
+  MessageGroup
 } from "@chatscope/chat-ui-kit-react";
 import LinearProgress from '@mui/material/LinearProgress';
 import _ from "lodash"
@@ -35,10 +36,15 @@ import moment from "moment";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import mongoose from "mongoose";
+import {
+  FiShoppingCart as zoeIco
+} from "react-icons/fi"
 
 import { queryMessage, mutationMessage, subMessage, gqlUpdateMessageRead, queryConversations} from "../../apollo/gqlQuery"
 import MessageItem from "./MessageItem"
 import { getHeaders, truncate, handlerErrorApollo } from "../../util"
+
+import * as Constants from "../../constants"
 
 let unsubscribeSubMessage = null
 const MessagePage = (props) => {
@@ -49,11 +55,18 @@ const MessagePage = (props) => {
 
   const inputFile = useRef(null) 
 
+  const [prevConversationList, setPrevConversationList] = useState(conversations);
   const [conversationList, setConversationList] = useState([]);
   const [currentConversation, setCurrentConversation] = useState([]);
   const [messageList, setMessageList] = useState([]);
 
-  const [loadingMore, setLoadingMore] = useState(false);
+
+
+  // const [loadingMore, setLoadingMore] = useState(true);
+  // const [loadedMessages, setLoadedMessages] = useState([]);
+  // const [counter, setCounter] = useState(0);
+
+  const [loadingMore, setLoadingMore] = useState(true);
   const [loadedMessages, setLoadedMessages] = useState([]);
   const [counter, setCounter] = useState(0);
 
@@ -71,6 +84,10 @@ const MessagePage = (props) => {
                                     nextFetchPolicy: 'network-only', 
                                     notifyOnNetworkStatusChange: true
                                   });  
+
+  if(!_.isEmpty(errorMessage)){
+    handlerErrorApollo( props, errorMessage )
+  }
 
   const [onMessage, resultMessage] = useMutation(mutationMessage
     , {
@@ -143,54 +160,65 @@ const MessagePage = (props) => {
     };
   }, [])
 
+  // 
+  // useEffect(()=>{
+  //   console.log("loadedMessages :", loadedMessages, messageList)
+  // }, [loadedMessages, messageList])
+
   useEffect(()=>{
-    let newConversations = _.sortBy(conversations, "updatedAt").reverse()
-    setConversationList(newConversations)
-    if(!_.isEmpty(newConversations)) setCurrentConversation(newConversations[0])
+    let newConvs = _.sortBy(conversations, "updatedAt").reverse()
+    setConversationList(newConvs)
+    setPrevConversationList(newConvs)
+    if(!_.isEmpty(newConvs)) setCurrentConversation(newConvs[0])
   }, [conversations])
 
   useEffect(()=>{
     if(!_.isEmpty(currentConversation)){
-      refetchMessage({id: currentConversation._id});
-      // onUpdateMessageRead({ variables: {conversationId: currentConversation._id} });
+      setLoadedMessages([])
+      setLoadingMore(true)
+      refetchMessage({conversationId: currentConversation._id});
     }
   }, [currentConversation])
 
   useEffect(()=>{
     if(!loadingMessage){
       if(!_.isEmpty(dataMessage?.message)){
-        let { status, data } = dataMessage?.message
-        if(status) setMessageList(data)
+        let { status, data, total } = dataMessage?.message
+
+        // let groupedData = _.groupBy(data, "createdAt");
+        let groupedData =  _(data)
+                      .groupBy(v => moment(v.createdAt).format('MM/DD/YYYY') )
+                      .value();
+
+        if(total === data.length) setLoadingMore(false)
+
+        if(status) setLoadedMessages(groupedData)
       }
     }
   }, [dataMessage, loadingMessage])
-  
+
   // status, waiting, sent, received, read
   const onSidebarLeft = () =>{
     return  <Sidebar position="left" scrollable={false}>
               <Search 
-                placeholder="Search..." 
-                onClearClick={(e)=>{
-                  // setConversationList(preConversationList)
-                  console.log("setConversationList")
-                }}
+                placeholder={t("search")}
+                onClearClick={(e)=>setConversationList(prevConversationList) }
                 onChange={(e)=>{
-                  // if(!_.isEmpty(e)){
+                  if(!_.isEmpty(e)){
                     let newConversationList = _.filter(conversationList, conversation =>{ 
                       let mfriend = _.find(conversation.members, (member)=>member.userId !== user._id)
                       return conversation.lastSenderName.toLowerCase().includes(e.toLowerCase()) || 
-                             conversation.info.toLowerCase().includes(e.toLowerCase()) || 
-                             mfriend.name.toLowerCase().includes(e.toLowerCase())
+                              conversation.info.toLowerCase().includes(e.toLowerCase()) || 
+                              mfriend.name.toLowerCase().includes(e.toLowerCase())
                     })
                     setConversationList(newConversationList)
-                  // }else{
-                  //   setConversationList(preConversationList)
-                  // }
+                  }else{
+                    setConversationList(prevConversationList)
+                  }
                 }}/>
               <ConversationList>
                 {
                   _.map(conversationList, (conversation)=>{
-                    console.log("conversation :", conversation)
                     let muser = _.find(conversation.members, (member)=>member.userId === user._id)
                     let mfriend = _.find(conversation.members, (member)=>member.userId !== user._id)
 
@@ -266,6 +294,14 @@ const MessagePage = (props) => {
             </Sidebar>
   }
 
+  const handleScroll = (event) => {
+    const element = event.target;
+    if (element.scrollTop === 0) {
+      // loadMoreMessages();
+      console.log("handleScroll")
+    }
+  };
+
   const onMessageList = () =>{
   
     if(!loadingMessage){
@@ -319,11 +355,15 @@ const MessagePage = (props) => {
 
 
       return  <MessageList
-                // typingIndicator={<TypingIndicator content="Zoe is typing" />}
-                // loadingMore={loadingMore} 
-                // onYReachStart={onYReachStart()}
+                onScroll={handleScroll}
+                typingIndicator={<TypingIndicator content="Zoe is typing" />}
+                loadingMore={false} 
+                onYReachStart={onYReachStart()}
                 >
-                { _.map( messageList, item=>{ return <MessageItem {...props} item={item} /> }) }  
+                {/* { _.map( messageList, item=>{ return <MessageItem {...props} item={item} /> }) }   */}
+                {
+                  _.map(messageList, (v)=> v )
+                }
               </MessageList>  
     }
     
@@ -348,11 +388,11 @@ const MessagePage = (props) => {
                 let input = {
                               _id: new mongoose.Types.ObjectId(), 
                               conversationId: currentConversation._id, 
-                              status: "waiting",
+                              status: Constants.STATUS_SENT,
                               message: messageInputValue,
                               sentTime: Date.now(),
-                              // sender: user.displayName,
-                              // senderId: user.id, 
+                              senderName: user.displayName,
+                              senderId: user._id, 
                               direction: "outgoing",
                               position: "single"
                             }
@@ -363,40 +403,62 @@ const MessagePage = (props) => {
                   input = { ...input, type: "text" }
                 }
 
+                let newMessage  = <Message 
+                                    key={ (Math.random() + 1).toString(36).substring(7) } 
+                                    model={{  message: `Message ${ (Math.random() + 1).toString(36).substring(7) }`, 
+                                              sender: "Zox",
+                                              direction: "outgoing", }} />
+
+                // setMessageList([...messageList, newMessage])
+
                 onMessage({ variables: { mode: "NEW", input } });
+                // setMessageInputValue("")
+
+                // for (; i < maxCounter; i++) {
+                  // messages.push(<Message key={3333} model={{
+                  //   message: `Message ${ messageInputValue }`,
+                  //   sender: "Zoe"
+                  // }} />);
+                // }
+          
+                // setLoadedMessages(messages.reverse().concat(loadedMessages));
+
+                setLoadedMessages([...loadedMessages, input ])
                 setMessageInputValue("")
               }}
             />
   }
 
-  const onYReachStart = () => {
-    if (loadingMore === true) {
-      return;
-    }
+  // const onYReachStart_bak = () => {
+  //   if (!loadingMore) {
+  //     return;
+  //   }
 
-    setLoadingMore(true);
-    /* Fake fetch from API */
+  //   setLoadingMore(false);
+  //   /* Fake fetch from API */
 
-    /*
-    setTimeout(() => {
-      const messages = [];
+  
+  //   setTimeout(() => {
+  //     // const messages = [];
 
-      const maxCounter = counter + 10;
-      let i = counter;
+  //     const maxCounter = counter + 10;
+  //     let i = counter;
 
-      for (; i < maxCounter; i++) {
-        messages.push(<Message key={i} model={{
-          message: `Message ${i}`,
-          sender: "Zoe"
-        }} />);
-      }
+  //     for (; i < maxCounter; i++) {
+  //       // messages.push(<Message key={i} model={{
+  //       //   message: `Message ${i}`,
+  //       //   sender: "Zoe"
+  //       // }} />);
+  //       let newMessage  = <Message key={i} model={{ message: `Message +++ ${i}`, sender: "Zox" }} />
 
-      setLoadedMessages(messages.reverse().concat(loadedMessages));
-      setCounter(i);
-      setLoadingMore(false);
-    }, 1500);
-    */
-  };
+  //       setMessageList([...messageList, newMessage])
+  //     }
+
+  //     setLoadedMessages(messageList.reverse().concat(loadedMessages));
+  //     setCounter(i);
+  //     setLoadingMore(false);
+  //   }, 1500);
+  // };
 
   const onChangeFile = (event) =>{
     event.stopPropagation();
@@ -407,7 +469,7 @@ const MessagePage = (props) => {
     let input = {
       _id: new mongoose.Types.ObjectId(), 
       conversationId: currentConversation._id, 
-      status: "waiting",
+      status: Constants.STATUS_SENT,
       type: "image",
       message: "picture",
       sentTime: Date.now(),
@@ -422,20 +484,292 @@ const MessagePage = (props) => {
     onMessage({ variables: {mode: "NEW",  input } });
   }
 
+  const onYReachStart = () => {
+    if (loadingMore === true) {
+      return;
+    }
+
+    let firstElement = Object.values(loadedMessages)[0]; // Get the first element
+    // console.log("loadedMessages :", loadedMessages, !_.isEmpty(firstElement) ? firstElement[0] : firstElement)
+    if(!_.isEmpty(firstElement)){
+      refetchMessage({id: currentConversation._id, startId: (firstElement[0])?._id });
+    }
+
+    // 
+    // setLoadingMore(true);
+    /* Fake fetch from API */
+
+    // setTimeout(() => {
+    //   const messages = [];
+    //   /* Add 10 messages */
+
+    //   const maxCounter = counter + 2;
+    //   let i = counter;
+
+    //   for (; i < maxCounter; i++) {
+    //     // messages.push(<Message key={i} model={{
+    //     //   message: `Message ****${i}`,
+    //     //   sender: "Zoe"
+    //     // }} />);
+
+    //     let input = {
+    //                   _id: new mongoose.Types.ObjectId(), 
+    //                   conversationId: currentConversation._id, 
+    //                   status: Constants.STATUS_SENT,
+    //                   message: `Message ****${i}`,
+    //                   sentTime: Date.now(),
+    //                   senderName: user.displayName,
+    //                   senderId: user._id, 
+    //                   direction: "outgoing",
+    //                   position: "single"
+    //                 }
+
+    //     if(/<\/?[a-z][\s\S]*>/i.test(`Message ****${i}`)){
+    //       input = { ...input, type: "html" }
+    //     }else{
+    //       input = { ...input, type: "text" }
+    //     }
+
+    //     messages.push(input)
+    //   }
+
+    //   // setLoadedMessages([...messages, ...loadedMessages]/*messages.reverse().concat(loadedMessages)*/ );
+    //   // setCounter(i);
+    //   setLoadingMore(false);
+    // }, 1500);
+  };
+
   return (
-    <div className="pl-2 pr-2">
-      <div className="table-responsive MuiBox-root page-message">
-        <div style={{  position: "relative", width: "100%" }} className="Mui-submess-root" >
-          <MainContainer responsive>
-            {onSidebarLeft()}
-            <ChatContainer>
-              {onConversationHeader()}
-              {onMessageList()}
-              {onMessageInput()}
-            </ChatContainer>
-            {/* {onSidebarRight()} */}
-            <input type='file' id='file' ref={inputFile} style={{display: 'none'}}  onChange={onChangeFile} />
-          </MainContainer>
+    <div style={{ height: "600px", overflow: "hidden" }}>
+      <div className="pl-2 pr-2">
+        <div className="table-responsive MuiBox-root page-message">
+          <div style={{  position: "relative", width: "100%" }} className="Mui-submess-root" >
+            <MainContainer responsive>
+              {onSidebarLeft()}
+              <ChatContainer>
+                {onConversationHeader()}
+                {/* {onMessageList()} */}
+
+                {
+                  loadingMessage
+                  ? <LinearProgress />
+                  : <MessageList loadingMore={loadingMore} onYReachStart={onYReachStart}>
+                        {
+                          _.map(loadedMessages, (v, k)=>{
+                            let xx = []
+                            let count = 0
+                            if(count === 0){
+                              count++
+                              xx.push(<MessageSeparator content={`${ (moment(new Date(k), 'MM/DD/YYYY')).format('MMMM Do YYYY') }`}/> ) 
+                            }
+
+                            _.map(v, vv=>{
+                              xx.push( <MessageItem {...props} item={vv} /> )
+                            })
+
+                            return xx
+                          })
+                        }
+                        {
+
+                          // _.map( loadedMessages, v=>{ return <MessageItem {...props} item={v} /> })
+                        }
+                        {/* {loadedMessages} */}
+                      
+                        { /*
+                        <MessageGroup direction="incoming">          
+                          <Avatar src={zoeIco} name={"Zoe"} />          
+                          <MessageGroup.Messages>
+                            <Message model={{
+                              message: "Hello my friend",
+                              sentTime: "15 mins ago",
+                              sender: "Zoe"
+                            }} />
+                          </MessageGroup.Messages>              
+                        </MessageGroup>
+                        
+                        <MessageGroup direction="outgoing">
+                          <MessageGroup.Messages>
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Akane"
+                    }} />
+                          </MessageGroup.Messages>
+                        </MessageGroup>
+                        
+                        <MessageGroup>
+                          <Avatar src={zoeIco} name={"Zoe"} />
+                          <MessageGroup.Messages direction="incoming">
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Zoe"
+                    }} />
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Zoe"
+                    }} />
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Zoe"
+                    }} />
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Zoe"
+                    }} />
+                          </MessageGroup.Messages>      
+                        </MessageGroup>
+                        
+                        <MessageGroup direction="outgoing">
+                          <MessageGroup.Messages>
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Akane"
+                    }} />
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Akane"
+                    }} />
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Akane"
+                    }} />
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Akane"
+                    }} />
+                          </MessageGroup.Messages>
+                        </MessageGroup>
+                        
+                        
+                        <MessageGroup direction="incoming">
+                          <Avatar src={zoeIco} name={"Zoe"} />
+                          <MessageGroup.Messages>          
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Zoe"
+                    }} />
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Zoe"
+                    }} />
+                          </MessageGroup.Messages>             
+                        </MessageGroup>
+                        
+                        <MessageSeparator content="Saturday, 31 November 2019" />
+                        
+                        <MessageGroup direction="incoming">  
+                          <Avatar src={zoeIco} name={"Zoe"} />
+                          <MessageGroup.Messages>
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Zoe"
+                    }} />
+                          </MessageGroup.Messages>             
+                        </MessageGroup>
+                        
+                        <MessageGroup direction="outgoing">
+                          <MessageGroup.Messages>
+                            <Message model={{
+                              message: "Hello my friend",
+                              sentTime: "15 mins ago",
+                              sender: "Akane"
+                            }} />
+                          </MessageGroup.Messages>
+                        </MessageGroup>
+                        
+                        <MessageGroup direction="incoming">          
+                          <Avatar src={zoeIco} name={"Zoe"} />
+                          <MessageGroup.Messages>
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Zoe"
+                    }} />
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Zoe"
+                    }} />
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Zoe"
+                    }} />
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Zoe"
+                    }} />
+                          </MessageGroup.Messages>              
+                        </MessageGroup>
+                        
+                        <MessageGroup direction="outgoing">
+                          <MessageGroup.Messages>
+                            <Message model={{
+                              message: "Hello my friend",
+                              sentTime: "15 mins ago",
+                              sender: "Akane"
+                            }} />
+                            <Message model={{
+                              message: "Hello my friend",
+                              sentTime: "15 mins ago",
+                              sender: "Akane"
+                            }} />
+                            <Message model={{
+                              message: "Hello my friend",
+                              sentTime: "15 mins ago",
+                              sender: "Akane"
+                            }} />
+                            <Message model={{
+                              message: "Hello my friend",
+                              sentTime: "15 mins ago",
+                              sender: "Akane"
+                            }} />
+                          </MessageGroup.Messages>
+                        </MessageGroup>          
+                        
+                        <MessageGroup direction="incoming">
+                          <Avatar src={zoeIco} name={"Zoe"} />
+                          <MessageGroup.Messages>
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Zoe"
+                    }} />
+                            <Message model={{
+                      message: "Hello my friend",
+                      sentTime: "15 mins ago",
+                      sender: "Zoe"
+                    }} />
+                          </MessageGroup.Messages>                              
+                        </MessageGroup>     
+
+                  */  }
+                </MessageList>
+                }
+                
+                {/*  */}
+
+                {onMessageInput()}
+              </ChatContainer>
+              {/* {onSidebarRight()} */}
+              <input type='file' id='file' ref={inputFile} style={{display: 'none'}}  onChange={onChangeFile} />
+            </MainContainer>
+
+            
+          </div>
         </div>
       </div>
     </div>

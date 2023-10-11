@@ -114,4 +114,6 @@ export const TRANSLATIONS_TH = {
     subscribes: "ติดตาม",
 
     all_message: "ข้อความทั้งหมด",
+
+    search: "ค้นหา",
 };

@@ -334,7 +334,7 @@ const DetailPanelRight = (props) =>{
                 <div class="blog-summary" style={{ textAlign: "left" }}>
                   <p style={{ margin: "5px" }}>{data?.description}</p>
                   <div className="p-1" style={{ fontSize: "12px" }}>
-                    <li>งวดประจำวันที่ {(moment(data?.dateLottery?.date, 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY')}</li>
+                    <li>งวดประจำวันที่ {(moment(new Date(data?.dateLottery?.date) , 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY')}</li>
                     {/* <li>รางวัลปลอบใจ เงินสด 200 บาท</li> 2023-10-16T13:30:38.282Z */}
                     <li>เบอร์ละ {data?.price} บาท</li>
                     {/* <li>ลุ้นรางวัล 2 ตัวล่าง</li> */}

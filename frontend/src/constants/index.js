@@ -78,4 +78,9 @@ export const REJECT         = 15;
 export const NEW            = 16;
 export const DELETE         = 17;
 
+// Sent, Delivered, Read, Failed
+export const STATUS_SENT        = 50;
+export const STATUS_DELIVERED   = 51;
+export const STATUS_FAILED      = 52;
+
 export const BANKS=[{label: '(xxx-x-xxxxx-x)ธนาคารไทยพาณิชย์', id: "bank-01" },{ label: '(xxx-x-xxxxx-x)ธนาคารกสิกรไทย', id: "bank-02" }]

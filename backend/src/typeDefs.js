@@ -455,6 +455,7 @@ export default gql`
   }
 
   type Query {
+    me: JSON
     checkWalletByUserId(_id: ID): JSON
     ping: JSON
     checkCacheById(_id: ID): JSON
@@ -488,9 +489,9 @@ export default gql`
     adminBanks: JSON
     adminDeposits: JSON
     adminWithdraws: JSON
-    manageSuppliers( input:SearchInput ): JSON
+    manageSuppliers: JSON
 
-    message(_id: ID!): JSON
+    message(conversationId: ID!, startId: ID): JSON
     conversations: JSON
   }  
   
@@ -813,11 +814,11 @@ export default gql`
     crypto(input: JSON):JSON
 
     conversation( mode: ConversationMode!, _id: ID! ): JSON
-    message( mode: MessageMode!, input: MessageInput ): JSON
+    message( mode: MessageMode!, input: JSON ): JSON
   }
 
   type Subscription {
-    subscriptionMe(sessionId: ID!): JSON
+    me(userId: ID!): JSON
     subscriptionSupplierById(_id: ID!): JSON
     subscriptionSuppliers(supplierIds: String!): JSON
     subscriptionAdmin(supplierIds: String!): JSON

@@ -125,7 +125,8 @@ import MessagePage from "./pages/message/MessagePage";
 import DevelopmentPage from "./pages/DevelopmentPage"
 import NotFound404Page from "./pages/NotFound404Page"
 
-import { queryNotifications, 
+import {  queryMe,
+          queryNotifications, 
           mutationFollow, 
           querySuppliers, 
           querySupplierById, 
@@ -153,7 +154,13 @@ import { queryNotifications,
           mutationAdminWithdraw,
           queryConversations,
           mutationConversation,
-          subConversations
+          subConversations,
+
+
+          queryBookmarks,
+
+          queryManageSuppliers,
+          querySubscribes
         } from "./apollo/gqlQuery"
           
 import * as Constants from "./constants"
@@ -164,6 +171,7 @@ import { appStyles, ListItem } from "./styles"
 let { REACT_APP_SITE_TITLE } = process.env
 
 let unsubscribeSubConversations =  null
+let unsubscribeSubMe = null
 
 const App =(props) =>{
   let { t } = useTranslation();
@@ -178,10 +186,24 @@ const App =(props) =>{
   let [dialogLogin, setDialogLogin]     = useState(false);
   let [lightbox, setLightbox]           = useState({ isOpen: false, photoIndex: 0, images: [] });
   let [notifications, setNotifications] = useState([])
+  let [bookmarks, setBookmarks]         = useState({ data: [], total: 0 }) //  
+  let [subscribes, setSubscribes]         = useState({ data: [], total: 0 }) //  
   let [search, setSearch]               = useState(Constants.INIT_SEARCH)
   let [conversations, setConversations] = useState([])
+  let [manageSuppliers, setManageSuppliers] = useState([])
 
   let { ws, user, updateProfile, logout } = props
+
+  let { loading: loadingMe, 
+        data: dataMe, 
+        refetch: refetchMe,
+        subscribeToMore: subscribeToMoreMe, 
+        error: errorMe, } =  useQuery( queryMe, { 
+                                                  context: { headers: getHeaders(location) }, 
+                                                  fetchPolicy: 'cache-first', 
+                                                  nextFetchPolicy: 'network-only', 
+                                                  notifyOnNetworkStatusChange: true
+                                                });
 
   let { loading: loadingNotifications, 
           data: dataNotifications, 
@@ -200,6 +222,35 @@ const App =(props) =>{
                                                   fetchPolicy: 'cache-first', 
                                                   nextFetchPolicy: 'network-only', 
                                                   notifyOnNetworkStatusChange: true});
+
+  const { loading: loadingBookmarks, 
+          data: dataBookmarks, 
+          error: errorBookmarks,
+          fetchMore: fetchMoreBookmarks } = useQuery( queryBookmarks, { 
+                                                      context: { headers: getHeaders(location) }, 
+                                                      fetchPolicy: 'network-only', 
+                                                      nextFetchPolicy: 'cache-first',
+                                                      notifyOnNetworkStatusChange: true});
+
+  const { loading: loadingManageSuppliers, 
+          data: dataManageSuppliers, 
+          error: errorManageSuppliers, 
+          networkStatus: networkStatusManageSuppliers } = useQuery( queryManageSuppliers, { 
+                                                                    context: { headers: getHeaders(location) }, 
+                                                                    // variables: { input: search },
+                                                                    fetchPolicy: 'cache-first' , 
+                                                                    nextFetchPolicy: 'network-only' , 
+                                                                    notifyOnNetworkStatusChange: true
+                                                                  });
+
+  const { loading: loadingSubscribes, 
+          data: dataSubscribes, 
+          error: errorSubscribes,
+          fetchMore: fetchMoreSubscribes } = useQuery( querySubscribes, { 
+                                                      context: { headers: getHeaders(location) }, 
+                                                      fetchPolicy: 'cache-first',  
+                                                      nextFetchPolicy: 'network-only', 
+                                                      notifyOnNetworkStatusChange: true});                                                              
 
   const [onMutationFollow, resultMutationFollow] = useMutation(mutationFollow,{
     context: { headers: getHeaders(location) },
@@ -833,9 +884,11 @@ const App =(props) =>{
 
   useEffect(()=>{
     if(unsubscribeSubConversations) unsubscribeSubConversations()
+    if(unsubscribeSubMe) unsubscribeSubMe()
 
     if(!_.isEmpty(user)){
       refetchNotifications();
+      refetchMe()
 
       unsubscribeSubConversations =  subscribeToMoreConversations({
         document: subConversations,
@@ -854,6 +907,38 @@ const App =(props) =>{
             default:
                 return prev;
           }
+        }
+      })
+
+      unsubscribeSubMe =  subscribeToMoreMe({
+        document: subscriptionMe,
+        context: { headers: getHeaders(location) },
+        variables: { userId: user?._id },
+        updateQuery: (prev, value, context) => {
+          let { subscriptionData } = value
+          if (!subscriptionData?.data) return prev;
+
+          let { mutation, data } = subscriptionData.data.me
+          switch(mutation){
+            case "BOOK":
+            case "BUY":
+            case "DEPOSIT":
+            case "WITHDRAW":
+            case "CANCEL":{
+              updateProfile(data?.data)
+              break;
+            }
+            case "UPDATE":{
+              updateProfile(data)
+              break;
+            }
+            case "FORCE_LOGOUT":{
+              logout()
+              break;
+            }
+          }
+
+          return prev;
         }
       })
     }
@@ -883,37 +968,87 @@ const App =(props) =>{
     }
   }, [dataConversations, loadingConversations])
 
-  useEffect(()=>{
-    console.log("location?.pathname :", location?.pathname)
-  }, [location?.pathname])
-  
-  useSubscription(subscriptionMe, {
-    onSubscriptionData: useCallback((res) => {
-      console.log("subscriptionMe :", res)
-      if(!res.subscriptionData.loading){
-        let { mutation, data } = res.subscriptionData.data.subscriptionMe
-
-        switch(mutation){
-          case "BOOK":
-          case "BUY":
-          case "DEPOSIT":
-          case "WITHDRAW":
-          case "CANCEL":{
-            updateProfile(data?.data)
-            break;
-          }
-          case "UPDATE":{
-            updateProfile(data)
-            break;
-          }
+  useEffect(() => {
+    if (!loadingMe) {
+      if(dataMe?.me){
+        let { status, data } = dataMe?.me
+        if(status){
+          // setConversations(data)
         }
       }
-    }, []),
-    onError: useCallback((err) => {
-      console.log("subscriptionMe :", err)
-    }, []),
-    variables: {sessionId: /*localStorage.getItem('token')*/ getCookie('token') }, // setCookie('token', sessionId, {})
-  });
+    }
+  }, [dataMe, loadingMe])
+
+  useEffect(() => {
+    if(!loadingManageSuppliers){
+      if (dataManageSuppliers?.manageSuppliers) {
+        let { status, data } = dataManageSuppliers?.manageSuppliers
+        if(status){
+          setManageSuppliers(data)
+        }
+      }
+    }
+  }, [dataManageSuppliers, loadingManageSuppliers])
+
+  useEffect(() => {
+    if (!loadingBookmarks) {
+      if(dataBookmarks?.bookmarks){
+        let { status, data, total } = dataBookmarks?.bookmarks
+        if(status){
+          setBookmarks({ data, total }) 
+        }
+      }
+    }
+  }, [dataBookmarks, loadingBookmarks])
+
+  // subscribes
+  useEffect(() => {
+    if (!loadingSubscribes) {
+      if(dataSubscribes?.subscribes){
+        let { status, data, total } = dataSubscribes?.subscribes
+        if(status){
+          setSubscribes({ data, total }) 
+        }
+      }
+    }
+  }, [dataSubscribes, loadingSubscribes])
+
+
+  // useEffect(()=>{
+  //   console.log("location?.pathname :", location?.pathname)
+  // }, [location?.pathname])
+  
+  // useSubscription(subscriptionMe, {
+  //   onSubscriptionData: useCallback((res) => {
+  //     console.log("subscriptionMe :", res)
+  //     if(!res.subscriptionData.loading){
+  //       let { mutation, data } = res.subscriptionData.data.me
+
+  //       switch(mutation){
+  //         case "BOOK":
+  //         case "BUY":
+  //         case "DEPOSIT":
+  //         case "WITHDRAW":
+  //         case "CANCEL":{
+  //           updateProfile(data?.data)
+  //           break;
+  //         }
+  //         case "UPDATE":{
+  //           updateProfile(data)
+  //           break;
+  //         }
+  //         case "FORCE_LOGOUT":{
+  //           console.log("FORCE_LOGOUT")
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }, []),
+  //   onError: useCallback((err) => {
+  //     console.log("subscriptionMe :", err)
+  //   }, []),
+  //   variables: {sessionId: /*localStorage.getItem('token')*/ getCookie('token') }, // setCookie('token', sessionId, {})
+  // });
  
   const ProtectedAuthenticatedRoute = ({ user, redirectPath = '/' }) => {
     switch(checkRole(user)){
@@ -1057,44 +1192,67 @@ const App =(props) =>{
             </Menu>
   }
 
+  const disabledNotifications = () =>{
+    return _.isEmpty(notifications) ? true : false
+  }
+
+  const disabledCarts = () =>{
+    if( user?.inTheCarts && user?.inTheCarts?.length===0 ){
+      return true
+    } 
+    return false
+  }
+
+  const disabledConversations = () =>{
+    return _.isEmpty(conversations) ? true : false
+  }
+
+  const disabledManageSuppliers = () =>{
+    return _.isEmpty(manageSuppliers) ? true : false
+  }
+
+  const disabledBookmarks = () =>{
+    return _.isEmpty(bookmarks.data) ? true : false
+  }
+
+  const disabledSubscribes = () =>{
+    return _.isEmpty(subscribes.data) ? true : false
+  }
+
   const toolbarMenu = () =>{
     if(!_.isEmpty(user)){
       switch(checkRole(user)){
         case Constants.AUTHENTICATED:{
-          return  <Stack direction={"row"} spacing={2} alignItems="center">
-                    <div className="border-login">
-                      <IconButton size={'small'} onClick={()=> navigate("/notifications") }>
+          return  <div className="border-login">
+                      <IconButton disabled={ disabledNotifications() } size={'small'} onClick={()=> navigate("/notifications") }>
                         <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
-                          <MdCircleNotificationsIcon color={ _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
+                          <MdCircleNotificationsIcon color={ disabledNotifications() ? 'gray' :  _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
                         </Badge>
                       </IconButton>
-                      <IconButton size={'small'} onClick={()=> navigate("/book-buy")}>
+                      <IconButton disabled={ disabledCarts() }  size={'small'} onClick={()=> navigate("/book-buy")}>
                         <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
-                          <FiShoppingCart color={ _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
+                          <FiShoppingCart color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
                         </Badge>
                       </IconButton>
-                      <IconButton size={'small'} onClick={()=> navigate("/bookmarks")}>
-                        <MdOutlineBookmarkAddedIcon color={ _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
+                      <IconButton disabled={disabledBookmarks()} size={'small'} onClick={()=> navigate("/bookmarks")}>
+                        <MdOutlineBookmarkAddedIcon color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
                       </IconButton>
-                      <IconButton size={'small'} onClick={()=> navigate("/subscribes")}>
-                        <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
+                      <IconButton disabled={disabledSubscribes()} size={'small'} onClick={()=> navigate("/subscribes")}>
+                        <SlUserFollowing color={ disabledSubscribes() ? 'gray' : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
                       </IconButton>
-                      <IconButton disabled={_.isEmpty(conversations) ? true : false}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
+                      <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
                         <Badge badgeContent={conversations.length} color="primary">
-                          <HiChatBubbleLeftRightIcon alt="chat" color={ _.isEmpty(conversations) ? "gray" : _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                          <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" : _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
                         </Badge>
                       </IconButton>
-                      {/* .length */}
                       <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
                         <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } size="1.2em"/>
                       </IconButton>
                     </div>
-                  </Stack>
         }
 
         case Constants.AMDINISTRATOR:{
-          return  <Stack direction={"row"} spacing={2} alignItems="center">
-                    <div className="border-login">
+          return  <div className="border-login">
                       <IconButton 
                         size={'small'}
                         onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
@@ -1105,50 +1263,45 @@ const App =(props) =>{
                         />
                       </IconButton>
                     </div>
-                  </Stack>
         }
 
         case Constants.SELLER:{
-          return  <Stack direction={"row"} spacing={2} alignItems="center">
-                    <div className="border-login">
-                      <IconButton size={'small'} onClick={()=> navigate("/notifications") }>
+          return  <div className="border-login">
+                      <IconButton disabled={ disabledNotifications() }  size={'small'} onClick={()=> navigate("/notifications") }>
                         <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
-                          <MdCircleNotificationsIcon color={ _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
+                          <MdCircleNotificationsIcon color={ disabledNotifications() ? "gray" : _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
                         </Badge>
                       </IconButton>
-                      <IconButton size={'small'} onClick={()=> navigate("/book-buy")}>
+                      <IconButton disabled={ disabledCarts() }  size={'small'} onClick={()=> navigate("/book-buy")}>
                         <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
-                          <FiShoppingCart color={ _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
+                          <FiShoppingCart color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
                         </Badge>
                       </IconButton>
-                      <IconButton size={'small'} onClick={()=> navigate("/bookmarks")}>
-                        <MdOutlineBookmarkAddedIcon color={ _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
+                      <IconButton disabled={disabledBookmarks()} size={'small'} onClick={()=> navigate("/bookmarks")}>
+                        <MdOutlineBookmarkAddedIcon color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
                       </IconButton>
-                      <IconButton size={'small'} onClick={()=> navigate("/subscribes")}>
-                        <SlUserFollowing color={ _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
+                      <IconButton disabled={disabledSubscribes()} size={'small'} onClick={()=> navigate("/subscribes")}>
+                        <SlUserFollowing color={ disabledSubscribes() ? "gray" : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
                       </IconButton>
-                      <IconButton disabled={_.isEmpty(conversations) ? true : false}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
+                      <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
                         <Badge badgeContent={conversations.length} color="primary">
-                          <HiChatBubbleLeftRightIcon alt="chat" color={ _.isEmpty(conversations) ? "gray" :  _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                          <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" :  _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
                         </Badge>
                       </IconButton>
-                      <IconButton size={'small'} onClick={()=> navigate("/lotterys")}>
-                        <BiStoreAlt color={ _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1.2em"/>
+                      <IconButton disabled={ disabledManageSuppliers() }  size={'small'} onClick={()=> navigate("/lotterys")}>
+                        <BiStoreAlt color={ disabledManageSuppliers()  ? 'gray' : _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1.2em"/>
                       </IconButton>
                       <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
                         <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } size="1.2em"/>
                       </IconButton>
                     </div>
-                  </Stack>
         }
       }
     }
 
-    return  <Stack direction={"row"} spacing={2} alignItems="center">
-              <IconButton size={'small'} onClick={()=>{ setDialogLogin(true) }}>
+    return  <IconButton size={'small'} onClick={()=>{ setDialogLogin(true) }}>
                 <LoginIcon color="white" size="1.2em"/>
               </IconButton>
-            </Stack>
   }
 
   return (
@@ -1211,7 +1364,9 @@ const App =(props) =>{
                     className={clsx(classes.menuButton, open && classes.hide)}
                   ><MenuIcon /></IconButton>
                   <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">{ REACT_APP_SITE_TITLE } { checkRole(user) === Constants.SELLER ? "(Seller)" : ""}</div></Typography>
-                  {toolbarMenu()}
+                  <Stack className={"main-border-login"} direction={"row"} spacing={2} alignItems="center">
+                    {toolbarMenu()}
+                  </Stack>
                 </>
               }
             </Toolbar>
@@ -1332,8 +1487,8 @@ const App =(props) =>{
               <Route path="/banks" element={<BanksPage {...props} />} />
               <Route path="/book-buy" element={<BookBuysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/notifications" element={<NotificationsPage {...props} onMutationNotification={(evt)=>onMutationNotification(evt)} />} />
-              <Route path="/bookmarks" element={<BookMarksPage {...props} onMutationFollow={(evt)=>onMutationFollow(evt) } />} />
-              <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} />} />
+              <Route path="/bookmarks" element={<BookMarksPage {...props} onMutationFollow={(evt)=>onMutationFollow(evt) } data={bookmarks.data} total={bookmarks.total} />} />
+              <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} data={subscribes.data} total={subscribes.total} />} />
               <Route path="/producers" element={<ProducersPage {...props}  onLightbox={(evt)=>setLightbox(evt)}  />} />
               <Route path="/messages" element={<MessagePage {...props} conversations={conversations}  onLightbox={(evt)=>setLightbox(evt)}  />} />
             </Route>
