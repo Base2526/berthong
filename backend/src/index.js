@@ -14,6 +14,8 @@ import resolvers from "./resolvers";
 import pubsub from './pubsub'
 import { error } from "console";
 
+import * as Utils from "./utils"
+
 require('./mongo');
 require('./cron-jobs.js');
 
@@ -192,71 +194,78 @@ async function startApolloServer(typeDefs, resolvers) {
             },
             ApolloServerPluginLandingPageLocalDefault({ embed: true }),
         ],
-        context: async ( req /*{ req }*/) => {
-            // console.log("ApolloServer context :", req.headers.authorization)
-
-            // https://daily.dev/blog/authentication-and-authorization-in-graphql
-            // throw Error("throw Error(user.msg);");
-
-            // const decode = jwt.verify(token, 'secret');
-            
-            // try {
-            //     if (req.headers && req.headers.authorization) {
-            //         var auth    = req.headers.authorization;
-            //         var parts   = auth.split(" ");
-            //         var bearer  = parts[0];
-            //         var sessionId   = parts[1];
-
-            //         if (bearer == "Bearer") {
-            //             // let decode = jwt.verify(token, process.env.JWT_SECRET);
-            //             let session = await Session.findById(sessionId)   
-                        
-            //             var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));
-
-            //             // console.log("session expired :", session.expired, expiredDays, req)
-
-            //             // code
-            //             // -1 : force logout
-            //             //  0 : anonymums
-            //             //  1 : OK
-            //             if(expiredDays >= 0){
-            //                 let userId  = jwt.verify(session.token, process.env.JWT_SECRET);
-    
-            //                 // return {...req, currentUser: await User.findById(userId)} 
-
-            //                 return {
-            //                     status: true,
-            //                     code: 1,
-            //                     currentUser: await User.findById(userId),
-            //                     req
-            //                 }
-            //             }
-
-            //             // force logout
-            //             return {
-            //                 status: false,
-            //                 code: -1,
-            //                 req
-            //             }
-            //         }
-            //     }
-            // } catch(err) {
-            //     logger.error( err.toString() );
-            // }
-            // return {
-            //     status: true,
-            //     code: 0,
-            //     req
-            // }
-
-            return req;
+        context: (req) => {
+           return req
         },
-        formatError: (error) => {
-            // Log the error here
-            // console.error("formatError :", error);
+        // context: async ( req /*{ req }*/) => {
+        //     // console.log("ApolloServer context :", req.headers.authorization)
 
-            logger.error(error);
+        //     // https://daily.dev/blog/authentication-and-authorization-in-graphql
+        //     // throw Error("throw Error(user.msg);");
+
+        //     // const decode = jwt.verify(token, 'secret');
+            
+        //     // try {
+        //     //     if (req.headers && req.headers.authorization) {
+        //     //         var auth    = req.headers.authorization;
+        //     //         var parts   = auth.split(" ");
+        //     //         var bearer  = parts[0];
+        //     //         var sessionId   = parts[1];
+
+        //     //         if (bearer == "Bearer") {
+        //     //             // let decode = jwt.verify(token, process.env.JWT_SECRET);
+        //     //             let session = await Session.findById(sessionId)   
+                        
+        //     //             var expiredDays = parseInt((session.expired - new Date())/ (1000 * 60 * 60 * 24));
+
+        //     //             // console.log("session expired :", session.expired, expiredDays, req)
+
+        //     //             // code
+        //     //             // -1 : force logout
+        //     //             //  0 : anonymums
+        //     //             //  1 : OK
+        //     //             if(expiredDays >= 0){
+        //     //                 let userId  = jwt.verify(session.token, process.env.JWT_SECRET);
+    
+        //     //                 // return {...req, currentUser: await User.findById(userId)} 
+
+        //     //                 return {
+        //     //                     status: true,
+        //     //                     code: 1,
+        //     //                     currentUser: await User.findById(userId),
+        //     //                     req
+        //     //                 }
+        //     //             }
+
+        //     //             // force logout
+        //     //             return {
+        //     //                 status: false,
+        //     //                 code: -1,
+        //     //                 req
+        //     //             }
+        //     //         }
+        //     //     }
+        //     // } catch(err) {
+        //     //     logger.error( err.toString() );
+        //     // }
+        //     // return {
+        //     //     status: true,
+        //     //     code: 0,
+        //     //     req
+        //     // }
+
+        //     return req;
+        // },
+        formatError: (error) => {
             return error;
+        },
+        formatResponse: (response, requestContext) => {
+            if (response.errors) {
+                let { req } = requestContext?.context
+                console.log("response.errors : ", response.errors)
+                logger.debug(response.errors?.[0]?.message, { req , errors: response.errors});
+            }
+            return response;
         },
         // subscriptions: {
         //     onConnect: (connectionParams, webSocket, context) => {

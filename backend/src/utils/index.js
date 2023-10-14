@@ -16,9 +16,9 @@ import logger from "./logger";
 export const loggerError = async(req, message) =>{
    let { current_user } = await checkAuth(req);
    let user_agent = userAgent(req)
-   logger.error( JSON.stringify(message), 
+   logger.error( message, 
                     {
-                      username: JSON.stringify(current_user),
+                      username: current_user,
                       ipAddress: "127.0.0.1",
                       userAgent: user_agent
                     }
@@ -28,9 +28,9 @@ export const loggerError = async(req, message) =>{
 export const loggerInfo = async(req, message) =>{
     let { current_user } = await checkAuth(req);
     let user_agent = userAgent(req)
-    logger.info( JSON.stringify(message), 
+    logger.info( message, 
                     {
-                        username: JSON.stringify(current_user),
+                        username: current_user,
                         ipAddress: "127.0.0.1",
                         userAgent: user_agent
                     }
@@ -43,7 +43,7 @@ export const emailValidate = () =>{
 
 export const fileRenamer = (filename) => {
     const queHoraEs = Date.now();
-    const regex = /[\s_-]/gi;
+    const regex = /[^a-zA-Z]/g ///[\s_-]/gi;
     const fileTemp = filename.replace(regex, ".");
     let arrTemp = [fileTemp.split(".")];
     return `${arrTemp[0].slice(0, arrTemp[0].length - 1).join("_")}${queHoraEs}.${arrTemp[0].pop()}`;

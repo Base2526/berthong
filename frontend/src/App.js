@@ -228,8 +228,8 @@ const App =(props) =>{
           error: errorBookmarks,
           fetchMore: fetchMoreBookmarks } = useQuery( queryBookmarks, { 
                                                       context: { headers: getHeaders(location) }, 
-                                                      fetchPolicy: 'network-only', 
-                                                      nextFetchPolicy: 'cache-first',
+                                                      fetchPolicy: 'cache-first', 
+                                                      nextFetchPolicy: 'network-only',
                                                       notifyOnNetworkStatusChange: true});
 
   const { loading: loadingManageSuppliers, 
@@ -1253,14 +1253,11 @@ const App =(props) =>{
 
         case Constants.AMDINISTRATOR:{
           return  <div className="border-login">
-                      <IconButton 
-                        size={'small'}
-                        onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
-                        <Avatar 
-                          src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" }
-                          alt="profile"
-                          size="1.2em"
-                        />
+                      <IconButton onClick={()=> navigate("/dblog") }>
+                        <VscDebugIcon  color={ _.isEqual(location?.pathname, "/dblog") ? "red" : "white" } size="1.2em"/>
+                      </IconButton>
+                      <IconButton size={'small'} onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
+                        <Avatar src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } alt="profile" size="1.2em" />
                       </IconButton>
                     </div>
         }

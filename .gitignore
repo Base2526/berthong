@@ -1,6 +1,8 @@
 frontend/node_modules
 frontend/ssl
+frontend/package-lock.json
 
+backend/package-lock.json
 backend/node_modules
 backend/uploads
 backend/src/logs
