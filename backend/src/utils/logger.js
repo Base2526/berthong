@@ -128,6 +128,26 @@ const logger = winston.createLogger({
         winston.format.metadata()
       ),
     }),
+
+    // MongoDB Transport
+    new winston.transports.MongoDB({
+      level: 'debug',
+      // mongo database connection link
+      db: process.env.MONGO_URI,
+      options: {
+        useUnifiedTopology: true,
+        useNewUrlParser: true,
+      },
+      // A collection to save json formatted logs
+      collection: 'dblog',
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        // Convert logs to a json format
+        winston.format.json(),
+        winston.format.errors({ stack: true }),
+        winston.format.metadata()
+      ),
+    }),
   ],
   exitOnError: false,
 });
@@ -153,6 +173,10 @@ module.exports.warn = function () {
 module.exports.error = function () {
   logger.error.apply(logger, formatLogArguments(arguments));
 };
+
+// module.exports.system = function () {
+//   logger.system.apply(logger, formatLogArguments(arguments));
+// };
 
 module.exports.stream = logger.stream;
 

@@ -699,7 +699,8 @@ export default {
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
 
-      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !== Constants.AUTHENTICATED && 
+          Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
     
       let suppliers = await Model.Supplier.aggregate([
                       {  $match: { follows: {$elemMatch: {userId: current_user?._id} }  } },
@@ -884,6 +885,8 @@ export default {
     async adminHome(parent, args, context, info){
       let start = Date.now()
       let { req } = context
+
+      // console.log("adminHome :", context)
 
       let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
@@ -1378,7 +1381,7 @@ export default {
 
                                         console.log("params :", params)
 
-                                        await Utils.loggerError(req, JSON.stringify(params));
+                                        await Utils.loggerError(req, params);
                                         
                                         let access_token = params.get("access_token");
                                   
@@ -1600,7 +1603,7 @@ export default {
 
                                       console.log("params :", params)
 
-                                      await Utils.loggerError(req, JSON.stringify(params));
+                                      await Utils.loggerError(req, params);
                                       
                                       let access_token = params.get("access_token");
                                 

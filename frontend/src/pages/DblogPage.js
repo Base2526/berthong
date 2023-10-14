@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 import moment from "moment";
 import { LinearProgress } from "@mui/material";
 
+import { ObjectView } from 'react-object-view'
+
 import { queryDblog, mutationCheck_db } from "../apollo/gqlQuery"
 import { getHeaders, handlerErrorApollo } from "../util"
 import TableComp from "../components/TableComp"
@@ -104,10 +106,15 @@ const DblogPage = (props) => {
           // width: 60,
           Cell: props =>{
             let {message} = props.row.values 
+            // try {
+            //   return _.map(_.map(_.toPairs(JSON.parse(message)), d => _.fromPairs([d])), (v, k)=>{
+            //     return <div>{ JSON.stringify(v) }</div>
+            //   })
+            // }catch (error) {
+            //   return <div>{message}</div>
+            // }
             try {
-              return _.map(_.map(_.toPairs(JSON.parse(message)), d => _.fromPairs([d])), (v, k)=>{
-                return <div>{ JSON.stringify(v) }</div>
-              })
+              return <ObjectView  data={JSON.parse(message)} />
             }catch (error) {
               return <div>{message}</div>
             }
@@ -119,7 +126,9 @@ const DblogPage = (props) => {
           Cell: props => {
             let {meta} = props.row.values 
             // console.log( "meta :", JSON.parse(meta?.username) )
-            return  <div>{meta?.username ? JSON.parse(meta?.username)?.displayName : ""}</div>
+            // return  <div>{meta?.username ? JSON.parse(meta?.username)?.displayName : ""}</div>
+
+            return <ObjectView  data={meta} />
           }
         },
         {

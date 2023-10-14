@@ -135,6 +135,25 @@ const LotterysPage = (props) => {
         }
       },
       {
+        Header: 'Edit',
+        // accessor: 'createdAt',
+        Cell: props => {
+          // let {createdAt} = props.row.values 
+          // let date = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+          let { original } = props.row
+          console.log("props.row.values :", original)
+          return  <div>
+                    <button onClick={(evt)=>{
+                      navigate("/lottery", {state: {from: "/", mode: "edit", id: original?._id } })
+                    }}><EditIcon/>{t("edit")}
+                    </button>
+                    <button onClick={(e)=>{
+                      setOpenDialogDelete({ isOpen: true, id: original?._id, description: original?.description });
+                    }}><DeleteForeverIcon/>{t("delete")}</button>
+                  </div>
+        }
+      },
+      {
         Header: 'Image',
         accessor: 'files',
         Cell: props =>{
@@ -209,25 +228,7 @@ const LotterysPage = (props) => {
         }
       },
 
-      {
-        Header: 'Edit',
-        // accessor: 'createdAt',
-        Cell: props => {
-          // let {createdAt} = props.row.values 
-          // let date = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-          let { original } = props.row
-          console.log("props.row.values :", original)
-          return  <div>
-                    <button onClick={(evt)=>{
-                      navigate("/lottery", {state: {from: "/", mode: "edit", id: original?._id } })
-                    }}><EditIcon/>{t("edit")}
-                    </button>
-                    <button onClick={(e)=>{
-                      setOpenDialogDelete({ isOpen: true, id: original?._id, description: original?.description });
-                    }}><DeleteForeverIcon/>{t("delete")}</button>
-                  </div>
-        }
-      },
+      
     ],
     []
   )
