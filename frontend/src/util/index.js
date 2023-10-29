@@ -215,7 +215,8 @@ export const handlerErrorApollo = (props, error) =>{
           }
 
           case Constants.NOT_ENOUGH_BALANCE:{
-            showToast("error", i18n.t(e?.extensions?.code))
+            console.log("e?.extensions?.code :", e?.extensions?.code)
+            showToast("error", i18n.t(e?.extensions?.code, { name: 'Alice' }))
             break;
           }
 

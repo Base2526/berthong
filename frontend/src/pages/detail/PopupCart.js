@@ -41,7 +41,7 @@ const PopupCart = (props) => {
             <br />
             { _.map(books, (buy, i) => { return minTwoDigits(buy?.itemId) }).join(', ') }
             <br />
-            รวมราคา {books.length * data?.price} บาท
+            รวมราคา {books.length * data?.priceUnit} บาท
           </div>
         </div>
       </DialogContent>

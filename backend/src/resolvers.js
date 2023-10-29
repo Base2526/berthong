@@ -637,7 +637,7 @@ export default {
                               let buys     = _.filter(supplier.buys, (buy)=>buy.userId == current_user?._id.toString())
                               // price, buys
 
-                              let balance = buys.length * supplier.price
+                              let balance = buys.length * supplier.priceUnit
 
                               return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
                             }
@@ -1746,7 +1746,8 @@ export default {
         if(check === undefined){
           let { money_balance } = await Utils.getBalance(current_user?._id)
 
-          if(supplier?.price > money_balance){
+          if(supplier?.priceUnit > money_balance){
+            console.log("Constants.NOT_ENOUGH_BALANCE >>")
             throw new AppError(Constants.NOT_ENOUGH_BALANCE, 'NOT ENOUGH BALANCE')
           }
 
@@ -1787,7 +1788,7 @@ export default {
         await session.abortTransaction();
         console.log(`book #error : ${error}`)
         
-        throw new AppError(Constants.ERROR, error)
+        throw new AppError(error?.extensions?.code, error?.message)
       } finally {
         session.endSession();
         console.log("book #finally")
@@ -1906,12 +1907,12 @@ export default {
     },
 
     // Add/Edit supplier
-    async supplier(parent, args, context, info) {
+    async lottery(parent, args, context, info) {
       let start = Date.now()
       let { input } = args
       let { req } = context
 
-      // console.log("supplier :", input)
+      console.log("supplier :", input)
 
       let { current_user } =  await Utils.checkAuth(req);
       if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR && 
@@ -2031,6 +2032,14 @@ export default {
           return {
             status: true,
             data: await Utils.getSupplier({ _id: input._id }),
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }
+        }
+
+        case "delete":{  
+          await Model.Supplier.deleteOne( {"_id": mongoose.Types.ObjectId(input?._id)});
+          return {
+            status: true,
             executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
           }
         }

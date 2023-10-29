@@ -58,7 +58,7 @@ const SearchComp = (props) => {
                           <AccordionDetails>
                             <Typography>
                               <div className="row m-1">
-                                <div className="col-lg-6 col-md-6 col-sm-6 col-12 p-3">
+                                <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1">
                                   <TextField
                                     id="standard-basic"
                                     label="ตัวเลขต้องการซื้อ"
@@ -115,7 +115,7 @@ const SearchComp = (props) => {
                                   </div>
                                 </div> 
                                 */}
-                                <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1 m-1">
+                                <div className="col-lg-3 col-md-6 col-sm-6 col-12 p-1 m-1 align-self-center">
                                   <Box sx={{ display: "flex", gap: 2 }}>
                                     {/* <FormControl>
                                       <FormLabel id="demo-controlled-radio-buttons-group">Gender</FormLabel>

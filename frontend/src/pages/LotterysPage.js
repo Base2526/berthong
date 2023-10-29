@@ -46,10 +46,8 @@ const LotterysPage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  let { user, onLightbox } = props
-
-  // let [search, setSearch] = useState(INIT_SEARCH)
-
+  let { user, onLightbox, onMutationLottery } = props
+  
   const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
   let [datas, setDatas] = useState([]);
@@ -96,6 +94,9 @@ const LotterysPage = (props) => {
 
   const handleDelete = (id) => {
     // onDeletePhone({ variables: { id } });
+
+    console.log("handleDelete :", id)
+    onMutationLottery({ variables: { input: {mode: "DELETE", _id: id} } });
   };
 
   const handleLoadMore = () => {
@@ -118,120 +119,227 @@ const LotterysPage = (props) => {
     // onSearchChange({...search, PAGE: 1})
   }
 
-  const columns = useMemo(
-    () => [
-      {
-        Header: 'Title',
-        accessor: 'title',
-        Cell: props =>{
-            let { original } = props.row
-            return <div 
-                    onClick={()=>{
-                      navigate({
-                      pathname: "/d",
-                      search: `?${createSearchParams({ id: original._id})}`,
-                      state: { id: original._id }
-                    })}}>{ original?.title }</div>
-        }
-      },
-      {
-        Header: 'Edit',
-        // accessor: 'createdAt',
-        Cell: props => {
-          // let {createdAt} = props.row.values 
-          // let date = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-          let { original } = props.row
-          console.log("props.row.values :", original)
-          return  <div>
-                    <button onClick={(evt)=>{
-                      navigate("/lottery", {state: {from: "/", mode: "edit", id: original?._id } })
-                    }}><EditIcon/>{t("edit")}
-                    </button>
-                    <button onClick={(e)=>{
-                      setOpenDialogDelete({ isOpen: true, id: original?._id, description: original?.description });
-                    }}><DeleteForeverIcon/>{t("delete")}</button>
-                  </div>
-        }
-      },
-      {
-        Header: 'Image',
-        accessor: 'files',
-        Cell: props =>{
-            let {files} = props.row.values
-            console.log("files :", files)
-            return  <div> 
-                      <Avatar
-                        alt="Avatar"
-                        variant="rounded"
-                        src={ _.isEmpty(files) ? "" : files[0]?.url}
-                        onClick={(e) => {
-                          onLightbox({ isOpen: true, photoIndex: 0, images:files })
-                        }}
-                        sx={{ width: 56, height: 56 }}
-                      />
-                      <div>{ files.length }</div>
-                    </div>
-        }
-      },
-      {
-        Header: 'จอง/ขาย',
-        accessor: "buys",
-        Cell: props =>{
-          let { original } = props.row
-          console.log("จอง/ขาย :", original)
-
-          let books     =  _.filter(original?.buys, (buy)=> _.isEqual(buy?.selected, 0) )
-          let buys      =  _.filter(original?.buys, (buy)=> _.isEqual(buy?.selected, 1) )
-        
-          return <div>{books.length}/{buys.length}</div>
-        }
-      },
-      {
-        Header: 'OWNER',
-        accessor: "ownerId",
-        Cell: props =>{
-          let { owner } = props.row.original
-          return  <div onClick={()=>{ _.isEqual(user._id, owner?._id ) ? navigate("/me") : navigate({ pathname: `/p`, search: `?${createSearchParams({ id: owner._id })}` })}}>{owner.username} </div>
-        }
-      },
-      {
-        Header: 'Price',
-        accessor: "price",
-        Cell: props => {
-          let {price} = props.row.values 
-          return  <div>{ price }</div>
-        }
-      },
-      {
-        Header: 'Price Unit',
-        accessor: "priceUnit",
-        Cell: props => {
-          let {priceUnit} = props.row.values 
-          return  <div>{ priceUnit }</div>
-        }
-      },
-      {
-        Header: 'Publish',
-        accessor: "publish",
-        Cell: props => {
-          let {publish} = props.row.values 
-          return  <div>{ publish ? "เปิด" : "ปิด" }</div>
-        }
-      },
-      {
-        Header: 'Date',
-        accessor: 'createdAt',
-        Cell: props => {
-          let {createdAt} = props.row.values 
-          let date = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
-          return <div>{moment(date).format('DD MMM, YYYY h:mm:ss a')}</div>
-        }
-      },
-
-      
-    ],
-    []
-  )
+  const getColmns = () =>{
+    switch(checkRole(user)){
+      case Constants.AMDINISTRATOR:
+        return useMemo(
+                        () => [
+                          {
+                            Header: 'Title',
+                            accessor: 'title',
+                            Cell: props =>{
+                                let { original } = props.row
+                                return <div 
+                                        onClick={()=>{
+                                          navigate({
+                                          pathname: "/d",
+                                          search: `?${createSearchParams({ id: original._id})}`,
+                                          state: { id: original._id }
+                                        })}}>{ original?.title }</div>
+                            }
+                          },
+                          {
+                            Header: 'Edit',
+                            // accessor: 'createdAt',
+                            Cell: props => {
+                              // let {createdAt} = props.row.values 
+                              // let date = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+                              let { original } = props.row
+                              console.log("props.row.values :", original)
+                              return  <div>
+                                        <button onClick={(evt)=>{
+                                          navigate("/lottery", {state: {from: "/", mode: "edit", id: original?._id } })
+                                        }}><EditIcon/>{t("edit")}
+                                        </button>
+                                        <button onClick={(e)=>{
+                                          setOpenDialogDelete({ isOpen: true, id: original?._id, description: original?.description });
+                                        }}><DeleteForeverIcon/>{t("delete")}</button>
+                                      </div>
+                            }
+                          },
+                          {
+                            Header: 'Image',
+                            accessor: 'files',
+                            Cell: props =>{
+                                let {files} = props.row.values
+                                console.log("files :", files)
+                                return  <div> 
+                                          <Avatar
+                                            alt="Avatar"
+                                            variant="rounded"
+                                            src={ _.isEmpty(files) ? "" : files[0]?.url}
+                                            onClick={(e) => {
+                                              onLightbox({ isOpen: true, photoIndex: 0, images:files })
+                                            }}
+                                            sx={{ width: 56, height: 56 }}
+                                          />
+                                          <div>{ files.length }</div>
+                                        </div>
+                            }
+                          },
+                          {
+                            Header: 'จอง/ขาย',
+                            accessor: "buys",
+                            Cell: props =>{
+                              let { original } = props.row
+                              console.log("จอง/ขาย :", original)
+                    
+                              let books     =  _.filter(original?.buys, (buy)=> _.isEqual(buy?.selected, 0) )
+                              let buys      =  _.filter(original?.buys, (buy)=> _.isEqual(buy?.selected, 1) )
+                            
+                              return <div>{books.length}/{buys.length}</div>
+                            }
+                          },
+                          {
+                            Header: 'OWNER',
+                            accessor: "ownerId",
+                            Cell: props =>{
+                              let { owner } = props.row.original
+                              return  <div onClick={()=>{ _.isEqual(user._id, owner?._id ) ? navigate("/me") : navigate({ pathname: `/p`, search: `?${createSearchParams({ id: owner._id })}` })}}>{owner.username} </div>
+                            }
+                          },
+                          {
+                            Header: 'Price',
+                            accessor: "price",
+                            Cell: props => {
+                              let {price} = props.row.values 
+                              return  <div>{ price }</div>
+                            }
+                          },
+                          {
+                            Header: 'Price Unit',
+                            accessor: "priceUnit",
+                            Cell: props => {
+                              let {priceUnit} = props.row.values 
+                              return  <div>{ priceUnit }</div>
+                            }
+                          },
+                          {
+                            Header: 'Publish',
+                            accessor: "publish",
+                            Cell: props => {
+                              let {publish} = props.row.values 
+                              return  <div>{ publish ? "เปิด" : "ปิด" }</div>
+                            }
+                          },
+                          {
+                            Header: 'Date',
+                            accessor: 'createdAt',
+                            Cell: props => {
+                              let {createdAt} = props.row.values 
+                              let date = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+                              return <div>{moment(date).format('DD MMM, YYYY h:mm:ss a')}</div>
+                            }
+                          },
+                    
+                          
+                        ],
+                        []
+                      )
+      default:
+        return useMemo(
+                        () => [
+                          {
+                            Header: 'Title',
+                            accessor: 'title',
+                            Cell: props =>{
+                              let { original } = props.row
+                              return <div 
+                                      onClick={()=>{
+                                        navigate({
+                                        pathname: "/d",
+                                        search: `?${createSearchParams({ id: original._id})}`,
+                                        state: { id: original._id }
+                                      })}}>{ original?.title }</div>
+                            }
+                          },
+                          {
+                            Header: 'Lottery',
+                            accessor: 'manageLottery',
+                            Cell: props =>{
+                              let { manageLottery } = props.row.values
+                              console.log("props.row :", props.row)
+                              return <div>{ manageLottery?.title }</div>
+                            }
+                          },
+                          {
+                            Header: 'Edit',
+                            Cell: props => {
+                              let { original } = props.row
+                              return  <div>
+                                        <button onClick={(evt)=>{
+                                          navigate("/lottery", {state: {from: "/", mode: "edit", id: original?._id } })
+                                        }}><EditIcon/>{t("edit")}
+                                        </button>
+                                        <button onClick={(e)=>{
+                                          setOpenDialogDelete({ isOpen: true, id: original?._id, description: original?.description });
+                                        }}><DeleteForeverIcon/>{t("delete")}</button>
+                                      </div>
+                            }
+                          },
+                          {
+                            Header: 'Image',
+                            accessor: 'files',
+                            Cell: props =>{
+                                let {files} = props.row.values
+                                console.log("files :", files)
+                                return  <div> 
+                                          <Avatar
+                                            alt="Avatar"
+                                            variant="rounded"
+                                            src={ _.isEmpty(files) ? "" : files[0]?.url}
+                                            onClick={(e) => {
+                                              onLightbox({ isOpen: true, photoIndex: 0, images:files })
+                                            }}
+                                            sx={{ width: 56, height: 56 }}
+                                          />
+                                          <div>{ files.length }</div>
+                                        </div>
+                            }
+                          },
+                          {
+                            Header: 'จอง/ขาย',
+                            accessor: "buys",
+                            Cell: props =>{
+                              let { original } = props.row
+                              console.log("จอง/ขาย :", original)
+                    
+                              let books     =  _.filter(original?.buys, (buy)=> _.isEqual(buy?.selected, 0) )
+                              let buys      =  _.filter(original?.buys, (buy)=> _.isEqual(buy?.selected, 1) )
+                            
+                              return <div>{books.length}/{buys.length}</div>
+                            }
+                          },
+                          {
+                            Header: 'Price Unit/Price',
+                            accessor: "price",
+                            Cell: props => {
+                              let {original} = props.row 
+                              return  <div>{ original.priceUnit }/{ original.price }</div>
+                            }
+                          },
+                          {
+                            Header: 'Publish',
+                            accessor: "publish",
+                            Cell: props => {
+                              let {publish} = props.row.values 
+                              return  <div>{ publish ? "เปิด" : "ปิด" }</div>
+                            }
+                          },
+                          {
+                            Header: 'Date',
+                            accessor: 'createdAt',
+                            Cell: props => {
+                              let {createdAt} = props.row.values 
+                              let date = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
+                              return <div>{moment(date).format('DD MMM, YYYY h:mm:ss a')}</div>
+                            }
+                          },
+                        ],
+                        []
+                      )
+    }
+  }
 
   // We need to keep the table from resetting the pageIndex when we
   // Update data. So we can keep track of that flag with a ref.
@@ -243,7 +351,6 @@ const LotterysPage = (props) => {
   const updateMyData = (rowIndex, columnId, value) => {
       skipResetRef.current = true
   }
-  
   //////////////////////
 
   const fetchData = useCallback(({ pageSize, pageIndex }) => {
@@ -263,9 +370,8 @@ const LotterysPage = (props) => {
             ? <button onClick={(evt)=>{ navigate("/lottery", {state: {from: "/", mode: "new" } }) }}> <AddBoxIcon/>{t("ADD")} </button>
             : <div/>
           }
-            
             <TableComp
-              columns={columns}
+              columns={getColmns()}
               data={datas}
               fetchData={fetchData}
               rowsPerPage={pageOptions}

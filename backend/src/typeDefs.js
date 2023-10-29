@@ -664,20 +664,22 @@ export default gql`
   enum SupplierModeType {
     NEW
     EDIT
+    DELETE
   }
 
   input SupplierInput{
     mode: SupplierModeType!
     _id: ID
-    title: String!
-    price: Int!
-    priceUnit: Int!
+    title: String
+    price: Int
+    priceUnit: Int
     description: String
-    manageLottery: ID!
+    consolation: String
+    manageLottery: ID
     files: [JSON]
-    condition: Int!
-    category: Int!
-    type: Int!
+    condition: Int
+    category: Int
+    type: Int
     buys: [JSON]
     publish: Boolean = false
     test: Boolean = false
@@ -706,6 +708,7 @@ export default gql`
     date: DATETIME
     bankId: String!
     file: JSON!
+    remark: String
   }
 
   input MeInput{
@@ -787,7 +790,7 @@ export default gql`
     book(input: BookInput): JSON
     buy(_id: ID!): JSON
     cancelTransition(_id: ID!): JSON
-    supplier(input: SupplierInput): JSON    
+    lottery(input: SupplierInput): JSON    
     deposit(input: DepositInput): JSON
     withdraw(input: WithdrawInput): JSON 
     bank(input: BankInput): JSON 

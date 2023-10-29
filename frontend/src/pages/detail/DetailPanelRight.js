@@ -74,7 +74,7 @@ const DetailPanelRight = (props) =>{
         onMutationComment } = props
 
   let navigate = useNavigate();
-  console.log('DetailPanelRight :', data, props)
+  // console.log('DetailPanelRight :', data, props)
 
   let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
   let buys      =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 1) )
@@ -158,7 +158,7 @@ const DetailPanelRight = (props) =>{
                                         color="warning"
                                         size="sm"
                                         sx={{ pointerEvents: "none" }}>
-                                        <div class="price-red text-center">{numberCurrency(selecteds.length * data.price)}</div>
+                                        <div class="price-red text-center">{numberCurrency(selecteds.length * data.priceUnit)}</div>
                                       </Chip>
                                     </div>
                                 </div>
@@ -334,9 +334,9 @@ const DetailPanelRight = (props) =>{
                 <div class="blog-summary" style={{ textAlign: "left" }}>
                   <p style={{ margin: "5px" }}>{data?.description}</p>
                   <div className="p-1" style={{ fontSize: "12px" }}>
-                    <li>งวดประจำวันที่ {(moment(new Date(data?.dateLottery?.date) , 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY')}</li>
-                    {/* <li>รางวัลปลอบใจ เงินสด 200 บาท</li> 2023-10-16T13:30:38.282Z */}
-                    <li>เบอร์ละ {data?.price} บาท</li>
+                    <li>{data?.manageLottery?.title}</li>
+                    {data?.consolation ? <li>{data?.consolation}</li> : <></>} {/*รางวัลปลอบใจ เงินสด 200 บาท*/}
+                    {/* <li>เบอร์ละ {data?.priceUnit} บาท</li> */}
                     {/* <li>ลุ้นรางวัล 2 ตัวล่าง</li> */}
                   </div>
                 </div>

@@ -37,9 +37,9 @@ const AutoGenerationContentPage = (props) => {
                                                                     notifyOnNetworkStatusChange: true }
                                                                     );
 
-    const [onSupplier, resultSupplier] = useMutation(mutationLottery, {
+    const [onMutationLottery, resultLottery] = useMutation(mutationLottery, {
         context: { headers: getHeaders(location) },
-        update: (cache, {data: {supplier}}) => { },
+        update: (cache, {data: {lottery}}) => { },
         onCompleted(data) {
             console.log("onCompleted :", data)
         },
@@ -123,7 +123,7 @@ const AutoGenerationContentPage = (props) => {
                                 ownerId: users[randomNumberInRange(0, users.length - 1)]?._id,
                                 test: true,
                             }
-                            onSupplier({ variables: { input: newInput } });
+                            onMutationLottery({ variables: { input: newInput } });
                         }
                     }}>Auto สร้าง สินค้า</button>
                 </div>

@@ -27,6 +27,7 @@ let initValues = {
   condition: "",       // 11-100
   category: "",        // 0: money, 1: gold, 2 : things, 3 : etc
   type: "",            // 0: bon, 1 : lang
+  consolation: "",
   publish: false
 }
 
@@ -58,52 +59,52 @@ const LotteryPage = (props) => {
                                             {id: 2, name: "things"}, {id: 3, name: "etc"}]);
 
   let { mode, id } = location.state
-  // const { onMutationSupplier } = props
+  const { onMutationLottery } = props
 
-  const [onMutationSupplier, resultSupplier] = useMutation(mutationLottery, {
-    context: { headers: getHeaders(location) },
-    update: (cache, {data : {supplier} }, context) => {
-      let { status, data } = supplier
-      console.log("data :", data, context)
+  // const [onMutationLottery, resultLottery] = useMutation(mutationLottery, {
+  //   context: { headers: getHeaders(location) },
+  //   update: (cache, {data : {lottery} }, context) => {
+  //     let { status, data } = lottery
+  //     console.log("data :", data, context)
 
-      if(status){
-        let { variables } = context
-        switch(variables?.input?.mode.toUpperCase()){
-          case "NEW":{
-            const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers /*, variables: { input: search } */ });
-            if(!_.isNull(manageSuppliersValue)){
-              let newData = [...manageSuppliersValue.manageSuppliers.data, data];
-              cache.writeQuery({
-                query: queryManageSuppliers,
-                // variables: { input: search },
-                data: { manageSuppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
-              });
-            }
-            break;
-          }
+  //     if(status){
+  //       let { variables } = context
+  //       switch(variables?.input?.mode.toUpperCase()){
+  //         case "NEW":{
+  //           const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers /*, variables: { input: search } */ });
+  //           if(!_.isNull(manageSuppliersValue)){
+  //             let newData = [...manageSuppliersValue.manageSuppliers.data, data];
+  //             cache.writeQuery({
+  //               query: queryManageSuppliers,
+  //               // variables: { input: search },
+  //               data: { manageSuppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
+  //             });
+  //           }
+  //           break;
+  //         }
 
-          case "EDIT":{
-            const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers /*, variables: { input: search } */  });
-            if(!_.isNull(manageSuppliersValue)){
-              let newData = _.map(manageSuppliersValue.manageSuppliers.data, (item)=> item._id == data._id ? data : item ) 
-              cache.writeQuery({
-                query: queryManageSuppliers,
-                // variables: { input: search },
-                data: { manageSuppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
-              });
-            }
-            break;
-          }
-        }
-      }
-    },
-    onCompleted(data) {
-      navigate(-1)
-    },
-    onError(error){
-      return handlerErrorApollo( props, error )
-    }
-  });
+  //         case "EDIT":{
+  //           const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers /*, variables: { input: search } */  });
+  //           if(!_.isNull(manageSuppliersValue)){
+  //             let newData = _.map(manageSuppliersValue.manageSuppliers.data, (item)=> item._id == data._id ? data : item ) 
+  //             cache.writeQuery({
+  //               query: queryManageSuppliers,
+  //               // variables: { input: search },
+  //               data: { manageSuppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
+  //             });
+  //           }
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   },
+  //   onCompleted(data) {
+  //     navigate(-1)
+  //   },
+  //   onError(error){
+  //     return handlerErrorApollo( props, error )
+  //   }
+  // });
 
   let { loading: loadingManageLotterys, 
         data: dataManageLotterys, 
@@ -145,6 +146,7 @@ const LotteryPage = (props) => {
             price: data.price, 
             priceUnit: data.priceUnit, 
             description: data.description, 
+            consolation: data.consolation,
             manageLottery: data.manageLottery?._id, 
             files: data.files, 
             condition: data.condition,  // 11-100
@@ -187,6 +189,7 @@ const LotteryPage = (props) => {
         price: parseInt(input.price),
         priceUnit: parseInt(input.priceUnit),
         description: input.description,
+        consolation: input.consolation,
         manageLottery: input.manageLottery,
         files: input.files,
         condition: parseInt(input.condition),    // 11-100
@@ -217,7 +220,7 @@ const LotteryPage = (props) => {
     if(mode == "edit"){
       newInput = {...newInput, _id: id}
     }
-    onMutationSupplier({ variables: { input: newInput } });
+    onMutationLottery({ variables: { input: newInput } });
   }
 
   const onInputChange = (e) => {
@@ -367,6 +370,19 @@ const LotteryPage = (props) => {
               </select>    
               <p className="text-red-500"> {_.isEmpty(error.type) ? "" : error.type} </p>  
             </div> 
+
+            {/* consolation */}
+            <div > 
+              <label>{t('consolation')}</label>               
+              <textarea 
+                defaultValue={input.consolation} 
+                rows={4} 
+                cols={40}
+                onChange={(evt)=>{
+                  setInput({...input, consolation: evt.target.value})
+                }
+              } />
+            </div>
             <div>
               <label>หมวดหมู่ *</label>
               <select 
