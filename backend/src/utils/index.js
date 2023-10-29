@@ -282,13 +282,13 @@ export const getBalance = async(userId) =>{
             case Constants.SUPPLIER:{
                 let { supplier } = transition
                 if(supplier !== undefined){
-                    let { price, buys } = supplier
+                    let { priceUnit, buys } = supplier
                     if(transition.status === Constants.WAIT){
                         let filter = _.filter( buys, (buy)=> _.isEqual(buy.transitionId, transition._id) )
-                        money_lock += filter.length * price
+                        money_lock += filter.length * priceUnit
                     }else if(transition.status === Constants.APPROVED){
                         let filter = _.filter( buys, (buy)=> _.isEqual(buy.transitionId, transition._id) )
-                        money_use += filter.length * price
+                        money_use += filter.length * priceUnit
                     }
                     in_carts = [...in_carts, transition]
                 }
@@ -535,10 +535,10 @@ export const checkBalance = async(userId) =>{
     let balanceBook = 0;
     _.map(supplier, (sup)=>{
         let buys = _.filter(sup.supplier.buys, (buy)=> _.isEqual(buy.userId, userId))
-        balance -= buys.length * sup.supplier.price
+        balance -= buys.length * sup.supplier.priceUnit
 
         let filters = _.filter(sup.supplier.buys, (buy)=> _.isEqual(buy.userId, userId) && buy.selected == 0 )
-        balanceBook += filters.length * sup.supplier.price
+        balanceBook += filters.length * sup.supplier.priceUnit
     })
 
     _.map(deposit, (dep)=>{

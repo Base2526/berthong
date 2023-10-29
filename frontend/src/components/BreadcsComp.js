@@ -55,7 +55,6 @@ const BreadcsComp = (props) => {
   }, [dataProfile, loadingProfile])
 
   const BreadcrumbsView = () =>{
-    // console.log("location?.pathname :", location)
     switch(location?.pathname){
       case "/":{
         return [<Typography key="0" color="text.primary"><HomeIcon size={18}/>{t("home")}</Typography>]
@@ -63,16 +62,16 @@ const BreadcsComp = (props) => {
 
       case "/register":{
         return [  
-                  <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18}/> {t("home")}</MuiLink>,
-                  <Typography key="1" color="text.primary">สมัครสมาชิก</Typography>
-                ]
+            <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18}/> {t("home")}</MuiLink>,
+            <Typography key="1" color="text.primary">สมัครสมาชิก</Typography>
+          ]
       }
 
       case "/d":{
         return [  
-                  <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18}/> {t("home")}</MuiLink>,
-                  <Typography key="1" color="text.primary">รายละเอียดสินค้า</Typography>
-                ]
+            <MuiLink key="0" component={Link} to="/"><HomeIcon  size={18}/> {t("home")}</MuiLink>,
+            <Typography key="1" color="text.primary">รายละเอียดสินค้า</Typography>
+          ]
       }
 
       case "/withdraws":{
@@ -90,20 +89,10 @@ const BreadcsComp = (props) => {
       }
 
       case "/lotterys":{
-        // switch(checkRole(user)){
-        //   case Constants.AMDINISTRATOR:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-              <Typography key="1" color="text.primary">รายการหวยทั้งหมด</Typography>
-            ]
-        //   }
-        //   case Constants.AUTHENTICATED:{
-        //     return [  
-        //       <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-        //       <Typography key="1" color="text.primary">รายการหวยทั้งหมด</Typography>
-        //     ]
-        //   }
-        // }
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">รายการหวยทั้งหมด</Typography>
+        ]
       }
 
       case "/users":{
@@ -173,20 +162,10 @@ const BreadcsComp = (props) => {
       }
 
       case "/p":{
-        // switch(checkRole(user)){
-        //   case Constants.AMDINISTRATOR:{
-            return [  
-              <MuiLink key="0" component={Link} to="/"><HomeIcon size={18}/>{t("home")}</MuiLink>,
-              <Typography key="2" color="text.primary">โปรไฟล์ {loadingProfile ? <LinearProgress/> : profile?.displayName}</Typography>
-            ]
-          // }
-        //   case Constants.AUTHENTICATED:{
-        //     return [  
-        //       <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
-        //       <Typography key="1" color="text.primary">โปรไฟล์ {loadingProfile ? <LinearProgress/> : profile?.displayName}</Typography>
-        //     ]
-        //   }
-        // }
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18}/>{t("home")}</MuiLink>,
+          <Typography key="2" color="text.primary">โปรไฟล์ {loadingProfile ? <LinearProgress/> : profile?.displayName}</Typography>
+        ]
       }
       case "/all-deposits":{
         return [  

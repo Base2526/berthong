@@ -15,7 +15,7 @@ import {
 } from "react-icons/ai"
 import moment from "moment";
 
-import { getHeaders } from "../util"
+import { getHeaders, numberCurrency } from "../util"
 import { queryNotifications } from "../apollo/gqlQuery"
 import * as Constants from "../constants"
 
@@ -116,7 +116,7 @@ const NotificationsPage = (props) => {
                                             return  <div class="alert alert-warning p-1 m-1" role="alert">
                                                         <Stack direction="row" spacing={2}>
                                                             <DepositIcon />
-                                                            <div>ยอดฝากเงิน : {i?.data?.deposit?.balance} </div>
+                                                            <div>ยอดฝากเงิน : {numberCurrency(i?.data?.deposit?.balance)} </div>
                                                             <div>{i?.status === Constants.APPROVED ? "APPROVED" : "REJECT"}</div>
                                                             {/* <div>{i?.flag === 0 ? "UNREAD" : "READ"}</div> */}
                                                             <div key={index}>{(moment(new Date(i?.createdAt), 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')}  </div>

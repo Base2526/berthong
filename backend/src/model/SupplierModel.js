@@ -33,6 +33,7 @@ const SupplierSchema = new Schema({
     price: { type: Number, required:[true, "Price is a required field"] },
     priceUnit: { type: Number, required:[true, "Price-Unit is a required field"] },
     description: { type: String },
+    consolation: { type: String }, // รางวัลปลอบใจ
     // dateLottery: { type: Schema.Types.ObjectId, required:[true, "Date-Lottery is a required field"] },
     manageLottery: { type: Schema.Types.ObjectId, required:[true, "Date-Lottery is a required field"] },
     files: [File],

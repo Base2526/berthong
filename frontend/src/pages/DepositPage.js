@@ -61,7 +61,7 @@ const DepositPage = (props) => {
 
   const submitForm = async(event) => {
     console.log("input :", input)
-    // onMutationDeposit({ variables: { input } });
+    onMutationDeposit({ variables: { input } });
   }
 
   const onInputChange = (e) => {

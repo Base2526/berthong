@@ -37,8 +37,8 @@ const PopupWallet = (props) => {
               overflow: "scroll"
             }}
           >
-            จำนวนเงินคงเหลือ { user?.balance - user?.balanceBook } บาท <br />
-            มีการจอง จำนวน { selecteds.length } เบอร์ ราคา { selecteds.length * data?.price } บาท
+            จำนวนเงินคงเหลือ { user?.balance } บาท <br />
+            มีการจอง จำนวน { selecteds.length } เบอร์ ราคา { selecteds.length * data?.priceUnit } บาท
           </div>
         </div>
       </DialogContent>

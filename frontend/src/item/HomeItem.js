@@ -85,7 +85,7 @@ const HomeItem = (props) => {
                     <b>{item?.type === 0 ? "บน" : "ล่าง"}</b>
                   </span>
                   <span className="price">
-                    <b>{item?.price} บาท</b>
+                    <b>{item?.priceUnit} บาท</b>
                   </span>
                   <div
                     className="card-custom-img"

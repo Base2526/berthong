@@ -18,7 +18,7 @@ import {
 import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
 
-import { getHeaders } from "../util"
+import { getHeaders, numberCurrency } from "../util"
 import { queryHistoryTransitions, queryAdminBanks } from "../apollo/gqlQuery"
 import * as Constants from "../constants"
 deepdash(_);
@@ -119,7 +119,7 @@ const HistoryTransitionsPage = (props) => {
         return  <div class="alert alert-danger p-1 m-1" role="alert">
                   <Stack key={index} direction="row" spacing={2}>
                     <Box>Supplier</Box>
-                    <Box>ยอดซื้อ : { value.balance }</Box>
+                    <Box>ยอดซื้อ : { numberCurrency(value.balance) }</Box>
                     <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
                     <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
                   </Stack>
@@ -131,7 +131,7 @@ const HistoryTransitionsPage = (props) => {
         return  <div class="alert alert-warning p-1 m-1" role="alert">
                   <Stack key={index} direction="row" spacing={2}>
                     <Box>Deposit</Box>
-                    <Box>ยอดฝาก : { value?.deposit?.balance }</Box>
+                    <Box>ยอดฝาก : { numberCurrency(value?.deposit?.balance) }</Box>
                     {
                       loadingAdminBanks 
                       ? <LinearProgress />
@@ -147,7 +147,7 @@ const HistoryTransitionsPage = (props) => {
         return  <div class="alert alert-success p-1 m-1" role="alert">
                   <Stack key={index} direction="row" spacing={2}>
                     <Box>Withdraw</Box>
-                    <Box>ยอดถอน : { value?.withdraw?.balance }</Box>
+                    <Box>ยอดถอน : { numberCurrency(value?.withdraw?.balance) }</Box>
                     <Box>{ value.status == Constants.WAIT ? "รอดำเนินการ" : value.status == Constants.APPROVED ? "สำเร็จ" : "ยกเลิก" }</Box>
                     <Box>{ moment(value.createdAt).format('MMMM Do YYYY, h:mm:ss a') }</Box>
                   </Stack>

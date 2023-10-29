@@ -73,7 +73,7 @@ export const TRANSLATIONS_EN = {
 
     balance: "Balance",
 
-    NOT_ENOUGH_BALANCE: "Not enough balance",
+    NOT_ENOUGH_BALANCE: "Not enough balance  -- {{name}} ---",
 
     USER_NOT_FOUND: "Not found username or email.",
     PASSWORD_WRONG: "Password wrong.",
@@ -88,4 +88,6 @@ export const TRANSLATIONS_EN = {
     all_message: "All messages",
 
     search: "Search",
+
+    consolation: "รางวัลปลอบใจ",
 };

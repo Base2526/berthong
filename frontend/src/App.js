@@ -127,13 +127,22 @@ import NotFound404Page from "./pages/NotFound404Page"
 
 import {  queryMe,
           queryNotifications, 
-          mutationFollow, 
           querySuppliers, 
           querySupplierById, 
+          queryCommentById,
+          queryFriendProfile,
+          queryBanks,
+          queryBankById,
+          queryConversations,
+          queryDateLotterys, 
+          queryDateLotteryById,
+          queryBookmarks,
+          queryManageSuppliers,
+          querySubscribes,
+
+          mutationFollow, 
           mutationBook,
           mutationComment,
-          queryCommentById,
-          subscriptionMe,
           mutationContactUs,
           mutationLogin,
           mutationLoginWithSocial,
@@ -142,25 +151,16 @@ import {  queryMe,
           mutationLottery,
           mutationNotification,
           mutationDeposit,
-          queryBanks,
-          queryBankById,
           mutationSubscribe,
-          queryFriendProfile,
           mutationMe, 
           mutationDatesLottery, 
-          queryDateLotterys, 
-          queryDateLotteryById,
           mutationAdminDeposit,
           mutationAdminWithdraw,
-          queryConversations,
           mutationConversation,
+          
           subConversations,
-
-
-          queryBookmarks,
-
-          queryManageSuppliers,
-          querySubscribes
+          subscriptionMe,
+          
         } from "./apollo/gqlQuery"
           
 import * as Constants from "./constants"
@@ -531,48 +531,48 @@ const App =(props) =>{
       }
   );
 
-  const [onMutationSupplier, resultSupplier] = useMutation(mutationLottery, {
-    context: { headers: getHeaders(location) },
-    update: (cache, {data: {supplier}}) => {
-      let { data, mode, status } = supplier
+  // const [onMutationSupplier, resultSupplier] = useMutation(mutationLottery, {
+  //   context: { headers: getHeaders(location) },
+  //   update: (cache, {data: {supplier}}) => {
+  //     let { data, mode, status } = supplier
 
-      // if(status){
-      //   switch(mode){
-      //     case "new":{
-      //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+  //     // if(status){
+  //     //   switch(mode){
+  //     //     case "new":{
+  //     //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
 
-      //       if(!_.isNull(querySuppliersValue)){
-      //         let newData = [...querySuppliersValue.suppliers.data, data];
+  //     //       if(!_.isNull(querySuppliersValue)){
+  //     //         let newData = [...querySuppliersValue.suppliers.data, data];
 
-      //         cache.writeQuery({
-      //           query: querySuppliers,
-      //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-      //         });
-      //       }
-      //       break;
-      //     }
-      //     case "edit":{
-      //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
-      //       if(!_.isNull(querySuppliersValue)){
-      //         let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
+  //     //         cache.writeQuery({
+  //     //           query: querySuppliers,
+  //     //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+  //     //         });
+  //     //       }
+  //     //       break;
+  //     //     }
+  //     //     case "edit":{
+  //     //       const querySuppliersValue = cache.readQuery({ query: querySuppliers });
+  //     //       if(!_.isNull(querySuppliersValue)){
+  //     //         let newData = _.map(querySuppliersValue.suppliers.data, (item)=> item._id == data._id ? data : item ) 
 
-      //         cache.writeQuery({
-      //           query: querySuppliers,
-      //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
-      //         });
-      //       }
-      //       break;
-      //     }
-      //   }
-      // }
-    },
-    onCompleted(data) {
-      navigate(-1)
-    },
-    onError(error){
-      return handlerErrorApollo( props, error )
-    }
-  });
+  //     //         cache.writeQuery({
+  //     //           query: querySuppliers,
+  //     //           data: { suppliers: {...querySuppliersValue.suppliers, data: newData} }
+  //     //         });
+  //     //       }
+  //     //       break;
+  //     //     }
+  //     //   }
+  //     // }
+  //   },
+  //   onCompleted(data) {
+  //     navigate(-1)
+  //   },
+  //   onError(error){
+  //     return handlerErrorApollo( props, error )
+  //   }
+  // });
 
   const [onMutationNotification, resultNotification] = useMutation(mutationNotification, {
     context: { headers: getHeaders(location) },
@@ -881,6 +881,63 @@ const App =(props) =>{
         }
       }
   );
+
+  const [onMutationLottery, resultLottery] = useMutation(mutationLottery, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data : {lottery} }, context) => {
+      let { status, data } = lottery
+      console.log("data :", data, context)
+
+      if(status){
+        let { variables } = context
+        switch(variables?.input?.mode.toUpperCase()){
+          case "NEW":{
+            const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers /*, variables: { input: search } */ });
+            if(!_.isNull(manageSuppliersValue)){
+              let newData = [...manageSuppliersValue.manageSuppliers.data, data];
+              cache.writeQuery({
+                query: queryManageSuppliers,
+                // variables: { input: search },
+                data: { manageSuppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
+              });
+            }
+            break;
+          }
+
+          case "EDIT":{
+            const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers /*, variables: { input: search } */  });
+            if(!_.isNull(manageSuppliersValue)){
+              let newData = _.map(manageSuppliersValue.manageSuppliers.data, (item)=> item._id == data._id ? data : item ) 
+              cache.writeQuery({
+                query: queryManageSuppliers,
+                // variables: { input: search },
+                data: { manageSuppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
+              });
+            }
+            break;
+          }
+
+          case "DELETE":{
+            const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers /*, variables: { input: search } */  });
+            if(!_.isNull(manageSuppliersValue)){
+              let newData = _.filter(manageSuppliersValue.manageSuppliers.data, (item)=> item._id !== variables?.input?._id  ) 
+              cache.writeQuery({
+                query: queryManageSuppliers,
+                data: { manageSuppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
+              });
+            }
+            break;
+          }
+        }
+      }
+    },
+    onCompleted(data) {
+      navigate(-1)
+    },
+    onError(error){
+      return handlerErrorApollo( props, error )
+    }
+  });
 
   useEffect(()=>{
     if(unsubscribeSubConversations) unsubscribeSubConversations()
@@ -1208,7 +1265,8 @@ const App =(props) =>{
   }
 
   const disabledManageSuppliers = () =>{
-    return _.isEmpty(manageSuppliers) ? true : false
+    // return _.isEmpty(manageSuppliers) ? true : false
+    return false
   }
 
   const disabledBookmarks = () =>{
@@ -1275,7 +1333,7 @@ const App =(props) =>{
                         </Badge>
                       </IconButton>
                       <IconButton disabled={disabledBookmarks()} size={'small'} onClick={()=> navigate("/bookmarks")}>
-                        <MdOutlineBookmarkAddedIcon color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
+                        <MdOutlineBookmarkAddedIcon color={ disabledBookmarks() ? 'gray' :  _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
                       </IconButton>
                       <IconButton disabled={disabledSubscribes()} size={'small'} onClick={()=> navigate("/subscribes")}>
                         <SlUserFollowing color={ disabledSubscribes() ? "gray" : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
@@ -1490,8 +1548,12 @@ const App =(props) =>{
               <Route path="/messages" element={<MessagePage {...props} conversations={conversations}  onLightbox={(evt)=>setLightbox(evt)}  />} />
             </Route>
             <Route element={<ProtectedSellerRoute user={user} />}>
-              <Route path="/lotterys" element={<LotterysPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
-              <Route path="/lottery" element={<LotteryPage {...props} onMutationSupplier={(evt)=>onMutationSupplier(evt)} />} />
+              <Route 
+                path="/lotterys" 
+                element={<LotterysPage {...props} 
+                onLightbox={(value)=>setLightbox(value)}
+                onMutationLottery={(evt)=>onMutationLottery(evt)} />} />
+              <Route path="/lottery" element={<LotteryPage {...props} onMutationLottery={(evt)=>onMutationLottery(evt)} />} />
             </Route>
             <Route element={<ProtectedAdministratorRoute user={user} />}>
               <Route path="/deposits" element={<AdminDepositsPage 
