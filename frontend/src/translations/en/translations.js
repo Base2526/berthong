@@ -1,6 +1,6 @@
 export const TRANSLATIONS_EN = {
     welcome:"Welcome to the tutorial",
-    welcome_to_berthong: "Welcome to Berthong",
+    welcome_to_berthong: "Welcome K.{{name}}  to Berthong",
     label_keyword_search: "Keyword search",
     home: "Home",
     search_by_title: "Title",
@@ -90,4 +90,8 @@ export const TRANSLATIONS_EN = {
     search: "Search",
 
     consolation: "รางวัลปลอบใจ",
+
+    end_message: "End message",
+
+    empty_data: "Empty data.",
 };

@@ -53,6 +53,11 @@ const SupplierSchema = new Schema({
         enum : [0, 1, 2], // 0: thai, 1: laos, 2: vietnam
         default: 0
     },
+    number_lotter:{
+        type: Number,
+        enum : [0, 1], // 0: 100, 1: 1000
+        default: 0
+    },
     buys: [BuyInput],
     publish: { type: Boolean, default: false },
     ownerId: { type: Schema.Types.ObjectId, required:[true, "OwnerId is a required field"] },

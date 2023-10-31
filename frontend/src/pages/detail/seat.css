@@ -80,7 +80,7 @@
   backface-visibility: hidden;
   position: relative;
   cursor: pointer;
-  display: inline-block;
+  /* display: inline-block; */
   white-space: nowrap;
   border-color: #d9a3a9;
   background: linear-gradient(

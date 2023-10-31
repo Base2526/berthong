@@ -209,6 +209,21 @@ const BookBuysPage = (props) => {
                     let createdAt   = new Date(supplier.createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
                     let status      = item?.status
 
+                    let length = 100
+                    if(supplier?.number_lotter){
+                      switch(supplier?.number_lotter){
+                        case 1: {
+                          length = 1000
+                          break
+                        }
+                        default: 
+                        {
+                          length = 100
+                          break
+                        }
+                      }
+                    }
+
                     return  <div className="content-bottom" key={index}>
                               <div className="row">
                                 <Stack direction="row" spacing={2} >
@@ -239,8 +254,8 @@ const BookBuysPage = (props) => {
                                       <Box sx={{ width: '5%' }}>{category}</Box> 
                                   */}
                                   <Box sx={{ width: '5%' }}>Condition : {condition}</Box>
-                                  <Box sx={{ width: '10%' }}>Book : { book.length * supplier.priceUnit }({ _.map(book, (vl) => `${ minTwoDigits(vl.itemId) }`).join(",") })</Box>
-                                  <Box sx={{ width: '10%' }}>Buy : { buy.length * supplier.priceUnit }({ _.map(buy, (vl) => `${ minTwoDigits(vl.itemId) }`).join(",") })</Box>
+                                  <Box sx={{ width: '10%' }}>Book : { book.length * supplier.priceUnit }({ _.map(book, (vl) => `${ minTwoDigits(vl.itemId, length.toString().length) }`).join(",") })</Box>
+                                  <Box sx={{ width: '10%' }}>Buy : { buy.length * supplier.priceUnit }({ _.map(buy, (vl) => `${ minTwoDigits(vl.itemId, length.toString().length) }`).join(",") })</Box>
                                   <Box sx={{ width: '20%' }}>{status == Constants.WAIT ? <Button onClick={(evt)=>{ setPopupOpenedShoppingBag({ isOpen:true, data:supplier }) }} variant="contained" color="warning">คลิกเพือสั่งซื้อ</Button> : status == Constants.APPROVED ? "รายการสั่งซื้อสมบูรณ์" : "รายการสั่งซื้อถูกยกเลิก"}</Box>
                                   {/* <Box sx={{ width: '10%' }}>{ (moment(createdAt, 'MM/DD/YYYY HH:mm')).format('DD MMM, YYYY HH:mm A') }</Box> */}
                                   {/* <Box sx={{ width: '10%' }}><Button onClick={(evt)=>onCancelOrder(supplier?._id)}>Cancel Order</Button></Box> */}

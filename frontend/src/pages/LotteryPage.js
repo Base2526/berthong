@@ -28,6 +28,7 @@ let initValues = {
   category: "",        // 0: money, 1: gold, 2 : things, 3 : etc
   type: "",            // 0: bon, 1 : lang
   consolation: "",
+  number_lotter: 0,    // 0: 100, 1: 1000
   publish: false
 }
 
@@ -150,6 +151,7 @@ const LotteryPage = (props) => {
             manageLottery: data.manageLottery?._id, 
             files: data.files, 
             condition: data.condition,  // 11-100
+            number_lotter: data.number_lotter ? data.number_lotter : 0,
             category: data.category,    // money, gold, things, etc
             type: data.type,            // bon, lang
             publish: data.publish
@@ -193,6 +195,7 @@ const LotteryPage = (props) => {
         manageLottery: input.manageLottery,
         files: input.files,
         condition: parseInt(input.condition),    // 11-100
+        number_lotter: parseInt(input.number_lotter),    // 0: 100, 1 : 1000
         category: parseInt(input.category),      // money, gold, things, etc
         type: parseInt(input.type),               // bon, lang
         publish: input.publish
@@ -215,7 +218,7 @@ const LotteryPage = (props) => {
     test: Boolean = false
     ownerId: ID
     */
-    console.log("newInput :", newInput)
+    // console.log("newInput :", newInput)
 
     if(mode == "edit"){
       newInput = {...newInput, _id: id}
@@ -395,6 +398,20 @@ const LotteryPage = (props) => {
                 { _.map(categorys, (val)=><option key={val.id} value={val.id}>{t(val.name)} </option>) }
               </select> 
               <p className="text-red-500"> {_.isEmpty(error.category) ? "" : error.category} </p>  
+            </div>   
+            {/* number_lotter */}
+            <div>
+              <label>จำนวนหวย *</label>
+              <select 
+                name="number_lotter" 
+                id="number_lotter" 
+                value={input.number_lotter}
+                onChange={ onInputChange }
+                onBlur={ validateInput }>
+              <option value={""}>ไม่เลือก</option>
+                { _.map([{id: 0, name:"100"}, {id: 1, name:"1000"}], (val)=><option key={val.id} value={val.id}>{t(val.name)} </option>) }
+              </select> 
+              <p className="text-red-500"> {_.isEmpty(error.number_lotter) ? "" : error.number_lotter} </p>  
             </div>   
             <div > 
               <label>{t('detail')}</label>               

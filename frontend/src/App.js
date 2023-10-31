@@ -420,7 +420,8 @@ const App =(props) =>{
       }
     },
     onCompleted(data) {
-      showToast("success", t("welcome_to_berthong"))
+      let { displayName } = data?.login?.data
+      showToast("success", t("welcome_to_berthong", { name: displayName }))
       window.location.reload();
     },
     onError(error){
@@ -443,7 +444,8 @@ const App =(props) =>{
         }
       },
       onCompleted(data) {
-        showToast("success", t("welcome_to_berthong"))
+        let { displayName } = data?.login?.data
+        showToast("success", t("welcome_to_berthong", { name: displayName }))
         navigate("/")
       },
       onError(error){
@@ -691,6 +693,11 @@ const App =(props) =>{
           }
   
           case "avatar":{
+            showToast("success", `Update profile success`)
+            break;
+          }
+
+          case "displayName": {
             showToast("success", `Update profile success`)
             break;
           }
@@ -1517,7 +1524,10 @@ const App =(props) =>{
                                         onLogin={()=>setDialogLogin(true)} 
                                         onLightbox={(evt)=>setLightbox(evt)} 
                                         onMutationFollow={(evt)=>onMutationFollow(evt)}
-                                        onMutationBook={(evt)=>onMutationBook(evt)}
+                                        onMutationBook={(evt)=>{
+                                          // console.log("onMutationBook :", evt)
+                                          onMutationBook(evt)
+                                        }}
                                         onMutationComment={(evt)=>onMutationComment(evt)}/>} />
             <Route path="/user/login" element={<LoginPage {...props} />} />
             <Route path="/p" element={<FriendPage 

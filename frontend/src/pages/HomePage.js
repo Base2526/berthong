@@ -241,6 +241,8 @@ const HomePage = (props) => {
         }
         break;
       }
+      default: 
+        break;
     }
     
     switch(networkStatus){
@@ -313,7 +315,7 @@ const HomePage = (props) => {
                   <div className="col-12 pb-2">
                   {
                     _.isEmpty(datas)
-                    ? <div className="noData p-2 m-1"><ErrorOutlineIcon /> ไม่พบข้อมูลที่ค้นหา </div>
+                    ? <div className="noData p-2 m-1"><ErrorOutlineIcon />{t("empty_data")}</div>
                     : <InfiniteScroll
                         dataLength={slice}
                         next={handleLoadMore}
@@ -321,7 +323,7 @@ const HomePage = (props) => {
                         loader={<SkeletonComp />}
                         scrollThreshold={0.5}
                         // scrollableTarget="scrollableDiv"
-                        endMessage={<div className="text-center">End Message</div>}
+                        endMessage={<div className="text-center">{t("end_message")}</div>}
                         
                         // below props only if you need pull down functionality
                         refreshFunction={()=>handlePulldownToLoadMore()}

@@ -675,6 +675,7 @@ export default gql`
     priceUnit: Int
     description: String
     consolation: String
+    number_lotter: Int
     manageLottery: ID
     files: [JSON]
     condition: Int
