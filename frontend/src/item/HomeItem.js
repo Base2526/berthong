@@ -22,6 +22,21 @@ const HomeItem = (props) => {
 
   let isFollow = _.find(item?.follows, (f)=>f?.userId == user?._id)
 
+  let length = 100
+  if(item?.number_lotter){
+    switch(item?.number_lotter){
+      case 1: {
+        length = 1000
+        break
+      }
+      default: 
+      {
+        length = 100
+        break
+      }
+    }
+  }
+
   const menuView = (item, index) =>{
     return  <Menu
               anchorEl={openMenu && openMenu[index]}
@@ -75,6 +90,7 @@ const HomeItem = (props) => {
               {/* <MenuItem onClick={(e)=>{setOpenMenu(null)}}><BugReportIcon size={20} round />Report</MenuItem> */}
             </Menu>
   }
+  
 
   return  useMemo(() => {
             return (
@@ -85,7 +101,7 @@ const HomeItem = (props) => {
                     <b>{item?.type === 0 ? "บน" : "ล่าง"}</b>
                   </span>
                   <span className="price">
-                    <b>{item?.priceUnit} บาท</b>
+                    <b>{item?.priceUnit}/{length} บาท</b>
                   </span>
                   <div
                     className="card-custom-img"

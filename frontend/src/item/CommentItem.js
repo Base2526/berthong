@@ -21,12 +21,18 @@ const CommentItem = (props) => {
     const { loading: loadingCommentById, 
             data: dataCommentById, 
             error: errorCommentById, 
+            refetch: refetchCommentById,
             networkStatus } = useQuery( queryCommentById, { 
                                         context: { headers: getHeaders(location) }, 
-                                        variables: {id: item._id},
-                                        fetchPolicy: 'cache-first', 
+                                        fetchPolicy: 'cache-only', 
                                         nextFetchPolicy: 'network-only', 
                                         notifyOnNetworkStatusChange: true});
+
+    console.log("errorCommentById :", errorCommentById)
+    
+    useEffect(()=>{
+        refetchCommentById({id: item?._id});
+    }, [item?._id])
 
     useEffect(() => {
         if(!loadingCommentById){

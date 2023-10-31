@@ -5,6 +5,21 @@ const DetailPanelLeft = (props) =>{
   const [photoIndex, setPhotoIndex] = useState(0)
   const [currentImage, setCurrentImage] = useState(data?.files[0])
 
+  let length = 100
+  if(data?.number_lotter){
+    switch(data?.number_lotter){
+      case 1: {
+        length = 1000
+        break
+      }
+      default: 
+      {
+        length = 100
+        break
+      }
+    }
+  }
+
   return  useMemo(() => {
             return  <div className="ber-bg border col-lg-4 col-md-4 col-sm-12 col-12 mb-3">
                       <div className="row" style={{ justifyContent: "space-between" }}>
@@ -12,7 +27,7 @@ const DetailPanelLeft = (props) =>{
                           2 ตัว{data?.type === 0 ? "บน" : "ล่าง"}
                         </div>
                         <div className="price-detail" style={{ width: "px" }}>
-                          เบอร์ละ {data?.priceUnit} บาท
+                          เบอร์ละ {data?.priceUnit}/{length} บาท
                         </div>
                         <div className="p-3">
                           <div className="icon-view">

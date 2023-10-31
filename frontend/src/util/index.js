@@ -77,8 +77,24 @@ export const numberCurrency = (number) =>{
     return THBBaht.format(number)
 }
 
-export const minTwoDigits =(n)=> {
-    return (n < 10 ? '0' : '') + n;
+/*
+        let year = ( parseInt(date[2]) + 543 ).toString();
+
+*/
+export const minTwoDigits =(n, digit)=> {
+  switch(digit){
+    case 4:{
+      if(n < 10){
+        return "00" + n;
+      }else if(n < 100){
+        return "0" + n;
+      }
+      return n;
+    }
+    default:{
+      return (n < 10 ? '0' : '') + n;
+    }
+  }
 }
 
 export const currencyFormat = (num) => {

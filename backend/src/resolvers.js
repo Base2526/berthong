@@ -381,6 +381,8 @@ export default {
       let { req } = context
       await Utils.checkAuth(req);
 
+      console.log("suppliers :", args?.input)
+
       let { TITLE, NUMBER, PAGE, LIMIT } = args?.input
       let SKIP = (PAGE - 1) * LIMIT
 
@@ -1650,6 +1652,8 @@ export default {
       let start = Date.now()
       let { input } = args
       let { req } = context
+
+      console.log("me :", input)
       
       let { current_user } =  await Utils.checkAuth(req);
 
@@ -1671,6 +1675,11 @@ export default {
               break;
             }
           }
+          break;
+        }
+
+        case "displayName":{
+          await Model.User.updateOne({ _id: current_user?._id }, { displayName: data } );
           break;
         }
 
@@ -2298,7 +2307,8 @@ export default {
       let { input } = args
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) !==Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      if( Utils.checkRole(current_user) !==Constants.AUTHENTICATED && 
+          Utils.checkRole(current_user) !==Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let comment = await Model.Comment.findOne({ _id: input?._id })
 

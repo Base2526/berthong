@@ -12,7 +12,8 @@ import {
     Accordion,
     AccordionSummary,
     AccordionDetails,
-    LinearProgress
+    LinearProgress,
+    Button
 } from '@mui/material';
 import {
     AiFillCamera as CameraIcon,
@@ -38,13 +39,22 @@ import { queryBankByIds } from "../apollo/gqlQuery"
 import { getHeaders, handlerErrorApollo } from "../util";
 
 const Input = styled("input")({ display: "none" });
+
+let initValues = {
+    displayName: ""
+}
+
 const MePage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useTranslation();
     const { user, onMutationMe, onDialogDeleteBank, onLightbox } = props
     const [expanded, setExpanded] = useState(localStorage.getItem('expanded') ? localStorage.getItem('expanded') : false)
-    let [banks, setBanks] = useState([]);
+    const [banks, setBanks] = useState([]);
+
+    // let [displayName, setDisplayName] = useState(user?.displayName);
+    const [input, setInput]       = useState(initValues);
+    const [error, setError]       = useState(initValues);
 
     const { loading: loadingBankByIds, 
             data: dataBankByIds, 
@@ -64,6 +74,8 @@ const MePage = (props) => {
         if(!_.isEmpty(bankIds)){
             refetchBankByIds({ids: bankIds});
         }
+
+        setInput({...input, displayName: user?.displayName})
     }, [])
 
     useEffect(() => {
@@ -76,6 +88,39 @@ const MePage = (props) => {
             }
         }
     }, [dataBankByIds, loadingBankByIds])
+
+    useEffect(()=>{
+        console.log("input :", input)
+    }, [input])
+
+    const onInputChange = (e) => {
+        const { name, value } = e.target;
+        setInput((prev) => ({
+        ...prev,
+        [name]: value
+        }));
+        validateInput(e);
+    };
+
+    const validateInput = (e) => {
+        let { name, value } = e.target;
+        setError((prev) => {
+          const objs = { ...prev, [name]: "" };
+          switch (name) {
+            case "displayName": {
+              if (!value) {
+                objs[name] = "Please enter display name.";
+              }
+              break;
+            }
+    
+            default:
+              break;
+          }
+    
+          return objs;
+        });
+    };
 
     return  useMemo(() => {
             return (<div className="content-bottom">
@@ -110,10 +155,31 @@ const MePage = (props) => {
                                     </>
                                     </div>
                                     <div className="col-lg-12 col-12">
-                                        <div className="text-center"><span className="header-c">{t("name")} </span> : {user?.displayName} </div>
+                                        {/* <div className="text-center"><span className="header-c">{t("name")} </span> : {user?.displayName} </div> */}
+                                        <div className="text-center">
+                                            <label>{t("name")} </label>
+                                            <input 
+                                                type="text" 
+                                                name="displayName"
+                                                value={ input.displayName }
+                                                onChange={ onInputChange }
+                                                onBlur={ validateInput } />
+                                            <p className="text-red-500"> {_.isEmpty(error.displayName) ? "" : error.displayName} </p>
+                                        </div>
                                         <div className="text-center"><span className="header-c text-center"> {t("email")} :</span> {user?.email} </div>
                                         <div className="text-center"><span className="header-c text-center"> {t("balance")} :</span> {user?.balance} [จอง -{user?.balanceBook}] </div>
+                                        <div className="text-center">
+                                            <Button 
+                                                variant="contained" 
+                                                color="primary"
+                                                onClick={evt=>{ 
+                                                    onMutationMe({ variables: { input: { type:'displayName', data: input.displayName } } })
+                                                }}
+                                                disabled={ input.displayName === "" || _.isEqual(user?.displayName, input.displayName) }>{t("edit")}</Button>
+                                        </div>
                                     </div>
+
+                                    
                                 </div>
                             </div>
                             <div className="col-lg-6 col-12">
@@ -169,6 +235,6 @@ const MePage = (props) => {
                         </div>
                         </div>
                     </div>)
-            }, [ user, expanded, banks]);
+            }, [ user, expanded, banks, loadingBankByIds, input]);
 }
 export default MePage

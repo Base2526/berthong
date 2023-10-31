@@ -27,11 +27,26 @@ import { useTranslation } from "react-i18next";
 import { numberCurrency, minTwoDigits, sellView, bookView } from "../../util"
 import CommentComp from "../../components/CommentComp"
 
-const numberLotterys = Array.from({ length: 10 * 10 }, (_, i) => i);
+// const numberLotterys = Array.from({ length: 1000 }, (_, i) => i);
 
 const DetailPanel = (props) => {
-  
   let { user, data, onMutationBook} = props
+
+  let length = 100
+  if(data?.number_lotter){
+    switch(data?.number_lotter){
+      case 1: {
+        length = 1000
+        break
+      }
+      default: 
+      {
+        length = 100
+        break
+      }
+    }
+  }
+  let numberLotterys = Array.from({ length }, (_, i) => i);
   return  useMemo(() => {
             return  <div className="container-detail">
                       {numberLotterys.map((seat) => {
@@ -52,7 +67,8 @@ const DetailPanel = (props) => {
                               onKeyDown={(evt) => isOccupied || isFinish || isBooking ? null : (evt.key === "Enter" ?  onMutationBook({ variables: { input: { id: data?._id, itemId: seat } } }) : null) }>
                               {" "}
                               {isBooking ? <span className="booking-font">ติดจอง</span> : ""}
-                              {seat <= 9 ? "0" + seat : seat}
+                              {/* {seat <= 9 ? "0" + seat : seat} */}
+                              {minTwoDigits(seat, length.toString().length )}
                             </span>
                           </div>
                         );
@@ -74,7 +90,22 @@ const DetailPanelRight = (props) =>{
         onMutationComment } = props
 
   let navigate = useNavigate();
-  // console.log('DetailPanelRight :', data, props)
+  console.log('DetailPanelRight :', data)
+
+  let length = 100
+  if(data?.number_lotter){
+    switch(data?.number_lotter){
+      case 1: {
+        length = 1000
+        break
+      }
+      default: 
+      {
+        length = 100
+        break
+      }
+    }
+  }
 
   let selecteds =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 0) )
   let buys      =  _.filter(data?.buys, (buy)=>_.isEqual(buy?.userId, user?._id) && _.isEqual(buy?.selected, 1) )
@@ -223,9 +254,9 @@ const DetailPanelRight = (props) =>{
                                     options={selecteds.map((option) => option.itemId)}
                                     getOptionLabel={(option) => option.toString()}
                                     onChange={(e, v) =>{
-                                      let itemIds = _.map(selecteds, (selected)=>minTwoDigits(selected.itemId))
+                                      let itemIds = _.map(selecteds, (selected)=>minTwoDigits(selected.itemId, length.toString().length ))
                                       _.map(_.difference(itemIds, v), (itemId)=>{
-                                        onMutationBook({ variables: { input: { id: data?._id, itemId } } })
+                                        onMutationBook({ variables: { input: { id: data?._id, itemId: parseInt(itemId) } } })
                                       })
                                     }}
                                     renderInput={(params) => (
@@ -237,7 +268,7 @@ const DetailPanelRight = (props) =>{
                                         fullWidth
                                       />
                                     )}
-                                    value={selecteds.map((option) => minTwoDigits(option.itemId))}
+                                    value={selecteds.map((option) => minTwoDigits(option.itemId, length.toString().length ) )}
                                   />
                                 </div>
                               </div>

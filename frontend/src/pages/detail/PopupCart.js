@@ -23,6 +23,21 @@ const PopupCart = (props) => {
     onMutationBuy({ variables: { id: data?._id} })
   };
 
+  let length = 100
+  if(data?.number_lotter){
+    switch(data?.number_lotter){
+      case 1: {
+        length = 1000
+        break
+      }
+      default: 
+      {
+        length = 100
+        break
+      }
+    }
+  }
+
   return (
     <Dialog open={opened} onClose={cancelForm} fullWidth={true}>
       <DialogTitle>ยืนยันการซื้อ</DialogTitle>
@@ -39,7 +54,7 @@ const PopupCart = (props) => {
           >
             จำนวน {books?.length} เบอร์
             <br />
-            { _.map(books, (buy, i) => { return minTwoDigits(buy?.itemId) }).join(', ') }
+            { _.map(books, (buy, i) => { return minTwoDigits(buy?.itemId, length.toString().length) }).join(', ') }
             <br />
             รวมราคา {books.length * data?.priceUnit} บาท
           </div>

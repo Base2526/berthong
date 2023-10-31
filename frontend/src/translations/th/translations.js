@@ -1,7 +1,7 @@
 export const TRANSLATIONS_TH = {
     welcome:"สวัสดีชาวโลก",
 
-    welcome_to_berthong: "ยินดีต้อนรับเข้าสู่ระบบ Berthong",
+    welcome_to_berthong: "ยินดีต้อนรับ คุณ {{name}} เข้าสู่ระบบ Berthong",
     label_keyword_search: "คำค้น",
 
     home: "หน้าหลัก",
@@ -118,4 +118,8 @@ export const TRANSLATIONS_TH = {
     search: "ค้นหา",
 
     consolation: "รางวัลปลอบใจ",
+
+
+    end_message: "ล่าสุด",
+    empty_data: "ไม่พบข้อมูลที่ค้นหา",
 };

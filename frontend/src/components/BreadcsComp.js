@@ -35,6 +35,7 @@ const BreadcsComp = (props) => {
           refetch: refetchProfile } = useQuery( queryFriendProfile, { 
                                       context: { headers: getHeaders(location) }, 
                                       fetchPolicy: 'cache-only', 
+                                      nextFetchPolicy: 'network-only', 
                                       notifyOnNetworkStatusChange: true});
 
   useEffect(()=>{
