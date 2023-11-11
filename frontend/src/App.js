@@ -1311,7 +1311,7 @@ const App =(props) =>{
                         </Badge>
                       </IconButton>
                       <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
-                        <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } size="1.2em"/>
+                        <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? `${window.location.origin}/${user?.avatar?.url}` : "" } size="1.2em"/>
                       </IconButton>
                     </div>
         }
@@ -1503,7 +1503,7 @@ const App =(props) =>{
                   alt="Avatar"
                 />
               </div>
-              <Typography variant="caption" display="block" gutterBottom><div className="text-center p-1">© 2023 BERTHONG LLC</div></Typography>
+              <Typography variant="caption" display="block" gutterBottom><div className="text-center p-1">© 2023 THE BERTHONG LLC</div></Typography>
             </Drawer>
           </ClickAwayListener>
           <main className={clsx(classes.content, { [classes.contentShift]: open })}>{ <div className={classes.drawerHeader} /> } </main>

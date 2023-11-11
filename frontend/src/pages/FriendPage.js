@@ -111,7 +111,7 @@ const FriendPage = (props) => {
                                         sx={{ height: 80, width: 80 }}
                                         variant="rounded"
                                         alt="Avatar Alt"
-                                        src={_.isEmpty(data?.avatar) ? "" : data?.avatar?.url }/>
+                                        src={_.isEmpty(data?.avatar) ? "" : `${window.location.origin}/${data?.avatar?.url}` }/>
                                     <div className="row">{t("name")} : {data?.displayName}
                                         <Box>
                                             <IconButton onClick={(evt)=> _.isEmpty(user) ? onLogin(true) : onMutationSubscribe({ variables: { id: params.id } }) }>
@@ -163,7 +163,7 @@ const FriendPage = (props) => {
                                                                     style={{ cursor: 'pointer' }}
                                                                     alt=""
                                                                     variant="rounded"
-                                                                    src={files[0]?.url}
+                                                                    src={ `${window.location.origin}/${files[0]?.url}` }
                                                                     onClick={(e) => {
                                                                         onLightbox({ isOpen: true, photoIndex: 0, images:files })
                                                                     }}

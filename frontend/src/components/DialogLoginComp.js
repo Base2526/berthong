@@ -138,11 +138,11 @@ const DialogLoginComp = (props) => {
                           </div>
                           <div className="row">
                             <div className="col-12 pb-2 text-center">
-                              <div className="row">
-                              <div className="col-6 text-center">
+                              <div className="row gap-2">
+                              <div className="col-12 text-center">
                                 <Button variant="contained" className="btn-confirm" type="submit" style={{width:"100%"}}>{t("login")}</Button>
                               </div>
-                              <div className="col-6 text-center">
+                              <div className="col-12 text-center">
                                 <Button disabled={false} variant="contained" className="btn-dis" style={{width:"100%"}} 
                                   onClick={(evt)=>{
                                     onClose(false)
@@ -152,9 +152,9 @@ const DialogLoginComp = (props) => {
                               </div>
                             </div>
                           </div>
-                          <div className="row">
+                          {/* <div className="row"> */}
+                            {/* 
                             <div className="col-lg-12 col-12 pb-2 text-center" style={{justifyContent:"center"}}>
-                            
                               <FacebookLogin
                                 appId={facebookAppId}
                                 autoLoad={false}
@@ -181,7 +181,8 @@ const DialogLoginComp = (props) => {
                                 onSuccess={onGoogleSuccess}
                                 onFailure={onGoogleFailure}
                               />
-                            </div>
+                            </div> 
+                            */}
                             
                             {/* 
                             <div className="col-lg-12 col-12pb-2 text-center" style={{justifyContent:"center"}}>
@@ -191,7 +192,7 @@ const DialogLoginComp = (props) => {
                               </a>
                             </div>  
                             */}
-                          </div>
+                          {/* </div> */}
                         </div>
                       </div>
                     </form>

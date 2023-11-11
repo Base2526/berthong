@@ -1706,8 +1706,8 @@ export default {
             });
           });
   
-          const urlForArray = `${process.env.RA_HOST}${assetUniqName}`
-          await Model.User.updateOne({ _id: current_user?._id }, { avatar: { url: urlForArray, filename, encoding, mimetype } } );
+          // const urlForArray = `${process.env.RA_HOST}${assetUniqName}`
+          await Model.User.updateOne({ _id: current_user?._id }, { avatar: { url: `images/${assetUniqName}`, filename, encoding, mimetype } } );
         
           break;
         }
@@ -1964,8 +1964,8 @@ export default {
                 });
               });
     
-              const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
-              newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+              // const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+              newFiles.push({ url: `images/${assetUniqName}`, filename, encoding, mimetype });
             }
           }
 
@@ -2010,8 +2010,8 @@ export default {
                     });
                   });
         
-                  const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
-                  newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+                  // const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+                  newFiles.push({ url: `images/${assetUniqName}`, filename, encoding, mimetype });
                 }else{
                   if(input.files[i].delete){
                     let pathUnlink = '/app/uploads/' + input.files[i].url.split('/').pop()
@@ -2095,7 +2095,7 @@ export default {
         let deposit = await Model.Deposit.create({balance: input?.balance, 
                                           date: input?.date, 
                                           bankId: input?.bankId, 
-                                          file: { url: `${process.env.RA_HOST}${assetUniqName}`, filename, encoding, mimetype }, 
+                                          file: { url: `images/${assetUniqName}`, filename, encoding, mimetype }, 
                                           userIdRequest: current_user?._id })
 
         if(deposit?._id){
@@ -2372,8 +2372,8 @@ export default {
             });
           });
 
-          const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
-          newFiles.push({ url: urlForArray, filename, encoding, mimetype });
+          // const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+          newFiles.push({ url: `images/${assetUniqName}`, filename, encoding, mimetype });
         }
       }
 
@@ -3057,8 +3057,8 @@ export default {
             });
           });
 
-          const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
-          url.push({ url: urlForArray });
+          // const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+          url.push({ url: `images/${assetUniqName}` });
         }
 
         input = {...input, payload: _.map(payload, (p, index)=>{ return {...p, src: url[index].url} })}

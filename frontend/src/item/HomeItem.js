@@ -103,12 +103,13 @@ const HomeItem = (props) => {
                   <span className="price">
                     <b>{item?.priceUnit}/{length} บาท</b>
                   </span>
+                  {/*  */}
                   <div
                     className="card-custom-img"
                     style={{
                       backgroundImage: `url(${
                         !_.isEmpty(item?.files)
-                          ? item?.files[0].url
+                          ? `${window.location.origin}/${item?.files[0].url}`
                           : "https://images.rawpixel.com/image_600/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcm0yMS1iYWNrZ3JvdW5kLXRvbmctMDU4LmpwZw.jpg"
                       })`
                     }}
@@ -121,11 +122,11 @@ const HomeItem = (props) => {
                       onClick={(e)=>{
                         _.isEqual(user?._id, item?.ownerId)
                         ? navigate("/me")
-                        : navigate({ pathname: `/p`, search: `?${createSearchParams({ id: item.ownerId})}` })
+                        : navigate({ pathname: `/p`, search: `?${createSearchParams({ id: item.ownerId })}` })
                       }}
                       src={
                         !_.isEmpty(item?.owner?.avatar)
-                          ? item?.owner?.avatar?.url
+                          ? `${window.location.origin}/${item?.owner?.avatar?.url}`
                           : "https://img.myloview.com/stickers/default-avatar-profile-icon-vector-social-media-user-image-700-205124837.jpg"
                       }
                       alt="Avatar"
