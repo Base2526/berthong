@@ -1,5 +1,6 @@
 frontend/node_modules
 frontend/ssl
+frontend/ssl-banlist
 frontend/package-lock.json
 
 backend/package-lock.json

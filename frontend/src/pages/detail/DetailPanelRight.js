@@ -344,7 +344,7 @@ const DetailPanelRight = (props) =>{
               <div className="col-12">
                 <div class="avatar" style={{ textAlign: "left" }}>
                   <img
-                    src={data?.owner?.avatar?.url != null ? data?.owner?.avatar?.url :"https://img.myloview.com/stickers/default-avatar-profile-icon-vector-social-media-user-image-700-205124837.jpg"}
+                    src={data?.owner?.avatar?.url != null ? `${window.location.origin}/${data?.owner?.avatar?.url}` :"https://img.myloview.com/stickers/default-avatar-profile-icon-vector-social-media-user-image-700-205124837.jpg"}
                     alt="Avatar"
                   />
                   <span className="name-ava f-color-0" onClick={()=>{

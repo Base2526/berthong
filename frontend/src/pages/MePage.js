@@ -131,7 +131,7 @@ const MePage = (props) => {
                                     <div className="col-lg-12 col-12 text-center">
                                     <Avatar 
                                         sx={{ width: 80, height: 80 }} 
-                                        src= { _.isEmpty(user?.avatar) ? "" :  user?.avatar?.url ? user?.avatar?.url : URL.createObjectURL(user?.avatar) }
+                                        src= { _.isEmpty(user?.avatar) ? "" :  user?.avatar?.url ? `${window.location.origin}/${user?.avatar?.url}` : URL.createObjectURL(user?.avatar) }
                                         variant="rounded" />
                                     <>
                                         <label htmlFor="contained-button-file">
@@ -168,15 +168,21 @@ const MePage = (props) => {
                                         </div>
                                         <div className="text-center"><span className="header-c text-center"> {t("email")} :</span> {user?.email} </div>
                                         <div className="text-center"><span className="header-c text-center"> {t("balance")} :</span> {user?.balance} [จอง -{user?.balanceBook}] </div>
-                                        <div className="text-center">
-                                            <Button 
-                                                variant="contained" 
-                                                color="primary"
-                                                onClick={evt=>{ 
-                                                    onMutationMe({ variables: { input: { type:'displayName', data: input.displayName } } })
-                                                }}
-                                                disabled={ input.displayName === "" || _.isEqual(user?.displayName, input.displayName) }>{t("edit")}</Button>
-                                        </div>
+                                       {
+                                        input.displayName === "" || _.isEqual(user?.displayName, input.displayName) 
+                                        ?   <div />
+                                        :   <div className="text-center">
+                                                <Button 
+                                                    variant="contained" 
+                                                    color="primary"
+                                                    onClick={evt=>{ 
+                                                        onMutationMe({ variables: { input: { type:'displayName', data: input.displayName } } })
+                                                    }}
+                                                   /* disabled={ input.displayName === "" || _.isEqual(user?.displayName, input.displayName) }*/ >{t("edit")}</Button>
+                                            </div>
+                                        
+                                       }
+                                        
                                     </div>
 
                                     

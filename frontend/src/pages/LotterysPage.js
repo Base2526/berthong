@@ -167,7 +167,7 @@ const LotterysPage = (props) => {
                                           <Avatar
                                             alt="Avatar"
                                             variant="rounded"
-                                            src={ _.isEmpty(files) ? "" : files[0]?.url}
+                                            src={ _.isEmpty(files) ? "" : `${window.location.origin}/${files[0]?.url}` }
                                             onClick={(e) => {
                                               onLightbox({ isOpen: true, photoIndex: 0, images:files })
                                             }}
