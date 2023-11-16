@@ -73,7 +73,7 @@ export const TRANSLATIONS_EN = {
 
     balance: "Balance",
 
-    NOT_ENOUGH_BALANCE: "Not enough balance  -- {{name}} ---",
+    NOT_ENOUGH_BALANCE: "Not enough balance",
 
     USER_NOT_FOUND: "Not found username or email.",
     PASSWORD_WRONG: "Password wrong.",

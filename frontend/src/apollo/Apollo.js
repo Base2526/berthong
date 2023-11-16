@@ -27,7 +27,7 @@ let gracefullyRestart = () => {
 };
 
 const wsLink = new GraphQLWsLink(createClient({
-    url: (process.env.REACT_APP_NODE_ENV === "development" ? "ws://" + process.env.REACT_APP_HOST_GRAPHAL +"/graphql" :  "wss://" + process.env.REACT_APP_HOST_GRAPHAL +'/subscription' ) ,
+    url: (process.env.REACT_APP_NODE_ENV === "development" ? "wss://" + process.env.REACT_APP_HOST_GRAPHAL +"/graphql" :  "wss://" + process.env.REACT_APP_HOST_GRAPHAL +'/subscription' ) ,
     disablePong: false,
     connectionAckWaitTimeout: 0,
     retryAttempts: 50,
@@ -158,7 +158,7 @@ const wsLink = new GraphQLWsLink(createClient({
   
 // 
 const uploadLink =  createUploadLink({  
-                                          uri: (process.env.REACT_APP_NODE_ENV === "development" ? "http://" : "https://") + process.env.REACT_APP_HOST_GRAPHAL +"/graphql", 
+                                          uri: (process.env.REACT_APP_NODE_ENV === "development" ? "https://" : "https://") + process.env.REACT_APP_HOST_GRAPHAL +"/graphql", 
                                           headers:{ authorization: getCookie('token') /*localStorage.getItem('token')*/ ? `Bearer ${ getCookie('token') /*localStorage.getItem('token')*/ }` : "", } 
                                         })
   

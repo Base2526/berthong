@@ -202,7 +202,7 @@ const modelExists =()=>{
   Model.BasicContent.find({}, async(err, result)=> {
     if (result.length > 0) {
     } else {
-      let newBasicContent = new Model.BasicContent({});
+      let newBasicContent = new Model.BasicContent({title: "text"});
       await newBasicContent.save();
       await Model.BasicContent.deleteMany({})
     }

@@ -141,17 +141,27 @@ export const getCurrentDate =(separator='')=>{
     return `${year}${separator}${month<10?`0${month}`:`${month}`}${separator}${date}`
 }
 
+/*
+export const ANONYMOUS        = 0;
+export const AMDINISTRATOR    = 1;
+export const AUTHENTICATED    = 2;
+export const SELLER           = 3;
+*/
+
 export const checkRole = (user) =>{
   if(user?.roles){
     let { REACT_APP_USER_ROLES } = process.env
-    // console.log("REACT_APP_USER_ROLES :", REACT_APP_USER_ROLES)
-    if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[0]) ){
+    console.log("checkRole :", user?.roles)
+    if( _.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[0]) || 
+        _.includes( user?.roles, "1") ){
         return Constants.AMDINISTRATOR;
     }
-    else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[2]) ){
+    else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[2]) || 
+        _.includes( user?.roles, "3")){
         return Constants.SELLER;
     }
-    else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[1]) ){
+    else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[1]) || 
+        _.includes( user?.roles, "2")){
       return Constants.AUTHENTICATED;
     }
   }
@@ -232,7 +242,7 @@ export const handlerErrorApollo = (props, error) =>{
 
           case Constants.NOT_ENOUGH_BALANCE:{
             console.log("e?.extensions?.code :", e?.extensions?.code)
-            showToast("error", i18n.t(e?.extensions?.code, { name: 'Alice' }))
+            showToast("error", i18n.t(e?.extensions?.code))
             break;
           }
 

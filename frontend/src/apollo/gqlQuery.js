@@ -31,7 +31,10 @@ export const queryAdminHome       = gql`query adminHome { adminHome }`;
 export const queryAdminBanks      = gql`query adminBanks { adminBanks }`;
 export const queryAdminDeposits   = gql`query adminDeposits{ adminDeposits }`;
 export const queryAdminWithdraws  = gql`query adminWithdraws{ adminWithdraws }`;
-export const queryManageSuppliers  = gql`query manageSuppliers{ manageSuppliers }`;
+export const queryManageSuppliers = gql`query manageSuppliers{ manageSuppliers }`;
+
+export const queryContents        = gql`query contents { contents }`;
+export const queryContentById     = gql`query contentById($id: ID!) { contentById(_id: $id) }`;
 
 // mutation
 export const mutationCheck_db   = gql`mutation check_db{ check_db }`;
@@ -60,6 +63,7 @@ export const mutationAdminWithdraw  = gql`mutation adminWithdraw($input: JSON){ 
 export const mutationManageLottery  = gql`mutation manageLottery($input: ManageLotteryInput) { manageLottery(input: $input) }`;
 export const mutationForceLogout    = gql`mutation forceLogout($input: JSON){ forceLogout(input: $input) }`;
 export const mutationCalculateLottery    = gql`mutation calculateLottery($input: JSON){ calculateLottery(input: $input) }`;
+export const mutationContent        = gql`mutation content($input: JSON){ content(input: $input) }`;
 
 // subscription 
 export const subscriptionMe            = gql`subscription me($userId: ID!){ me(userId: $userId) }`;

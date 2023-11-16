@@ -30,7 +30,8 @@ import {
   AlternateEmail as AlternateEmailIcon,
   AllOut as AllOutIcon,
   Assistant as AssistantIcon,
-  AddTask as AddTaskIcon
+  AddTask as AddTaskIcon,
+  FormatColorText as FormatColorTextIcon
 } from '@mui/icons-material';
 import LinearProgress from '@mui/material/LinearProgress';
 import {
@@ -45,6 +46,9 @@ import {
 import {
   AiOutlineHistory
 } from "react-icons/ai"
+// import {
+//   BiHelpCircle
+// } from "react-icons/bi"
 import {
   CgProfile as ProfileIcon
 } from "react-icons/cg"
@@ -60,6 +64,10 @@ import {
 import {
   FaDev as FaDevIcon
 } from "react-icons/fa"
+import { 
+  IoMdHelpCircleOutline  as BiHelpCircle
+} from "react-icons/io";
+
 import {
   Avatar,
   IconButton,
@@ -124,6 +132,9 @@ import WithdrawsPage from "./pages/WithdrawsPage"
 import MessagePage from "./pages/message/MessagePage";
 import DevelopmentPage from "./pages/DevelopmentPage"
 import NotFound404Page from "./pages/NotFound404Page"
+import HelpPage from "./pages/HelpPage"
+import ContentsPage from "./pages/ContentsPage"
+import ContentPage from "./pages/ContentPage"
 
 import {  queryMe,
           queryNotifications, 
@@ -139,6 +150,7 @@ import {  queryMe,
           queryBookmarks,
           queryManageSuppliers,
           querySubscribes,
+          queryContents,
 
           mutationFollow, 
           mutationBook,
@@ -157,6 +169,7 @@ import {  queryMe,
           mutationAdminDeposit,
           mutationAdminWithdraw,
           mutationConversation,
+          mutationContent,
           
           subConversations,
           subscriptionMe,
@@ -946,6 +959,58 @@ const App =(props) =>{
     }
   });
 
+  const [onMutationContent, resultContent] = useMutation(mutationContent, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data : {content} }, context) => {
+      let { status, data } = content
+      if(status){
+        let { variables } = context
+        switch(variables?.input?.mode.toUpperCase()){
+          case "NEW":{
+            const contentsValue = cache.readQuery({ query: queryContents });
+            if(!_.isNull(contentsValue)){
+              let newData = [...contentsValue.contents.data, data];
+              cache.writeQuery({
+                query: queryContents,
+                data: { contents: {...contentsValue.contents, data: newData} }
+              });
+            }
+            break;
+          }
+
+          case "EDIT":{
+            const contentsValue = cache.readQuery({ query: queryContents });
+            if(!_.isNull(contentsValue)){
+              let newData = _.map(contentsValue.contents.data, (item)=> item._id == data._id ? data : item ) 
+              cache.writeQuery({
+                query: queryContents,
+                data: { contents: {...contentsValue.contents, data: newData} }
+              });
+            }
+            break;
+          }
+      //     case "DELETE":{
+      //       const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers /*, variables: { input: search } */  });
+      //       if(!_.isNull(manageSuppliersValue)){
+      //         let newData = _.filter(manageSuppliersValue.manageSuppliers.data, (item)=> item._id !== variables?.input?._id  ) 
+      //         cache.writeQuery({
+      //           query: queryManageSuppliers,
+      //           data: { manageSuppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
+      //         });
+      //       }
+      //       break;
+      //  }
+        }
+      }
+    },
+    onCompleted(data) {
+      navigate(-1)
+    },
+    onError(error){
+      return handlerErrorApollo( props, error )
+    }
+  });
+
   useEffect(()=>{
     if(unsubscribeSubConversations) unsubscribeSubConversations()
     if(unsubscribeSubMe) unsubscribeSubMe()
@@ -1190,16 +1255,17 @@ const App =(props) =>{
     switch(checkRole(user)){
       case Constants.AMDINISTRATOR:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em"/>, path: "/"},
-                {id: 1, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/withdraws"},
-                {id: 2, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/deposits"},
-                {id: 3, title:"รายการถอดเงินทั้งหมด", icon: <AccountTreeIcon />, path: "/all-withdraws"},
-                {id: 4, title:"รายการฝากเงินทั้งหมด", icon: <AddRoadIcon />, path: "/all-deposits"},
-                {id: 5, title:"รายการหวยทั้งหมด", icon: <AddTaskIcon />, path: "/lotterys"},
-                {id: 6, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
-                {id: 7, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
-                {id: 8, title:"จัดการหวยทั้งหมด", icon: <AssistantIcon />, path: "/manage-lotterys"},
-                {id: 9, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
-                {id: 10, title:"Development", icon: <FaDevIcon size="1.5em" />, path: "/development"}
+                {id: 1, title:"เนื้อหา(Contents)", icon: <FormatColorTextIcon />, path: "/contents"},
+                {id: 2, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/withdraws"},
+                {id: 3, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/deposits"},
+                {id: 4, title:"รายการถอดเงินทั้งหมด", icon: <AccountTreeIcon />, path: "/all-withdraws"},
+                {id: 5, title:"รายการฝากเงินทั้งหมด", icon: <AddRoadIcon />, path: "/all-deposits"},
+                {id: 6, title:"รายการหวยทั้งหมด", icon: <AddTaskIcon />, path: "/lotterys"},
+                {id: 7, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
+                {id: 8, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
+                {id: 9, title:"จัดการหวยทั้งหมด", icon: <AssistantIcon />, path: "/manage-lotterys"},
+                {id: 10, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
+                {id: 11, title:"Development", icon: <FaDevIcon size="1.5em" />, path: "/development"}
               ]
       }
       case Constants.AUTHENTICATED:{
@@ -1289,81 +1355,95 @@ const App =(props) =>{
       switch(checkRole(user)){
         case Constants.AUTHENTICATED:{
           return  <div className="border-login">
-                      <IconButton disabled={ disabledNotifications() } size={'small'} onClick={()=> navigate("/notifications") }>
-                        <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
-                          <MdCircleNotificationsIcon color={ disabledNotifications() ? 'gray' :  _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
-                        </Badge>
-                      </IconButton>
-                      <IconButton disabled={ disabledCarts() }  size={'small'} onClick={()=> navigate("/book-buy")}>
-                        <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
-                          <FiShoppingCart color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
-                        </Badge>
-                      </IconButton>
-                      <IconButton disabled={disabledBookmarks()} size={'small'} onClick={()=> navigate("/bookmarks")}>
-                        <MdOutlineBookmarkAddedIcon color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
-                      </IconButton>
-                      <IconButton disabled={disabledSubscribes()} size={'small'} onClick={()=> navigate("/subscribes")}>
-                        <SlUserFollowing color={ disabledSubscribes() ? 'gray' : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
-                      </IconButton>
-                      <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
-                        <Badge badgeContent={conversations.length} color="primary">
-                          <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" : _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
-                        </Badge>
-                      </IconButton>
-                      <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
-                        <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? `${window.location.origin}/${user?.avatar?.url}` : "" } size="1.2em"/>
-                      </IconButton>
-                    </div>
+                    <IconButton disabled={ disabledNotifications() } size={'small'} onClick={()=> navigate("/notifications") }>
+                      <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
+                        <MdCircleNotificationsIcon color={ disabledNotifications() ? 'gray' :  _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
+                      </Badge>
+                    </IconButton>
+                    <IconButton disabled={ disabledCarts() }  size={'small'} onClick={()=> navigate("/book-buy")}>
+                      <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
+                        <FiShoppingCart color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
+                      </Badge>
+                    </IconButton>
+                    <IconButton disabled={disabledBookmarks()} size={'small'} onClick={()=> navigate("/bookmarks")}>
+                      <MdOutlineBookmarkAddedIcon color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
+                    </IconButton>
+                    <IconButton disabled={disabledSubscribes()} size={'small'} onClick={()=> navigate("/subscribes")}>
+                      <SlUserFollowing color={ disabledSubscribes() ? 'gray' : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
+                    </IconButton>
+                    <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
+                      <Badge badgeContent={conversations.length} color="primary">
+                        <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" : _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                      </Badge>
+                    </IconButton>
+                    <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
+                      <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? `${window.location.origin}/${user?.avatar?.url}` : "" } size="1.2em"/>
+                    </IconButton>
+                    <IconButton size={'small'} onClick={()=>{ navigate("/help") }}>
+                      <BiHelpCircle color="white" size="1.2em"/>
+                    </IconButton>
+                  </div>
         }
 
         case Constants.AMDINISTRATOR:{
           return  <div className="border-login">
-                      <IconButton onClick={()=> navigate("/dblog") }>
-                        <VscDebugIcon  color={ _.isEqual(location?.pathname, "/dblog") ? "red" : "white" } size="1.2em"/>
-                      </IconButton>
-                      <IconButton size={'small'} onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
-                        <Avatar src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } alt="profile" size="1.2em" />
-                      </IconButton>
-                    </div>
+                    <IconButton onClick={()=> navigate("/dblog") }>
+                      <VscDebugIcon  color={ _.isEqual(location?.pathname, "/dblog") ? "red" : "white" } size="1.2em"/>
+                    </IconButton>
+                    <IconButton size={'small'} onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
+                      <Avatar src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } alt="profile" size="1.2em" />
+                    </IconButton>
+                    <IconButton size={'small'} onClick={()=>{ navigate("/help") }}>
+                      <BiHelpCircle color="white" size="1.2em"/>
+                    </IconButton>
+                  </div>
         }
 
         case Constants.SELLER:{
           return  <div className="border-login">
-                      <IconButton disabled={ disabledNotifications() }  size={'small'} onClick={()=> navigate("/notifications") }>
-                        <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
-                          <MdCircleNotificationsIcon color={ disabledNotifications() ? "gray" : _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
-                        </Badge>
-                      </IconButton>
-                      <IconButton disabled={ disabledCarts() }  size={'small'} onClick={()=> navigate("/book-buy")}>
-                        <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
-                          <FiShoppingCart color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
-                        </Badge>
-                      </IconButton>
-                      <IconButton disabled={disabledBookmarks()} size={'small'} onClick={()=> navigate("/bookmarks")}>
-                        <MdOutlineBookmarkAddedIcon color={ disabledBookmarks() ? 'gray' :  _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
-                      </IconButton>
-                      <IconButton disabled={disabledSubscribes()} size={'small'} onClick={()=> navigate("/subscribes")}>
-                        <SlUserFollowing color={ disabledSubscribes() ? "gray" : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
-                      </IconButton>
-                      <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
-                        <Badge badgeContent={conversations.length} color="primary">
-                          <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" :  _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
-                        </Badge>
-                      </IconButton>
-                      <IconButton disabled={ disabledManageSuppliers() }  size={'small'} onClick={()=> navigate("/lotterys")}>
-                        <BiStoreAlt color={ disabledManageSuppliers()  ? 'gray' : _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1.2em"/>
-                      </IconButton>
-                      <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
-                        <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } size="1.2em"/>
-                      </IconButton>
-                    </div>
+                    <IconButton disabled={ disabledNotifications() }  size={'small'} onClick={()=> navigate("/notifications") }>
+                      <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
+                        <MdCircleNotificationsIcon color={ disabledNotifications() ? "gray" : _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
+                      </Badge>
+                    </IconButton>
+                    <IconButton disabled={ disabledCarts() }  size={'small'} onClick={()=> navigate("/book-buy")}>
+                      <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
+                        <FiShoppingCart color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
+                      </Badge>
+                    </IconButton>
+                    <IconButton disabled={disabledBookmarks()} size={'small'} onClick={()=> navigate("/bookmarks")}>
+                      <MdOutlineBookmarkAddedIcon color={ disabledBookmarks() ? 'gray' :  _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
+                    </IconButton>
+                    <IconButton disabled={disabledSubscribes()} size={'small'} onClick={()=> navigate("/subscribes")}>
+                      <SlUserFollowing color={ disabledSubscribes() ? "gray" : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
+                    </IconButton>
+                    <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
+                      <Badge badgeContent={conversations.length} color="primary">
+                        <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" :  _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                      </Badge>
+                    </IconButton>
+                    <IconButton disabled={ disabledManageSuppliers() }  size={'small'} onClick={()=> navigate("/lotterys")}>
+                      <BiStoreAlt color={ disabledManageSuppliers()  ? 'gray' : _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1.2em"/>
+                    </IconButton>
+                    <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
+                      <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } size="1.2em"/>
+                    </IconButton>
+                    <IconButton size={'small'} onClick={()=>{ navigate("/help") }}>
+                      <BiHelpCircle color="white" size="1.2em"/>
+                    </IconButton>
+                  </div>
         }
       }
     }
 
-    return  <IconButton size={'small'} onClick={()=>{ setDialogLogin(true) }}>
+    return  <div className="border-login">
+              <IconButton size={'small'} onClick={()=>{ setDialogLogin(true) }}>
                 <LoginIcon color="white" size="1.2em"/>
               </IconButton>
+              <IconButton size={'small'} onClick={()=>{ navigate("/help") }}>
+                <BiHelpCircle color="white" size="1.2em"/>
+              </IconButton>
+            </div>
   }
 
   return (
@@ -1539,6 +1619,7 @@ const App =(props) =>{
             <Route path="/login-with-line" element={<LoginWithLinePage />}  />
             <Route path="/contact-us" element={<ContactUsPage {...props} onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
             <Route path="/register" element={<RegisterPage />}  />
+            <Route path="/help" element={<HelpPage />}  />
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
               <Route path="/me" element={<MePage 
                                           {...props} 
@@ -1586,6 +1667,14 @@ const App =(props) =>{
               <Route path="/all-deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/all-withdraws" element={<WithdrawsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/development" element={<DevelopmentPage {...props} />} />
+              <Route 
+                path="/contents" 
+                element={<ContentsPage {...props} 
+                onLightbox={(value)=>setLightbox(value)}
+                // onMutationLottery={(evt)=>onMutationLottery(evt)}
+                 />} />
+                 {/*  */}
+              <Route path="/content" element={<ContentPage {...props}  onMutationContent={(evt)=>onMutationContent(evt)}  />} />
             </Route>
             <Route path="*" element={<NotFound404Page />} />
           </Routes>
