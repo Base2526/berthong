@@ -102,7 +102,7 @@ export const TRANSLATIONS_TH = {
 
     balance: "ยอดเงิน",
 
-    NOT_ENOUGH_BALANCE: "ยอดเงินไม่พอ -- {{name}} ---",
+    NOT_ENOUGH_BALANCE: "ยอดเงินไม่พอ",
 
     USER_NOT_FOUND: "ไม่พบ ชื่อผู้ใช้งาน หรือ อีเมลล์ อยู่ในระบบ",
     PASSWORD_WRONG: "รหัสผ่านไม่ถูกต้อง",

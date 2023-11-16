@@ -5,6 +5,7 @@ import { withHistory } from "slate-history";
 import { Slate, Editable, withReact } from "slate-react";
 import { useTranslation } from "react-i18next";
 
+
 import {Link} from 'react-router-dom';
 
 import Toolbar from "./Toolbar/Toolbar";

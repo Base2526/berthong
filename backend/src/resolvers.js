@@ -244,6 +244,34 @@ export default {
       return { status:true }
     },
 
+    async contents(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+      let { current_user } =  await Utils.checkAuth(req);
+      console.log("checkUser :", current_user, req?.headers?.authorization)
+
+      let data = await Model.BasicContent.find({})
+      return {
+        status: true,
+        data,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+    },
+
+    async contentById(parent, args, context, info){
+      let start = Date.now()
+      let { req } = context
+      let { _id } = args
+      let { current_user } =  await Utils.checkAuth(req);
+      // if( Utils.checkRole(current_user) == Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+
+      let data = await Model.BasicContent.findOne({_id})
+      return {  status: true,
+                data,
+                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+
+    },
+
     async checkUser(parent, args, context, info){
       let { req } = context
       let { current_user } =  await Utils.checkAuth(req);
@@ -3292,6 +3320,55 @@ export default {
         conversation,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }   
+    },
+
+    async content(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      console.log("content :", input)
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+
+      // return {
+      //   status: true,
+      //   executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      // }
+
+      switch(input.mode.toLowerCase()){
+        case "new":{
+          let basicContent = await Model.BasicContent.create(input);
+          return {
+            status: true,
+            data: basicContent,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }
+        }
+
+        case "edit":{  
+          await Model.BasicContent.updateOne({ _id: input._id },  input, {});
+          let basicContent = await Model.BasicContent.findOne({ _id: input._id })
+          return {
+            status: true,
+            data: basicContent,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }
+        }
+
+        case "delete":{  
+          await Model.BasicContent.deleteOne( {"_id": mongoose.Types.ObjectId(input?._id)});
+          return {
+            status: true,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }
+        }
+
+        default:{
+          throw new AppError(Constants.ERROR, 'Other case')
+        }
+      }
     },
   },
   Subscription:{

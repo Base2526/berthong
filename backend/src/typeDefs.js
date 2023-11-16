@@ -493,6 +493,9 @@ export default gql`
 
     message(conversationId: ID!, startId: ID): JSON
     conversations: JSON
+
+    contents: JSON
+    contentById(_id: ID!): JSON
   }  
   
   input RoomInput {
@@ -819,6 +822,8 @@ export default gql`
 
     conversation( mode: ConversationMode!, _id: ID! ): JSON
     message( mode: MessageMode!, input: JSON ): JSON
+
+    content(input: JSON): JSON
   }
 
   type Subscription {

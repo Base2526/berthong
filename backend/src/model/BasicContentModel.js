@@ -3,7 +3,8 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema
 
 const basicContentSchema = new Schema({
-  name: { type: String },
+  // name: { type: String },
+  title: { type: String, required:[true, "Title is a required field"] },
   description: { type: String },
 },
 {
