@@ -15,7 +15,7 @@ table{
 button{
     background-color: white;
     border:none;
-    opacity: 0.5;
+    /* opacity: 0.5; */
 }
 .btnActive{
     opacity: 1;

@@ -27,7 +27,12 @@ const userSchema = new Schema({
             enum : [AUTHENTICATED, AMDINISTRATOR],
             default: AUTHENTICATED
           }],
-  isActive: { type: String },
+  // isActive: { type: String },
+  isActive: {
+    type: Number,
+    enum : [0, 1], // 0: FALSE, 1: TRUE
+    default: 0
+  },
   avatar :{
     url: { type: String },
     filename: { type: String },

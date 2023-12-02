@@ -49,24 +49,29 @@ import {
 // import {
 //   BiHelpCircle
 // } from "react-icons/bi"
-import {
-  CgProfile as ProfileIcon
-} from "react-icons/cg"
+// import {
+//   CgProfile as ProfileIcon
+// } from "react-icons/cg"
 import {
   MdOutlineBookmarkAdded as MdOutlineBookmarkAddedIcon
 } from "react-icons/md"
 import {
-  FiLogIn as LoginIcon
+  FiLogIn as LoginIcon,
+  FiHelpCircle as BiHelpCircle,
+  FiUser as ProfileIcon,
+  FiEye as SlUserFollowing,
+  FiUser,
+  FiCoffee as VscDebugIcon
 } from "react-icons/fi"
-import {
-  VscDebug as VscDebugIcon
-} from "react-icons/vsc"
+// import {
+//   VscDebug as VscDebugIcon
+// } from "react-icons/vsc"
 import {
   FaDev as FaDevIcon
 } from "react-icons/fa"
-import { 
-  IoMdHelpCircleOutline  as BiHelpCircle
-} from "react-icons/io";
+// import { 
+//   IoMdHelpCircleOutline  as BiHelpCircle
+// } from "react-icons/io";
 
 import {
   Avatar,
@@ -80,9 +85,9 @@ import {
 import {
   HiChatBubbleLeftRight as HiChatBubbleLeftRightIcon
 } from "react-icons/hi2"
-import {
-  SlUserFollowing
-} from "react-icons/sl"
+// import {
+//   SlUserFollowing
+// } from "react-icons/sl"
 import {
   BiStoreAlt
 } from "react-icons/bi"
@@ -1357,44 +1362,52 @@ const App =(props) =>{
           return  <div className="border-login">
                     <IconButton disabled={ disabledNotifications() } size={'small'} onClick={()=> navigate("/notifications") }>
                       <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
-                        <MdCircleNotificationsIcon color={ disabledNotifications() ? 'gray' :  _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
+                        <MdCircleNotificationsIcon color={ disabledNotifications() ? 'gray' :  _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1em"/>
                       </Badge>
                     </IconButton>
                     <IconButton disabled={ disabledCarts() }  size={'small'} onClick={()=> navigate("/book-buy")}>
                       <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
-                        <FiShoppingCart color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
+                        <FiShoppingCart color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1em"/>
                       </Badge>
                     </IconButton>
                     <IconButton disabled={disabledBookmarks()} size={'small'} onClick={()=> navigate("/bookmarks")}>
-                      <MdOutlineBookmarkAddedIcon color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
+                      <MdOutlineBookmarkAddedIcon color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1em"/>
                     </IconButton>
                     <IconButton disabled={disabledSubscribes()} size={'small'} onClick={()=> navigate("/subscribes")}>
-                      <SlUserFollowing color={ disabledSubscribes() ? 'gray' : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
+                      <SlUserFollowing color={ disabledSubscribes() ? 'gray' : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1em"/>
                     </IconButton>
                     <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
                       <Badge badgeContent={conversations.length} color="primary">
-                        <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" : _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                        <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" : _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1em"/>
                       </Badge>
                     </IconButton>
                     <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
-                      <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? `${window.location.origin}/${user?.avatar?.url}` : "" } size="1.2em"/>
+                      {
+                        !_.isEmpty(user?.avatar)
+                        ? <Avatar alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
+                        : <FiUser color="white" size="1em"/>
+                      }
                     </IconButton>
                     <IconButton size={'small'} onClick={()=>{ navigate("/help") }}>
-                      <BiHelpCircle color="white" size="1.2em"/>
+                      <BiHelpCircle color="white" size="1em"/>
                     </IconButton>
                   </div>
         }
 
         case Constants.AMDINISTRATOR:{
           return  <div className="border-login">
-                    <IconButton onClick={()=> navigate("/dblog") }>
-                      <VscDebugIcon  color={ _.isEqual(location?.pathname, "/dblog") ? "red" : "white" } size="1.2em"/>
+                    <IconButton size={'small'}  onClick={()=> navigate("/dblog") }>
+                      <VscDebugIcon  color={ _.isEqual(location?.pathname, "/dblog") ? "red" : "white" } size="1em"/>
                     </IconButton>
                     <IconButton size={'small'} onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
-                      <Avatar src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } alt="profile" size="1.2em" />
+                      {
+                        !_.isEmpty(user?.avatar)
+                        ? <Avatar alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
+                        : <FiUser color="white" size="1em"/>
+                      }
                     </IconButton>
                     <IconButton size={'small'} onClick={()=>{ navigate("/help") }}>
-                      <BiHelpCircle color="white" size="1.2em"/>
+                      <BiHelpCircle color="white" size="1em"/>
                     </IconButton>
                   </div>
         }
@@ -1403,33 +1416,37 @@ const App =(props) =>{
           return  <div className="border-login">
                     <IconButton disabled={ disabledNotifications() }  size={'small'} onClick={()=> navigate("/notifications") }>
                       <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
-                        <MdCircleNotificationsIcon color={ disabledNotifications() ? "gray" : _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1.2em"/>
+                        <MdCircleNotificationsIcon color={ disabledNotifications() ? "gray" : _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1em"/>
                       </Badge>
                     </IconButton>
                     <IconButton disabled={ disabledCarts() }  size={'small'} onClick={()=> navigate("/book-buy")}>
                       <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
-                        <FiShoppingCart color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1.2em"/>
+                        <FiShoppingCart color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1em"/>
                       </Badge>
                     </IconButton>
                     <IconButton disabled={disabledBookmarks()} size={'small'} onClick={()=> navigate("/bookmarks")}>
-                      <MdOutlineBookmarkAddedIcon color={ disabledBookmarks() ? 'gray' :  _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1.2em"/>
+                      <MdOutlineBookmarkAddedIcon color={ disabledBookmarks() ? 'gray' :  _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1em"/>
                     </IconButton>
                     <IconButton disabled={disabledSubscribes()} size={'small'} onClick={()=> navigate("/subscribes")}>
-                      <SlUserFollowing color={ disabledSubscribes() ? "gray" : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1.2em"/>
+                      <SlUserFollowing color={ disabledSubscribes() ? "gray" : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1em"/>
                     </IconButton>
                     <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
                       <Badge badgeContent={conversations.length} color="primary">
-                        <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" :  _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1.2em"/>
+                        <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" :  _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1em"/>
                       </Badge>
                     </IconButton>
                     <IconButton disabled={ disabledManageSuppliers() }  size={'small'} onClick={()=> navigate("/lotterys")}>
-                      <BiStoreAlt color={ disabledManageSuppliers()  ? 'gray' : _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1.2em"/>
+                      <BiStoreAlt color={ disabledManageSuppliers()  ? 'gray' : _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1em"/>
                     </IconButton>
                     <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
-                      <Avatar alt="profile" src={ !_.isEmpty(user?.avatar) ? user?.avatar?.url : "" } size="1.2em"/>
+                      {
+                        !_.isEmpty(user?.avatar)
+                        ? <Avatar alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
+                        : <FiUser color="white" size="1em"/>
+                      }
                     </IconButton>
                     <IconButton size={'small'} onClick={()=>{ navigate("/help") }}>
-                      <BiHelpCircle color="white" size="1.2em"/>
+                      <BiHelpCircle color="white" size="1em"/>
                     </IconButton>
                   </div>
         }
@@ -1438,10 +1455,10 @@ const App =(props) =>{
 
     return  <div className="border-login">
               <IconButton size={'small'} onClick={()=>{ setDialogLogin(true) }}>
-                <LoginIcon color="white" size="1.2em"/>
+                <LoginIcon color="white" size="1em"/>
               </IconButton>
               <IconButton size={'small'} onClick={()=>{ navigate("/help") }}>
-                <BiHelpCircle color="white" size="1.2em"/>
+                <BiHelpCircle color="white" size="1em"/>
               </IconButton>
             </div>
   }

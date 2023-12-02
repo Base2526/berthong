@@ -1,54 +1,47 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { useQuery } from "@apollo/client";
+import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-    Avatar,
-    Typography,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
-    LinearProgress,
-    Button
-} from '@mui/material';
-import {
-    AiFillCamera as CameraIcon,
-    AiOutlineZoomIn as ZoomInIcon
-} from "react-icons/ai" 
-import {
-    RiAddBoxFill
-} from "react-icons/ri"
-import {
-    FcExpand as ExpandMoreIcon
-} from "react-icons/fc"
-import {
-    RiDeleteBin5Fill as  DeleteIcon
-} from "react-icons/ri"
-import {
-    AiFillFolder as FolderIcon
-} from "react-icons/ai"
-import { IconButton } from "@material-ui/core";
-import _ from "lodash"
-import { styled } from "@mui/material/styles";
 
-import { queryBankByIds } from "../apollo/gqlQuery"
-import { getHeaders, handlerErrorApollo } from "../util";
+import { usePdf } from '@mikecousins/react-pdf';
 
-const Input = styled("input")({ display: "none" });
-
-let initValues = {
-    displayName: ""
-}
+import filePdf from "../pdf/sample.pdf";
 
 const HelpPage = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useTranslation();
 
-    return (<div>HELP PAGE</div>);
+    const [page, setPage] = useState(1);
+    const canvasRef = useRef(null);
+
+    const { pdfDocument, pdfPage } = usePdf({
+        file: filePdf,
+        page,
+        canvasRef,
+    });
+
+    return (<div>
+                {!pdfDocument && <span>Loading...</span>}
+                <canvas ref={canvasRef} />
+                {Boolean(pdfDocument && pdfDocument.numPages) && (
+                    <nav>
+                    <ul className="pager">
+                        <li className="previous">
+                        <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+                            Previous
+                        </button>
+                        </li>
+                        <li className="next">
+                        <button
+                            disabled={page === pdfDocument.numPages}
+                            onClick={() => setPage(page + 1)}
+                        >
+                            Next
+                        </button>
+                        </li>
+                    </ul>
+                    </nav>
+                )}
+            </div>)
 }
 export default HelpPage
