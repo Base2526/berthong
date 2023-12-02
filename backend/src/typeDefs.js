@@ -34,7 +34,7 @@ export default gql`
     password: String
     email: String
     displayName: String!
-    isActive: String
+    isActive: Int
     roles: [String]!
     bookmarks: [Bookmark]
     image: [File]
@@ -50,7 +50,7 @@ export default gql`
     password: String!
     email: String!
     roles: [String]
-    isActive: String!
+    isActive: Int
     image: [FileInput]
   }
 
@@ -723,7 +723,7 @@ export default gql`
     displayName: String
     banks:[JSON]
     balance: Long
-    isActive: String
+    isActive: Int
     avatar: FileInput
     lastAccess: Date
     isOnline: Boolean

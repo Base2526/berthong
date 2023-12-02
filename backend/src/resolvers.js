@@ -1361,7 +1361,7 @@ export default {
               email: data.profileObj.email,
               displayName: data.profileObj.givenName +" " + data.profileObj.familyName ,
               roles: [ Constants.AUTHENTICATED ], // authenticated
-              isActive: 'active',
+              isActive: 1,
               banks: [],
               image :[{
                 url: data.profileObj.imageUrl,
@@ -1497,7 +1497,7 @@ export default {
               email: github_user.email,
               displayName: github_user.name,
               roles: [ Constants.AUTHENTICATED ], // authenticated
-              isActive: 'active',
+              isActive: 1,
               image :[{
                 url: github_user.avatar_url,
                 filename: data.code +".jpeg",
@@ -1558,7 +1558,7 @@ export default {
               email: data.email,
               displayName: data.name,
               roles: [ Constants.AUTHENTICATED ], // authenticated
-              isActive: 'active',
+              isActive: 1,
               image :[{
                 url: _.isEmpty(data.picture.data) ? "" : data.picture.data.url,
                 filename: data.id +".jpeg",
@@ -1665,7 +1665,7 @@ export default {
       let newInput =  {...input,  password: cryptojs.AES.encrypt( input.password, process.env.JWT_SECRET).toString(),
                                   displayName: _.isEmpty(input.displayName) ? input.username : input.displayName ,
                                   roles: [Constants.AUTHENTICATED], 
-                                  isActive: 'active', 
+                                  // isActive: 0, 
                                   lastAccess: Date.now(), 
                                   isOnline: true}
               
