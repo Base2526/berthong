@@ -1219,36 +1219,7 @@ export default {
       // console.log("user .length", users?.length)
 
       _.map(users, async(user)=>{
-        // console.log("user :", user)
-        // console.log("roles :", user?.roles)
-
-        /*
-        # export const AMDINISTRATOR = "62a2ccfbcf7946010d3c74a2";
-        # export const AUTHENTICATED = "62a2ccfbcf7946010d3c74a6";
-        # export const SELLER        = "62a2ccfbcf7946010d3c74a4";
-        # NEW
-        # export const ANONYMOUS     = 0;
-        # export const AMDINISTRATOR = 1;
-        # export const AUTHENTICATED = 2;
-        # export const SELLER        = 3;
-        */
-        // let roles = _.map(user?.roles, (role)=>{
-        //   switch(role){
-        //     case "62a2ccfbcf7946010d3c74a2":{
-        //       return "1";
-        //     }
-        //     case "62a2ccfbcf7946010d3c74a6":{
-        //       return "2";
-        //     }
-        //     case "62a2ccfbcf7946010d3c74a4":{
-        //       return "3";
-        //     }
-        //     default:{
-        //       return role;
-        //     }
-        //   }
-        // })
-
+       
         let isActive = 1
 
         // console.log("roles :", user?.roles, roles)
