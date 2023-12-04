@@ -14,6 +14,8 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { PersistGate } from "redux-persist/integration/react";
 import { CssVarsProvider } from "@mui/joy/styles";
 
+import { HelmetProvider } from 'react-helmet-async';
+
 import { client } from "./apollo/Apollo";
 import App from "./App";
 import { persistor, store } from "./redux/Redux";
@@ -39,15 +41,17 @@ ReactGA4.initialize(REACT_APP_GOOGLE_ANALYTICS4)
 ReactDOM.render(
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
-      <StrictMode>
-        <ApolloProvider client={client}>
-          <Router>
-            <Store>
-              <App />
-            </Store>
-          </Router>
-        </ApolloProvider>
-      </StrictMode>
+      <HelmetProvider>
+        <StrictMode>
+          <ApolloProvider client={client}>
+            <Router>
+              <Store>
+                <App />
+              </Store>
+            </Router>
+          </ApolloProvider>
+        </StrictMode>
+      </HelmetProvider>
     </PersistGate>
   </Provider>,
   document.getElementById("root")

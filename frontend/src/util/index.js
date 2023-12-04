@@ -152,16 +152,13 @@ export const checkRole = (user) =>{
   if(user?.roles){
     let { REACT_APP_USER_ROLES } = process.env
     console.log("checkRole :", user?.roles)
-    if( _.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[0]) || 
-        _.includes( user?.roles, "1") ){
+    if( _.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[0]) ){
         return Constants.AMDINISTRATOR;
     }
-    else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[2]) || 
-        _.includes( user?.roles, "3")){
+    else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[2]) ){
         return Constants.SELLER;
     }
-    else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[1]) || 
-        _.includes( user?.roles, "2")){
+    else if(_.includes( user?.roles, _.split(REACT_APP_USER_ROLES, ',' )[1]) ){
       return Constants.AUTHENTICATED;
     }
   }
