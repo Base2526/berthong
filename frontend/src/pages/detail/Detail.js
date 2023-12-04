@@ -18,6 +18,7 @@ import {
   } from "@mui/icons-material"
 import { FacebookIcon, FacebookShareButton, TwitterIcon, TwitterShareButton } from "react-share";
 import deepdash from "deepdash";
+import { Helmet } from 'react-helmet-async';
 
 import DetailPanelRight from "./DetailPanelRight"
 import DetailPanelLeft from "./DetailPanelLeft"
@@ -235,6 +236,27 @@ const Detail = (props) => {
         loadingSupplierById || _.isEmpty(data)
         ? <LinearProgress />
         : <>
+
+            {/* <Helmet>
+              <title>Hello World</title>
+              <link rel="canonical" href="https://www.tacobell.com/" />
+            </Helmet> */}
+            <Helmet>
+              <title>My Page Title</title>
+              <meta name="description" content="This is a description of my page" />
+              <meta name="keywords" content="react, meta tags, seo" />
+              <meta name="author" content="Your Name" />
+              <meta property="og:title" content="My Page Title" />
+              <meta property="og:description" content="This is a description of my page" />
+              <meta property="og:image" content="https://i.ytimg.com/vi/E0APXrppsP4/hqdefault.jpg" />
+              <meta property="og:image:height" content="360" />
+              <meta property="og:image:width" content="480" />
+              <meta property="og:url" content="https://theberthong.store/d?id=652ccee4ba6ed400083ae463" />
+              <meta name="twitter:title" content="XXX-My Page Title" />
+              <meta name="twitter:description" content="This is a description of my page" />
+              <meta name="twitter:image" content="https://i.ytimg.com/vi/E0APXrppsP4/hqdefault.jpg" />
+              <meta name="twitter:card" content="summary_large_image" />
+            </Helmet>
             <DetailPanelLeft {...props} data={data}/>
             <DetailPanelRight 
               {...props}

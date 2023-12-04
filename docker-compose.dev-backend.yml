@@ -1,0 +1,122 @@
+version: "3"
+services:
+  ################################
+  #   Setup React-admin container
+  ################################
+  # frontend:
+  #   build: 
+  #     context: ./frontend
+  #     dockerfile: Dockerfile.dev
+  #   env_file:
+  #     - ./env/.env.dev
+  #   # environment:
+  #   #   # - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING}
+  #   #   # - WATCHPACK_POLLING=${WATCHPACK_POLLING}
+      
+  #   #   # - REACT_APP_NODE_ENV=${REACT_APP_NODE_ENV}
+  #   #   # - REACT_APP_HOST_GRAPHAL=${REACT_APP_HOST_GRAPHAL}:${GRAPHQL_PORT}
+  #   #   # - FRONTEND_PORT=${FRONTEND_PORT}
+  #   #   # - PORT=${FRONTEND_PORT}
+
+  #   #   # - REACT_APP_GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+  #   #   # - REACT_APP_GOOGLE_ANALYTICS4=${REACT_APP_GOOGLE_ANALYTICS4}
+
+  #   #   # - REACT_APP_FACEBOOK_APPID=448400870781752
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./frontend/src:/app/src
+  #     - ./uploads:/var/storage
+  #   networks:
+  #     - berthong
+  ################################
+  
+  ################################
+  #   Setup Api Graphql container
+  ################################
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.dev                
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./env/.env.dev.bankend
+    volumes:
+      - ./backend/src:/app/src        
+      - ./uploads:/app/uploads    
+    # environment:
+    #   # - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING}
+    #   # - WATCHPACK_POLLING=${WATCHPACK_POLLING}
+    #   # - RA_HOST=${RA_HOST}:${GRAPHQL_PORT}/
+    #   # - GRAPHQL_PORT=${GRAPHQL_PORT}
+    #   # - JWT_SECRET=${JWT_SECRET}
+    #   # - MONGO_URI=mongodb://${MONGO_INITDB_USERNAME}:${MONGO_INITDB_PASSWORD}@mongo:${MONGO_PORT}/${MONGO_INITDB_DATABASE}?authMechanism=DEFAULT
+    #   # - MONGO_URI=mongodb://${MONGO_INITDB_USERNAME}:${MONGO_INITDB_PASSWORD}@mongo:${MONGO_PORT}/${MONGO_INITDB_DATABASE}
+    #   # - MONGO_URI=mongodb://root:b9be11166d72e9e3ae7fd407165e4bd2@banlist.info:29102/?authMechanism=DEFAULT
+    #   # - GITHUB_URL_OAUTH_ACCESS_TOKEN=${GITHUB_URL_OAUTH_ACCESS_TOKEN}
+    #   # - GITHUB_URL_OAUTH_USER=${GITHUB_URL_OAUTH_USER}
+    #   # - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+    #   # - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET} 
+    networks:
+      - berthong
+  ################################
+
+  ################################
+  #   Setup Api Mongo and mongo-express container
+  ################################
+  # mongo:
+  #   image: mongo:${MONGO_VERSION}
+  #   command: mongod --port ${MONGO_PORT}
+  #   expose:
+  #     - ${MONGO_PORT}
+  #   ports:
+  #     - "${MONGO_PORT}:${MONGO_PORT}"
+  #     - 29102:${MONGO_PORT}
+  #   volumes:
+  #     - ./mongo-single/data:/data/db
+  #     - ./mongo-single/restore:/mongo-single/restore
+  #     - ./mongo-single/mongod.conf:/etc/mongod.conf
+  #   restart: always
+  #   networks:
+  #     - nodejs
+  # mongo:
+  #   image: mongo:6.0.1
+  #   command: mongod --auth --port 29101
+  #   # expose:
+  #   #   - 27017       # port intenal
+  #   ports:
+  #     - "29101:29101" # port extenal
+  #   volumes:
+  #     - ./restore:/home/restore
+  #   networks:
+  #     - berthong
+
+  # mongodb:
+  #   image: mongo:4.2.3-bionic
+  #   # image: mongo:${MONGO_VERSION}
+  #   container_name: mongodb
+  #   # expose:
+  #   #   - 27018
+  #   ports:
+  #     - 27018:27017
+  #   environment:
+  #     - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+  #     - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_USERNAME}
+  #     - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_PASSWORD}
+  #   volumes:
+  #     # seeding scripts
+  #     - ./mongo-entrypoint:/docker-entrypoint-initdb.d
+  #     # named volumes
+  #     # - mongodb:/data/db
+  #     # - mongoconfig:/data/configdb
+
+  #     - ./mongo-single/data:/data/db
+  #     - ./mongo-single/restore:/mongo-single/restore
+  #     # - ./mongo-single/mongod.conf:/etc/mongod.conf
+  #   networks:
+  #     - nodejs
+networks:
+  berthong:
+    external: true 
+    name: berthong-network

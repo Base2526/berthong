@@ -1205,11 +1205,67 @@ export default {
   },
   Upload: GraphQLUpload,
   Mutation: {
+    async update_me(parent, args, context, info){
+      let { req } = context
+
+      // let users = await Utils.getUsers({})
+
+      let { current_user } =  await Utils.checkAuth(req);
+      // console.log("current_user :", current_user)
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+
+      let users = await Model.User.find({})
+      
+      // console.log("user .length", users?.length)
+
+      _.map(users, async(user)=>{
+        // console.log("user :", user)
+        // console.log("roles :", user?.roles)
+
+        /*
+        # export const AMDINISTRATOR = "62a2ccfbcf7946010d3c74a2";
+        # export const AUTHENTICATED = "62a2ccfbcf7946010d3c74a6";
+        # export const SELLER        = "62a2ccfbcf7946010d3c74a4";
+        # NEW
+        # export const ANONYMOUS     = 0;
+        # export const AMDINISTRATOR = 1;
+        # export const AUTHENTICATED = 2;
+        # export const SELLER        = 3;
+        */
+        // let roles = _.map(user?.roles, (role)=>{
+        //   switch(role){
+        //     case "62a2ccfbcf7946010d3c74a2":{
+        //       return "1";
+        //     }
+        //     case "62a2ccfbcf7946010d3c74a6":{
+        //       return "2";
+        //     }
+        //     case "62a2ccfbcf7946010d3c74a4":{
+        //       return "3";
+        //     }
+        //     default:{
+        //       return role;
+        //     }
+        //   }
+        // })
+
+        let isActive = 1
+
+        // console.log("roles :", user?.roles, roles)
+        // await Model.User.updateOne({ _id: user?._id }, { isActive });
+      })
+
+      return {  
+                status: true, 
+                // users,
+                random: Math.round(1 + Math.random() * (100000 - 1)) }
+    },
     async check_db(parent, args, context, info){
       let { req } = context
 
-      let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      // let { current_user } =  await Utils.checkAuth(req);
+      // console.log("current_user :", current_user)
+      // if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       console.log("check_db :", connection)
       let { readyState } = connection
@@ -1251,7 +1307,7 @@ export default {
   
       return {  status:true, 
                 mongo_db_state,
-                env: process.env
+                // env: process.env
               }
     },
     async login(parent, args, context, info) {
@@ -1287,7 +1343,6 @@ export default {
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
-
     async loginWithSocial(parent, args, context, info) {
       let {input} = args
       console.log("loginWithSocial :", input)
@@ -1609,7 +1664,6 @@ export default {
         }
       }
     },
-
     // https://github.com/PrincewillIroka/login-with-github/blob/master/server/index.js
     async loginWithGithub(parent, args, context, info){
       try{
@@ -1654,7 +1708,6 @@ export default {
         return;
       }
     },
-
     async register(parent, args, context, info) {
       let start     = Date.now()
       let { input } = args
@@ -1675,7 +1728,6 @@ export default {
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
-
     async me(parent, args, context, info) {
       let start = Date.now()
       let { input } = args

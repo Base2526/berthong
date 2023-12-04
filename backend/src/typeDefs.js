@@ -785,6 +785,7 @@ export default gql`
   }
 
   type Mutation {
+    update_me: JSON
     check_db: JSON
     login(input: LoginInput): JSON
     loginWithSocial(input: LoginWithSocialInput): JSON
