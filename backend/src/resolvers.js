@@ -982,8 +982,7 @@ export default {
       let { req } = context
       await Utils.checkAuth(req);
 
-      let data =  [ {label: '(xxx-x-xxxxx-01)ธนาคารไทยพาณิชย์', id: "bank-01" },
-                    { label: '(xxx-x-xxxxx-02)ธนาคารกสิกรไทย', id: "bank-02" }]
+      let data =  [ { label: '364-277878-2 ธนาคารไทยพาณิชย์', id: "01" } ]
       return {  status: true,
                 data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
@@ -1327,12 +1326,12 @@ export default {
             accessToken
             googleId
             profileObj {
-              email : "android.somkid@gmail.com"
-              familyName : "Simajarn"
-              givenName : "Somkid"
+              email : "xx.xx@gmail.com"
+              familyName : "xx"
+              givenName : "xx"
               googleId : "112378752153101585347"
               imageUrl : "https://lh3.googleusercontent.com/a-/AFdZucrsz6tfMhKB87pCWcdwoMikQwlPG8_aa4h6zYz1ng=s96-c"
-              name : "Somkid Simajarn"
+              name : "xx xx"
             }
             tokenId
             tokenObj {
@@ -1373,12 +1372,12 @@ export default {
           if(_.isEmpty(user)){
 
             /*
-              email : "android.somkid@gmail.com"
-            familyName : "Simajarn"
-            givenName : "Somkid"
+              email : "xx.xx@gmail.com"
+            familyName : "xx"
+            givenName : "xx"
             googleId : "112378752153101585347"
             imageUrl : "https://lh3.googleusercontent.com/a-/AFdZucrsz6tfMhKB87pCWcdwoMikQwlPG8_aa4h6zYz1ng=s96-c"
-            name : "Somkid Simajarn"
+            name : "xx xx"
             */
 
             let newInput = {
@@ -1457,7 +1456,7 @@ export default {
             blog : ""
             company : null
             created_at :  "2011-07-07T10:02:34Z"
-            email : "mr.simajarn@gmail.com"
+            email : "mr.xx@gmail.com"
             events_url:  "https://api.github.com/users/Base2526/events{/privacy}"
             followers : 2
             followers_url : "https://api.github.com/users/Base2526/followers"
@@ -1470,7 +1469,7 @@ export default {
             id : 900211
             location : null
             login : "Base2526"
-            name : "somkid_haha"
+            name : "xx_haha"
             node_id : "MDQ6VXNlcjkwMDIxMQ=="
             organizations_url : "https://api.github.com/users/Base2526/orgs"
             public_gists: 0
@@ -1553,8 +1552,8 @@ export default {
 
           /*
           {
-            "name": "Somkid Sim",
-            "email": "android.somkid@gmail.com",
+            "name": "xx Sim",
+            "email": "xx.xx@gmail.com",
             "picture": {
                 "data": {
                     "height": 50,

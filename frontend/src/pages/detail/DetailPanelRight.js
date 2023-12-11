@@ -67,6 +67,7 @@ const DetailPanel = (props) => {
                               onKeyDown={(evt) => isOccupied || isFinish || isBooking ? null : (evt.key === "Enter" ?  onMutationBook({ variables: { input: { id: data?._id, itemId: seat } } }) : null) }>
                               {" "}
                               {isBooking ? <span className="booking-font">ติดจอง</span> : ""}
+                              {isOccupied ? <span className="booking-font">ขายแล้ว</span> : ""}
                               {/* {seat <= 9 ? "0" + seat : seat} */}
                               {minTwoDigits(seat, length.toString().length )}
                             </span>

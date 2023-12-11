@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "Somkid simajarn",
+  "author": "xx xx",
   "license": "ISC",
   "devDependencies": {
     "@babel/cli": "^7.17.10",
