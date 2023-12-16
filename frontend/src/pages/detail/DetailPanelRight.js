@@ -65,7 +65,8 @@ const DetailPanel = (props) => {
                               className={clsx("circle", isSelected && "selected", isOccupied && "occupied",  isFinish && "finish",  isBooking && "booking" )}
                               onClick={(evt) => isOccupied || isFinish || isBooking ? null : onMutationBook({ variables: { input: { id: data?._id, itemId: seat } } }) } 
                               onKeyDown={(evt) => isOccupied || isFinish || isBooking ? null : (evt.key === "Enter" ?  onMutationBook({ variables: { input: { id: data?._id, itemId: seat } } }) : null) }>
-                              {" "}
+                              {/* {" "} */}
+                              {isSelected ? <span className="booking-font">จองแล้ว</span> : ""}
                               {isBooking ? <span className="booking-font">ติดจอง</span> : ""}
                               {isOccupied ? <span className="booking-font">ขายแล้ว</span> : ""}
                               {/* {seat <= 9 ? "0" + seat : seat} */}
