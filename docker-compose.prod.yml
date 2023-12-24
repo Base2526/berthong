@@ -21,7 +21,7 @@ services:
         REACT_APP_ENCRYPT_PASS: b9be11166d72e9e3ae7fd407165e4bd2
         REACT_APP_USER_ROLES: 1,2,3
     ports:
-      - "8011:80"
+      - "80:80"
       - "443:443"
     volumes:
       - ./frontend/src:/app/src

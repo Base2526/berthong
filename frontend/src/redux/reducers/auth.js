@@ -7,6 +7,7 @@ import {UPDATED_PROFILE,
         ADDED_NOTIFICATIONS, 
         ADDED_NOTIFICATION,
 
+        ADDED_MESSAGES,
         ADDED_MESSAGE, 
         EDITED_MESSAGE, 
         DELETED_MESSAGE,
@@ -99,6 +100,14 @@ const auth = (state = initialState, action) => {
             console.log("ADDED_NOTIFICATION : ", notifications, mutation, data)
 
             return { ...state, notifications };
+        }
+
+        case ADDED_MESSAGES: {
+            // let messages = [...state.messages]
+            // messages = [...messages, action.data]
+            // return { ...state, messages };
+
+            return state;
         }
 
         case ADDED_MESSAGE: {

@@ -182,7 +182,7 @@ import {  queryMe,
         } from "./apollo/gqlQuery"
           
 import * as Constants from "./constants"
-import { update_profile as updateProfile, logout } from "./redux/actions/auth";
+import { update_profile as updateProfile, logout, addedConversation } from "./redux/actions/auth";
 import logo from "./images/logo_4.png";
 import { appStyles, ListItem } from "./styles"
 
@@ -210,7 +210,7 @@ const App =(props) =>{
   let [conversations, setConversations] = useState([])
   let [manageSuppliers, setManageSuppliers] = useState([])
 
-  let { ws, user, updateProfile, logout } = props
+  let { ws, user, updateProfile, logout, addedConversation } = props
 
   let { loading: loadingMe, 
         data: dataMe, 
@@ -878,7 +878,9 @@ const App =(props) =>{
   const [onMutationConversation, resultMutationConversation] = useMutation(mutationConversation
     , {
         context: { headers: getHeaders(location) },
-        update: (cache, {data: {conversation}}) => {
+        update: (cache, {data: {conversation}}, context) => {
+          let {  mode  } = context?.variables
+
           let { data, status } = conversation
           if(status){
             let conv = cache.readQuery({ query: queryConversations });
@@ -888,6 +890,8 @@ const App =(props) =>{
                 cache.writeQuery({ query: queryConversations, 
                   data: { conversations: { ...conv.conversations, data: [...conv.conversations.data, data] } } 
                  }); 
+
+                 
               }else{
                 let newData = _.map(conv.conversations.data, (d)=>_.isEqual(d?._id, data?._id) ? data : d)//
                 cache.writeQuery({ query: queryConversations, 
@@ -895,6 +899,14 @@ const App =(props) =>{
                  }); 
               }
              
+              // 
+            }
+
+            switch(mode.toLowerCase()){
+              case "new":{
+                addedConversation({mutation: "CREATED", data})
+                break;
+              }
             }
           }
         },
@@ -1376,11 +1388,11 @@ const App =(props) =>{
                     <IconButton disabled={disabledSubscribes()} size={'small'} onClick={()=> navigate("/subscribes")}>
                       <SlUserFollowing color={ disabledSubscribes() ? 'gray' : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1em"/>
                     </IconButton>
-                    <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
+                    {/* <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
                       <Badge badgeContent={conversations.length} color="primary">
                         <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" : _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1em"/>
-                      </Badge>
-                    </IconButton>
+                      </Badge> 
+                    </IconButton> */}
                     <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
                       {
                         !_.isEmpty(user?.avatar)
@@ -1430,11 +1442,11 @@ const App =(props) =>{
                     <IconButton disabled={disabledSubscribes()} size={'small'} onClick={()=> navigate("/subscribes")}>
                       <SlUserFollowing color={ disabledSubscribes() ? "gray" : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1em"/>
                     </IconButton>
-                    <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
+                    {/* <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
                       <Badge badgeContent={conversations.length} color="primary">
                         <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" :  _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1em"/>
                       </Badge>
-                    </IconButton>
+                    </IconButton> */}
                     <IconButton disabled={ disabledManageSuppliers() }  size={'small'} onClick={()=> navigate("/lotterys")}>
                       <BiStoreAlt color={ disabledManageSuppliers()  ? 'gray' : _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1em"/>
                     </IconButton>
@@ -1653,7 +1665,10 @@ const App =(props) =>{
               <Route path="/bookmarks" element={<BookMarksPage {...props} onMutationFollow={(evt)=>onMutationFollow(evt) } data={bookmarks.data} total={bookmarks.total} />} />
               <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} data={subscribes.data} total={subscribes.total} />} />
               <Route path="/producers" element={<ProducersPage {...props}  onLightbox={(evt)=>setLightbox(evt)}  />} />
-              <Route path="/messages" element={<MessagePage {...props} conversations={conversations}  onLightbox={(evt)=>setLightbox(evt)}  />} />
+              <Route path="/messages" element={<MessagePage {...props} /* conversations={conversations} */ 
+                                                            onMutationConversation={(evt)=>onMutationConversation(evt)}  
+                                                            onLightbox={(evt)=>setLightbox(evt)}  />} />
+                                                            
             </Route>
             <Route element={<ProtectedSellerRoute user={user} />}>
               <Route 
@@ -1712,7 +1727,8 @@ const mapDispatchToProps = {
   editedUserBalace,
   editedUserBalaceBook,
   updateProfile,
-  logout
+  logout,
+  addedConversation
 }
 
 export default connect( mapStateToProps, mapDispatchToProps )(App)

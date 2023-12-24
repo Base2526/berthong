@@ -6,6 +6,7 @@ import {UPDATED_PROFILE,
         ADDED_NOTIFICATIONS, 
         ADDED_NOTIFICATION, 
 
+        ADDED_MESSAGES,
         ADDED_MESSAGE, 
         EDITED_MESSAGE, 
         DELETED_MESSAGE,
@@ -27,6 +28,7 @@ const _addedConversation = (data) => ({ type: ADDED_CONVERSATION, data });
 const _addedNotifications = (data) => ({ type: ADDED_NOTIFICATIONS, data });
 const _addedNotification = (data) => ({ type: ADDED_NOTIFICATION, data });
 
+const _addedMessages = (data) => ({ type: ADDED_MESSAGES, data });
 const _addedMessage = (data) => ({ type: ADDED_MESSAGE, data });
 const _editedMessage = (data) => ({ type: EDITED_MESSAGE, data });
 const _deletedMessage = (data) => ({ type: DELETED_MESSAGE, data });
@@ -62,6 +64,10 @@ export const addedNotifications = (data) => (dispatch) => {
 
 export const addedNotification = (data) => (dispatch) => {
     dispatch(_addedNotification(data));
+}
+
+export const addedMessages = (data) => (dispatch) => {
+    dispatch(_addedMessages(data));
 }
 
 export const addedMessage = (data) => (dispatch) => {

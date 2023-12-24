@@ -4,8 +4,39 @@ import moment from "moment";
 import { useQuery } from "@apollo/client";
 import { useLocation } from "react-router-dom";
 import styles from "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-import { MessageSeparator, Message, Avatar } from "@chatscope/chat-ui-kit-react";
+// import { MessageSeparator, Message, Avatar } from "@chatscope/chat-ui-kit-react";
 import LinearProgress from '@mui/material/LinearProgress';
+
+import {
+    MainContainer,
+    ChatContainer,
+    MessageList,
+    Message,
+    MessageInput,
+    Avatar,
+    AvatarGroup,
+    Button,
+    Conversation,
+    ConversationHeader,
+    StarButton,
+    VoiceCallButton,
+    VideoCallButton,
+    InfoButton,
+    ConversationList,
+    InputToolbox,
+    Loader,
+    TypingIndicator,
+    StatusList,
+    Status,
+    Sidebar,
+    Search,
+    MessageSeparator,
+    action,
+    ExpansionPanel,
+    MessageGroup
+  } from "@chatscope/chat-ui-kit-react";
+
+import { FiShoppingCart as zoeIco } from "react-icons/fi"
 
 import { queryUserById } from "../../apollo/gqlQuery"
 import { getHeaders, handlerErrorApollo } from "../../util";
@@ -18,34 +49,38 @@ const MessageItem = (props) => {
     let [currentUser, setCurrentUser] = useState()
     let direction = senderId == user._id  ? "outgoing" : "incoming"
 
-    console.log("MessageItem :", currentUser)
-    const { loading: loadingUserById, 
-            data: dataUserById, 
-            error: errorUserById, 
-            refetch: refetchUserById,
-            networkStatus }   =   useQuery(queryUserById, 
-                                    { 
-                                        context: { headers: getHeaders(location) }, 
-                                        // variables: {id: senderId}, 
-                                        fetchPolicy: 'cache-first', 
-                                        nextFetchPolicy: 'network-only', 
-                                        notifyOnNetworkStatusChange: true
-                                    });  
+    console.log("MessageItem :", currentUser, item)
 
-    // if(errorUserById) return handlerErrorApollo( props, errorUserById );
+    let loadingUserById = false
+    // const { loading: loadingUserById, 
+    //         data: dataUserById, 
+    //         error: errorUserById, 
+    //         refetch: refetchUserById,
+    //         networkStatus }   =   useQuery(queryUserById, 
+    //                                 { 
+    //                                     context: { headers: getHeaders(location) }, 
+    //                                     // variables: {id: senderId}, 
+    //                                     fetchPolicy: 'cache-first', 
+    //                                     nextFetchPolicy: 'network-only', 
+    //                                     notifyOnNetworkStatusChange: true
+    //                                 });  
 
-    useEffect(()=>{
-        if(!loadingUserById){
-          if(!_.isEmpty(dataUserById?.userById)){
-            let { status, data } = dataUserById?.userById
-            if(status) setCurrentUser(data)
-          }
-        }
-    }, [dataUserById, loadingUserById])
+    // if(errorUserById){
+    //     handlerErrorApollo( props, errorUserById );
+    // } 
 
-    useEffect(()=>{
-        if(!_.isEmpty(senderId) && direction === "incoming") refetchUserById({id: senderId})
-    }, [senderId])
+    // useEffect(()=>{
+    //     if(!loadingUserById){
+    //       if(!_.isEmpty(dataUserById?.userById)){
+    //         let { status, data } = dataUserById?.userById
+    //         if(status) setCurrentUser(data)
+    //       }
+    //     }
+    // }, [dataUserById, loadingUserById])
+
+    // useEffect(()=>{
+    //     if(!_.isEmpty(senderId) && direction === "incoming") refetchUserById({id: senderId})
+    // }, [senderId])
 
     switch(type){
         case "text":{
@@ -62,6 +97,11 @@ const MessageItem = (props) => {
                 }
 
                 case "outgoing":{
+                    // return <Message model={{
+                    //             message: "Hello my friend",
+                    //             sentTime: "15 mins ago",
+                    //             sender: "Zoe"
+                    //         }} />
                 return  <Message
                             type={type}
                             model={{ message, sentTime, sender: senderName, direction, position }}>

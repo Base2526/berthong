@@ -2990,7 +2990,7 @@ export default {
     async conversation(parent, args, context, info) {
       try{
         let start = Date.now()
-        let { mode, _id } = args
+        let { mode } = args
         let { req } = context
 
         let { current_user } =  await Utils.checkAuth(req);
@@ -2998,70 +2998,52 @@ export default {
             Utils.checkRole(current_user) !== Constants.AUTHENTICATED &&
             Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
-        switch(mode){
-          case "NEW":{
-            break;
-          }
-
-          case "EDIT":{
-            break;
-          }
-
-          case "DELETE":{
-            break;
-          }
-        }
-
-        let friend = await Model.User.findById(mongoose.Types.ObjectId(_id))
-        let conv =  await Model.Conversation.findOne({ "members.userId": { $all: [ current_user._id, mongoose.Types.ObjectId(_id) ] } });            
-              
-        if( _.isNull(conv) ){
-          let input = {
-                        // name: friend.displayName,
-                        lastSenderName: current_user.displayName,
-                        info:"",
-                        // avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
-                        // avatarName: friend.displayName,
-                        senderId: current_user._id,
-                        status: "available",
-                        // unreadCnt: 0,
-                        sentTime: Date.now(),
-                        // userId: input.friendId,
-                        // members: [input.userId, input.friendId],
-                        // members: {[input.userId]:{ 
-                        //                           name: currentUser.displayName, 
-                        //                           avatarSrc: _.isEmpty(currentUser.image) ? "" :  currentUser.image[0].base64,
-                        //                           unreadCnt: 0 
-                        //                         }, 
-                        //           [input.friendId]:{ 
-                        //                           name: friend.displayName, 
-                        //                           avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
-                        //                           unreadCnt: 0 
-                        //                         }},
-                        members:[
-                          { 
-                            userId: current_user._id,
-                            name: current_user.displayName, 
-                            avatarSrc: _.isEmpty(current_user.avatar) ? "" :  current_user.avatar.url,
-                            unreadCnt: 0 
-                          },
-                          {
-                            userId: mongoose.Types.ObjectId(_id),
-                            name: friend.displayName, 
-                            avatarSrc: _.isEmpty(friend.avatar) ? "" :  friend.avatar.url,
-                            unreadCnt: 0 
+        switch(mode.toLowerCase()){
+          case "new":{
+            let friend = await Model.User.findById(mongoose.Types.ObjectId(args?._id))
+            let conv =  await Model.Conversation.findOne({ "members.userId": { $all: [ current_user._id, mongoose.Types.ObjectId(args?._id) ] } });            
+                  
+            if( _.isNull(conv) ){
+              let input = {
+                            lastSenderName: current_user.displayName,
+                            info:"",
+                            senderId: current_user._id,
+                            status: "available",
+                            sentTime: Date.now(),
+                            members:[
+                              { 
+                                userId: current_user._id,
+                                name: current_user.displayName, 
+                                avatarSrc: _.isEmpty(current_user.avatar) ? "" :  current_user.avatar.url,
+                                unreadCnt: 0 
+                              },
+                              {
+                                userId: mongoose.Types.ObjectId(args?._id),
+                                name: friend.displayName, 
+                                avatarSrc: _.isEmpty(friend.avatar) ? "" :  friend.avatar.url,
+                                unreadCnt: 0 
+                              }
+                            ]
                           }
-                        ]
-                      }
-          conv = await Model.Conversation.create(input);
-        }
+              conv = await Model.Conversation.create(input);
+            }
+  
+            return {
+              status: true,
+              data: conv,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            } 
 
-        console.log("args :", args, friend, conv)
-        return {
-          status: true,
-          data: conv,
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-        }   
+          }
+
+          case "edit":{
+            break;
+          }
+
+          case "delete":{
+            break;
+          }
+        }
 
       } catch(err) {
         await Utils.loggerError(req, err.toString());
