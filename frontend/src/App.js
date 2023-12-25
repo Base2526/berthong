@@ -116,7 +116,7 @@ import FriendPage from "./pages/FriendPage";
 import LotterysPage from "./pages/LotterysPage";
 import UserPage from "./pages/UserPage";
 import UsersPage from "./pages/UsersPage";
-import { checkRole, getHeaders, handlerErrorApollo, showToast, setCookie, getCookie} from "./util";
+import { checkRole, getHeaders, handlerErrorApollo, showToast, setCookie, getCookie, removeCookie} from "./util";
 import WithdrawPage from "./pages/WithdrawPage";
 import BreadcsComp from "./components/BreadcsComp";
 import DialogLogoutComp from "./components/DialogLogoutComp";
@@ -182,7 +182,7 @@ import {  queryMe,
         } from "./apollo/gqlQuery"
           
 import * as Constants from "./constants"
-import { update_profile as updateProfile, logout } from "./redux/actions/auth";
+import { update_profile as updateProfile, logout, addedConversations, addedConversation, deletedConversation } from "./redux/actions/auth";
 import logo from "./images/logo_4.png";
 import { appStyles, ListItem } from "./styles"
 
@@ -207,10 +207,10 @@ const App =(props) =>{
   let [bookmarks, setBookmarks]         = useState({ data: [], total: 0 }) //  
   let [subscribes, setSubscribes]         = useState({ data: [], total: 0 }) //  
   let [search, setSearch]               = useState(Constants.INIT_SEARCH)
-  let [conversations, setConversations] = useState([])
+  // let [conversations, setConversations] = useState([])
   let [manageSuppliers, setManageSuppliers] = useState([])
 
-  let { ws, user, updateProfile, logout } = props
+  let { ws, user, conversations, updateProfile, logout, addedConversations, addedConversation } = props
 
   let { loading: loadingMe, 
         data: dataMe, 
@@ -878,23 +878,43 @@ const App =(props) =>{
   const [onMutationConversation, resultMutationConversation] = useMutation(mutationConversation
     , {
         context: { headers: getHeaders(location) },
-        update: (cache, {data: {conversation}}) => {
-          let { data, status } = conversation
-          if(status){
-            let conv = cache.readQuery({ query: queryConversations });
-            if(!_.isEmpty(conv)){
-              let check = _.find(conv.conversations.data, (d)=>_.isEqual(d?._id, data?._id))//
-              if(_.isEmpty(check)){
-                cache.writeQuery({ query: queryConversations, 
-                  data: { conversations: { ...conv.conversations, data: [...conv.conversations.data, data] } } 
-                 }); 
-              }else{
-                let newData = _.map(conv.conversations.data, (d)=>_.isEqual(d?._id, data?._id) ? data : d)//
-                cache.writeQuery({ query: queryConversations, 
-                  data: { conversations: { ...conv.conversations, data: newData } } 
-                 }); 
+        update: (cache, {data: {conversation}}, context) => {
+          let { mode } = context?.variables
+          switch(mode.toLowerCase()){
+            case "new":{
+              let { data, status } = conversation
+              if(status){
+                let conv = cache.readQuery({ query: queryConversations });
+                if(!_.isEmpty(conv)){
+                  let check = _.find(conv.conversations.data, (d)=>_.isEqual(d?._id, data?._id))//
+                  if(_.isEmpty(check)){
+                    cache.writeQuery({ query: queryConversations, 
+                      data: { conversations: { ...conv.conversations, data: [...conv.conversations.data, data] } } 
+                    }); 
+
+                    
+                  }else{
+                    let newData = _.map(conv.conversations.data, (d)=>_.isEqual(d?._id, data?._id) ? data : d)//
+                    cache.writeQuery({ query: queryConversations, 
+                      data: { conversations: { ...conv.conversations, data: newData } } 
+                    }); 
+                  }
+                
+                  // 
+                }
               }
-             
+
+              addedConversation({mutation: "CREATED", data})
+              break;
+            }
+
+            case "delete":{
+              deletedConversation({id: context?.variables?.id})
+
+              let conv = getCookie("conv")
+              if(conv?._id === context?.variables?.id){
+                removeCookie("conv")
+              }
             }
           }
         },
@@ -1096,7 +1116,9 @@ const App =(props) =>{
       if(dataConversations?.conversations){
         let { status, data } = dataConversations?.conversations
         if(status){
-          setConversations(data)
+          // setConversations(data)
+
+          addedConversations(data)
         }
       }
     }
@@ -1146,7 +1168,6 @@ const App =(props) =>{
       }
     }
   }, [dataSubscribes, loadingSubscribes])
-
 
   // useEffect(()=>{
   //   console.log("location?.pathname :", location?.pathname)
@@ -1379,7 +1400,7 @@ const App =(props) =>{
                     <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
                       <Badge badgeContent={conversations.length} color="primary">
                         <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" : _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1em"/>
-                      </Badge>
+                      </Badge> 
                     </IconButton>
                     <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
                       {
@@ -1653,7 +1674,11 @@ const App =(props) =>{
               <Route path="/bookmarks" element={<BookMarksPage {...props} onMutationFollow={(evt)=>onMutationFollow(evt) } data={bookmarks.data} total={bookmarks.total} />} />
               <Route path="/subscribes" element={<SubscribesPage {...props} onMutationSubscribe={(evt)=>onMutationSubscribe(evt)} data={subscribes.data} total={subscribes.total} />} />
               <Route path="/producers" element={<ProducersPage {...props}  onLightbox={(evt)=>setLightbox(evt)}  />} />
-              <Route path="/messages" element={<MessagePage {...props} conversations={conversations}  onLightbox={(evt)=>setLightbox(evt)}  />} />
+              <Route path="/messages" element={<MessagePage {...props} 
+                                                            /* conversations={conversations} */
+                                                            onMutationConversation={(evt)=>onMutationConversation(evt)}  
+                                                            onLightbox={(evt)=>setLightbox(evt)}  />} />
+                                                            
             </Route>
             <Route element={<ProtectedSellerRoute user={user} />}>
               <Route 
@@ -1705,14 +1730,23 @@ const App =(props) =>{
 }
 
 const mapStateToProps = (state, ownProps) => {
-  return { user:state.auth.user, ws: state.ws }
+  return { 
+          user:state.auth.user, 
+          ws: state.ws,
+          conversations: state.auth.conversations, 
+        }
 }
 
 const mapDispatchToProps = {
   editedUserBalace,
   editedUserBalaceBook,
   updateProfile,
-  logout
+  logout,
+
+  deletedConversation,
+
+  addedConversations,
+  addedConversation
 }
 
 export default connect( mapStateToProps, mapDispatchToProps )(App)

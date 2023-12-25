@@ -982,8 +982,7 @@ export default {
       let { req } = context
       await Utils.checkAuth(req);
 
-      let data =  [ {label: '(xxx-x-xxxxx-01)ธนาคารไทยพาณิชย์', id: "bank-01" },
-                    { label: '(xxx-x-xxxxx-02)ธนาคารกสิกรไทย', id: "bank-02" }]
+      let data =  [ { label: '364-277878-2 ธนาคารไทยพาณิชย์', id: "01" } ]
       return {  status: true,
                 data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
@@ -1327,12 +1326,12 @@ export default {
             accessToken
             googleId
             profileObj {
-              email : "android.somkid@gmail.com"
-              familyName : "Simajarn"
-              givenName : "Somkid"
+              email : "xx.xx@gmail.com"
+              familyName : "xx"
+              givenName : "xx"
               googleId : "112378752153101585347"
               imageUrl : "https://lh3.googleusercontent.com/a-/AFdZucrsz6tfMhKB87pCWcdwoMikQwlPG8_aa4h6zYz1ng=s96-c"
-              name : "Somkid Simajarn"
+              name : "xx xx"
             }
             tokenId
             tokenObj {
@@ -1373,12 +1372,12 @@ export default {
           if(_.isEmpty(user)){
 
             /*
-              email : "android.somkid@gmail.com"
-            familyName : "Simajarn"
-            givenName : "Somkid"
+              email : "xx.xx@gmail.com"
+            familyName : "xx"
+            givenName : "xx"
             googleId : "112378752153101585347"
             imageUrl : "https://lh3.googleusercontent.com/a-/AFdZucrsz6tfMhKB87pCWcdwoMikQwlPG8_aa4h6zYz1ng=s96-c"
-            name : "Somkid Simajarn"
+            name : "xx xx"
             */
 
             let newInput = {
@@ -1457,7 +1456,7 @@ export default {
             blog : ""
             company : null
             created_at :  "2011-07-07T10:02:34Z"
-            email : "mr.simajarn@gmail.com"
+            email : "mr.xx@gmail.com"
             events_url:  "https://api.github.com/users/Base2526/events{/privacy}"
             followers : 2
             followers_url : "https://api.github.com/users/Base2526/followers"
@@ -1470,7 +1469,7 @@ export default {
             id : 900211
             location : null
             login : "Base2526"
-            name : "somkid_haha"
+            name : "xx_haha"
             node_id : "MDQ6VXNlcjkwMDIxMQ=="
             organizations_url : "https://api.github.com/users/Base2526/orgs"
             public_gists: 0
@@ -1553,8 +1552,8 @@ export default {
 
           /*
           {
-            "name": "Somkid Sim",
-            "email": "android.somkid@gmail.com",
+            "name": "xx Sim",
+            "email": "xx.xx@gmail.com",
             "picture": {
                 "data": {
                     "height": 50,
@@ -2989,80 +2988,71 @@ export default {
     */
 
     async conversation(parent, args, context, info) {
+      let { mode } = args
+      let { req } = context
       try{
         let start = Date.now()
-        let { mode, _id } = args
-        let { req } = context
 
         let { current_user } =  await Utils.checkAuth(req);
         if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR &&
             Utils.checkRole(current_user) !== Constants.AUTHENTICATED &&
             Utils.checkRole(current_user) !== Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
-        switch(mode){
-          case "NEW":{
-            break;
-          }
-
-          case "EDIT":{
-            break;
-          }
-
-          case "DELETE":{
-            break;
-          }
-        }
-
-        let friend = await Model.User.findById(mongoose.Types.ObjectId(_id))
-        let conv =  await Model.Conversation.findOne({ "members.userId": { $all: [ current_user._id, mongoose.Types.ObjectId(_id) ] } });            
-              
-        if( _.isNull(conv) ){
-          let input = {
-                        // name: friend.displayName,
-                        lastSenderName: current_user.displayName,
-                        info:"",
-                        // avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
-                        // avatarName: friend.displayName,
-                        senderId: current_user._id,
-                        status: "available",
-                        // unreadCnt: 0,
-                        sentTime: Date.now(),
-                        // userId: input.friendId,
-                        // members: [input.userId, input.friendId],
-                        // members: {[input.userId]:{ 
-                        //                           name: currentUser.displayName, 
-                        //                           avatarSrc: _.isEmpty(currentUser.image) ? "" :  currentUser.image[0].base64,
-                        //                           unreadCnt: 0 
-                        //                         }, 
-                        //           [input.friendId]:{ 
-                        //                           name: friend.displayName, 
-                        //                           avatarSrc: _.isEmpty(friend.image) ? "" :  friend.image[0].base64,
-                        //                           unreadCnt: 0 
-                        //                         }},
-                        members:[
-                          { 
-                            userId: current_user._id,
-                            name: current_user.displayName, 
-                            avatarSrc: _.isEmpty(current_user.avatar) ? "" :  current_user.avatar.url,
-                            unreadCnt: 0 
-                          },
-                          {
-                            userId: mongoose.Types.ObjectId(_id),
-                            name: friend.displayName, 
-                            avatarSrc: _.isEmpty(friend.avatar) ? "" :  friend.avatar.url,
-                            unreadCnt: 0 
+        switch(mode.toLowerCase()){
+          case "new":{
+            let friend = await Model.User.findById(mongoose.Types.ObjectId(args?._id))
+            let conv =  await Model.Conversation.findOne({ "members.userId": { $all: [ current_user._id, mongoose.Types.ObjectId(args?._id) ] } });            
+                  
+            if( _.isNull(conv) ){
+              let input = {
+                            lastSenderName: current_user.displayName,
+                            info:"",
+                            senderId: current_user._id,
+                            status: Constants.STATUS_DELIVERED,
+                            sentTime: Date.now(),
+                            members:[
+                              { 
+                                userId: current_user._id,
+                                name: current_user.displayName, 
+                                avatarSrc: _.isEmpty(current_user.avatar) ? "" :  current_user.avatar.url,
+                                unreadCnt: 0 
+                              },
+                              {
+                                userId: mongoose.Types.ObjectId(args?._id),
+                                name: friend.displayName, 
+                                avatarSrc: _.isEmpty(friend.avatar) ? "" :  friend.avatar.url,
+                                unreadCnt: 0 
+                              }
+                            ]
                           }
-                        ]
-                      }
-          conv = await Model.Conversation.create(input);
-        }
+              conv = await Model.Conversation.create(input);
+            }
+  
+            return {
+              status: true,
+              data: conv,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            } 
 
-        console.log("args :", args, friend, conv)
-        return {
-          status: true,
-          data: conv,
-          executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
-        }   
+          }
+
+          case "edit":{
+            break;
+          }
+
+          case "delete":{
+            console.log("conversation :", args)
+
+            await Model.Conversation.deleteOne({ _id: mongoose.Types.ObjectId(args?._id) });
+            await Model.Message.deleteMany({conversationId: mongoose.Types.ObjectId(args?._id)});
+
+            return {
+              status: true,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            } 
+            break;
+          }
+        }
 
       } catch(err) {
         await Utils.loggerError(req, err.toString());

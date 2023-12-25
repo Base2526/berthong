@@ -1,6 +1,8 @@
 import "./messenger.css";
 import React, { useState, useEffect, useRef } from "react";
 import styles from "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
+
+import { connect } from "react-redux";
 import {
   MainContainer,
   ChatContainer,
@@ -42,29 +44,27 @@ import {
 
 import { queryMessage, mutationMessage, subMessage, gqlUpdateMessageRead, queryConversations} from "../../apollo/gqlQuery"
 import MessageItem from "./MessageItem"
-import { getHeaders, truncate, handlerErrorApollo } from "../../util"
+import { setCookie, getCookie, getHeaders, truncate, handlerErrorApollo } from "../../util"
 
 import * as Constants from "../../constants"
+
+import { addedConversation, addedMessages, addedMessage, editedMessage } from "../../redux/actions/auth"
+
+import ConversationItem from "./ConversationItem"
 
 let unsubscribeSubMessage = null
 const MessagePage = (props) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, conversations } = props;
+  const { user, conversations, messages, addedConversation, onMutationConversation, addedMessages, addedMessage, editedMessage } = props;
 
   const inputFile = useRef(null) 
 
   const [prevConversationList, setPrevConversationList] = useState(conversations);
   const [conversationList, setConversationList] = useState([]);
-  const [currentConversation, setCurrentConversation] = useState([]);
+  const [currentConversation, setCurrentConversation] = useState( _.isEmpty(getCookie("conv")) ? null : getCookie("conv") );
   const [messageList, setMessageList] = useState([]);
-
-
-
-  // const [loadingMore, setLoadingMore] = useState(true);
-  // const [loadedMessages, setLoadedMessages] = useState([]);
-  // const [counter, setCounter] = useState(0);
 
   const [loadingMore, setLoadingMore] = useState(true);
   const [loadedMessages, setLoadedMessages] = useState([]);
@@ -160,19 +160,27 @@ const MessagePage = (props) => {
     };
   }, [])
 
-  // 
-  // useEffect(()=>{
-  //   console.log("loadedMessages :", loadedMessages, messageList)
-  // }, [loadedMessages, messageList])
-
   useEffect(()=>{
-    let newConvs = _.sortBy(conversations, "updatedAt").reverse()
-    setConversationList(newConvs)
-    setPrevConversationList(newConvs)
-    if(!_.isEmpty(newConvs)) setCurrentConversation(newConvs[0])
+    // if(_.isEmpty(currentConversation)){
+      let newConvs = _.sortBy(conversations, "updatedAt").reverse()
+      setConversationList(newConvs)
+      setPrevConversationList(newConvs)
+      if(!_.isEmpty(newConvs)){
+
+        let conv = getCookie("conv")
+        if(_.isEmpty(conv)){
+          setCurrentConversation(newConvs[0])
+
+          setCookie("conv", JSON.stringify(newConvs[0]))
+        }else{
+          console.log(">>> ", conversations, conv)
+        }
+      } 
+    // }
   }, [conversations])
 
   useEffect(()=>{
+    console.log("currentConversation :", currentConversation)
     if(!_.isEmpty(currentConversation)){
       setLoadedMessages([])
       setLoadingMore(true)
@@ -185,17 +193,26 @@ const MessagePage = (props) => {
       if(!_.isEmpty(dataMessage?.message)){
         let { status, data, total } = dataMessage?.message
 
-        // let groupedData = _.groupBy(data, "createdAt");
-        let groupedData =  _(data)
-                      .groupBy(v => moment(v.createdAt).format('MM/DD/YYYY') )
-                      .value();
+        // let groupedData =  _(data).groupBy( v => moment(v.createdAt).format('MM/DD/YYYY') ).value();
+        // if(total === data.length) setLoadingMore(false)
+        // if(status) setLoadedMessages(groupedData)
 
-        if(total === data.length) setLoadingMore(false)
-
-        if(status) setLoadedMessages(groupedData)
+        if(status){
+          addedMessages(data)
+        }
       }
     }
   }, [dataMessage, loadingMessage])
+
+  useEffect(()=>{
+    if(!_.isEmpty(currentConversation)){
+      let filterMessages = _.filter(messages, m=> m.conversationId === currentConversation._id )
+      let groupedData =  _(filterMessages).groupBy( v => moment(v.createdAt).format('MM/DD/YYYY') ).value()
+
+      setLoadingMore(false)
+      setLoadedMessages(groupedData)
+    }
+  }, [messages, currentConversation])
 
   // status, waiting, sent, received, read
   const onSidebarLeft = () =>{
@@ -222,17 +239,25 @@ const MessagePage = (props) => {
                     let muser = _.find(conversation.members, (member)=>member.userId === user._id)
                     let mfriend = _.find(conversation.members, (member)=>member.userId !== user._id)
 
+                    let sender = _.find(conversation.members, (member)=>member.userId === conversation.senderId)
                     return  <Conversation
                               name={mfriend.name}
-                              lastSenderName={conversation.lastSenderName}
+                              lastSenderName={sender?.name}
                               info={ truncate(conversation.info, 25)}
                               unreadCnt={muser.unreadCnt}
-                              active={ conversation._id === currentConversation._id ? true: false}
-                              onClick={(e)=>{ setCurrentConversation(conversation) }}
+                              active={ conversation._id === currentConversation?._id ? true: false}
+                              onClick={(e)=>{ 
+                                setCurrentConversation(conversation)
+                                setCookie("conv", JSON.stringify(conversation))
+                               }}
                               lastActivityTime={moment(conversation.sentTime).format('M/D/YY, hh:mm A')}>
                               <Avatar src={mfriend.avatarSrc} name={conversation.avatarName} status={conversation.status} />
+
+                              <Conversation.Operations visible>
+                                <ConversationItem {...props} conversation={conversation} />
+                              </Conversation.Operations>
                             </Conversation>
-                  })
+                  }) 
                 }
               </ConversationList>
             </Sidebar>
@@ -317,27 +342,20 @@ const MessagePage = (props) => {
       })
       
       // console.log("subscribeToMoreMessage :", subscribeToMoreMessage)
-
       // let {executionTime, status, data}= fetchMessageValues.data.fetchMessage
       // let {subscribeToMore} = fetchMessageValues
-
       // console.log("unsubscribeSubMessage :",  user._id, currentConversation._id)
       // unsubscribeSubMessage =  subscribeToMore({
       //   document: subMessage,
       //   variables: { userId: user._id, conversationId: currentConversation._id },
       //   updateQuery: (prev, {subscriptionData, variables}) => {
-
       //     if (!subscriptionData.data) return prev;
-
       //     let {conversationId} = variables
       //     let {mutation, data} = subscriptionData.data.subMessage
-
       //     if(data.conversationId !== conversationId){
       //       return prev;
       //     }
-
       //     console.log("subMessage :", subscriptionData, variables)
-          
       //     if(!_.find(prev.fetchMessage.data, (f)=>f._id === data._id)){
       //       let newPrev = {...prev.fetchMessage, data: [...prev.fetchMessage.data, data]}
       //       switch(mutation){
@@ -345,11 +363,9 @@ const MessagePage = (props) => {
       //           break
       //         }
       //       }  
-
       //       return {fetchMessage: newPrev};
       //     }
       //     return prev
-          
       //   }
       // });
 
@@ -403,13 +419,8 @@ const MessagePage = (props) => {
                   input = { ...input, type: "text" }
                 }
 
-                let newMessage  = <Message 
-                                    key={ (Math.random() + 1).toString(36).substring(7) } 
-                                    model={{  message: `Message ${ (Math.random() + 1).toString(36).substring(7) }`, 
-                                              sender: "Zox",
-                                              direction: "outgoing", }} />
-
-                // setMessageList([...messageList, newMessage])
+                addedMessage({ ...input, createdAt: moment().format(), updatedAt: moment().format() })
+                addedConversation({ mutation: "CREATED", data: {...currentConversation, senderId: user._id,  info: messageInputValue }})
 
                 onMessage({ variables: { mode: "NEW", input } });
                 // setMessageInputValue("")
@@ -423,8 +434,10 @@ const MessagePage = (props) => {
           
                 // setLoadedMessages(messages.reverse().concat(loadedMessages));
 
-                setLoadedMessages([...loadedMessages, input ])
+                // setLoadedMessages([...loadedMessages, input ])
                 setMessageInputValue("")
+
+                // console.log("currentConversation :", currentConversation, )
               }}
             />
   }
@@ -440,20 +453,16 @@ const MessagePage = (props) => {
   
   //   setTimeout(() => {
   //     // const messages = [];
-
   //     const maxCounter = counter + 10;
   //     let i = counter;
-
   //     for (; i < maxCounter; i++) {
   //       // messages.push(<Message key={i} model={{
   //       //   message: `Message ${i}`,
   //       //   sender: "Zoe"
   //       // }} />);
   //       let newMessage  = <Message key={i} model={{ message: `Message +++ ${i}`, sender: "Zox" }} />
-
   //       setMessageList([...messageList, newMessage])
   //     }
-
   //     setLoadedMessages(messageList.reverse().concat(loadedMessages));
   //     setCounter(i);
   //     setLoadingMore(false);
@@ -466,12 +475,13 @@ const MessagePage = (props) => {
     // var file = event.target.files[0];
     console.log("file :", event.target.files);
 
+    let messageInputValue = "picture"
     let input = {
       _id: new mongoose.Types.ObjectId(), 
       conversationId: currentConversation._id, 
       status: Constants.STATUS_SENT,
       type: "image",
-      message: "picture",
+      message: messageInputValue,
       sentTime: Date.now(),
       // sender: user.displayName,
       // senderId: user.id, 
@@ -480,6 +490,10 @@ const MessagePage = (props) => {
       payload: [{ src: URL.createObjectURL(event.target.files[0]), alt: "Joe avatar", width: "100px" }],
       files:event.target.files
     }
+
+    addedMessage(input)
+    addedConversation({mutation: "CREATED", data: {...currentConversation, senderId: user._id,  info: messageInputValue}})
+
     
     onMessage({ variables: {mode: "NEW",  input } });
   }
@@ -551,32 +565,28 @@ const MessagePage = (props) => {
                 {/* {onMessageList()} */}
 
                 {
-                  loadingMessage
-                  ? <LinearProgress />
-                  : <MessageList loadingMore={loadingMore} onYReachStart={onYReachStart}>
-                        {
-                          _.map(loadedMessages, (v, k)=>{
-                            let xx = []
-                            let count = 0
-                            if(count === 0){
-                              count++
-                              xx.push(<MessageSeparator content={`${ (moment(new Date(k), 'MM/DD/YYYY')).format('MMMM Do YYYY') }`}/> ) 
-                            }
+                  // loadingMessage
+                  // ? <LinearProgress />
+                  // : 
+                  <MessageList 
+                    loadingMore={loadingMore} 
+                    onYReachStart={onYReachStart}>
+                      {
+                        _.map(loadedMessages, (v, k)=>{
+                          let xx = []
+                          let count = 0
+                          if(count === 0){
+                            count++
+                            xx.push(<MessageSeparator content={`${ (moment(new Date(k), 'MM/DD/YYYY')).format('MMMM Do YYYY') }`}/> ) 
+                          }
 
-                            _.map(v, vv=>{
-                              xx.push( <MessageItem {...props} item={vv} /> )
-                            })
-
-                            return xx
+                          _.map(v, vv=>{
+                            xx.push( <MessageItem {...props} item={vv} /> )
                           })
-                        }
-                        {
-
-                          // _.map( loadedMessages, v=>{ return <MessageItem {...props} item={v} /> })
-                        }
-                        {/* {loadedMessages} */}
-                      
-                        { /*
+                          return xx
+                        })
+                      } 
+                        {/*
                         <MessageGroup direction="incoming">          
                           <Avatar src={zoeIco} name={"Zoe"} />          
                           <MessageGroup.Messages>
@@ -756,7 +766,8 @@ const MessagePage = (props) => {
                           </MessageGroup.Messages>                              
                         </MessageGroup>     
 
-                  */  }
+                        */}
+                  
                 </MessageList>
                 }
                 
@@ -776,4 +787,20 @@ const MessagePage = (props) => {
   );
 }
 
-export default MessagePage;
+// 
+
+const mapStateToProps = (state, ownProps) => {
+  return {  user:state.auth.user, 
+            ws: state.ws, 
+            conversations: state.auth.conversations, 
+            messages: state.auth.messages }
+}
+
+const mapDispatchToProps = {
+  addedConversation,
+  addedMessages,
+  addedMessage, 
+  editedMessage
+}
+
+export default connect( mapStateToProps, mapDispatchToProps )(MessagePage)

@@ -32,7 +32,6 @@ export const queryAdminBanks      = gql`query adminBanks { adminBanks }`;
 export const queryAdminDeposits   = gql`query adminDeposits{ adminDeposits }`;
 export const queryAdminWithdraws  = gql`query adminWithdraws{ adminWithdraws }`;
 export const queryManageSuppliers = gql`query manageSuppliers{ manageSuppliers }`;
-
 export const queryContents        = gql`query contents { contents }`;
 export const queryContentById     = gql`query contentById($id: ID!) { contentById(_id: $id) }`;
 
@@ -55,9 +54,7 @@ export const mutationNotification = gql`mutation notification($id: ID!) { notifi
 export const mutationComment      = gql`mutation comment($input: JSON) { comment(input: $input) }`;
 export const mutationContactUs    = gql`mutation contactUs($input: ContactUsInput) { contactUs(input: $input) }`;
 export const mutationSubscribe    = gql`mutation subscribe($id: ID!) { subscribe(_id: $id) }`;
-
 export const mutationSearch       = gql`mutation search($input: SearchInput) { search(input: $input) }`;
-
 export const mutationAdminDeposit   = gql`mutation adminDeposit($input: JSON){ adminDeposit(input: $input) }`;
 export const mutationAdminWithdraw  = gql`mutation adminWithdraw($input: JSON){ adminWithdraw(input: $input) }`;
 export const mutationManageLottery  = gql`mutation manageLottery($input: ManageLotteryInput) { manageLottery(input: $input) }`;
@@ -70,31 +67,17 @@ export const subscriptionMe            = gql`subscription me($userId: ID!){ me(u
 export const subscriptionSupplierById  = gql`subscription subscriptionSupplierById($id: ID!){ subscriptionSupplierById(_id: $id) }`;
 export const subscriptionSuppliers     = gql`subscription subscriptionSuppliers($supplierIds: String!) { subscriptionSuppliers(supplierIds: $supplierIds) }`;
 export const subscriptionAdmin         = gql`subscription subscriptionAdmin($sessionId: ID!){ subscriptionAdmin(sessionId: $sessionId) }`;
-
 export const subscriptionCommentById   = gql`subscription subscriptionCommentById($id:ID!){ subscriptionCommentById(_id:$id) }`;
-
 
 ////// conversation  conversation  conversationId: ID!, startId: ID
 export const queryConversations = gql`query conversations{ conversations }`;
 export const queryMessage       = gql`query message($conversationId: ID!, $startId: ID){ message(conversationId: $conversationId, startId: $startId) }`;
-
-// export const gqlAddMessage = gql`
-//     mutation AddMessage( $conversationId: ID! , $input: MessageInput ) {
-//         addMessage( conversationId: $conversationId, input: $input )
-//     }`;
-
 export const mutationMessage = gql`mutation message( $mode: MessageMode!, $input: JSON ) { message( mode: $mode, input: $input ) }`;
-
 export const mutationConversation = gql`mutation conversation($mode: ConversationMode!, $id: ID!){ conversation(mode: $mode, _id: $id) }`;
-
 export const subMessage = gql`subscription subMessage($userId: ID!, $conversationId: ID!) { subMessage( userId: $userId, conversationId: $conversationId)  }`;
-export const gqlUpdateMessageRead = gql`
-        mutation UpdateMessageRead($conversationId: ID!) {
-            updateMessageRead( conversationId: $conversationId)
-        }`;
+export const gqlUpdateMessageRead = gql`mutation UpdateMessageRead($conversationId: ID!) { updateMessageRead( conversationId: $conversationId)}`;
 
 // gql`query bankByIds($ids: [ID]!) { bankByIds(_ids: $ids) }`;
 export const subConversations = gql`subscription conversations( $userId: ID! ){ conversations(userId: $userId) }`;
-
 export const gqlUser = gql`query User($id: ID){ user(_id: $id) }`;
 export const gqlUsers = gql`query users($page: Int, $perPage: Int){ users( page: $page perPage: $perPage ) }`;

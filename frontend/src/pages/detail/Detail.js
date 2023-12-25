@@ -34,6 +34,7 @@ import {  querySupplierById,
         } from "../../apollo/gqlQuery";
 
 import * as Constants from "../../constants"
+import SeoComp from "../../components/SeoComp"
 
 deepdash(_);
 
@@ -189,7 +190,7 @@ const Detail = (props) => {
               MenuListProps={{ "aria-labelledby": "lock-button", role: "listbox" }}>
               <MenuItem onClose={(e)=>setOpenMenu(null)}>
                   <FacebookShareButton
-                    url={ window.location.href + "detail/"}
+                    url={ window.location.href }
                     quote={item?.title}
                     // hashtag={"#hashtag"}
                     description={item?.description}
@@ -202,7 +203,7 @@ const Detail = (props) => {
               <MenuItem onClose={(e)=>setOpenMenu(null)}>
                 <TwitterShareButton
                   title={item?.title}
-                  url={ window.location.origin + "/detail/"  }
+                  url={ window.location.href  }
                   // hashtags={["hashtag1", "hashtag2"]}
                   onClick={(e)=>setOpenMenu(null)} >
                   <TwitterIcon size={32} round />
@@ -241,7 +242,7 @@ const Detail = (props) => {
               <title>Hello World</title>
               <link rel="canonical" href="https://www.tacobell.com/" />
             </Helmet> */}
-            <Helmet>
+            {/* <Helmet>
               <title>My Page Title</title>
               <meta name="description" content="This is a description of my page" />
               <meta name="keywords" content="react, meta tags, seo" />
@@ -256,7 +257,12 @@ const Detail = (props) => {
               <meta name="twitter:description" content="This is a description of my page" />
               <meta name="twitter:image" content="https://i.ytimg.com/vi/E0APXrppsP4/hqdefault.jpg" />
               <meta name="twitter:card" content="summary_large_image" />
-            </Helmet>
+            </Helmet> */}
+            <SeoComp 
+              title={data?.title}
+              description={data?.description}
+              image_url={"https://i.ytimg.com/vi/E0APXrppsP4/hqdefault.jpg"}
+              />
             <DetailPanelLeft {...props} data={data}/>
             <DetailPanelRight 
               {...props}

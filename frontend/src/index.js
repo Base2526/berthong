@@ -39,20 +39,20 @@ console.log("process.env :", process.env)
 
 ReactGA4.initialize(REACT_APP_GOOGLE_ANALYTICS4)
 ReactDOM.render(
+  <HelmetProvider>
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
-      <HelmetProvider>
-        <StrictMode>
-          <ApolloProvider client={client}>
-            <Router>
-              <Store>
-                <App />
-              </Store>
-            </Router>
-          </ApolloProvider>
-        </StrictMode>
-      </HelmetProvider>
+      <StrictMode>
+        <ApolloProvider client={client}>
+          <Router>
+            <Store>
+              <App />
+            </Store>
+          </Router>
+        </ApolloProvider>
+      </StrictMode>
     </PersistGate>
-  </Provider>,
+  </Provider>
+  </HelmetProvider>,
   document.getElementById("root")
 );
