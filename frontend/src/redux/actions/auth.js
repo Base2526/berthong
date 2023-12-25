@@ -2,6 +2,7 @@ import {UPDATED_PROFILE,
         LOGOUT, 
         ADDED_CONVERSATIONS, 
         ADDED_CONVERSATION, 
+        DELETED_CONVERSATION,
 
         ADDED_NOTIFICATIONS, 
         ADDED_NOTIFICATION, 
@@ -23,6 +24,7 @@ const _logout = (data) => ({ type: LOGOUT, data });
 
 const _addedConversations = (data) => ({ type: ADDED_CONVERSATIONS, data });
 const _addedConversation = (data) => ({ type: ADDED_CONVERSATION, data });
+const _deletedConversation = (data) => ({ type: DELETED_CONVERSATION, data });
 
 // 
 const _addedNotifications = (data) => ({ type: ADDED_NOTIFICATIONS, data });
@@ -56,6 +58,10 @@ export const addedConversations = (data) => (dispatch) => {
 
 export const addedConversation = (data) => (dispatch) => {
     dispatch(_addedConversation(data));
+}
+
+export const deletedConversation = (data) => (dispatch) => {
+    dispatch(_deletedConversation(data));
 }
 
 export const addedNotifications = (data) => (dispatch) => {

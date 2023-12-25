@@ -48,7 +48,7 @@ import { setCookie, getCookie, getHeaders, truncate, handlerErrorApollo } from "
 
 import * as Constants from "../../constants"
 
-import { addedConversation, addedMessage, editedMessage } from "../../redux/actions/auth"
+import { addedConversation, addedMessages, addedMessage, editedMessage } from "../../redux/actions/auth"
 
 import ConversationItem from "./ConversationItem"
 
@@ -57,7 +57,7 @@ const MessagePage = (props) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, conversations, messages, addedConversation, onMutationConversation, addedMessage, editedMessage } = props;
+  const { user, conversations, messages, addedConversation, onMutationConversation, addedMessages, addedMessage, editedMessage } = props;
 
   const inputFile = useRef(null) 
 
@@ -181,11 +181,11 @@ const MessagePage = (props) => {
 
   useEffect(()=>{
     console.log("currentConversation :", currentConversation)
-    // if(!_.isEmpty(currentConversation)){
-    //   setLoadedMessages([])
-    //   setLoadingMore(true)
-    //   refetchMessage({conversationId: currentConversation._id});
-    // }
+    if(!_.isEmpty(currentConversation)){
+      setLoadedMessages([])
+      setLoadingMore(true)
+      refetchMessage({conversationId: currentConversation._id});
+    }
   }, [currentConversation])
 
   useEffect(()=>{
@@ -196,6 +196,10 @@ const MessagePage = (props) => {
         // let groupedData =  _(data).groupBy( v => moment(v.createdAt).format('MM/DD/YYYY') ).value();
         // if(total === data.length) setLoadingMore(false)
         // if(status) setLoadedMessages(groupedData)
+
+        if(status){
+          addedMessages(data)
+        }
       }
     }
   }, [dataMessage, loadingMessage])
@@ -250,7 +254,7 @@ const MessagePage = (props) => {
                               <Avatar src={mfriend.avatarSrc} name={conversation.avatarName} status={conversation.status} />
 
                               <Conversation.Operations visible>
-                                <ConversationItem {...props} conversation />
+                                <ConversationItem {...props} conversation={conversation} />
                               </Conversation.Operations>
                             </Conversation>
                   }) 
@@ -415,18 +419,8 @@ const MessagePage = (props) => {
                   input = { ...input, type: "text" }
                 }
 
-                // let newMessage  = <Message 
-                //                     key={ (Math.random() + 1).toString(36).substring(7) } 
-                //                     model={{  message: `Message ${ (Math.random() + 1).toString(36).substring(7) }`, 
-                //                               sender: "Zox",
-                //                               direction: "outgoing", }} />
-
-                // setMessageList([...messageList, newMessage])
-
                 addedMessage({ ...input, createdAt: moment().format(), updatedAt: moment().format() })
                 addedConversation({ mutation: "CREATED", data: {...currentConversation, senderId: user._id,  info: messageInputValue }})
-
-                // mutation, data
 
                 onMessage({ variables: { mode: "NEW", input } });
                 // setMessageInputValue("")
@@ -804,6 +798,7 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = {
   addedConversation,
+  addedMessages,
   addedMessage, 
   editedMessage
 }

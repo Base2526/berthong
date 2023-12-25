@@ -2988,10 +2988,10 @@ export default {
     */
 
     async conversation(parent, args, context, info) {
+      let { mode } = args
+      let { req } = context
       try{
         let start = Date.now()
-        let { mode } = args
-        let { req } = context
 
         let { current_user } =  await Utils.checkAuth(req);
         if( Utils.checkRole(current_user) !== Constants.AMDINISTRATOR &&
@@ -3008,7 +3008,7 @@ export default {
                             lastSenderName: current_user.displayName,
                             info:"",
                             senderId: current_user._id,
-                            status: "available",
+                            status: Constants.STATUS_DELIVERED,
                             sentTime: Date.now(),
                             members:[
                               { 
@@ -3041,6 +3041,15 @@ export default {
           }
 
           case "delete":{
+            console.log("conversation :", args)
+
+            await Model.Conversation.deleteOne({ _id: mongoose.Types.ObjectId(args?._id) });
+            await Model.Message.deleteMany({conversationId: mongoose.Types.ObjectId(args?._id)});
+
+            return {
+              status: true,
+              executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+            } 
             break;
           }
         }

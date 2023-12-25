@@ -1,5 +1,5 @@
 import React from "react";
-import { Conversation } from '@chatscope/chat-ui-kit-react';
+import { useTranslation } from "react-i18next";
 import {
     IconButton,
     Menu,
@@ -9,7 +9,9 @@ import {
 import { HiDotsVertical as HiDotsVerticalIcon } from "react-icons/hi";
 
 const ConversationItem = (props) => {
-  const { conversation } = props
+  const { t } = useTranslation();
+  const { onMutationConversation, conversation } = props
+
   console.log("ConversationItem :", props)
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -31,7 +33,10 @@ const ConversationItem = (props) => {
               onClose={()=>handleClose()}
               anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
               transformOrigin={{ vertical: 'top', horizontal: 'left' }}>
-              <MenuItem onClick={()=>handleClose()}>Delete</MenuItem>
+              <MenuItem onClick={()=> {
+                onMutationConversation({ variables: { mode: "DELETE", id: conversation?._id } })
+                handleClose()
+              }}>{t("delete")}</MenuItem>
             </Menu>
   }
 
