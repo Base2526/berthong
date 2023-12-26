@@ -291,7 +291,7 @@ export default {
       let users = await Model.User.aggregate([
                                                 {
                                                   $match: {
-                                                    roles: {$nin:[Constants.AMDINISTRATOR]}
+                                                    roles: {$nin:[Constants.AMDINISTRATOR.toString()]}
                                                   }
                                                 },
                                                 { $skip: OFF_SET }, 
@@ -370,7 +370,7 @@ export default {
       return { 
               status: true,
               data: transitions,
-              total: ( await Utils.getUserFull({roles: {$nin:[Constants.AMDINISTRATOR]}}) )?.length,
+              total: ( await Utils.getUserFull({roles: {$nin:[Constants.AMDINISTRATOR.toString()]}}) )?.length,
               executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` 
             }
     },
@@ -959,7 +959,7 @@ export default {
       ])
 
       let suppliers = Array.from({ length: await Utils.getTotalSupplier() }, (_, i) => i);
-      let users     = await Model.User.find({ roles: {$nin:[Constants.AMDINISTRATOR]} }, 
+      let users     = await Model.User.find({ roles: {$nin:[Constants.AMDINISTRATOR.toString()]} }, 
                                             { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, lastAccess: 1 }); 
 
       let withdraws = _.filter(transitions, (transition)=>transition?.withdraw)
@@ -1217,13 +1217,20 @@ export default {
       
       // console.log("user .length", users?.length)
 
-      _.map(users, async(user)=>{
-       
-        let isActive = 1
-
-        // console.log("roles :", user?.roles, roles)
-        // await Model.User.updateOne({ _id: user?._id }, { isActive });
-      })
+      // let private_users= ["admin", "Winifred", "Malika", "Brian", "Fernando", "Jazmin", "Maia" , "Armani", "Bernadine", "Cortez", "Dessie", "Unique", "Alphonso", "Katlynn", "Nestor", "Hipolito", "Mackenzie", "Holly"]
+      // let count = 0
+      // _.map(users, async(user)=>{
+      //   await Model.User.updateOne({ _id: user?._id }, { username : user?.username?.toLowerCase() });
+      //   // let f = _.find(private_users, name=>name?.toLowerCase() === user?.username?.toLowerCase())
+      //   // if(f){
+      //   //   console.log("update_me :", f, user?.username, user?.email )
+      //   //   count++;
+      //   // }else{
+      //   //   await Model.User.deleteOne({ username: user?.username, email: user?.email });
+      //   // }
+      // })
+      // console.log("update_me count :", count )
+    
 
       return {  
                 status: true, 
@@ -1262,18 +1269,18 @@ export default {
       //             );
       // await Utils.loggerError(req, process.env)
 
-      pubsub.publish("CONVERSATION", {
-        conversation: {
-          mutation: "CREATED",
-          data: {"A": "AA", "B": "BB"},
-        },
-      });
+      // pubsub.publish("CONVERSATION", {
+      //   conversation: {
+      //     mutation: "CREATED",
+      //     data: {"A": "AA", "B": "BB"},
+      //   },
+      // });
 
-      let text = "1234"
+      let text = "7P569uV6nR2zr3y26mtTn"
       let encrypt = cryptojs.AES.encrypt(text, process.env.JWT_SECRET).toString()
       // encrypt = "U2FsdGVkX18wIs5DOBhZOddShspHwri5Z8KFIXtyHzU="
       let decrypt = cryptojs.AES.decrypt(encrypt, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8);
-      console.log("encrypt ++ :", encrypt, decrypt)
+      console.log("encrypt ++ :", text, encrypt, decrypt)
   
       return {  status:true, 
                 mongo_db_state,
@@ -1284,25 +1291,30 @@ export default {
       let start = Date.now()
       let {input} = args
 
-      let user = Utils.emailValidate().test(input.username) 
-      if(Utils.emailValidate().test(input.username)){
-        user = await Utils.getUser({email: input.username}, false)
+      let username = input.username.toLowerCase()
+
+      let user = Utils.emailValidate().test(username) 
+      if(Utils.emailValidate().test(username)){
+        user = await Utils.getUser({email: username}, false)
         if( _.isNull(user) ){
           throw new AppError(Constants.USER_NOT_FOUND, 'USER NOT FOUND')
         }
         if(!_.isEqual(cryptojs.AES.decrypt(user?.password, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8), input.password)){
+          
+          console.log("e :", user?.password, input?.password, cryptojs.AES.decrypt(user?.password, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8))
           throw new AppError(Constants.PASSWORD_WRONG, 'PASSWORD WRONG')
         }
-        user = await Utils.getUserFull({email: input.username})
+        user = await Utils.getUserFull({email: username})
       }else{
-        user = await Utils.getUser({username: input.username}, false)
+        user = await Utils.getUser({username}, false)
         if( _.isNull(user) ){
           throw new AppError(Constants.USER_NOT_FOUND, 'USER NOT FOUND')
         }
         if(!_.isEqual(cryptojs.AES.decrypt(user?.password, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8), input.password)){
+          console.log("e :", user?.password, input?.password, cryptojs.AES.decrypt(user?.password, process.env.JWT_SECRET).toString(cryptojs.enc.Utf8))
           throw new AppError(Constants.PASSWORD_WRONG, 'PASSWORD WRONG')
         }
-        user = await Utils.getUserFull({username: input.username})
+        user = await Utils.getUserFull({username})
       }
 
       await Model.User.updateOne({ _id: user?._id }, { lastAccess : Date.now() });
@@ -1685,10 +1697,10 @@ export default {
       let user = await Utils.getUser({ email: input.email } ) 
       if(!_.isNull(user)) throw new AppError(Constants.ERROR, "EXITING EMAIL")
 
-      let newInput =  {...input,  password: cryptojs.AES.encrypt( input.password, process.env.JWT_SECRET).toString(),
+      let newInput =  {...input,  username: input.username?.toLowerCase(),
+                                  password: cryptojs.AES.encrypt( input.password, process.env.JWT_SECRET).toString(),
                                   displayName: _.isEmpty(input.displayName) ? input.username : input.displayName ,
                                   roles: [Constants.AUTHENTICATED], 
-                                  // isActive: 0, 
                                   lastAccess: Date.now(), 
                                   isOnline: true}
               

@@ -125,20 +125,6 @@ const LotterysPage = (props) => {
         return useMemo(
                         () => [
                           {
-                            Header: 'Title',
-                            accessor: 'title',
-                            Cell: props =>{
-                                let { original } = props.row
-                                return <div 
-                                        onClick={()=>{
-                                          navigate({
-                                          pathname: "/d",
-                                          search: `?${createSearchParams({ id: original._id})}`,
-                                          state: { id: original._id }
-                                        })}}>{ original?.title }</div>
-                            }
-                          },
-                          {
                             Header: 'Edit',
                             // accessor: 'createdAt',
                             Cell: props => {
@@ -155,6 +141,20 @@ const LotterysPage = (props) => {
                                           setOpenDialogDelete({ isOpen: true, id: original?._id, description: original?.description });
                                         }}><DeleteForeverIcon/>{t("delete")}</button>
                                       </div>
+                            }
+                          },
+                          {
+                            Header: 'Title',
+                            accessor: 'title',
+                            Cell: props =>{
+                                let { original } = props.row
+                                return <div 
+                                        onClick={()=>{
+                                          navigate({
+                                          pathname: "/d",
+                                          search: `?${createSearchParams({ id: original._id})}`,
+                                          state: { id: original._id }
+                                        })}}>{ original?.title }</div>
                             }
                           },
                           {
@@ -240,6 +240,21 @@ const LotterysPage = (props) => {
         return useMemo(
                         () => [
                           {
+                            Header: 'Edit',
+                            Cell: props => {
+                              let { original } = props.row
+                              return  <div>
+                                        <button onClick={(evt)=>{
+                                          navigate("/lottery", {state: {from: "/", mode: "edit", id: original?._id } })
+                                        }}><EditIcon/>{t("edit")}
+                                        </button>
+                                        <button onClick={(e)=>{
+                                          setOpenDialogDelete({ isOpen: true, id: original?._id, description: original?.description });
+                                        }}><DeleteForeverIcon/>{t("delete")}</button>
+                                      </div>
+                            }
+                          },
+                          {
                             Header: 'Title',
                             accessor: 'title',
                             Cell: props =>{
@@ -262,21 +277,7 @@ const LotterysPage = (props) => {
                               return <div>{ manageLottery?.title }</div>
                             }
                           },
-                          {
-                            Header: 'Edit',
-                            Cell: props => {
-                              let { original } = props.row
-                              return  <div>
-                                        <button onClick={(evt)=>{
-                                          navigate("/lottery", {state: {from: "/", mode: "edit", id: original?._id } })
-                                        }}><EditIcon/>{t("edit")}
-                                        </button>
-                                        <button onClick={(e)=>{
-                                          setOpenDialogDelete({ isOpen: true, id: original?._id, description: original?.description });
-                                        }}><DeleteForeverIcon/>{t("delete")}</button>
-                                      </div>
-                            }
-                          },
+                          
                           {
                             Header: 'Image',
                             accessor: 'files',
