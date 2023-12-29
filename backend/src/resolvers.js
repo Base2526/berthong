@@ -384,6 +384,7 @@ export default {
       let user = await Utils.getUserFull({_id})
       if(_.isNull(user)) throw new AppError(Constants.USER_NOT_FOUND, 'Model.User not found.')
 
+      console.log("userById :", user)
       return {  status: true,
                 data: user,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
@@ -657,26 +658,94 @@ export default {
       let start = Date.now()
       let { req } = context
 
-      let { current_user } =  await Utils.checkAuth(req);
-      let transitions = await Model.Transition.find({userId: current_user?._id, type: Constants.SUPPLIER, status: Constants.OK });
-      transitions = await Promise.all(_.map(transitions, async(transition)=>{
-                          switch(transition.type){
-                            case Constants.SUPPLIER:{
+      let { current_user } =  await Utils.checkAuth(req)
+      let role = Utils.checkRole(current_user)
+      if( role !== Constants.AMDINISTRATOR &&
+          role !== Constants.SELLER &&
+          role !== Constants.AUTHENTICATED 
+        ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
-                              let supplier = await Utils.getSupplier({_id: transition?.refId}) 
-                              let buys     = _.filter(supplier.buys, (buy)=>buy.userId == current_user?._id.toString())
-                              // price, buys
+      switch(role){
+        case Constants.AMDINISTRATOR:{
+          console.log("buys : Constants.AMDINISTRATOR")
+          // let transitions = await Model.Transition.find({ type: Constants.SUPPLIER, status: Constants.APPROVED });
+          // transitions = await Promise.all(_.map(transitions, async(transition)=>{
+          //                     switch(transition.type){
+          //                       case Constants.SUPPLIER:{
+          //                         let supplier = await Utils.getSupplier({_id: transition?.refId}) 
+          //                         let buys     = _.filter(supplier.buys, (buy)=>buy.userId == current_user?._id.toString())
+          //                         // price, buys
+          //                         let balance = buys.length * supplier.priceUnit
+          //                         return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
+          //                       }
+          //                     }
+          //                 }))
 
-                              let balance = buys.length * supplier.priceUnit
+          let transitions = await Model.Transition.aggregate([
+                      {
+                        $match: {
+                          type: Constants.SUPPLIER, status: Constants.APPROVED
+                        }
+                      },
+                      {
+                        $lookup: {
+                          localField: "refId",
+                          from: "supplier",
+                          foreignField: "_id",
+                          as: "supplier"
+                        }
+                      },
+                      {
+                        $lookup: {
+                          localField: "userId",
+                          from: "user",
+                          foreignField: "_id",
+                          as: "user"
+                        }
+                      },
+                      {
+                        $unwind: {
+                            path: "$supplier",
+                            preserveNullAndEmptyArrays: false
+                        }
+                      },
+                      {
+                        $unwind: {
+                          path: "$user",
+                          preserveNullAndEmptyArrays: true
+                        }
+                      }
+                  ])
 
-                              return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
-                            }
-                          }
-                      }))
-      return {  status:true,
-                data: transitions,
-                executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+          return {  status:true,
+                    data: transitions,
+                    executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+        }
 
+        case Constants.SELLER:
+        case Constants.AUTHENTICATED:{
+          let transitions = await Model.Transition.find({userId: current_user?._id, type: Constants.SUPPLIER, status: Constants.APPROVED });
+          transitions = await Promise.all(_.map(transitions, async(transition)=>{
+                              switch(transition.type){
+                                case Constants.SUPPLIER:{
+    
+                                  let supplier = await Utils.getSupplier({_id: transition?.refId}) 
+                                  let buys     = _.filter(supplier.buys, (buy)=>buy.userId == current_user?._id.toString())
+                                  // price, buys
+    
+                                  let balance = buys.length * supplier.priceUnit
+    
+                                  return {...transition._doc, title: supplier.title, balance, description: supplier.description, dateLottery: supplier.dateLottery}
+                                }
+                              }
+                          }))
+          return {  status:true,
+                    data: transitions,
+                    executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
+        }
+      }
+
+      return {  status:false, executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
     },
 
     async notifications(parent, args, context, info){
@@ -1714,76 +1783,124 @@ export default {
       let start = Date.now()
       let { input } = args
       let { req } = context
-
-      console.log("me :", input)
       
       let { current_user } =  await Utils.checkAuth(req);
 
-      let { type, mode, data } = input
-      switch(type){
-        case "bank":{
-          switch(mode){
-            case "new":{
-              let { banks } = await Utils.getUser({_id: current_user?._id}) 
-              await Model.User.updateOne({ _id: current_user?._id }, { banks: [...banks, ...data] } );
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR &&
+          Utils.checkRole(current_user) !==Constants.SELLER &&
+          Utils.checkRole(current_user) !==Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+
+      switch(Utils.checkRole(current_user)){
+        case Constants.AMDINISTRATOR:{
+          console.log("me :", input)
+
+          let fileObject = input?.avatar
+
+          if(fileObject?.file){
+            const { createReadStream, filename, encoding, mimetype } = fileObject //await input.files[i];
+            const stream = createReadStream();
+            const assetUniqName = Utils.fileRenamer(filename);
+            let pathName = `/app/uploads/${assetUniqName}`;
+            
+            const output = fs.createWriteStream(pathName)
+            stream.pipe(output);
+    
+            await new Promise(function (resolve, reject) {
+              output.on('close', () => {
+                resolve();
+              });
+        
+              output.on('error', async(err) => {
+                await Utils.loggerError(req, err.toString());
+    
+                reject(err);
+              });
+            }); 
+            await Model.User.updateOne({ _id: mongoose.Types.ObjectId(input?._id) }, { avatar: { url: `images/${assetUniqName}`, filename, encoding, mimetype } } );
+          }
+
+          if(input?.lockAccount === 'true'){
+            await Model.User.updateOne({ _id: mongoose.Types.ObjectId(input?._id) }, { displayName: input?.displayName, lockAccount: { lock: true, date: Date.now() } } );
+          }else{
+            await Model.User.updateOne({ _id: mongoose.Types.ObjectId(input?._id) }, { displayName: input?.displayName, lockAccount: { lock: false, date: Date.now() } } );
+          }
+
+          
+          return {
+            status: false,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }
+        }
+
+        case Constants.SELLER:
+        case Constants.AUTHENTICATED:{
+          let { type, mode, data } = input
+          switch(type){
+            case "bank":{
+              switch(mode){
+                case "new":{
+                  let { banks } = await Utils.getUser({_id: current_user?._id}) 
+                  await Model.User.updateOne({ _id: current_user?._id }, { banks: [...banks, ...data] } );
+                  break;
+                }
+        
+                case "delete":{
+                  let { banks } = await Utils.getUser({_id: current_user?._id}) 
+                  let newBanks = _.filter(banks, (bank)=>!_.isEqual(bank?._id.toString(), data))
+                  await Model.User.updateOne({ _id: current_user?._id }, { banks: newBanks } );
+                  
+                  break;
+                }
+              }
               break;
             }
     
-            case "delete":{
-              let { banks } = await Utils.getUser({_id: current_user?._id}) 
-              let newBanks = _.filter(banks, (bank)=>!_.isEqual(bank?._id.toString(), data))
-              await Model.User.updateOne({ _id: current_user?._id }, { banks: newBanks } );
+            case "displayName":{
+              await Model.User.updateOne({ _id: current_user?._id }, { displayName: data } );
+              break;
+            }
+    
+            case "avatar":{
+              let fileObject = data?.file
+      
+              const { createReadStream, filename, encoding, mimetype } = fileObject //await input.files[i];
+              const stream = createReadStream();
+              const assetUniqName = Utils.fileRenamer(filename);
+              let pathName = `/app/uploads/${assetUniqName}`;
               
+              const output = fs.createWriteStream(pathName)
+              stream.pipe(output);
+      
+              await new Promise(function (resolve, reject) {
+                output.on('close', () => {
+                  resolve();
+                });
+          
+                output.on('error', async(err) => {
+                  await Utils.loggerError(req, err.toString());
+      
+                  reject(err);
+                });
+              });
+      
+              // const urlForArray = `${process.env.RA_HOST}${assetUniqName}`
+              await Model.User.updateOne({ _id: current_user?._id }, { avatar: { url: `images/${assetUniqName}`, filename, encoding, mimetype } } );
+            
               break;
             }
           }
-          break;
+    
+          cache.ca_delete(current_user?._id.toString())
+    
+          let user = await Utils.getUserFull({_id: current_user?._id}) 
+          pubsub.publish("ME", { me: { mutation: "UPDATE", data: user } });
+    
+          return {
+            status: true,
+            data: user,
+            executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+          }
         }
-
-        case "displayName":{
-          await Model.User.updateOne({ _id: current_user?._id }, { displayName: data } );
-          break;
-        }
-
-        case "avatar":{
-          let fileObject = data?.file
-  
-          const { createReadStream, filename, encoding, mimetype } = fileObject //await input.files[i];
-          const stream = createReadStream();
-          const assetUniqName = Utils.fileRenamer(filename);
-          let pathName = `/app/uploads/${assetUniqName}`;
-          
-          const output = fs.createWriteStream(pathName)
-          stream.pipe(output);
-  
-          await new Promise(function (resolve, reject) {
-            output.on('close', () => {
-              resolve();
-            });
-      
-            output.on('error', async(err) => {
-              await Utils.loggerError(req, err.toString());
-  
-              reject(err);
-            });
-          });
-  
-          // const urlForArray = `${process.env.RA_HOST}${assetUniqName}`
-          await Model.User.updateOne({ _id: current_user?._id }, { avatar: { url: `images/${assetUniqName}`, filename, encoding, mimetype } } );
-        
-          break;
-        }
-      }
-
-      cache.ca_delete(current_user?._id.toString())
-
-      let user = await Utils.getUserFull({_id: current_user?._id}) 
-      pubsub.publish("ME", { me: { mutation: "UPDATE", data: user } });
-
-      return {
-        status: true,
-        data: user,
-        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }
     },
 
@@ -2612,8 +2729,13 @@ export default {
           const endDateTime   = moment(input.end_date_time);
           const diff          = endDateTime.diff(startDateTime);
           const diffDuration  = moment.duration(diff);
+
+          // var duration = moment.duration(now.diff(end));
+          // var days = diffDuration.asDays();
+
+          // console.log("diffDuration.asDays() :", diffDuration.asDays())
     
-          if(diffDuration.days() < 5) throw new AppError(Constants.ERROR, 'Date start - end > 5 day')
+          if(diffDuration.asDays() < 5) throw new AppError(Constants.ERROR, 'Date start - end > 5 day')
           
           if(input?._id){
             let newInput =  _.omit(input, ['_id', 'mode']);
@@ -2695,6 +2817,40 @@ export default {
       }   
     },
 
+    async expireLottery(parent, args, context, info) {
+      let start = Date.now()
+      let { input } = args
+      let { req } = context
+
+      console.log("expireLottery :", input)
+
+      let { current_user } =  await Utils.checkAuth(req);
+      if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+
+      let manageL = await Model.ManageLottery.findOne({_id: mongoose.Types.ObjectId(input?._id)})
+      console.log("expireLottery manageL :", manageL, manageL?.end_date_time)
+
+      var now = moment(manageL?.end_date_time); //todays date
+      var end = moment( new Date() ); // another date
+      var duration = moment.duration(now.diff(end));
+      var days = duration.asDays();
+      console.log("different date @1 :", days)
+      if(days > 0){
+        throw new AppError(Constants.ERROR, 'ไม่สามารถปิดได้เพราะว่าเปิดขายอยู่')
+      }
+
+      let suppliers  =  await Model.Supplier.find({ manageLottery: mongoose.Types.ObjectId(input?._id) })
+
+      _.map(suppliers, async supplier=>{
+        await Model.Supplier.updateOne({ _id: supplier._id }, { expire: true });
+      })
+      
+      return  { 
+        status: true,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }   
+    },
+
     async calculateLottery(parent, args, context, info) {
       let start = Date.now()
       let { input } = args
@@ -2706,55 +2862,184 @@ export default {
       if( Utils.checkRole(current_user) !==Constants.AMDINISTRATOR ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       let manageL = await Model.ManageLottery.findOne({_id: mongoose.Types.ObjectId(input?._id)})
-
       console.log("Calculate lottery manageL :", manageL)
-      if(!_.isNull(manageL)){
-        let _id  =  manageL._id
-        let bon  =  manageL.bon
-        let lang =  manageL.lang
 
-        let bons  = await Model.Supplier.aggregate([
-                                                    { 
-                                                      $match: { 
-                                                                manageLottery: _id,
-                                                                publish: true,
-                                                                type: 0,      //  0: bon, 1: lang
-                                                                kind: 0,      //  0: thai, 1: laos, 2: vietnam
-                                                                buys:{
-                                                                        $elemMatch: {
-                                                                          selected: 1, 
-                                                                          itemId: parseInt(bon),
-                                                                          //  quantity: { $gt: 1 } // Quantity greater than 1
-                                                                        }
-                                                                      }
-                                                              }
-                                                    }
-                                                    ]);
-
-        let langs = await Model.Supplier.aggregate([
-                                                    { 
-                                                      $match: { 
-                                                                manageLottery: _id,
-                                                                publish: true,
-                                                                type: 1,      //  0: bon, 1: lang
-                                                                kind: 0,      //  0: thai, 1: laos, 2: vietnam
-                                                                buys:{
-                                                                        $elemMatch: {
-                                                                          selected: 1, 
-                                                                          itemId: parseInt(lang),
-                                                                          //  quantity: { $gt: 1 } // Quantity greater than 1
-                                                                        }
-                                                                      }
-                                                              }
-                                                    }
-                                                    ]);
-
-        console.log("result all :", bons, langs)
+      let bon = manageL?.bon
+      let lang = manageL?.lang
+      if( _.isEmpty(bon) || _.isEmpty(lang) ){
+        throw new AppError(Constants.ERROR, 'ผลการออกรางวัล กรอกไม่ครบ')
       }
+
+      let transitionsBon = await Model.Transition.aggregate([
+                      {
+                        $match: { type: Constants.SUPPLIER, status: Constants.APPROVED }
+                      },
+                      {
+                        $lookup: {
+                          localField: "refId",
+                          from: "supplier",
+                          pipeline: [
+                              {
+                                $match: { 
+                                  type: 0,  //  0: bon, 1: lang
+                                  kind: 0,  //  0: thai, 1: laos, 2: vietnam
+                                  manageLottery: mongoose.Types.ObjectId(input?._id),
+                                  // buys:{
+                                  //   $elemMatch: {
+                                  //     selected: 1, 
+                                  //     itemId: parseInt(bon)
+                                  //   }
+                                  // }
+                                }
+                              }
+                          ],
+                          foreignField: "_id",
+                          as: "supplier"
+                        }
+                      },
+                      {
+                        $lookup: {
+                          localField: "userId",
+                          from: "user",
+                          foreignField: "_id",
+                          as: "user"
+                        }
+                      },
+                      {
+                        $unwind: {
+                            path: "$supplier",
+                            preserveNullAndEmptyArrays: false
+                        }
+                      },
+                      {
+                        $unwind: {
+                          path: "$user",
+                          preserveNullAndEmptyArrays: true
+                        }
+                      }
+                  ])
+
+      let transitionsLang = await Model.Transition.aggregate([
+                      {
+                        $match: { type: Constants.SUPPLIER, status: Constants.APPROVED }
+                      },
+                      {
+                        $lookup: {
+                          localField: "refId",
+                          from: "supplier",
+                          pipeline: [
+                              {
+                                $match: { 
+                                  type: 1,   //  0: bon, 1: lang
+                                  kind: 0,   //  0: thai, 1: laos, 2: vietnam
+                                  manageLottery: mongoose.Types.ObjectId(input?._id),
+                                  // buys:{
+                                  //   $elemMatch: {
+                                  //     selected: 1, 
+                                  //     itemId: parseInt(lang)
+                                  //   }
+                                  // } 
+                                }
+                              }
+                          ],
+                          foreignField: "_id",
+                          as: "supplier"
+                        }
+                      },
+                      {
+                        $lookup: {
+                          localField: "userId",
+                          from: "user",
+                          foreignField: "_id",
+                          as: "user"
+                        }
+                      },
+                      {
+                        $unwind: {
+                            path: "$supplier",
+                            preserveNullAndEmptyArrays: false
+                        }
+                      },
+                      {
+                        $unwind: {
+                          path: "$user",
+                          preserveNullAndEmptyArrays: true
+                        }
+                      }
+                  ])
+
+      _.map(transitionsBon, async t=>{
+        let { buys } = t?.supplier
+        console.log("transitionsBon buys :", buys)
+
+        if(_.find(buys, buy=> buy.selected === 1 && buy.itemId === parseInt(bon) ) ){
+          await Model.Transition.updateOne({ _id: t._id }, { expire: true, isLucky: true });
+        }else{
+          await Model.Transition.updateOne({ _id: t._id }, { expire: true, isLucky: false });
+        }
+      })
+
+      _.map(transitionsLang, async t=>{
+        let { buys } = t?.supplier
+        console.log("transitionsLang buys :", buys)
+
+        if(_.find(buys, buy=> buy.selected === 1 && buy.itemId === parseInt(lang) ) ){
+          await Model.Transition.updateOne({ _id: t._id }, { expire: true, isLucky: true });
+        }else{
+          await Model.Transition.updateOne({ _id: t._id }, { expire: true, isLucky: false });
+        }
+      })
+
+
+      // manageLottery
+
+      // if(!_.isNull(manageL)){
+      //   let _id  =  manageL._id
+      //   let bon  =  manageL.bon
+      //   let lang =  manageL.lang
+
+      //   let bons  = await Model.Supplier.aggregate([
+      //                                               { 
+      //                                                 $match: { 
+      //                                                           manageLottery: _id,
+      //                                                           publish: true,
+      //                                                           type: 0,      //  0: bon, 1: lang
+      //                                                           kind: 0,      //  0: thai, 1: laos, 2: vietnam
+      //                                                           buys:{
+      //                                                                   $elemMatch: {
+      //                                                                     selected: 1, 
+      //                                                                     itemId: parseInt(bon),
+      //                                                                     //  quantity: { $gt: 1 } // Quantity greater than 1
+      //                                                                   }
+      //                                                                 }
+      //                                                         }
+      //                                               }
+      //                                               ]);
+
+      //   let langs = await Model.Supplier.aggregate([
+      //                                               { 
+      //                                                 $match: { 
+      //                                                           manageLottery: _id,
+      //                                                           publish: true,
+      //                                                           type: 1,      //  0: bon, 1: lang
+      //                                                           kind: 0,      //  0: thai, 1: laos, 2: vietnam
+      //                                                           buys:{
+      //                                                                   $elemMatch: {
+      //                                                                     selected: 1, 
+      //                                                                     itemId: parseInt(lang),
+      //                                                                     //  quantity: { $gt: 1 } // Quantity greater than 1
+      //                                                                   }
+      //                                                                 }
+      //                                                         }
+      //                                               }
+      //                                               ]);
+
+      //   console.log("result all :", bons, langs)
+      // }
      
       return  { 
         status: true,
-        data: manageL,
+        // data: manageL,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }   
     },

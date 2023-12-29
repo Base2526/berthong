@@ -811,6 +811,7 @@ export default gql`
     manageLottery(input: ManageLotteryInput): JSON
     forceLogout(input: JSON): JSON
 
+    expireLottery(input: JSON): JSON
     calculateLottery(input: JSON): JSON
 
     testNodeCacheSave(id: String): JSON

@@ -59,6 +59,7 @@ export const mutationAdminDeposit   = gql`mutation adminDeposit($input: JSON){ a
 export const mutationAdminWithdraw  = gql`mutation adminWithdraw($input: JSON){ adminWithdraw(input: $input) }`;
 export const mutationManageLottery  = gql`mutation manageLottery($input: ManageLotteryInput) { manageLottery(input: $input) }`;
 export const mutationForceLogout    = gql`mutation forceLogout($input: JSON){ forceLogout(input: $input) }`;
+export const mutationExpireLottery    = gql`mutation expireLottery($input: JSON){ expireLottery(input: $input) }`;
 export const mutationCalculateLottery    = gql`mutation calculateLottery($input: JSON){ calculateLottery(input: $input) }`;
 export const mutationContent        = gql`mutation content($input: JSON){ content(input: $input) }`;
 

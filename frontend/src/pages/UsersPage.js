@@ -182,7 +182,6 @@ const UsersPage = (props) => {
                                 }}
                                 sx={{ width: 56, height: 56 }}
                               />
-                              {/* <div>{ original?.image?.length }</div> */}
                             </div>
                 }
               },
@@ -195,11 +194,20 @@ const UsersPage = (props) => {
                 }
               },
               {
-                Header: 'Email',
-                accessor: 'email',
+                Header: 'Is seller',
                 Cell: props =>{
                   let { original } = props.row
-                  return <div>{ original?.email }</div>
+                  let roles = original?.roles
+                  return <div>{ _.includes(roles, Constants.SELLER.toString()) ? "YES" : "NO" }</div>
+                }
+              },
+
+              {
+                Header: 'Lock account',
+                accessor: 'lockAccount',
+                Cell: props =>{
+                  let { original } = props.row
+                  return <div>{ original?.lockAccount?.lock ? "YES" : "NO"}</div>
                 }
               },
               {

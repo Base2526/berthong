@@ -31,8 +31,10 @@ import {
   AllOut as AllOutIcon,
   Assistant as AssistantIcon,
   AddTask as AddTaskIcon,
-  FormatColorText as FormatColorTextIcon
+  FormatColorText as FormatColorTextIcon,
+  Sell as SellIcon
 } from '@mui/icons-material';
+
 import LinearProgress from '@mui/material/LinearProgress';
 import {
   HiOutlineHome as HomeIcon,
@@ -140,6 +142,8 @@ import NotFound404Page from "./pages/NotFound404Page"
 import HelpPage from "./pages/HelpPage"
 import ContentsPage from "./pages/ContentsPage"
 import ContentPage from "./pages/ContentPage"
+
+import AdminSellPage from "./pages/AdminSellPage";
 
 import {  queryMe,
           queryNotifications, 
@@ -1281,17 +1285,18 @@ const App =(props) =>{
     switch(checkRole(user)){
       case Constants.AMDINISTRATOR:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em"/>, path: "/"},
-                {id: 1, title:"เนื้อหา(Contents)", icon: <FormatColorTextIcon />, path: "/contents"},
-                {id: 2, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/withdraws"},
-                {id: 3, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/deposits"},
-                {id: 4, title:"รายการถอดเงินทั้งหมด", icon: <AccountTreeIcon />, path: "/all-withdraws"},
-                {id: 5, title:"รายการฝากเงินทั้งหมด", icon: <AddRoadIcon />, path: "/all-deposits"},
-                {id: 6, title:"รายการหวยทั้งหมด", icon: <AddTaskIcon />, path: "/lotterys"},
-                {id: 7, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
-                {id: 8, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
-                {id: 9, title:"จัดการหวยทั้งหมด", icon: <AssistantIcon />, path: "/manage-lotterys"},
-                {id: 10, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
-                {id: 11, title:"Development", icon: <FaDevIcon size="1.5em" />, path: "/development"}
+                {id: 1, title:"รายการขายทั้งหมด", icon: <SellIcon />, path: "/all-sell"},
+                {id: 2, title:"เนื้อหา(Contents)", icon: <FormatColorTextIcon />, path: "/contents"},
+                {id: 3, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/withdraws"},
+                {id: 4, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/deposits"},
+                {id: 5, title:"รายการถอดเงินทั้งหมด", icon: <AccountTreeIcon />, path: "/all-withdraws"},
+                {id: 6, title:"รายการฝากเงินทั้งหมด", icon: <AddRoadIcon />, path: "/all-deposits"},
+                {id: 7, title:"รายการหวยทั้งหมด", icon: <AddTaskIcon />, path: "/lotterys"},
+                {id: 8, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
+                {id: 9, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
+                {id: 10, title:"จัดการหวยทั้งหมด", icon: <AssistantIcon />, path: "/manage-lotterys"},
+                {id: 11, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
+                {id: 12, title:"Development", icon: <FaDevIcon size="1.5em" />, path: "/development"}
               ]
       }
       case Constants.AUTHENTICATED:{
@@ -1700,7 +1705,7 @@ const App =(props) =>{
               <Route path="/manage-lotterys" element={<ManageLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
               <Route path="/manage-lottery" element={<ManageLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
               <Route path="/users" element={<UsersPage {...props} />} />
-              <Route path="/user" element={<UserPage {...props} />} />
+              <Route path="/user" element={<UserPage {...props} onMutationMe={(evt)=>onMutationMe(evt)}/>} />
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
               <Route path="/taxonomy-bank" element={<TaxonomyBankPage  {...props} onMutationBank={(evt)=>onMutationBank(evt)}/>} />
               <Route path="/dblog" element={<DblogPage  {...props} />} />
@@ -1709,6 +1714,8 @@ const App =(props) =>{
               <Route path="/all-deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/all-withdraws" element={<WithdrawsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/development" element={<DevelopmentPage {...props} />} />
+             
+              <Route path="/all-sell" element={<AdminSellPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route 
                 path="/contents" 
                 element={<ContentsPage {...props} 

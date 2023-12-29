@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 const Schema = mongoose.Schema
 
+// ManageLottery
 const ManageLotterySchema = new Schema({
     title: { type: String, required:[true, "Title is a required field"] }, 
     start_date_time: { type: Date, required:[true, "Start date-time is a required field"] },

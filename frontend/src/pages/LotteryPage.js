@@ -342,7 +342,7 @@ const LotteryPage = (props) => {
                     onChange={ onInputChange }
                     onBlur={ validateInput } >
                     <option value={""}>ไม่เลือก</option>
-                    {_.map(manageLotterys, (manageLotterys)=><option value={manageLotterys._id}>{ manageLotterys?.title }</option>)}
+                    {_.map(manageLotterys, (manageL)=><option value={manageL._id}>{ manageL?.title }</option>)}
                   </select>
               }
               <p className="text-red-500"> {_.isEmpty(error.manageLottery) ? "" : error.manageLottery} </p>

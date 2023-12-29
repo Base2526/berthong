@@ -85,7 +85,7 @@ const ManageLotterysPage = (props) => {
     if(!loadingManageLotterys){
       if(!_.isEmpty(dataManageLotterys?.manageLotterys)){
         let { status, data: newData } = dataManageLotterys.manageLotterys
-        if(status && !_.isEqual( data, newData )) setData(newData)
+        if(status) setData(newData)
       }
     }
   }, [dataManageLotterys, loadingManageLotterys])

@@ -13,11 +13,22 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import _ from "lodash";
 
-import { queryManageLotteryById, queryManageLotterys, mutationManageLottery, mutationCalculateLottery } from "../apollo/gqlQuery"
+import {  queryManageLotteryById, 
+          queryManageLotterys, 
+          mutationManageLottery, 
+          mutationCalculateLottery, 
+          mutationExpireLottery } from "../apollo/gqlQuery"
 import { getHeaders, handlerErrorApollo, showToast } from "../util"
+import { validateSDL } from "graphql/validation/validate";
 
 let editValues = undefined;
-let initValues =  { mode: "new", title: "", start_date_time: null, end_date_time: null, bon: null, lang: null }
+let initValues =  { mode: "new", 
+                    // kindLottery: null,
+                    title: "", 
+                    start_date_time: null, 
+                    end_date_time: null, 
+                    bon: null, 
+                    lang: null }
 
 const ManageLotteryPage = (props) => {
   let location = useLocation();
@@ -26,6 +37,35 @@ const ManageLotteryPage = (props) => {
   let [input, setInput] = useState(initValues)
 
   let { mode, _id } = location.state
+
+  // mutationExpireLottery
+  const [onMutationExpireLottery, resultMutationExpireLottery] = useMutation(mutationExpireLottery
+    , {
+        context: { headers: getHeaders(location) },
+        update: (cache, {data: {expireLottery}} ) => {
+          console.log("ExpireLottery :", expireLottery)
+          
+          // let { status, data: newData } = manageLottery
+          // if(status){
+          //   let queryManageLotterysValue = cache.readQuery({ query: queryManageLotterys });
+          //   if(queryManageLotterysValue){
+          //     let filterData = _.filter(queryManageLotterysValue.manageLotterys.data, (v)=>v._id !== newData._id)
+          //     cache.writeQuery({
+          //       query: queryManageLotterys,
+          //       data: { manageLotterys: {...queryManageLotterysValue.manageLotterys, data: [...filterData, newData] } },
+          //     });
+          //   }
+          // }
+        },
+        onCompleted(data) {
+          // navigate(-1)
+          showToast("success", "Set expire success")
+        },
+        onError(error){
+          return handlerErrorApollo( props, error )
+        }
+      }
+  );
 
   const [onMutationCalculateLottery, resultMutationCalculateLottery] = useMutation(mutationCalculateLottery
     , {
@@ -58,19 +98,42 @@ const ManageLotteryPage = (props) => {
   const [onMutationManageLottery, resultMutationManageLotteryValues] = useMutation(mutationManageLottery
     , {
         context: { headers: getHeaders(location) },
-        update: (cache, {data: {manageLottery}} ) => {
-          console.log("manageLottery :", manageLottery)
+        update: (cache, {data: {manageLottery}}, context) => {
+          console.log("manageLottery :", manageLottery, context?.variables)
           
+          let { mode } = context?.variables?.input
           let { status, data: newData } = manageLottery
           if(status){
-            let queryManageLotterysValue = cache.readQuery({ query: queryManageLotterys });
-            if(queryManageLotterysValue){
-              let filterData = _.filter(queryManageLotterysValue.manageLotterys.data, (v)=>v._id !== newData._id)
-              cache.writeQuery({
-                query: queryManageLotterys,
-                data: { manageLotterys: {...queryManageLotterysValue.manageLotterys, data: [...filterData, newData] } },
-              });
+
+            switch(mode){
+              case "new":{
+                let queryManageLotterysValue = cache.readQuery({ query: queryManageLotterys });
+                if(queryManageLotterysValue){
+                  let manageLotterys = {...queryManageLotterysValue.manageLotterys, data: [...queryManageLotterysValue.manageLotterys.data, newData] }
+                  cache.writeQuery({
+                    query: queryManageLotterys,
+                    data: { manageLotterys },
+                  });
+                }
+                break
+              }
+
+              case "edit":{
+
+                let queryManageLotterysValue = cache.readQuery({ query: queryManageLotterys });
+                if(queryManageLotterysValue){
+                  let updateData = _.map(queryManageLotterysValue.manageLotterys.data, (v)=>v._id === newData._id ? newData : v)
+                  let manageLotterys = {...queryManageLotterysValue.manageLotterys, data: updateData }
+                  cache.writeQuery({
+                    query: queryManageLotterys,
+                    data: { manageLotterys },
+                  });
+                }
+                break
+              }
             }
+            
+            
           }
         },
         onCompleted(data) {
@@ -107,6 +170,7 @@ const ManageLotteryPage = (props) => {
         if(status){
           setInput({  
                       mode, 
+                      // kindLottery: data?.kindLottery,
                       title: data?.title,
                       start_date_time: new Date(data?.start_date_time), 
                       end_date_time: new Date(data?.end_date_time), 
@@ -123,9 +187,11 @@ const ManageLotteryPage = (props) => {
     onMutationManageLottery({ variables: { input: mode == "edit" ? {...input, _id } : input } })
   };
 
-  const onCalculate = () =>{
-    console.log("onCalculate")
+  const onExpire = () =>{
+    onMutationExpireLottery({ variables: { input: { _id } } })
+  }
 
+  const onCalculate = () =>{
     onMutationCalculateLottery({ variables: { input: { _id } } })
   }
 
@@ -136,6 +202,31 @@ const ManageLotteryPage = (props) => {
         ?<CircularProgress />
         :<Box component="form" sx={{ "& .MuiTextField-root": { m: 1, width: "50ch" } }} >
           <Stack spacing={2}>
+
+          {/* <div>
+            <label>เลือกประเภทหวย * :</label>
+            {
+              // _.isEmpty(manageLotterys) 
+              // ? <LinearProgress />
+              // : 
+                <select 
+                  name="kindLottery" 
+                  id="kindLottery" 
+                  value={ input.kindLottery }
+                  onChange={(e) => {
+                    console.log("kindLottery : ", e.target.value)
+                    setInput({...input, kindLottery:e.target.value})
+                  }}
+                  // onChange={ onInputChange }
+                  // onBlur={ validateInput } 
+                  >
+                  <option value={""}>ไม่เลือก</option>
+                  {_.map([{_id: 0, title: 'thai'}, {_id: 1, title: 'laos'}, {_id: 2, title: 'vietnam'}], (kind)=><option value={kind._id}>{ kind?.title }</option>)}
+                </select>
+            }
+          </div> */}
+
+
           <TextField
             id="filled-basic"
             title="title"
@@ -191,6 +282,14 @@ const ManageLotteryPage = (props) => {
               setInput({...input, lang:e.target.value})
             }}
           />
+
+          {
+            <Button 
+              variant="contained" 
+              color="primary"
+              // disabled={input.title === "" || input.start_date_time === null || input.end_date_time === null || input.bon === "" || input.lang === null }
+              onClick={(evt)=>{ onExpire() }}>{t("Set expire")}</Button>
+          } 
           {
             mode == "edit" 
             ? <Button 

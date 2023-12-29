@@ -589,7 +589,7 @@ export const getUser = async(query, without_password = true) =>{
 }
 
 export const getUserFull = async(query) =>{
-    let user =  await Model.User.findOne(query, { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, producer: 1, lastAccess: 1 } )
+    let user =  await Model.User.findOne(query, { username: 1, email: 1, displayName: 1, banks: 1, roles: 1, avatar: 1, subscriber: 1, producer: 1, lastAccess: 1, lockAccount: 1 } )
 
     // if(user) {
     //     let cache_user = cache.ca_get(user?._doc?._id.toString())
