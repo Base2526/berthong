@@ -307,6 +307,13 @@ const BreadcsComp = (props) => {
           <Typography key="1" color="text.primary">รายการขายทั้งหมด</Typography>
         ]
       }
+
+      case "/pay":{
+        return [  
+          <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink>,
+          <Typography key="1" color="text.primary">จ่าย</Typography>
+        ]
+      }
    
       default: 
         return [ <MuiLink key="0" component={Link} to="/"><HomeIcon size={18} /> {t("home")}</MuiLink> ]

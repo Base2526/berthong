@@ -46,6 +46,9 @@ const DetailPanel = (props) => {
       }
     }
   }
+
+  
+
   let numberLotterys = Array.from({ length }, (_, i) => i);
   return  useMemo(() => {
             return  <div className="container-detail">
@@ -61,8 +64,14 @@ const DetailPanel = (props) => {
                           <div>
                             <span
                               tabIndex="0"
-                              key={seat}
-                              className={clsx("circle", isSelected && "selected", isOccupied && "occupied",  isFinish && "finish",  isBooking && "booking" )}
+                              key={seat} // 
+                              className={clsx("circle", 
+                                              isSelected && "selected", 
+                                              isOccupied && "occupied",  
+                                              isFinish && "finish",  
+                                              isBooking && "booking",  
+                                            
+                                              (isSelected || isOccupied || isFinish || isBooking ) || data?.expire && "expire" )}
                               onClick={(evt) => isOccupied || isFinish || isBooking ? null : onMutationBook({ variables: { input: { id: data?._id, itemId: seat } } }) } 
                               onKeyDown={(evt) => isOccupied || isFinish || isBooking ? null : (evt.key === "Enter" ?  onMutationBook({ variables: { input: { id: data?._id, itemId: seat } } }) : null) }>
                               {/* {" "} */}
@@ -71,6 +80,8 @@ const DetailPanel = (props) => {
                               {isOccupied ? <span className="booking-font">ขายแล้ว</span> : ""}
 
                               { isFinish ? <span className="booking-font">ซื้อสำเร็จ</span> :  isSelected ? <span className="booking-font">จองแล้ว</span> : ""}
+
+                              { !(isSelected || isOccupied || isFinish || isBooking ) && data?.expire ?  <span className="booking-font">หมดอายุ</span> : "" }
                               {/* {seat <= 9 ? "0" + seat : seat} */}
                               {minTwoDigits(seat, length.toString().length )}
                             </span>
@@ -250,6 +261,7 @@ const DetailPanelRight = (props) =>{
                               <div class="col-lg-6 col-md-12 col-sm-12 col-12">
                                 <div className="pt-2 selectBer">
                                   <Autocomplete
+                                    disabled={data?.expire ? true : false}
                                     size="small"
                                     open={false}
                                     multiple
@@ -279,6 +291,7 @@ const DetailPanelRight = (props) =>{
                               <div class="col-lg-6 col-md-12 col-sm-12 col-12">
                                 <div className="pt-2 finishBer">
                                   <Autocomplete
+                                    disabled={data?.expire ? true : false}
                                     size="small"
                                     open={false}
                                     multiple

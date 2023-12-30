@@ -108,6 +108,9 @@ export const TRANSLATIONS_TH = {
     PASSWORD_WRONG: "รหัสผ่านไม่ถูกต้อง",
     FORCE_LOGOUT: "กรุณาเข้าสู่ระบบใหม่อีกครั้ง",
 
+    EXPIRE_DATE: "หมดอายุ",
+    
+
     wallet: "กระเป๋าเงิน",
 
     deposit: "ฝากเงิน",
@@ -122,4 +125,6 @@ export const TRANSLATIONS_TH = {
 
     end_message: "ล่าสุด",
     empty_data: "ไม่พบข้อมูลที่ค้นหา",
+
+    pay: "จ่าย",
 };

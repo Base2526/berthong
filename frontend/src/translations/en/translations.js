@@ -79,6 +79,8 @@ export const TRANSLATIONS_EN = {
     PASSWORD_WRONG: "Password wrong.",
     FORCE_LOGOUT: "Login again",
 
+    EXPIRE_DATE: "Expire date",
+
     wallet: "Wallet",
 
     deposit: "Deposit",
@@ -94,4 +96,6 @@ export const TRANSLATIONS_EN = {
     end_message: "End message",
 
     empty_data: "Empty data.",
+
+    pay: "Pay",
 };

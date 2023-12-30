@@ -472,6 +472,7 @@ export default gql`
     bookBuyTransitions: JSON
     historyTransitions: JSON
     friendProfile(_id: ID): JSON
+    buyById(_id: ID): JSON
     buys: JSON
     notifications: JSON
     commentById(_id: ID!): JSON
@@ -826,6 +827,7 @@ export default gql`
     message( mode: MessageMode!, input: JSON ): JSON
 
     content(input: JSON): JSON
+    pay(input: JSON): JSON
   }
 
   type Subscription {

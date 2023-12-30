@@ -133,6 +133,8 @@ const AdminSellPage = (props) => {
                                 Header: 'งวดที่ออกรางวัล * ',
                                 Cell: props =>{
                                   let {supplier} = props?.row?.original
+
+                                  console.log("props?.row?.original :", props?.row?.original)
                                   return <ManageLComp _id={supplier?.manageLottery}/>
                                 }
                               },
@@ -169,6 +171,34 @@ const AdminSellPage = (props) => {
                                       state: { id: supplier._id }
                                     })
                                    }}>{supplier?.title}</div>
+                                }
+                              },
+                              {
+                                Header: 'isLucky',
+                                accessor: "isLucky",
+                                Cell: props =>{
+                                  let { _id, isLucky, statusPay } = props?.row?.original
+                                  console.log("isLucky, statusPay :", isLucky, statusPay)
+                                  return <div>
+                                            <div>
+                                              {isLucky ? "YES" : "NO"}
+                                            </div>
+                                            <div>
+                                            {
+                                              isLucky 
+                                              ? <button onClick={(evt)=>{
+                                                  navigate("/pay",  {state: {from: "/", id: _id } } )
+                                                }}><EditIcon/>{t("edit")}
+                                                </button>
+                                              : ""
+                                            }
+                                            </div>
+                                            <div>
+                                              {
+                                               isLucky ? statusPay ? "Pay" : "No pay" : ""
+                                              }
+                                            </div>
+                                          </div>
                                 }
                               },
                               {

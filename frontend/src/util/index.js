@@ -243,6 +243,12 @@ export const handlerErrorApollo = (props, error) =>{
             break;
           }
 
+          case Constants.EXPIRE_DATE:{
+            console.log("e?.extensions?.code :", e?.extensions?.code)
+            showToast("error", i18n.t(e?.extensions?.code))
+            break;
+          }
+
           default:{
             console.log("handlerErrorApollo :", e)
           }

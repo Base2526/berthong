@@ -215,6 +215,14 @@ const LotterysPage = (props) => {
                             }
                           },
                           {
+                            Header: 'Is expire',
+                            accessor: "expire",
+                            Cell: props => {
+                              let {expire} = props.row.values 
+                              return  <div>{ expire ? "Expire" : "Not expire" }</div>
+                            }
+                          },
+                          {
                             Header: 'Publish',
                             accessor: "publish",
                             Cell: props => {
@@ -317,6 +325,14 @@ const LotterysPage = (props) => {
                             Cell: props => {
                               let {original} = props.row 
                               return  <div>{ original.priceUnit }/{ original.price }</div>
+                            }
+                          },
+                          {
+                            Header: 'Is expire',
+                            accessor: "expire",
+                            Cell: props => {
+                              let {expire} = props.row.values 
+                              return  <div>{ expire ? "Expire" : "Not expire" }</div>
                             }
                           },
                           {

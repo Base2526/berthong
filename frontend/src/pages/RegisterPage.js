@@ -28,7 +28,7 @@ const RegisterPage = (props) => {
     const location = useLocation();
 
     let [input, setInput]   = useState(initValues);
-    let [error, setError]   = useState({password_not_match: ""});
+    let [error, setError]   = useState({username: "", password_not_match: ""});
 
 
     if(!_.isEmpty(props?.user)){
@@ -65,6 +65,15 @@ const RegisterPage = (props) => {
         loadCaptchaEnginge(8);
     },[]);
 
+    const validateUsername = (value) =>{
+        const regex = /^[a-z0-9]+$/;
+        if (!regex.test(value)) {
+            return false
+        }
+
+        return true
+    }
+
     const onInputChange = (e) => {
         const { name, value } = e.target;
 
@@ -81,6 +90,12 @@ const RegisterPage = (props) => {
         setError((prev) => {
           const stateObj = { ...prev, [name]: "" };
           switch (name) {
+            case "username":{
+                if (!validateUsername(value)) {
+                    stateObj["username"] = `a-z A-Z 1-9 ไม่สามารถมีช่องว่างได้`;
+                }
+                break;
+            }
             case "password": {
                 if (!_.isEqual(input.confirm_password, value)) {
                     stateObj["password_not_match"] = `Passwords do NOT match`;
@@ -129,6 +144,7 @@ const RegisterPage = (props) => {
                                     value={input.username} 
                                     onChange={onInputChange}
                                     onBlur={ validateInput } /> 
+                                    <p className="text-red-500"> {_.isEmpty(error.username) ? "" : error.username} </p>
                         </Box>
                         {/* ขอเพิ่มเบอร์โทรศัพท์  */}
                         {/* <Box> 
@@ -196,7 +212,7 @@ const RegisterPage = (props) => {
                         <Button 
                             variant="contained" 
                             color="warning" 
-                            disabled={ input.username == "" || input.email == "" || input.password == "" || input.confirm_password == "" || !_.isEqual(input.password, input.confirm_password) || !validateCaptcha(input.captcha, false)}
+                            disabled={ !validateUsername(input.username) ||  input.username == "" || input.email == "" || input.password == "" || input.confirm_password == "" || !_.isEqual(input.password, input.confirm_password) || !validateCaptcha(input.captcha, false)}
                             onClick={evt=>{ submitForm(evt) }}>สมัครสมาชิก</Button>    
                         </Box>
                     </Stack>

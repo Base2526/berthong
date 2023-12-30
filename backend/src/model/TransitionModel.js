@@ -41,6 +41,7 @@ const transitionSchema = new Schema({
     default: Constants.WAIT 
   },
   files: [File], // Recipt file when we tranfer mony to customer if lucky
+  description: { type: String },
 },
 {
     timestamps: true

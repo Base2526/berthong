@@ -144,6 +144,7 @@ import ContentsPage from "./pages/ContentsPage"
 import ContentPage from "./pages/ContentPage"
 
 import AdminSellPage from "./pages/AdminSellPage";
+import PayPage from "./pages/PayPage";
 
 import {  queryMe,
           queryNotifications, 
@@ -179,6 +180,8 @@ import {  queryMe,
           mutationAdminWithdraw,
           mutationConversation,
           mutationContent,
+
+          mutationPay,
           
           subConversations,
           subscriptionMe,
@@ -1040,6 +1043,48 @@ const App =(props) =>{
     }
   });
 
+  // 
+  const [onMutationPay, resultPay] = useMutation(mutationPay, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data : {pay} }, context) => {
+      let { status, data } = pay
+      // if(status){
+      //   let { variables } = context
+      //   switch(variables?.input?.mode.toUpperCase()){
+      //     case "NEW":{
+      //       const contentsValue = cache.readQuery({ query: queryContents });
+      //       if(!_.isNull(contentsValue)){
+      //         let newData = [...contentsValue.contents.data, data];
+      //         cache.writeQuery({
+      //           query: queryContents,
+      //           data: { contents: {...contentsValue.contents, data: newData} }
+      //         });
+      //       }
+      //       break;
+      //     }
+
+      //     case "EDIT":{
+      //       const contentsValue = cache.readQuery({ query: queryContents });
+      //       if(!_.isNull(contentsValue)){
+      //         let newData = _.map(contentsValue.contents.data, (item)=> item._id == data._id ? data : item ) 
+      //         cache.writeQuery({
+      //           query: queryContents,
+      //           data: { contents: {...contentsValue.contents, data: newData} }
+      //         });
+      //       }
+      //       break;
+      //     }
+      //   }
+      // }
+    },
+    onCompleted(data) {
+      navigate(-1)
+    },
+    onError(error){
+      return handlerErrorApollo( props, error )
+    }
+  });
+
   useEffect(()=>{
     if(unsubscribeSubConversations) unsubscribeSubConversations()
     if(unsubscribeSubMe) unsubscribeSubMe()
@@ -1724,6 +1769,9 @@ const App =(props) =>{
                  />} />
                  {/*  */}
               <Route path="/content" element={<ContentPage {...props}  onMutationContent={(evt)=>onMutationContent(evt)}  />} />
+              <Route path="/pay" element={<PayPage {...props}  onMutationPay={(evt)=>onMutationPay(evt)}  />} />
+
+              
             </Route>
             <Route path="*" element={<NotFound404Page />} />
           </Routes>

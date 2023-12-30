@@ -359,3 +359,7 @@
   height: 50px;
  
 } */
+
+.expire {
+  background: linear-gradient(180deg,#e6e5e0,#c9b1b1 49%,#e0d2d2 51%,#a01d1d)!important
+}
