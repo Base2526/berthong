@@ -27,7 +27,7 @@ table {
   /* border-radius: 10px; */
   background: #ffffff;
   /* box-shadow: -8px 8px 13px #ededed, 8px -8px 13px #ffffff; */
-  min-height: 100px;
+  min-height: 100px !important;
   height: fit-content;
 }
 table {

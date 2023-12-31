@@ -31,8 +31,10 @@ import {
   AllOut as AllOutIcon,
   Assistant as AssistantIcon,
   AddTask as AddTaskIcon,
-  FormatColorText as FormatColorTextIcon
+  FormatColorText as FormatColorTextIcon,
+  Sell as SellIcon
 } from '@mui/icons-material';
+
 import LinearProgress from '@mui/material/LinearProgress';
 import {
   HiOutlineHome as HomeIcon,
@@ -141,6 +143,9 @@ import HelpPage from "./pages/HelpPage"
 import ContentsPage from "./pages/ContentsPage"
 import ContentPage from "./pages/ContentPage"
 
+import AdminSellPage from "./pages/AdminSellPage";
+import PayPage from "./pages/PayPage";
+
 import {  queryMe,
           queryNotifications, 
           querySuppliers, 
@@ -175,6 +180,8 @@ import {  queryMe,
           mutationAdminWithdraw,
           mutationConversation,
           mutationContent,
+
+          mutationPay,
           
           subConversations,
           subscriptionMe,
@@ -186,7 +193,7 @@ import { update_profile as updateProfile, logout, addedConversations, addedConve
 import logo from "./images/logo_4.png";
 import { appStyles, ListItem } from "./styles"
 
-let { REACT_APP_SITE_TITLE } = process.env
+// let { REACT_APP_SITE_TITLE } = process.env
 
 let unsubscribeSubConversations =  null
 let unsubscribeSubMe = null
@@ -1036,6 +1043,48 @@ const App =(props) =>{
     }
   });
 
+  // 
+  const [onMutationPay, resultPay] = useMutation(mutationPay, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data : {pay} }, context) => {
+      let { status, data } = pay
+      // if(status){
+      //   let { variables } = context
+      //   switch(variables?.input?.mode.toUpperCase()){
+      //     case "NEW":{
+      //       const contentsValue = cache.readQuery({ query: queryContents });
+      //       if(!_.isNull(contentsValue)){
+      //         let newData = [...contentsValue.contents.data, data];
+      //         cache.writeQuery({
+      //           query: queryContents,
+      //           data: { contents: {...contentsValue.contents, data: newData} }
+      //         });
+      //       }
+      //       break;
+      //     }
+
+      //     case "EDIT":{
+      //       const contentsValue = cache.readQuery({ query: queryContents });
+      //       if(!_.isNull(contentsValue)){
+      //         let newData = _.map(contentsValue.contents.data, (item)=> item._id == data._id ? data : item ) 
+      //         cache.writeQuery({
+      //           query: queryContents,
+      //           data: { contents: {...contentsValue.contents, data: newData} }
+      //         });
+      //       }
+      //       break;
+      //     }
+      //   }
+      // }
+    },
+    onCompleted(data) {
+      navigate(-1)
+    },
+    onError(error){
+      return handlerErrorApollo( props, error )
+    }
+  });
+
   useEffect(()=>{
     if(unsubscribeSubConversations) unsubscribeSubConversations()
     if(unsubscribeSubMe) unsubscribeSubMe()
@@ -1281,17 +1330,18 @@ const App =(props) =>{
     switch(checkRole(user)){
       case Constants.AMDINISTRATOR:{
         return [{id: 0, title:"หน้าหลัก", icon: <HomeIcon size="1.5em"/>, path: "/"},
-                {id: 1, title:"เนื้อหา(Contents)", icon: <FormatColorTextIcon />, path: "/contents"},
-                {id: 2, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/withdraws"},
-                {id: 3, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/deposits"},
-                {id: 4, title:"รายการถอดเงินทั้งหมด", icon: <AccountTreeIcon />, path: "/all-withdraws"},
-                {id: 5, title:"รายการฝากเงินทั้งหมด", icon: <AddRoadIcon />, path: "/all-deposits"},
-                {id: 6, title:"รายการหวยทั้งหมด", icon: <AddTaskIcon />, path: "/lotterys"},
-                {id: 7, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
-                {id: 8, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
-                {id: 9, title:"จัดการหวยทั้งหมด", icon: <AssistantIcon />, path: "/manage-lotterys"},
-                {id: 10, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
-                {id: 11, title:"Development", icon: <FaDevIcon size="1.5em" />, path: "/development"}
+                {id: 1, title:"รายการขายทั้งหมด", icon: <SellIcon />, path: "/all-sell"},
+                {id: 2, title:"เนื้อหา(Contents)", icon: <FormatColorTextIcon />, path: "/contents"},
+                {id: 3, title:"รายการถอดเงิน รออนุมัติทั้งหมด", icon: <AccountTreeIcon />, path: "/withdraws"},
+                {id: 4, title:"รายการฝากเงิน รออนุมัติทั้งหมด", icon: <AddRoadIcon />, path: "/deposits"},
+                {id: 5, title:"รายการถอดเงินทั้งหมด", icon: <AccountTreeIcon />, path: "/all-withdraws"},
+                {id: 6, title:"รายการฝากเงินทั้งหมด", icon: <AddRoadIcon />, path: "/all-deposits"},
+                {id: 7, title:"รายการหวยทั้งหมด", icon: <AddTaskIcon />, path: "/lotterys"},
+                {id: 8, title:"รายชื่อบุคคลทั้งหมด", icon: <AlternateEmailIcon />, path: "/users"},
+                {id: 9, title:"รายชื่อธนาคารทั้งหมด", icon: <AllOutIcon />, path: "/taxonomy-banks"},
+                {id: 10, title:"จัดการหวยทั้งหมด", icon: <AssistantIcon />, path: "/manage-lotterys"},
+                {id: 11, title:"Db-Log", icon: <VscDebugIcon size="1.5em" />, path: "/dblog"},
+                {id: 12, title:"Development", icon: <FaDevIcon size="1.5em" />, path: "/development"}
               ]
       }
       case Constants.AUTHENTICATED:{
@@ -1405,7 +1455,7 @@ const App =(props) =>{
                     <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
                       {
                         !_.isEmpty(user?.avatar)
-                        ? <Avatar alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
+                        ? <Avatar class="profile" alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
                         : <FiUser color="white" size="1em"/>
                       }
                     </IconButton>
@@ -1423,7 +1473,7 @@ const App =(props) =>{
                     <IconButton size={'small'} onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
                       {
                         !_.isEmpty(user?.avatar)
-                        ? <Avatar alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
+                        ? <Avatar class="profile" alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
                         : <FiUser color="white" size="1em"/>
                       }
                     </IconButton>
@@ -1459,10 +1509,10 @@ const App =(props) =>{
                     <IconButton disabled={ disabledManageSuppliers() }  size={'small'} onClick={()=> navigate("/lotterys")}>
                       <BiStoreAlt color={ disabledManageSuppliers()  ? 'gray' : _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1em"/>
                     </IconButton>
-                    <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
+                    <IconButton class="btn-profile" size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
                       {
                         !_.isEmpty(user?.avatar)
-                        ? <Avatar alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
+                        ? <Avatar class="profile" alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
                         : <FiUser color="white" size="1em"/>
                       }
                     </IconButton>
@@ -1543,7 +1593,7 @@ const App =(props) =>{
                     edge="start"
                     className={clsx(classes.menuButton, open && classes.hide)}
                   ><MenuIcon /></IconButton>
-                  <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">{ REACT_APP_SITE_TITLE } { checkRole(user) === Constants.SELLER ? "(Seller)" : ""}</div></Typography>
+                  <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">{ t('REACT_APP_SITE_TITLE')  } { checkRole(user) === Constants.SELLER ? "(Seller)" : ""}</div></Typography>
                   <Stack className={"main-border-login"} direction={"row"} spacing={2} alignItems="center">
                     {toolbarMenu()}
                   </Stack>
@@ -1700,7 +1750,7 @@ const App =(props) =>{
               <Route path="/manage-lotterys" element={<ManageLotterysPage onMutationDatesLottery={(evt)=>onMutationDatesLottery(evt)}  />} />
               <Route path="/manage-lottery" element={<ManageLotteryPage onMutationDateLottery={(evt)=>onMutationDateLottery(evt)}/>} />
               <Route path="/users" element={<UsersPage {...props} />} />
-              <Route path="/user" element={<UserPage {...props} />} />
+              <Route path="/user" element={<UserPage {...props} onMutationMe={(evt)=>onMutationMe(evt)}/>} />
               <Route path="/taxonomy-banks" element={<TaxonomyBanksPage />} />
               <Route path="/taxonomy-bank" element={<TaxonomyBankPage  {...props} onMutationBank={(evt)=>onMutationBank(evt)}/>} />
               <Route path="/dblog" element={<DblogPage  {...props} />} />
@@ -1709,6 +1759,8 @@ const App =(props) =>{
               <Route path="/all-deposits" element={<DepositsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/all-withdraws" element={<WithdrawsPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route path="/development" element={<DevelopmentPage {...props} />} />
+             
+              <Route path="/all-sell" element={<AdminSellPage {...props} onLightbox={(value)=>setLightbox(value)} />} />
               <Route 
                 path="/contents" 
                 element={<ContentsPage {...props} 
@@ -1717,6 +1769,9 @@ const App =(props) =>{
                  />} />
                  {/*  */}
               <Route path="/content" element={<ContentPage {...props}  onMutationContent={(evt)=>onMutationContent(evt)}  />} />
+              <Route path="/pay" element={<PayPage {...props}  onMutationPay={(evt)=>onMutationPay(evt)}  />} />
+
+              
             </Route>
             <Route path="*" element={<NotFound404Page />} />
           </Routes>

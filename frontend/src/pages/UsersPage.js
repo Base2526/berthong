@@ -1,123 +1,89 @@
-import React, { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@apollo/client";
-import { DeleteForever as DeleteForeverIcon, 
-        Edit as EditIcon, 
-        ExitToApp as ExitToAppIcon } from '@mui/icons-material';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useQuery } from "@apollo/client";
+import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
+import _ from "lodash"
+import { AddBox as AddBoxIcon, 
+         Edit as EditIcon, 
+         DeleteForever as DeleteForeverIcon } from '@mui/icons-material';
+import { useTranslation } from "react-i18next";
 import {
+  Box,
   Stack,
   Avatar,
+  SpeedDial,
+  SpeedDialIcon,
   Button,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  SpeedDial,
-  SpeedDialIcon,
-  Box
-} from '@mui/material'
-import InfiniteScroll from "react-infinite-scroll-component";
-import _ from "lodash";
+  CircularProgress,
+  LinearProgress,
+  IconButton
+} from "@mui/material";
 import moment from "moment";
-import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate, createSearchParams } from "react-router-dom";
+import { getHeaders, handlerErrorApollo, checkRole } from "../util"
+import { queryManageSuppliers, queryUsers } from "../apollo/gqlQuery"
+import UserComp from "../components/UserComp"
+import * as Constants from "../constants"
+import TableComp from "../components/TableComp"
 
-import { queryUsers, mutationForceLogout } from "../apollo/gqlQuery";
-import { getHeaders, handlerErrorApollo, showToast } from "../util";
-import RolesComp from "../components/RolesComp"
-import * as Constants from "../constants";
+const INIT_SEARCH = {
+  PAGE: 1,
+  LIMIT: 1000,
+  NUMBER: "",
+  TITLE: "",
+  DETAIL: "",
+  PRICE: 500,
+  CHK_BON: false,
+  CHK_LAND: false,
+  CHK_MONEY: false,
+  CHK_GOLD: false
+}
 
 const UsersPage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-
-  let [input, setInput] = useState({ OFF_SET: 0, LIMIT: 20 })
+  let { user, onLightbox, onMutationLottery } = props
+  
+  const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
 
   let [datas, setDatas] = useState([]);
   let [total, setTotal] = useState(0)
   let [slice, setSlice] = useState(20);
   let [hasMore, setHasMore] = useState(true)
+
+  const [pageOptions, setPageOptions] = useState([30, 50, 100]);
+
+  const [pageIndex, setPageIndex] = useState(0);  
+  const [pageSize, setPageSize] = useState(pageOptions[0])
+
+
+  let [input, setInput] = useState({ OFF_SET: 0, LIMIT: 20 })
   const [loading, setLoading] = useState(true);
 
-  const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "", description: "" });
+  // const { loading: loadingSuppliers, 
+  //         data: dataSuppliers, 
+  //         error: errorSuppliers, 
+  //         subscribeToMore: subscribeToMoreSuppliers, 
+  //         fetchMore: fetchMoreSuppliers,
+  //         networkStatus: networkStatusSuppliers } = useQuery( queryManageSuppliers, { 
+  //                                                             context: { headers: getHeaders(location) }, 
+  //                                                             // variables: { input: search },
+  //                                                             fetchPolicy: 'cache-first' , 
+  //                                                             nextFetchPolicy: 'network-only' , 
+  //                                                             notifyOnNetworkStatusChange: true
+  //                                                           });
 
-  const [onMutationForceLogout, resultMutationForceLogout] = useMutation(mutationForceLogout,
-    {
-      context: { headers: getHeaders(location) },
-      update: (cache, {data: {forceLogout}}, context ) => {
-        console.log("forceLogout :", forceLogout)
-        let { status } = forceLogout
+  // if(!_.isEmpty(errorSuppliers)){
+  //   handlerErrorApollo( props, errorSuppliers )
+  // }
 
-        if(status){
-          switch(context?.variables?.input?.mode.toLowerCase()){
-            case "all":{
-              let { _id } = context?.variables?.input
-              let queryUsersValue = cache.readQuery({ query: queryUsers, variables: { input } });
-              if(!_.isEmpty(queryUsersValue)){
+  /////////
 
-                let newData = _.map(queryUsersValue.users.data, (v)=>{
-                                if(v?.session){
-                                  return  _.omit(v, ['session'])
-                                }
-                                return v
-                              }) 
-
-                cache.writeQuery({
-                  query: queryUsers,
-                  variables: { input },
-                  data: Object.assign({}, queryUsersValue, { users: {...queryUsersValue.users, data: newData } } )
-                });
-              }
-              break;
-            }
-    
-            case "id":{
-              let { _id } = context?.variables?.input
-              let queryUsersValue = cache.readQuery({ query: queryUsers, variables: { input } });
-              if(!_.isEmpty(queryUsersValue)){
-
-                let newData = _.map(queryUsersValue.users.data, (v)=>{
-                                if(v?.session && _.isEqual(v?.session?._id.toString(), _id.toString())){
-                                  return  _.omit(v, ['session'])
-                                }
-                                return v
-                              }) 
-
-                cache.writeQuery({
-                  query: queryUsers,
-                  variables: { input },
-                  data: Object.assign({}, queryUsersValue, { users: {...queryUsersValue.users, data: newData } } )
-                });
-              }
-              break;
-            }
-          }
-        }
-        
-        // let { status, input } = manageLottery
-        // if(status){
-        //   let queryManageLotterysValue = cache.readQuery({ query: queryManageLotterys });
-        //   if(queryManageLotterysValue){
-        //     let filterData = _.filter(queryManageLotterysValue.manageLotterys.data, (v)=>v._id !== input._id)
-        //     cache.writeQuery({
-        //       query: queryManageLotterys,
-        //       data: { manageLotterys: {...queryManageLotterysValue.manageLotterys, data: filterData } },
-        //     });
-        //   }
-        // }
-      },
-      onCompleted(data) {
-        showToast("info", `ลบเรียบร้อย`)
-      },
-      onError(error){
-        return handlerErrorApollo( props, error )
-      }
-    }
-  );
-
-  const { loading: loadingUsers, 
+   const { loading: loadingUsers, 
           data: dataUsers, 
           error: errorUsers, 
           networkStatus: networkStatusUsers,
@@ -147,147 +113,182 @@ const UsersPage = (props) => {
     }
   }, [dataUsers, loadingUsers])
 
-  const handleDelete = (id) => {
-  };
+  ////////
+
+  // useEffect(() => {
+  //   if(!loadingSuppliers){
+  //     if (dataSuppliers?.manageSuppliers) {
+  //       let { status, data } = dataSuppliers?.manageSuppliers
+  //       if(status){
+  //         setDatas(data)
+  //       }
+  //     }
+  //   }
+  // }, [dataSuppliers, loadingSuppliers])
 
   const handleClose = () => {
     setOpenDialogDelete({ ...openDialogDelete, isOpen: false, description: "" });
   };
 
-  const fetchMoreData = async() =>{
-    let mores =  await fetchMoreUsers({ variables: { input: {...input, OFF_SET:input.OFF_SET + 1} } })
-    let {status, data} =  mores.data.users
-    // console.log("status, data :", status, data)
-   
-    if(slice === total){
-      setHasMore(false);
-    }else{
-      setTimeout(() => {
-        let newDatas = [...datas, ...data]
-        setDatas(newDatas)
-        setSlice(newDatas.length);
-      }, 1000); 
-    }
+  const handleDelete = (id) => {
+    // onDeletePhone({ variables: { id } });
+
+    console.log("handleDelete :", id)
+    onMutationLottery({ variables: { input: {mode: "DELETE", _id: id} } });
+  };
+
+  // const handleLoadMore = () => {
+  //   fetchMoreSuppliers({
+  //     // variables: {
+  //     //   input: {...search, PAGE: search.PAGE + 1}
+  //     // },
+  //     updateQuery: (prev, {fetchMoreResult}) => {
+  //       if (!fetchMoreResult?.suppliers?.data?.length) {
+  //         return prev;
+  //       }
+
+  //       let suppliers = {...prev.suppliers, data: _.unionBy( fetchMoreResult?.suppliers?.data, prev?.suppliers?.data, '_id') }
+  //       return Object.assign({}, prev, {suppliers} );
+  //     },
+  //   });
+  // }
+
+  // const handleRefresh = async() => {
+  //   // onSearchChange({...search, PAGE: 1})
+  // }
+
+  const getColmns = () =>{
+    return  [
+              {
+                Header: 'Edit',
+                Cell: props => {
+                  let { original } = props.row
+                  return <button onClick={()=>{ navigate("/user", {state: {from: "/", mode: "edit", id: original?._id}}) }}><EditIcon/>{t("edit")}</button>
+                }
+              },
+              {
+                Header: 'Image',
+                accessor: 'avatar',
+                Cell: props =>{
+                    let {original} = props.row
+                    console.log("original :", original)
+                    return  <div> 
+                              <Avatar
+                                alt="Avatar"
+                                variant="rounded"
+                                src={ _.isEmpty(original?.avatar) ? "" : original?.avatar?.url}
+                                onClick={(e) => {
+                                  onLightbox({ isOpen: true, photoIndex: 0, images:original?.avatar })
+                                }}
+                                sx={{ width: 56, height: 56 }}
+                              />
+                            </div>
+                }
+              },
+              {
+                Header: 'Display name',
+                accessor: 'displayName',
+                Cell: props =>{
+                  let { original } = props.row
+                  return <div>{ original?.displayName }</div>
+                }
+              },
+              {
+                Header: 'Is seller',
+                Cell: props =>{
+                  let { original } = props.row
+                  let roles = original?.roles
+                  return <div>{ _.includes(roles, Constants.SELLER.toString()) ? "YES" : "NO" }</div>
+                }
+              },
+
+              {
+                Header: 'Lock account',
+                accessor: 'lockAccount',
+                Cell: props =>{
+                  let { original } = props.row
+                  return <div>{ original?.lockAccount?.lock ? "YES" : "NO"}</div>
+                }
+              },
+              {
+                Header: 'Last access',
+                accessor: 'lastAccess',
+                Cell: props => {
+                  let {original} = props.row 
+                  return <div>{(moment(new Date(original?.lastAccess), 'YYYY-MM-DD HH:mm')).format('MMMM Do YYYY, h:mm:ss a')} - { moment(new Date(original?.lastAccess)).fromNow() }</div>
+                }
+              },
+            ]
+    
   }
 
+  // We need to keep the table from resetting the pageIndex when we
+  // Update data. So we can keep track of that flag with a ref.
+  const skipResetRef = useRef(false)
+
+  // When our cell renderer calls updateMyData, we'll use
+  // the rowIndex, columnId and new value to update the
+  // original data
+  const updateMyData = (rowIndex, columnId, value) => {
+      skipResetRef.current = true
+  }
+  //////////////////////
+
+  const fetchData = useCallback(({ pageSize, pageIndex }) => {
+      setPageSize(pageSize)
+      setPageIndex(pageIndex)
+  })
+  
   return (
-    <div className="pl-2 pr-2">
-        {
-          loading
-          ?  <CircularProgress />
-          :  datas?.length == 0 
-              ?   <label>Empty data</label>
-              :   <div>
-                    <button onClick={(e)=>{ onMutationForceLogout({ variables: { input: { mode: "all" } } }) }}><ExitToAppIcon />Force logout all</button>
-                    <InfiniteScroll
-                        dataLength={slice}
-                        next={fetchMoreData}
-                        hasMore={hasMore}
-                        loader={<h4>Loading...</h4>}>
-                        { 
-                        _.map(datas, (item, index) => {            
-                          let { _id,  avatar, displayName, username, email, roles, lastAccess, transition, session } = item
-
-                          let money_deposit = 0
-                          let money_withdraw = 0
-                          if(!_.isEmpty(transition)){
-                            _.map(transition, (tra)=>{
-                              switch(tra.type){
-                                case Constants.SUPPLIER:{
-                                  let {supplier} = tra
-
-                                  if(supplier !== undefined){
-                                    console.log("supplier: ", supplier)
-                                  }
-                                  break;
-                                }
-                                case Constants.DEPOSIT:{
-                                  let {status, deposit} = tra
-                                  if( status === Constants.APPROVED && deposit !== undefined){
-                                    money_deposit += deposit?.balance
-                                  }
-                                  break;
-                                }
-                                case Constants.WITHDRAW:{
-                                  let {status, withdraw} = tra
-                                  if( status === Constants.APPROVED && withdraw !== undefined){
-                                    money_withdraw += withdraw?.balance
-                                  }
-                                  break;
-                                }
-                              }
-                            })
-                          }
-
-                          return <Stack direction="row" spacing={2} >
-                                    <Box sx={{ width: '8%' }}>
-                                      <Avatar
-                                        alt="Example avatar"
-                                        variant="rounded"
-                                        src={avatar?.url}
-                                        sx={{ width: 56, height: 56 }}
-                                      />
-                                    </Box>
-                                    <Box 
-                                      sx={{ width: '8%' }}
-                                      onClick={()=>{
-                                        navigate({ pathname: `/p`, search: `?${createSearchParams({ id: _id })}` })
-                                      }}>{displayName}</Box>
-                                    <Box sx={{ width: '10%' }}>{username}</Box>
-                                    <Box sx={{ width: '20%' }}>{email}</Box>
-                                    <Box sx={{width: '10%'}}>{money_deposit}</Box>
-                                    <Box sx={{width: '10%'}}>{money_withdraw}</Box>
-                                    <Box sx={{ width: '15%' }}> {/*{roles.join(',')}*/} <RolesComp Ids={roles}/> </Box>
-                                    <Box sx={{ width: '5%' }}>{ (moment(new Date(lastAccess), 'YYYY-MM-DD HH:mm')).format('DD MMM, YYYY HH:mm')}</Box>
-                                    <Box sx={{ width: '20%' }}>
-                                      {
-                                        !_.isUndefined(session)
-                                        ? <button onClick={(e)=>{ onMutationForceLogout({ variables: { input: { mode: "id", _id: session._id } } }) }}><ExitToAppIcon />Force logout</button>
-                                        : <div />
-                                      }
-                                      <button onClick={()=>{ navigate("/user", {state: {from: "/", mode: "edit", id: _id}}) }}><EditIcon/>{t("edit")}</button>
-                                      <button onClick={(e)=>{ setOpenDialogDelete({ isOpen: true, id: _id, description: displayName }) }}><DeleteForeverIcon/>{t("delete")}</button>
-                                    </Box>
-                                </Stack>
-                        })
-                      }
-                    </InfiniteScroll>
-                  </div>
-        }
+    <div className="App">
       
-        {openDialogDelete.isOpen && (
-          <Dialog
-            open={openDialogDelete.isOpen}
-            onClose={handleClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle id="alert-dialog-title">{t("confirm_delete")}</DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-                {openDialogDelete.description}
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                variant="outlined"
-                onClick={() => {
-                  handleDelete(openDialogDelete.id);
+      {
+        loadingUsers
+        ? <CircularProgress />
+        : <div>
+          {/* {
+            checkRole(user) == Constants.SELLER 
+            ? <button onClick={(evt)=>{ navigate("/lottery", {state: {from: "/", mode: "new" } }) }}> <AddBoxIcon/>{t("ADD")} </button>
+            : <div/>
+          } */}
+            <TableComp
+              columns={getColmns()}
+              data={datas}
+              fetchData={fetchData}
+              rowsPerPage={pageOptions}
+              updateMyData={updateMyData}
+              skipReset={skipResetRef.current}
+              isDebug={false}/>
+          </div> 
+      }
 
-                  setOpenDialogDelete({ isOpen: false, id: "", description: "" });
-                }}
-              >{t("delete")}</Button>
-              <Button variant="contained" onClick={handleClose} autoFocus>{t("close")}</Button>
-            </DialogActions>
-          </Dialog>
-        )}
-        <SpeedDial
-          ariaLabel="SpeedDial basic example"
-          sx={{ position: 'absolute', bottom: 16, right: 16 }}
-          icon={<SpeedDialIcon />}
-          onClick={(e)=>{ navigate({ pathname: "/user", state: {from: "/", mode: "new" } }) }}/>
+      {/* { openDialogDelete.isOpen && 
+        <Dialog
+          open={openDialogDelete.isOpen}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description">
+          <DialogTitle id="alert-dialog-title">{t("confirm_delete")}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              {openDialogDelete.description}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                handleDelete(openDialogDelete.id);
+
+                setOpenDialogDelete({ isOpen: false, id: "", description: "" });
+              }}
+            >{t("delete")}</Button>
+            <Button variant="contained" onClick={handleClose} autoFocus>{t("close")}</Button>
+          </DialogActions>
+        </Dialog>
+      } */}
     </div>
-  );
+  )
 };
 
 export default UsersPage;

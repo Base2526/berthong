@@ -112,7 +112,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "export NODE_OPTIONS=--max_old_space_size=4096 && react-scripts build",
+    "build": "export NODE_OPTIONS=--max_old_space_size=4096 && GENERATE_SOURCEMAP=false react-scripts build",
     "test": "jest",
     "eject": "react-scripts eject"
   },

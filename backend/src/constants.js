@@ -13,6 +13,7 @@ export const PASSWORD_WRONG = "PASSWORD_WRONG";
 export const UNAUTHENTICATED= "UNAUTHENTICATED";
 export const BAD_USER_INPUT = "BAD_USER_INPUT";
 export const NOT_ENOUGH_BALANCE = "NOT_ENOUGH_BALANCE";
+export const EXPIRE_DATE= "EXPIRE_DATE";
 
 export const CANCEL       = 0;
 export const OK           = 1;

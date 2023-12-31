@@ -10,7 +10,7 @@ const moment = require('moment');
 
 
 cron.schedule('*/5 * * * *', async() => {
-  console.log('Run task every minute #1 :', new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
+  console.log('[Start] Run task every 5 minute :', new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
   try{
     // let users = await User.find({})
 
@@ -100,7 +100,7 @@ cron.schedule('*/5 * * * *', async() => {
     }))
     //////////////// clear book ////////////////
 
-    console.log('Run task every minute #2 :', new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
+    console.log('[End] Run task every 5 minute :', new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
   } catch(err) {
     console.log("cron error :", err)
   }

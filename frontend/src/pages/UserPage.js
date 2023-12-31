@@ -5,10 +5,22 @@ import { styled } from "@mui/material/styles";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import _ from "lodash"
 import { useQuery } from "@apollo/client";
-import { IconButton, Avatar } from "@mui/material";
 
-import { getHeaders } from "../util"
+import {  
+  IconButton, 
+  Avatar,
+  Button, 
+  LinearProgress, 
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  FormLabel
+ } from '@mui/material';
+
+import { getHeaders, checkRole } from "../util"
 import { queryUserById } from "../apollo/gqlQuery"
+import * as Constants from "../constants"
 
 const Input = styled("input")({ display: "none" });
 
@@ -19,14 +31,15 @@ let initValues =  {
   confirmPassword: "",
   displayName: "",
   avatar: null,
-  roles: []
+  roles: [],
+  lockAccount: false
 }
 
 const UserPage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const { user } = props
+  const { user, onMutationMe } = props
   let [input, setInput]       = useState(initValues);
   let [error, setError]       = useState(initValues);
   
@@ -59,6 +72,7 @@ const UserPage = (props) => {
             avatar: data.avatar,
             roles: data.roles,
             isActive: data.isActive,
+            lockAccount: data?.lockAccount?.lock
           })
         }
       }
@@ -69,16 +83,16 @@ const UserPage = (props) => {
     event.preventDefault();
     
     console.log("input :", input)
-    /*
+    
     switch(checkRole(user)){
-      case AMDINISTRATOR:{
+      case Constants.AMDINISTRATOR:{
         let newInput = {
-          uid: id,
-          displayName: input.username,
+          displayName: input.displayName,
           email: input.email,
           password: input.password,
           isActive: input.isActive,
-          avatar: input.avatar
+          avatar: input.avatar,
+          lockAccount: input.lockAccount
         }
 
         if(mode == "edit"){
@@ -89,19 +103,19 @@ const UserPage = (props) => {
         break;
       }
 
-      case AUTHENTICATED:{
-        let newInput = {
-          displayName: input.username,
-          email: input.email,
-          password: input.password,
-          image: input.image
-        }
+      case Constants.AUTHENTICATED:{
+        // let newInput = {
+        //   displayName: input.username,
+        //   email: input.email,
+        //   password: input.password,
+        //   avatar: input.avatar
+        // }
     
-        onMutationMe({ variables: { input: newInput }});
+        // onMutationMe({ variables: { input: newInput }});
         break;
       }
     }
-    */
+    
   }
 
   const onInputChange = (e) => {
@@ -243,6 +257,20 @@ const UserPage = (props) => {
                 onBlur={ validateInput } />
               <p className="text-red-500"> {_.isEmpty(error.confirmPassword) ? "" : error.confirmPassword} </p>
             </div>
+
+            <div>
+              <FormLabel id="demo-row-radio-buttons-group-label">สถานะ Lock account</FormLabel>
+              <RadioGroup
+                row
+                aria-labelledby="demo-row-radio-buttons-group-label"
+                name="lockAccount"
+                onChange={ onInputChange }
+                value={input.lockAccount === "true" ? "true" : "false"}>
+                <FormControlLabel value="false" control={<Radio />} label="No lock account" />
+                <FormControlLabel value="true" control={<Radio />} label="Lock account" />
+              </RadioGroup>
+            </div>
+
             <button type="submit"> {t("update")} </button>
           </form>);
 }

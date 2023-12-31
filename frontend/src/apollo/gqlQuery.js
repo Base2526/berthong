@@ -14,6 +14,7 @@ export const queryBankByIds     = gql`query bankByIds($ids: [ID]!) { bankByIds(_
 export const queryBookBuyTransitions = gql`query bookBuyTransitions { bookBuyTransitions }`;
 export const queryHistoryTransitions = gql`query historyTransitions { historyTransitions }`;
 export const queryFriendProfile      = gql`query friendProfile($id: ID!) { friendProfile(_id: $id) }`;
+export const queryBuyById         = gql`query buyById($id: ID!) { buyById(_id: $id) }`;
 export const queryBuys            = gql`query buys { buys }`;
 export const queryNotifications   = gql`query notifications { notifications }`;
 export const queryCommentById     = gql`query commentById($id: ID!) { commentById(_id: $id) }`;
@@ -59,8 +60,12 @@ export const mutationAdminDeposit   = gql`mutation adminDeposit($input: JSON){ a
 export const mutationAdminWithdraw  = gql`mutation adminWithdraw($input: JSON){ adminWithdraw(input: $input) }`;
 export const mutationManageLottery  = gql`mutation manageLottery($input: ManageLotteryInput) { manageLottery(input: $input) }`;
 export const mutationForceLogout    = gql`mutation forceLogout($input: JSON){ forceLogout(input: $input) }`;
+export const mutationExpireLottery    = gql`mutation expireLottery($input: JSON){ expireLottery(input: $input) }`;
 export const mutationCalculateLottery    = gql`mutation calculateLottery($input: JSON){ calculateLottery(input: $input) }`;
 export const mutationContent        = gql`mutation content($input: JSON){ content(input: $input) }`;
+
+export const mutationPay            = gql`mutation pay($input: JSON){ pay(input: $input) }`;
+export const mutationLotteryClone   = gql`mutation lotteryClone($id: ID!){ lotteryClone(_id: $id) }`;
 
 // subscription 
 export const subscriptionMe            = gql`subscription me($userId: ID!){ me(userId: $userId) }`;
