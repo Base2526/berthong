@@ -828,6 +828,7 @@ export default gql`
 
     content(input: JSON): JSON
     pay(input: JSON): JSON
+    lotteryClone(_id: ID!): JSON 
   }
 
   type Subscription {

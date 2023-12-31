@@ -420,7 +420,7 @@ export default {
 
       let aggregate = []
 
-      let match     = {publish: true}
+      let match     = {publish: true, expire: false}
       if(!_.isEmpty(TITLE)){
         match = {...match,  title: { $regex: TITLE, $options: "i" } }
       }
@@ -3819,6 +3819,88 @@ export default {
       // console.log("pay @3 :", newInput)
 
       await Model.Transition.updateOne( { _id: input?.id }, newInput )
+
+      return {
+        status: true,
+        executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
+      }
+    },
+
+    async lotteryClone(parent, args, context, info) {
+      let start = Date.now()
+      let { _id } = args
+      let { req } = context
+
+      console.log("lotteryClone @1 :", _id, await Utils.cloneLottery(_id))
+
+      let { current_user } =  await Utils.checkAuth(req);
+      let role = Utils.checkRole(current_user)
+      if( role !==Constants.AMDINISTRATOR && 
+          role !==Constants.SELLER ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+
+
+      // let newFiles = [];
+      // if(!_.isEmpty(input.files)){
+
+      //   for (let i = 0; i < input.files.length; i++) {
+      //     try{
+      //       let fileObject = (await input.files[i]).file
+
+      //       if(!_.isEmpty(fileObject)){
+      //         const { createReadStream, filename, encoding, mimetype } = fileObject //await input.files[i];
+      //         const stream = createReadStream();
+      //         const assetUniqName = Utils.fileRenamer(filename);
+      //         let pathName = `/app/uploads/${assetUniqName}`;
+              
+    
+      //         const output = fs.createWriteStream(pathName)
+      //         stream.pipe(output);
+    
+      //         await new Promise(function (resolve, reject) {
+      //           output.on('close', () => {
+      //             resolve();
+      //           });
+          
+      //           output.on('error', async(err) => {
+      //             await Utils.loggerError(req, err.toString());
+    
+      //             reject(err);
+      //           });
+      //         });
+    
+      //         // const urlForArray = `${process.env.RA_HOST}${assetUniqName}`;
+      //         newFiles.push({ url: `images/${assetUniqName}`, filename, encoding, mimetype });
+      //       }else{
+      //         if(input.files[i].delete){
+      //           let pathUnlink = '/app/uploads/' + input.files[i].url.split('/').pop()
+      //           fs.unlink(pathUnlink, async(err)=>{
+      //               if (err) {
+      //                 await Utils.loggerError(req, err);
+      //               }else{
+      //                 // if no error, file has been deleted successfully
+      //                 console.log('File has been deleted successfully ', pathUnlink);
+      //               }
+      //           });
+      //         }else{
+      //           newFiles = [...newFiles, input.files[i]]
+      //         }
+      //       }
+      //       // console.log("updatePost #6:", newFiles)
+      //     } catch(err) {
+      //       await Utils.loggerError(req, err.toString());
+      //     }
+      //   }
+      // }
+
+      // let newInput = {...input, files:newFiles}
+
+      // // console.log("pay @2 :", newInput)
+
+      // newInput = _.omit(newInput, ["id"])
+
+      // // console.log("pay @3 :", newInput)
+
+      // await Model.Transition.updateOne( { _id: input?.id }, newInput )
 
       return {
         status: true,

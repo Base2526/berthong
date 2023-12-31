@@ -65,6 +65,7 @@ export const mutationCalculateLottery    = gql`mutation calculateLottery($input:
 export const mutationContent        = gql`mutation content($input: JSON){ content(input: $input) }`;
 
 export const mutationPay            = gql`mutation pay($input: JSON){ pay(input: $input) }`;
+export const mutationLotteryClone   = gql`mutation lotteryClone($id: ID!){ lotteryClone(_id: $id) }`;
 
 // subscription 
 export const subscriptionMe            = gql`subscription me($userId: ID!){ me(userId: $userId) }`;

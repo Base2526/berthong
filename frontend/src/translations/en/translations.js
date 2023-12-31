@@ -1,4 +1,5 @@
 export const TRANSLATIONS_EN = {
+    REACT_APP_SITE_TITLE: "เบอร์เงินเบอร์ทอง ออนไลด์",
     welcome:"Welcome to the tutorial",
     welcome_to_berthong: "Welcome K.{{name}}  to Berthong",
     label_keyword_search: "Keyword search",

@@ -193,7 +193,7 @@ import { update_profile as updateProfile, logout, addedConversations, addedConve
 import logo from "./images/logo_4.png";
 import { appStyles, ListItem } from "./styles"
 
-let { REACT_APP_SITE_TITLE } = process.env
+// let { REACT_APP_SITE_TITLE } = process.env
 
 let unsubscribeSubConversations =  null
 let unsubscribeSubMe = null
@@ -1455,7 +1455,7 @@ const App =(props) =>{
                     <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
                       {
                         !_.isEmpty(user?.avatar)
-                        ? <Avatar alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
+                        ? <Avatar class="profile" alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
                         : <FiUser color="white" size="1em"/>
                       }
                     </IconButton>
@@ -1473,7 +1473,7 @@ const App =(props) =>{
                     <IconButton size={'small'} onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
                       {
                         !_.isEmpty(user?.avatar)
-                        ? <Avatar alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
+                        ? <Avatar class="profile" alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
                         : <FiUser color="white" size="1em"/>
                       }
                     </IconButton>
@@ -1509,10 +1509,10 @@ const App =(props) =>{
                     <IconButton disabled={ disabledManageSuppliers() }  size={'small'} onClick={()=> navigate("/lotterys")}>
                       <BiStoreAlt color={ disabledManageSuppliers()  ? 'gray' : _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1em"/>
                     </IconButton>
-                    <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
+                    <IconButton class="btn-profile" size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
                       {
                         !_.isEmpty(user?.avatar)
-                        ? <Avatar alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
+                        ? <Avatar class="profile" alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
                         : <FiUser color="white" size="1em"/>
                       }
                     </IconButton>
@@ -1593,7 +1593,7 @@ const App =(props) =>{
                     edge="start"
                     className={clsx(classes.menuButton, open && classes.hide)}
                   ><MenuIcon /></IconButton>
-                  <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">{ REACT_APP_SITE_TITLE } { checkRole(user) === Constants.SELLER ? "(Seller)" : ""}</div></Typography>
+                  <Typography variant="h6" noWrap onClick={()=>navigate("/")}><div className="fnt">{ t('REACT_APP_SITE_TITLE')  } { checkRole(user) === Constants.SELLER ? "(Seller)" : ""}</div></Typography>
                   <Stack className={"main-border-login"} direction={"row"} spacing={2} alignItems="center">
                     {toolbarMenu()}
                   </Stack>

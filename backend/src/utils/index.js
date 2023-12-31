@@ -4,6 +4,8 @@ import deepdash from "deepdash";
 deepdash(_);
 import mongoose from 'mongoose';
 import cryptojs from "crypto-js";
+import * as fs from "fs";
+import * as path from 'path';
 
 import AppError from "./AppError"
 
@@ -732,4 +734,64 @@ export const divide = (a, b) => {
       throw new Error("Division by zero is not allowed.");
     }
     return a / b;
+}
+
+export const cloneLottery = async(id) => {
+    try {
+        // Find the user by ID
+        //   const originalUser = await User.findById(userId);
+        let originalSuppliers = await Model.Supplier.findById(id)
+    
+        // Clone the user using toObject
+        const clonedSuppliersObject = originalSuppliers.toObject();
+    
+        // Make modifications to the cloned object (for example, change username)
+        clonedSuppliersObject.buys = [];
+        clonedSuppliersObject.follows = []
+    
+        // Create a new Mongoose document with the cloned object
+        //   const clonedUser = new User(clonedUserObject);
+        const clonedSuppliers = new Model.Supplier(clonedSuppliersObject);
+        clonedSuppliers._id   = new mongoose.Types.ObjectId();
+        clonedSuppliers.files = [];
+        clonedSuppliers.publish = false;
+        clonedSuppliers.expire = false;
+        await clonedSuppliers.save()
+
+        let newFiles = [];
+        _.map(originalSuppliers?.files, async originalFile=>{
+            const imageBuffer = await fs.promises.readFile(`/app/uploads${ _.replace(originalFile.url, "images", "") }`);// fs.readFileSync(originalFile.url);
+
+            const assetUniqName = fileRenamer(originalFile.filename);
+            const newImagePath =  `/app/uploads/${assetUniqName}`;// `path/to/new/image/${clonedUser._id}.jpg`;
+            await fs.promises.writeFile(newImagePath, imageBuffer);
+
+            newFiles.push({ url: `images/${assetUniqName}`, filename: originalFile.filename, encoding: originalFile.encoding, mimetype: originalFile.mimetype });
+            
+            if(originalSuppliers?.files.length === newFiles.length){
+                clonedSuppliers.files = newFiles;
+                await clonedSuppliers.save()
+            }
+        })
+
+        return clonedSuppliers;
+      /*
+      // Read the image file content
+      const imageBuffer = await fs.readFile(originalUser.profileImage);
+  
+      // Save the image file for the new user
+      const newImagePath = `path/to/new/image/${clonedUser._id}.jpg`;
+      await fs.writeFile(newImagePath, imageBuffer);
+  
+      // Update the profileImage path for the new user
+      clonedUser.profileImage = newImagePath;
+      await clonedUser.save();
+      */
+  
+      console.log('User cloned and modified successfully.');
+    } catch (error) {
+      console.error('Error cloning and modifying user:', error);
+    } finally {
+        //   mongoose.disconnect();
+    }
 }

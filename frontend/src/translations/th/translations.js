@@ -1,4 +1,5 @@
 export const TRANSLATIONS_TH = {
+    REACT_APP_SITE_TITLE: "เบอร์เงินเบอร์ทอง ออนไลด์",
     welcome:"สวัสดีชาวโลก",
 
     welcome_to_berthong: "ยินดีต้อนรับ คุณ {{name}} เข้าสู่ระบบ Berthong",

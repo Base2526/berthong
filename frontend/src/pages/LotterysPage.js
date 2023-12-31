@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { useNavigate, useLocation, createSearchParams } from "react-router-dom";
 import _ from "lodash"
 import { AddBox as AddBoxIcon, 
          Edit as EditIcon, 
          DeleteForever as DeleteForeverIcon } from '@mui/icons-material';
+
+import { GrClone as CloneIcon } from "react-icons/gr";
 import { useTranslation } from "react-i18next";
 import {
   Box,
@@ -23,8 +25,8 @@ import {
   IconButton
 } from "@mui/material";
 import moment from "moment";
-import { getHeaders, handlerErrorApollo, checkRole } from "../util"
-import { queryManageSuppliers } from "../apollo/gqlQuery"
+import { getHeaders, handlerErrorApollo, checkRole, showToast } from "../util"
+import { queryManageSuppliers, mutationLotteryClone } from "../apollo/gqlQuery"
 import UserComp from "../components/UserComp"
 import * as Constants from "../constants"
 import TableComp from "../components/TableComp"
@@ -59,6 +61,52 @@ const LotterysPage = (props) => {
 
   const [pageIndex, setPageIndex] = useState(0);  
   const [pageSize, setPageSize] = useState(pageOptions[0])
+
+  const [onMutationLotteryClone, resultMutationLotteryClone] = useMutation(mutationLotteryClone, {
+    context: { headers: getHeaders(location) },
+    update: (cache, {data : {lotteryClone} }, context) => {
+      let { status, data } = lotteryClone
+      console.log("data :", data, context)
+
+      // if(status){
+      //   let { variables } = context
+      //   switch(variables?.input?.mode.toUpperCase()){
+      //     case "NEW":{
+      //       const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers /*, variables: { input: search } */ });
+      //       if(!_.isNull(manageSuppliersValue)){
+      //         let newData = [...manageSuppliersValue.manageSuppliers.data, data];
+      //         cache.writeQuery({
+      //           query: queryManageSuppliers,
+      //           // variables: { input: search },
+      //           data: { manageSuppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
+      //         });
+      //       }
+      //       break;
+      //     }
+
+      //     case "EDIT":{
+      //       const manageSuppliersValue = cache.readQuery({ query: queryManageSuppliers /*, variables: { input: search } */  });
+      //       if(!_.isNull(manageSuppliersValue)){
+      //         let newData = _.map(manageSuppliersValue.manageSuppliers.data, (item)=> item._id == data._id ? data : item ) 
+      //         cache.writeQuery({
+      //           query: queryManageSuppliers,
+      //           // variables: { input: search },
+      //           data: { manageSuppliers: {...manageSuppliersValue.manageSuppliers, data: newData} }
+      //         });
+      //       }
+      //       break;
+      //     }
+      //   }
+      // }
+    },
+    onCompleted(data) {
+      showToast("success", `Clone complete.`)
+      navigate(0)
+    },
+    onError(error){
+      return handlerErrorApollo( props, error )
+    }
+  });
 
   const { loading: loadingSuppliers, 
           data: dataSuppliers, 
@@ -126,18 +174,19 @@ const LotterysPage = (props) => {
                         () => [
                           {
                             Header: 'Edit',
-                            // accessor: 'createdAt',
                             Cell: props => {
-                              // let {createdAt} = props.row.values 
-                              // let date = new Date(createdAt).toLocaleString('en-US', { timeZone: 'asia/bangkok' });
                               let { original } = props.row
-                              console.log("props.row.values :", original)
                               return  <div>
-                                        <button onClick={(evt)=>{
+                                        <button className="m-1" onClick={(evt)=>{
+                                          // navigate("/lottery", {state: {from: "/", mode: "edit", id: original?._id } })
+                                          onMutationLotteryClone({ variables: { id: original?._id } });
+                                        }}><CloneIcon/>{t("clone")}
+                                        </button>
+                                        <button className="m-1" onClick={(evt)=>{
                                           navigate("/lottery", {state: {from: "/", mode: "edit", id: original?._id } })
                                         }}><EditIcon/>{t("edit")}
                                         </button>
-                                        <button onClick={(e)=>{
+                                        <button className="m-1" onClick={(e)=>{
                                           setOpenDialogDelete({ isOpen: true, id: original?._id, description: original?.description });
                                         }}><DeleteForeverIcon/>{t("delete")}</button>
                                       </div>
@@ -244,7 +293,7 @@ const LotterysPage = (props) => {
                         ],
                         []
                       )
-      default:
+      case Constants.SELLER:
         return useMemo(
                         () => [
                           {
@@ -252,11 +301,16 @@ const LotterysPage = (props) => {
                             Cell: props => {
                               let { original } = props.row
                               return  <div>
-                                        <button onClick={(evt)=>{
+                                        <button className="m-1" onClick={(evt)=>{
+                                          // navigate("/lottery", {state: {from: "/", mode: "edit", id: original?._id } })
+                                          onMutationLotteryClone({ variables: { id: original?._id } });
+                                        }}><CloneIcon/>{t("clone")}
+                                        </button>
+                                        <button className="m-1" onClick={(evt)=>{
                                           navigate("/lottery", {state: {from: "/", mode: "edit", id: original?._id } })
                                         }}><EditIcon/>{t("edit")}
                                         </button>
-                                        <button onClick={(e)=>{
+                                        <button className="m-1" onClick={(e)=>{
                                           setOpenDialogDelete({ isOpen: true, id: original?._id, description: original?.description });
                                         }}><DeleteForeverIcon/>{t("delete")}</button>
                                       </div>
@@ -355,6 +409,9 @@ const LotterysPage = (props) => {
                         ],
                         []
                       )
+      default:{
+        return <div></div>
+      }
     }
   }
 
