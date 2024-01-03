@@ -24,18 +24,14 @@ const DetailPanelLeft = (props) =>{
             return  <div className="ber-bg border col-lg-4 col-md-4 col-sm-12 col-12 mb-3">
                       <div className="row" style={{ justifyContent: "space-between" }}>
                         <div className="lang-detail" style={{ width: "px" }}>
-                          2 ตัว{data?.type === 0 ? "บน" : "ล่าง"}
+                          {data?.number_lotter === 1 ? "3" : "2"} ตัว{data?.type === 0 ? "บน" : data?.type === 1 ? "ล่าง" : "บน/ล่าง"}
                         </div>
                         <div className="price-detail" style={{ width: "px" }}>
-                          เบอร์ละ {data?.priceUnit}/{length} บาท
+                          เบอร์ละ {data?.priceUnit}{/* {length} */ } บาท
                         </div>
                         <div className="p-3">
                           <div className="icon-view">
-                            <PageviewIcon onClick={(evt)=>{
-
-                              console.log("props: ", props)
-                              onLightbox({ isOpen: true, photoIndex, images:data?.files })
-                            }} />
+                            <PageviewIcon onClick={(evt)=> onLightbox({ isOpen: true, photoIndex, images:data?.files }) } />
                           </div>
                           <img src={`${window.location.origin}/${currentImage?.url}`} style={{width:"100%",borderRadius:"4px"}} alt="picture"/>
                         </div>

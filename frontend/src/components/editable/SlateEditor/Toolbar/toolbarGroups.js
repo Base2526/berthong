@@ -102,7 +102,7 @@ const toolbarGroups = [
   //     type: "block"
   //   }
   // ],
-  [
+  // [
   //   {
   //     id: 17,
   //     format: "alignLeft",
@@ -125,11 +125,11 @@ const toolbarGroups = [
   //     format: "link",
   //     type: "link"
   //   },
-    {
-      id: 21,
-      format: "image",
-      type: "embed"
-    },
+    // {
+    //   id: 21,
+    //   format: "image",
+    //   type: "embed"
+    // },
   //   {
   //     id: 22,
   //     format: "video",
@@ -139,7 +139,7 @@ const toolbarGroups = [
   //     id: 23,
   //     type: "table"
   //   }
-  ],
+  // ],
 
   // [
   //   {

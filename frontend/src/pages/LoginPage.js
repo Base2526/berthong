@@ -28,8 +28,8 @@ const LoginPage = (props) => {
             console.log("onCompleted :", datas)
             let {status, data, sessionId} = datas.login
             if(status){
-                // localStorage.setItem('token', sessionId)
-                setCookie('token', sessionId)
+                // localStorage.setItem('usida', sessionId)
+                setCookie('usida', sessionId)
                 updateProfile(data)
             }
 

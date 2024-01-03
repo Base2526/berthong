@@ -107,10 +107,10 @@ export const getHeaders = (params) =>{
   return  {
               "apollo-require-preflight": true,
               "content-Type": "application/json",
-              "authorization": /*localStorage.getItem('token')*/ !_.isUndefined(getCookie('token'))  ? `Bearer ${ /*localStorage.getItem('token')*/ getCookie('token')}` : '',
+              "authorization": /*localStorage.getItem('usida')*/ !_.isUndefined(getCookie('usida'))  ? `Bearer ${ /*localStorage.getItem('usida')*/ getCookie('usida')}` : '',
               "custom-location":  JSON.stringify(params),
-              "custom-authorization":  !_.isUndefined(getCookie('token'))  ? `Bearer ${getCookie('token')}` : '',
-              "custom-x": "--1-- " + getCookie('token')
+              "custom-authorization":  !_.isUndefined(getCookie('usida'))  ? `Bearer ${getCookie('usida')}` : '',
+              "custom-x": "--1-- " + getCookie('usida')
           }
 }
 

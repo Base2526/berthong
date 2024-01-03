@@ -54,26 +54,26 @@ const wsLink = new GraphQLWsLink(createClient({
         return true;
     },
     // connectionParams: {
-    //   authToken: localStorage.getItem('token'),
+    //   authToken: localStorage.getItem('usida'),
     //   textHeaders: "axxxx2",
     //   options:{ reconnect: true }
     // },
     // connectionParams: () => {
     //     // Note: getSession() is a placeholder function created by you
-    //     const session = localStorage.getItem('token');
+    //     const session = localStorage.getItem('usida');
     //     if (!session) {
     //         return {};
     //     }
     //     console.log("")
     //     return {
-    //         // Authorization: `Bearer ${session.token}`,
-    //         authToken: localStorage.getItem('token'),
+    //         // Authorization: `Bearer ${session.usida}`,
+    //         authToken: localStorage.getItem('usida'),
     //         options:{ reconnect: true }
     //     };
     // },
 
     connectionParams: () => ({
-        authToken: getCookie('token') /*localStorage.getItem('token')*/ ,
+        authToken: getCookie('usida') /*localStorage.getItem('usida')*/ ,
     }),
     on: {
         // 
@@ -159,7 +159,7 @@ const wsLink = new GraphQLWsLink(createClient({
 // 
 const uploadLink =  createUploadLink({  
                                           uri: (process.env.REACT_APP_NODE_ENV === "development" ? "https://" : "https://") + process.env.REACT_APP_HOST_GRAPHAL +"/graphql", 
-                                          headers:{ authorization: getCookie('token') /*localStorage.getItem('token')*/ ? `Bearer ${ getCookie('token') /*localStorage.getItem('token')*/ }` : "", } 
+                                          headers:{ authorization: getCookie('usida') /*localStorage.getItem('usida')*/ ? `Bearer ${ getCookie('usida') /*localStorage.getItem('usida')*/ }` : "", } 
                                         })
   
 // The split function takes three parameters:
@@ -180,12 +180,12 @@ const splitLink = split(
   
 const authLink = new ApolloLink((operation, forward) => {
     // Retrieve the authorization token from local storage.
-    const token = getCookie('token') //localStorage.getItem('token');
+    const usida = getCookie('usida') //localStorage.getItem('usida');
 
     // Use the setContext method to set the HTTP headers.
     operation.setContext({
         headers: {
-            authorization: token ? `Bearer ${token}` : ''
+            authorization: usida ? `Bearer ${usida}` : ''
         }
     });
 
@@ -210,7 +210,7 @@ export const client = new ApolloClient({
     //     reconnect: true,
     //     connectionParams: {
     //       headers: {
-    //         Authorization: token ? `Bearer ${token}` : "",
+    //         Authorization: usida ? `Bearer ${usida}` : "",
     //       }
     //     }
     //   }

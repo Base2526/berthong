@@ -98,12 +98,11 @@ const HomeItem = (props) => {
                 {menuView(item, index)}
                 <div className="card card-custom bg-white border-white border-0">
                   <span className={item?.type === "bon" ? "bon" : "lang"}>
-                    <b>{item?.type === 0 ? "บน" : "ล่าง"}</b>
+                    <b>{item?.type === 0 ? "บน" : item?.type === 1 ? "ล่าง" : "บน/ล่าง"}</b>
                   </span>
                   <span className="price">
-                    <b>{item?.priceUnit}/{length} บาท</b>
+                    <b>{item?.priceUnit}{/* / {length} */ } บาท</b>
                   </span>
-                  {/*  */}
                   <div
                     className="card-custom-img"
                     style={{

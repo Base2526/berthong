@@ -11,6 +11,7 @@ import {
   Autocomplete,
   TextField
 } from "@mui/material";
+import BankComp from "../components/BankComp"
 
 let initValues = { bankId: "",  balance: "" }
 
@@ -29,27 +30,7 @@ const WithdrawPage = (props) => {
   }, [input])
 
   const submitForm = async(event) => {
-    onMutationWithdraw({ variables: { input } });
-    /*
-    event.preventDefault();
-    switch(mode){
-      case "new":{
-        let newInput =  {
-          mode: mode.toUpperCase(),
-          bank: _.omit(_.find(user.banks, (b)=> _.isEqual(b?._id, input.bank)), ['bankName']),
-          balance: parseInt(input.balance),
-        }
-        onMutationWithdraw({ variables: { input: newInput } });
-        break
-      }
-
-      case "edit":{
-        let newInput =  {...input, mode: mode.toUpperCase(), _id: id, status: input.status}
-        onMutationWithdraw({ variables: { input: newInput } });
-        break;
-      }
-    } 
-    */   
+    onMutationWithdraw({ variables: { input } }); 
   }
 
   const onInputChange = (e) => {
@@ -112,7 +93,7 @@ const WithdrawPage = (props) => {
                     alignItems="flex-start"
                     spacing={2}>
                     <Box> 
-                      <Autocomplete
+                      {/* <Autocomplete
                         label={"เลือกบัญชี *"}
                         disablePortal
                         id="bank"
@@ -120,7 +101,11 @@ const WithdrawPage = (props) => {
                         options={ user?.banks }
                         getOptionLabel={(option)=>`${option.bankNumber} (${option.name})`}
                         renderInput={(params) =><TextField {...params} label={t("bank_account_name")} /> }
-                        onChange={(event, val) => setInput({...input, bankId: val?._id}) }/>
+                        onChange={(event, val) => setInput({...input, bankId: val?._id}) }/> */}
+                      <BankComp 
+                        {...props}
+                        banks={user?.banks}
+                        onChange={(event, val)=>setInput({...input, bankId: val?._id})}/>
                     </Box>
                     <Box> 
                       <TextField 

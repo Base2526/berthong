@@ -4,7 +4,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 // import { usePdf } from '@mikecousins/react-pdf';
 
-import filePdf from "../pdf/sample.pdf";
+// import filePdf from "../pdf/sample.pdf";
+
+import manual_1 from "../images/manual_1.png";
+import manual_2 from "../images/manual_2.png";
+import manual_3 from "../images/manual_3.png";
+import manual_4 from "../images/manual_4.png";
+import manual_5 from "../images/manual_5.png";
 
 const HelpPage = (props) => {
     const navigate = useNavigate();
@@ -14,7 +20,18 @@ const HelpPage = (props) => {
     const [page, setPage] = useState(1);
     const canvasRef = useRef(null);
 
-    return (<div>HelpPage</div>)
+    let { onLightbox } = props
+
+    let files = [{id: 0, url :manual_1}, {id: 1, url :manual_2}, {id: 2, url :manual_3}, {id: 3, url :manual_4}, {id: 4, url :manual_5}]
+    // 
+
+    return (<div className="user-list-container">   
+                <p>ข้อมูลการใช้ระบบ</p>
+                <ol>
+                    <li key="0" onClick={(evt)=>onLightbox({ isOpen: true, photoIndex: 0, images:files })}>การลงทะเบียนเข้าใช้งานระบบ</li>
+                    <li key="1" onClick={(evt)=>onLightbox({ isOpen: true, photoIndex: 0, images:files })}>การฝาก/ถอดเงิน</li>
+                </ol>
+            </div>)
 
     // const { pdfDocument, pdfPage } = usePdf({
     //     file: filePdf,

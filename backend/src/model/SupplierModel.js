@@ -45,7 +45,7 @@ const SupplierSchema = new Schema({
     },   
     type:{
         type: Number,
-        enum : [0, 1], // 0: bon, 1: lang
+        enum : [0, 1, 2], // 0: bon, 1: lang, 2: couple
         default: 0
     },         
     kind:{

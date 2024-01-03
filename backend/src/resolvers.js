@@ -2370,7 +2370,9 @@ export default {
       let { req } = context
 
       let { current_user } =  await Utils.checkAuth(req);
-      if( Utils.checkRole(current_user) !==Constants.AUTHENTICATED ) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
+      let role = Utils.checkRole(current_user)
+      if( role !==Constants.SELLER && 
+          role !==Constants.AUTHENTICATED) throw new AppError(Constants.UNAUTHENTICATED, 'permission denied')
 
       const session = await mongoose.startSession();
       // Start the transaction

@@ -15,13 +15,7 @@ import Picker from "emoji-picker-react";
 import Paper from "@material-ui/core/Paper";
 
 
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button
-} from "@material-ui/core";
+import { Button } from "@material-ui/core";
 
 const Toolbar = (props) => {
   const { t } = useTranslation();
@@ -166,49 +160,50 @@ const Toolbar = (props) => {
               //   return isTable ? (
               //     <InTable key={element.id} editor={editor} />
               //   ) : null;
-              default:
-                return <button>Invalid Button</button>;
+              default:{
+                return <button>Invalid Button</button>; 
+              }
             }
           })}
         </span>
       ))}
       <div className="toolbar-button">
-      <Button onClick={() => setIsOpen(!isOpen)}>
-        <EmojiEmotionsIcon style={{color:"#FFC300"}} />
-      </Button>
-      {isOpen && (
-        <div ref={ref} style={{position:"absolute"}}>
-          <div className="emoji-panel">
-              <Paper elevation={4}>
-                <Picker onEmojiClick={onEmojiClick} />
-              </Paper>
+        <Button onClick={() => setIsOpen(!isOpen)}>
+          <EmojiEmotionsIcon style={{color:"#FFC300"}} />
+        </Button>
+        {isOpen && (
+          <div ref={ref} style={{position:"absolute"}}>
+            <div className="emoji-panel">
+                <Paper elevation={4}>
+                  <Picker onEmojiClick={onEmojiClick} />
+                </Paper>
+            </div>
           </div>
-        </div>
-      )}
-      {( !_.isEmpty( pureText() ) || parentId) && 
-        <Button
-          className="p-1 m-1"
-          onClick={(evt) => {
-            evt.preventDefault();
-            onCancel();
-          }}
-          variant="contained" color="secondary"
-        >
-          {t("cancel")}
-        </Button>
-      }
-        <Button
-          className="p-1 m-1"
-          disabled={ _.isEmpty(pureText()) ? true : false }
-          variant="contained" 
-          color="primary"
-          onClick={(evt) => {
-            evt.preventDefault();
-            onPost();            
-          }}
-        >
-          {t("posts")}
-        </Button>
+        )}
+        {( !_.isEmpty( pureText() ) || parentId) && 
+          <Button
+            className="p-1 m-1"
+            onClick={(evt) => {
+              evt.preventDefault();
+              onCancel();
+            }}
+            variant="contained" color="secondary"
+          >
+            {t("cancel")}
+          </Button>
+        }
+          <Button
+            className="p-1 m-1"
+            disabled={ _.isEmpty(pureText()) ? true : false }
+            variant="contained" 
+            color="primary"
+            onClick={(evt) => {
+              evt.preventDefault();
+              onPost();            
+            }}
+          >
+            {t("posts")}
+          </Button>
       </div>
     </div>
   );

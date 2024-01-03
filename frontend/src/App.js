@@ -71,6 +71,7 @@ import {
 import {
   FaDev as FaDevIcon
 } from "react-icons/fa"
+import { FaLine as LineIcon } from "react-icons/fa";
 // import { 
 //   IoMdHelpCircleOutline  as BiHelpCircle
 // } from "react-icons/io";
@@ -438,8 +439,8 @@ const App =(props) =>{
       let {status, data, sessionId} = login
       if(status){
         console.log("onMutationLogin :", data, sessionId)
-        // localStorage.setItem('token', sessionId)
-        setCookie('token', sessionId)
+        // localStorage.setItem('usida', sessionId)
+        setCookie('usida', sessionId)
         updateProfile(data)
         setDialogLogin(false);
       }
@@ -460,9 +461,9 @@ const App =(props) =>{
       update: (cache, {data: {loginWithSocial}}) => {
         let {status, data, sessionId} = loginWithSocial
         if(status){
-          // localStorage.setItem('token', sessionId)
+          // localStorage.setItem('usida', sessionId)
 
-          setCookie('token', sessionId)
+          setCookie('usida', sessionId)
 
           updateProfile(data)
           setDialogLogin(false);
@@ -1251,7 +1252,7 @@ const App =(props) =>{
   //   onError: useCallback((err) => {
   //     console.log("subscriptionMe :", err)
   //   }, []),
-  //   variables: {sessionId: /*localStorage.getItem('token')*/ getCookie('token') }, // setCookie('token', sessionId, {})
+  //   variables: {sessionId: /*localStorage.getItem('usida')*/ getCookie('usida') }, // setCookie('usida', sessionId, {})
   // });
  
   const ProtectedAuthenticatedRoute = ({ user, redirectPath = '/' }) => {
@@ -1426,40 +1427,48 @@ const App =(props) =>{
     return _.isEmpty(subscribes.data) ? true : false
   }
 
+
+  const line = () =>{
+    window.open('https://line.me/ti/p/~maiamili', '_blank');
+  }
+
   const toolbarMenu = () =>{
     if(!_.isEmpty(user)){
       switch(checkRole(user)){
         case Constants.AUTHENTICATED:{
           return  <div className="border-login">
-                    <IconButton disabled={ disabledNotifications() } size={'small'} onClick={()=> navigate("/notifications") }>
+                    <IconButton size={'medium'} onClick={()=> line() }>
+                      <LineIcon color={ 'green'}  size="1em"/>
+                    </IconButton>
+                    <IconButton disabled={ disabledNotifications() } size={'medium'} onClick={()=> navigate("/notifications") }>
                       <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
                         <MdCircleNotificationsIcon color={ disabledNotifications() ? 'gray' :  _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1em"/>
                       </Badge>
                     </IconButton>
-                    <IconButton disabled={ disabledCarts() }  size={'small'} onClick={()=> navigate("/book-buy")}>
+                    <IconButton disabled={ disabledCarts() }  size={'medium'} onClick={()=> navigate("/book-buy")}>
                       <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
                         <FiShoppingCart color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1em"/>
                       </Badge>
                     </IconButton>
-                    <IconButton disabled={disabledBookmarks()} size={'small'} onClick={()=> navigate("/bookmarks")}>
+                    <IconButton disabled={disabledBookmarks()} size={'medium'} onClick={()=> navigate("/bookmarks")}>
                       <MdOutlineBookmarkAddedIcon color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1em"/>
                     </IconButton>
-                    <IconButton disabled={disabledSubscribes()} size={'small'} onClick={()=> navigate("/subscribes")}>
+                    <IconButton disabled={disabledSubscribes()} size={'medium'} onClick={()=> navigate("/subscribes")}>
                       <SlUserFollowing color={ disabledSubscribes() ? 'gray' : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1em"/>
                     </IconButton>
-                    <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
+                    <IconButton disabled={disabledConversations()}  size={'medium'} onClick={(evt)=>{ navigate("/messages") }}>
                       <Badge badgeContent={conversations.length} color="primary">
                         <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" : _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1em"/>
                       </Badge> 
                     </IconButton>
-                    <IconButton size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
+                    <IconButton size={'medium'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
                       {
                         !_.isEmpty(user?.avatar)
                         ? <Avatar class="profile" alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
                         : <FiUser color="white" size="1em"/>
                       }
                     </IconButton>
-                    <IconButton size={'small'} onClick={()=>{ navigate("/help") }}>
+                    <IconButton size={'medium'} onClick={()=>{ navigate("/help") }}>
                       <BiHelpCircle color="white" size="1em"/>
                     </IconButton>
                   </div>
@@ -1467,17 +1476,20 @@ const App =(props) =>{
 
         case Constants.AMDINISTRATOR:{
           return  <div className="border-login">
-                    <IconButton size={'small'}  onClick={()=> navigate("/dblog") }>
+                    <IconButton size={'medium'} onClick={()=> line() }>
+                      <LineIcon color={ 'green'}  size="1em"/>
+                    </IconButton>
+                    <IconButton size={'medium'}  onClick={()=> navigate("/dblog") }>
                       <VscDebugIcon  color={ _.isEqual(location?.pathname, "/dblog") ? "red" : "white" } size="1em"/>
                     </IconButton>
-                    <IconButton size={'small'} onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
+                    <IconButton size={'medium'} onClick={(evt)=> setOpenMenuProfile(evt.currentTarget) }>
                       {
                         !_.isEmpty(user?.avatar)
                         ? <Avatar class="profile" alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
                         : <FiUser color="white" size="1em"/>
                       }
                     </IconButton>
-                    <IconButton size={'small'} onClick={()=>{ navigate("/help") }}>
+                    <IconButton size={'medium'} onClick={()=>{ navigate("/help") }}>
                       <BiHelpCircle color="white" size="1em"/>
                     </IconButton>
                   </div>
@@ -1485,38 +1497,41 @@ const App =(props) =>{
 
         case Constants.SELLER:{
           return  <div className="border-login">
-                    <IconButton disabled={ disabledNotifications() }  size={'small'} onClick={()=> navigate("/notifications") }>
+                     <IconButton size={'medium'} onClick={()=> line() }>
+                      <LineIcon color={ 'green'}  size="1em"/>
+                    </IconButton>
+                    <IconButton disabled={ disabledNotifications() }  size={'medium'} onClick={()=> navigate("/notifications") }>
                       <Badge badgeContent={_.map(notifications, i=>i.unread).length} color="primary">
                         <MdCircleNotificationsIcon color={ disabledNotifications() ? "gray" : _.isEqual(location?.pathname, "/notifications") ? "red" : "white" }  size="1em"/>
                       </Badge>
                     </IconButton>
-                    <IconButton disabled={ disabledCarts() }  size={'small'} onClick={()=> navigate("/book-buy")}>
+                    <IconButton disabled={ disabledCarts() }  size={'medium'} onClick={()=> navigate("/book-buy")}>
                       <Badge badgeContent={user?.inTheCarts ? user?.inTheCarts?.length : 0} color="primary">
                         <FiShoppingCart color={ disabledCarts() ? 'gray' :  _.isEqual(location?.pathname, "/book-buy") ? "red" : "white" } size="1em"/>
                       </Badge>
                     </IconButton>
-                    <IconButton disabled={disabledBookmarks()} size={'small'} onClick={()=> navigate("/bookmarks")}>
+                    <IconButton disabled={disabledBookmarks()} size={'medium'} onClick={()=> navigate("/bookmarks")}>
                       <MdOutlineBookmarkAddedIcon color={ disabledBookmarks() ? 'gray' :  _.isEqual(location?.pathname, "/bookmarks") ? "red" : "white" } size="1em"/>
                     </IconButton>
-                    <IconButton disabled={disabledSubscribes()} size={'small'} onClick={()=> navigate("/subscribes")}>
+                    <IconButton disabled={disabledSubscribes()} size={'medium'} onClick={()=> navigate("/subscribes")}>
                       <SlUserFollowing color={ disabledSubscribes() ? "gray" : _.isEqual(location?.pathname, "/subscribes") ? "red" : "white" } size="1em"/>
                     </IconButton>
-                    <IconButton disabled={disabledConversations()}  size={'small'} onClick={(evt)=>{ navigate("/messages") }}>
+                    <IconButton disabled={disabledConversations()}  size={'medium'} onClick={(evt)=>{ navigate("/messages") }}>
                       <Badge badgeContent={conversations.length} color="primary">
                         <HiChatBubbleLeftRightIcon alt="chat" color={ disabledConversations() ? "gray" :  _.isEqual(location?.pathname, "/messages") ? "red" : "white" } size="1em"/>
                       </Badge>
                     </IconButton>
-                    <IconButton disabled={ disabledManageSuppliers() }  size={'small'} onClick={()=> navigate("/lotterys")}>
+                    <IconButton disabled={ disabledManageSuppliers() }  size={'medium'} onClick={()=> navigate("/lotterys")}>
                       <BiStoreAlt color={ disabledManageSuppliers()  ? 'gray' : _.isEqual(location?.pathname, "/lotterys") ? "red" : "white" } size="1em"/>
                     </IconButton>
-                    <IconButton class="btn-profile" size={'small'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
+                    <IconButton class="btn-profile" size={'medium'} onClick={(evt)=>{ setOpenMenuProfile(evt.currentTarget) }}>
                       {
                         !_.isEmpty(user?.avatar)
                         ? <Avatar class="profile" alt="profile" src={`${window.location.origin}/${user?.avatar?.url}`} size="1em"/>
                         : <FiUser color="white" size="1em"/>
                       }
                     </IconButton>
-                    <IconButton size={'small'} onClick={()=>{ navigate("/help") }}>
+                    <IconButton size={'medium'} onClick={()=>{ navigate("/help") }}>
                       <BiHelpCircle color="white" size="1em"/>
                     </IconButton>
                   </div>
@@ -1525,10 +1540,13 @@ const App =(props) =>{
     }
 
     return  <div className="border-login">
-              <IconButton size={'small'} onClick={()=>{ setDialogLogin(true) }}>
+              <IconButton size={'medium'} onClick={()=> line() }>
+                <LineIcon color={ 'green'}  size="1em"/>
+              </IconButton>
+              <IconButton size={'medium'} onClick={()=>{ setDialogLogin(true) }}>
                 <LoginIcon color="white" size="1em"/>
               </IconButton>
-              <IconButton size={'small'} onClick={()=>{ navigate("/help") }}>
+              <IconButton size={'medium'} onClick={()=>{ navigate("/help") }}>
                 <BiHelpCircle color="white" size="1em"/>
               </IconButton>
             </div>
@@ -1707,7 +1725,7 @@ const App =(props) =>{
             <Route path="/login-with-line" element={<LoginWithLinePage />}  />
             <Route path="/contact-us" element={<ContactUsPage {...props} onMutationContactUs={(evt)=>onMutationContactUs(evt)} />}  />
             <Route path="/register" element={<RegisterPage />}  />
-            <Route path="/help" element={<HelpPage />}  />
+            <Route path="/help" element={<HelpPage onLightbox={(evt)=>setLightbox(evt)} />}  />
             <Route element={<ProtectedAuthenticatedRoute user={user} />}>
               <Route path="/me" element={<MePage 
                                           {...props} 

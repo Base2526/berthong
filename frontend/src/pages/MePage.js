@@ -85,13 +85,17 @@ const MePage = (props) => {
                 if(status && !_.isEqual(banks, data)){
                     setBanks(data)
                 }
+
+               
             }
         }
     }, [dataBankByIds, loadingBankByIds])
 
     useEffect(()=>{
-        console.log("input :", input)
-    }, [input])
+        if(_.isEmpty(banks)){
+            setExpanded(false)
+        }
+    }, [banks])
 
     const onInputChange = (e) => {
         const { name, value } = e.target;

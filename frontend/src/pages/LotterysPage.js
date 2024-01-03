@@ -178,7 +178,6 @@ const LotterysPage = (props) => {
                               let { original } = props.row
                               return  <div>
                                         <button className="m-1" onClick={(evt)=>{
-                                          // navigate("/lottery", {state: {from: "/", mode: "edit", id: original?._id } })
                                           onMutationLotteryClone({ variables: { id: original?._id } });
                                         }}><CloneIcon/>{t("clone")}
                                         </button>

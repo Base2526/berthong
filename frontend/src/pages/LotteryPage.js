@@ -55,7 +55,7 @@ const LotteryPage = (props) => {
   const [input, setInput]       = useState(initValues);
   let [error, setError]         = useState(initValues);
   let [manageLotterys, setManageLotterys] = useState([]);
-  let [types, setTypes] = useState([{id: 0, name: "bon"}, {id: 1, name: "lang"}]);
+  let [types, setTypes] = useState([{id: 0, name: "bon"}, {id: 1, name: "lang"}, {id: 2, name: "couple"}]);
   let [categorys, setCategorys] = useState([{id: 0, name: "money"}, {id: 1, name: "gold"}, 
                                             {id: 2, name: "things"}, {id: 3, name: "etc"}]);
 
