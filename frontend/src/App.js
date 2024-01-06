@@ -1683,11 +1683,7 @@ const App =(props) =>{
                 </List>
               <Divider />
               <div className="text-center">
-                <img
-                  className="logo1"
-                  src={logo}
-                  alt="Avatar"
-                />
+                <img className="logo1" src={logo} alt="Avatar" />
               </div>
               <Typography variant="caption" display="block" gutterBottom><div className="text-center p-1">© 2023 THE BERTHONG LLC</div></Typography>
             </Drawer>

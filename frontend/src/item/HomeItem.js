@@ -11,10 +11,11 @@ import {
   MdOutlineBookmarkAdd as MdOutlineBookmarkAddIcon,
   MdOutlineBookmarkAdded as MdOutlineBookmarkAddedIcon
 } from "react-icons/md"
-import { AiOutlineShareAlt, AiOutlineCopy } from "react-icons/ai"
+import { AiOutlineShareAlt  } from "react-icons/ai"
+import { TbClipboardCopy as AiOutlineCopy } from "react-icons/tb";
 
 import CommentItem from "./CommentItem"
-
+ 
 const HomeItem = (props) => {
   let navigate = useNavigate();
   let { user, index, item, onMutationFollow } = props;
@@ -97,7 +98,10 @@ const HomeItem = (props) => {
               <div className="col-md-6 col-lg-3 pb-3">
                 {menuView(item, index)}
                 <div className="card card-custom bg-white border-white border-0">
-                  <span className={item?.type === "bon" ? "bon" : "lang"}>
+
+                  {/*   */}
+                  {/* <span className={item?.type === "bon" ? "bon" : "lang"}> */}
+                  <span className={item?.type === 0 ? "bon" : item?.type === 1 ? "lang" : "bon-lang"}> 
                     <b>{item?.type === 0 ? "บน" : item?.type === 1 ? "ล่าง" : "บน/ล่าง"}</b>
                   </span>
                   <span className="price">

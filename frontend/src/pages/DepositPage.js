@@ -10,13 +10,17 @@ import {
   TextField,
   Autocomplete,
   Box,
-  LinearProgress
+  LinearProgress,
+  IconButton
 } from "@mui/material";
+import { TbClipboardCopy as AiOutlineCopy } from "react-icons/tb";
 
 import * as Constants from "../constants"
 import AttackFileField from "../components/AttackFileField";
 import { queryAdminBanks } from "../apollo/gqlQuery";
 import { handlerErrorApollo,  getHeaders, showToast } from "../util";
+
+import scbIcon from "../images/scb.png";
 
 let initValues = {  balance: "", 
                     bankId: "", 
@@ -106,7 +110,38 @@ const DepositPage = (props) => {
               : // useMemo(() => {
                 <div className="content-bottom">
                   <div className="content-page border"> 
+                    
                     <div className="row m-2">
+                      <div className="row p-3 MuiTypography-h6">
+                        {
+                          _.map(banks, bank=>{
+                            console.log("bank :", bank)
+                            return  <div>
+                                      <div className="d-flex flex-row">
+                                        <div>
+                                          <img className="rounded float-left bank-icon" src={scbIcon} />
+                                        </div>
+                                        <div className="ms-3">
+                                          <div>ชื่อบัญชี: {bank?.name_account}</div>
+                                          <div>เลขบัญชี: {bank?.number} 
+                                          <IconButton onClick={async()=>{
+                                            let text = bank?.number
+                                            if ('clipboard' in navigator) {
+                                              await navigator.clipboard.writeText(text);
+                                            } else {
+                                              document.execCommand('copy', true, text);
+                                            }
+                                            showToast("info", `Copy`)
+                                          }}><AiOutlineCopy size={20} round /></IconButton></div> 
+                                        </div>
+                                      </div>
+                                      <div class="pt-4">
+                                        <div>ฝากขั้นต่ำ 99 บาท ขึ้นไปเท่านั้น! ถอนขั้นต่ำ 100 บาท</div>
+                                      </div>
+                                    </div>
+                          })
+                        }
+                      </div>
                       {/* 
                       <div className="col-lg-6 col-12">
                         <div className="row border-c p-2">

@@ -1110,7 +1110,7 @@ export default {
       let { req } = context
       await Utils.checkAuth(req);
 
-      let data =  [ { label: '364-277878-2 ธนาคารไทยพาณิชย์', id: "01" } ]
+      let data =  [ { id: "01", label: '364-277878-2 ธนาคารไทยพาณิชย์', number: '3642778782', name_bank: 'ธนาคารไทยพาณิชย์', name_account: 'นาย พีรพัฒน์ วิชัยสาน' } ]
       return {  status: true,
                 data,
                 executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds` }
@@ -3032,6 +3032,55 @@ export default {
                       }
                   ])
 
+      let transitionsBonAndLang = await Model.Transition.aggregate([
+                      {
+                        $match: { type: Constants.SUPPLIER, status: Constants.APPROVED }
+                      },
+                      {
+                        $lookup: {
+                          localField: "refId",
+                          from: "supplier",
+                          pipeline: [
+                              {
+                                $match: { 
+                                  type: 2,   //  0: bon, 1: lang, 2: couple
+                                  kind: 0,   //  0: thai, 1: laos, 2: vietnam
+                                  manageLottery: mongoose.Types.ObjectId(input?._id),
+                                  // buys:{
+                                  //   $elemMatch: {
+                                  //     selected: 1, 
+                                  //     itemId: parseInt(lang)
+                                  //   }
+                                  // } 
+                                }
+                              }
+                          ],
+                          foreignField: "_id",
+                          as: "supplier"
+                        }
+                      },
+                      {
+                        $lookup: {
+                          localField: "userId",
+                          from: "user",
+                          foreignField: "_id",
+                          as: "user"
+                        }
+                      },
+                      {
+                        $unwind: {
+                            path: "$supplier",
+                            preserveNullAndEmptyArrays: false
+                        }
+                      },
+                      {
+                        $unwind: {
+                          path: "$user",
+                          preserveNullAndEmptyArrays: true
+                        }
+                      }
+                  ])
+
       _.map(transitionsBon, async t=>{
         let { buys } = t?.supplier
         console.log("transitionsBon buys :", buys)
@@ -3054,56 +3103,20 @@ export default {
         }
       })
 
+      // 
+      _.map(transitionsBonAndLang, async t=>{
+        let { buys } = t?.supplier
+        console.log("transitionsBonAndLang buys :", buys)
 
-      // manageLottery
+        if(_.find(buys, buy=> buy.selected === 1 && (buy.itemId === parseInt(bon) || buy.itemId === parseInt(lang))  ) ){
+          await Model.Transition.updateOne({ _id: t._id }, { expire: true, isLucky: true });
+        }else{
+          await Model.Transition.updateOne({ _id: t._id }, { expire: true, isLucky: false });
+        }
+      })
 
-      // if(!_.isNull(manageL)){
-      //   let _id  =  manageL._id
-      //   let bon  =  manageL.bon
-      //   let lang =  manageL.lang
-
-      //   let bons  = await Model.Supplier.aggregate([
-      //                                               { 
-      //                                                 $match: { 
-      //                                                           manageLottery: _id,
-      //                                                           publish: true,
-      //                                                           type: 0,      //  0: bon, 1: lang
-      //                                                           kind: 0,      //  0: thai, 1: laos, 2: vietnam
-      //                                                           buys:{
-      //                                                                   $elemMatch: {
-      //                                                                     selected: 1, 
-      //                                                                     itemId: parseInt(bon),
-      //                                                                     //  quantity: { $gt: 1 } // Quantity greater than 1
-      //                                                                   }
-      //                                                                 }
-      //                                                         }
-      //                                               }
-      //                                               ]);
-
-      //   let langs = await Model.Supplier.aggregate([
-      //                                               { 
-      //                                                 $match: { 
-      //                                                           manageLottery: _id,
-      //                                                           publish: true,
-      //                                                           type: 1,      //  0: bon, 1: lang
-      //                                                           kind: 0,      //  0: thai, 1: laos, 2: vietnam
-      //                                                           buys:{
-      //                                                                   $elemMatch: {
-      //                                                                     selected: 1, 
-      //                                                                     itemId: parseInt(lang),
-      //                                                                     //  quantity: { $gt: 1 } // Quantity greater than 1
-      //                                                                   }
-      //                                                                 }
-      //                                                         }
-      //                                               }
-      //                                               ]);
-
-      //   console.log("result all :", bons, langs)
-      // }
-     
       return  { 
         status: true,
-        // data: manageL,
         executionTime: `Time to execute = ${ (Date.now() - start) / 1000 } seconds`
       }   
     },
